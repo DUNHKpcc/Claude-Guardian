@@ -6,6 +6,7 @@ permissions:
   contents: read
 jobs:
   test:
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -18,6 +19,7 @@ jobs:
       - name: Unit and regression suite
         env:
           GUARDIAN_TEST_WINDOWS_TRANSACTION_BOUNDARY: "1"
+          GUARDIAN_WINDOWS_LISTENER_CI: "1"
         run: python -m unittest discover -s tests -v
       - name: Synthetic WebRTC lifecycle regression (no network)
         run: node tests/webrtc-lifecycle.cjs
