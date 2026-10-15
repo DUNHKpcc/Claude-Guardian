@@ -82,3 +82,11 @@ Artifact 名称为 `dashboard-preview-<exact commit SHA>`，保留 7 天，只�
 - [GitHub Ubuntu 24.04 runner image](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)
 - [Official upload-artifact action](https://github.com/actions/upload-artifact)
 - [GitHub artifact download API](https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28#download-an-artifact)
+
+## Actual keyboard and layout interaction
+
+The same CI job now runs `check_dashboard_interactions.py` with its Node standard-library helper against an owned sandboxed Chrome instance. The CDP connection uses inherited fd3/fd4 pipes, no TCP debugging listener, page-script evaluation, DOM mutation or CSP override. Real Tab/Shift-Tab, Enter and Space inputs must produce focus on all twelve summaries and the corresponding native details open/closed state. Computed focus outlines and horizontal layout bounds are checked at1440×1000 and390×1100, including all disclosures expanded.
+
+Page-scoped request observations must contain only the one local document and no subresources. This does not prove whole-browser network isolation or actual diagnostics. Font acquisition remains the separate explicitly opted-in fixed-asset operation. The helper writes `interaction.json` only after validated checks and owned-process cleanup succeed. Protocol calls have five-second limits; the exchange has a60-second timer and the supervising process a90-second limit, in addition to the existing five-minute CI job limit. These are CI test bounds, not production guarantees.
+
+Local protocol fixtures test the harness, not browser behavior. Real interaction acceptance is recorded only after the exact CI job succeeds and its artifact is retrieved; prior static PNG inspection remains separate. No user browser or profile is accessed.

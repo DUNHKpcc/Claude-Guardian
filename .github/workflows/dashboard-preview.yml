@@ -6,6 +6,10 @@ on:
     paths:
       - '.github/workflows/dashboard-preview.yml'
       - 'tools/render_dashboard_preview.py'
+      - 'tools/check_dashboard_interactions.py'
+      - 'tools/check_dashboard_interactions.cjs'
+      - 'tests/test_dashboard_interactions.py'
+      - 'tests/dashboard-interaction-protocol.cjs'
       - 'tests/test_dashboard_preview.py'
       - 'skills/claude-guardian/scripts/**'
 permissions:
@@ -19,9 +23,11 @@ jobs:
         with:
           persist-credentials: false
       - name: Test synthetic preview boundaries (no browser)
-        run: python -m unittest discover -s tests -p test_dashboard_preview.py -v
+        run: python -m unittest discover -s tests -p 'test_dashboard*.py' -v
       - name: Capture synthetic HTML with installed sandboxed Chrome
         run: python tools/render_dashboard_preview.py --capture-ci --ci-font --output "$RUNNER_TEMP/guardian-dashboard-preview"
+      - name: Check actual synthetic keyboard and layout behavior
+        run: python tools/check_dashboard_interactions.py --ci-font --output "$RUNNER_TEMP/guardian-dashboard-interaction"
       - name: Upload only synthetic screenshots and manifest
         uses: actions/upload-artifact@v4
         with:
@@ -30,5 +36,6 @@ jobs:
             ${{ runner.temp }}/guardian-dashboard-preview/desktop.png
             ${{ runner.temp }}/guardian-dashboard-preview/mobile.png
             ${{ runner.temp }}/guardian-dashboard-preview/manifest.json
+            ${{ runner.temp }}/guardian-dashboard-interaction/interaction.json
           if-no-files-found: error
           retention-days: 7
