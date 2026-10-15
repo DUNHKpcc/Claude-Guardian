@@ -473,5 +473,7 @@ UI-I06：在已有Linux CI/Chrome/Node中通过独占管道发送真实键盘事
 
 ## 22. 最低 Python 运行时执行验证（2026-10-15）
 
-ENG-01 / VAL-08：新增独立Linux Python3.10 CI任务，先断言实际解释器版本，再运行完整单元/回归、脱离源码发行包（子进程关闭site包）、编译和重复打包。既有三平台默认运行时任务不变。四项离线workflow结构回归只验证任务接线，不代表Python3.10已执行；精确CI结果待推送后核验。
+ENG-01 / VAL-08：新增独立Linux Python3.10 CI任务，先断言实际解释器版本，再运行完整单元/回归、脱离源码发行包（子进程关闭site包）、编译和重复打包。既有三平台默认运行时任务不变。四项离线workflow结构回归只验证任务接线，不代表Python3.10已执行；推送前未有实跑结果；后续精确回执见下文。
 官方setup-python固定到ece7cb06caefa5fff74198d8649806c4678c61a1（2026-10-15核对v6引用及该提交action.yml）；仅一次性CI解释器准备，无生产依赖增加。最低版本任务不启用原生上下文smoke，无用户设备或公网探测。Linux结果不能关闭Mac/Windows最低版本、桌面/运行时信任或原VAL场景；原3.10语法证据继续单列。
+
+最低版本实跑回执：8c4adae的[CI38788444583](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38788444583)四任务首次成功。Linux CPython3.10.22完整896项888通过/8跳过，脱离源码发行包9/9、编译及重复打包通过；默认Linux888/8、Mac887/9、Windows775/121通过/跳过。原生smoke仍Mac RUNTIME_PATH_INVALID、Windows CONTEXT_FOREIGN阻塞（各20通过/1跳过），不关闭原VAL或真实设备验收。详见validation和晨间交接。
