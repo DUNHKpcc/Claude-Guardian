@@ -37,6 +37,8 @@ Windows监听者核对库 `scripts/windows_listener_binding.py` 仅供可信宿�
 
 独立STUN库 `scripts/stun_probe.py` 仅在可信宿主提供当前精确范围授权、目标和取消检查后使用。没有CLI或自动触发，名称到固定数值地址的绑定由宿主另行核验；本模块不解析DNS。Cloudflare候选选择不等于任何一次公网执行授权，映射响应不认证提供方，也不证明浏览器或Claude路径。
 
+POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 预先保留在可信本地位置。inspect只读用户选定回执，输出未验证候选摘要；preview/rollback要求独立确认的目标、备份批次与摘要。rollback仅从真实终端逐阶段重新确认，并要求实际排除其他写入者。不得把回执作为授权；prepared状态不自动重放，Windows不支持。仅在精确文件事务范围内恢复，不代表应用/网络效果已恢复。
+
 ## 首问示例
 
 “这次先在 Codex 中做环境准备。你是第一次准备订阅、以前订阅过现在准备重订，还是目前已有订阅来处理问题？”
