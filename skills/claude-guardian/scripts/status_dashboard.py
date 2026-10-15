@@ -45,16 +45,19 @@ ERROR_CODES = frozenset({"PROXY_PORT_ASSOCIATION_CONFLICT", "COLLECTOR_INTERNAL_
     "OS_QUERY_FAILED", "BUDGET_EXCEEDED", "CONTROLLER_AUTH_FAILED"})
 AUTH_CODES = frozenset({"AUTHORIZATION_MISSING", "PERMISSION_DENIED", "PRECONTACT_ACTION_REJECTED"})
 CSS = """
-:root{color-scheme:light;--ink:#17283b;--muted:#516173;--line:#d8e1ea;--paper:#fff;--bg:#f2f5f8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,sans-serif}
-main{max-width:1120px;margin:auto;padding:32px 24px}header{padding:12px 0 26px}.eyebrow{font-size:12px;letter-spacing:.16em;font-weight:700;color:#39617a}
-h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:12px 0}h2{font-size:20px;margin:0 0 12px}h3{font-size:18px;margin:14px 0 8px}
-p{margin:8px 0}.muted,small{color:var(--muted)}.notice{border-left:4px solid #b56b12;background:#fff6e7;padding:16px 20px;margin-bottom:24px}
-.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card,section.panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px}
-.card small{font-size:12px}.badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700;background:#e9edf2;color:#34465a}
-.badge.error{background:#ffe8e5;color:#9c291e}.badge.authorization_needed{background:#fff0d2;color:#815000}.badge.verified{background:#e3f2ed;color:#235e4b}
-.panel{margin-top:22px}.meta{display:flex;gap:12px 32px;flex-wrap:wrap;font-size:14px}.legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-li{margin:8px 0}footer{font-size:13px;margin:24px 0;color:var(--muted)}@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.legend{grid-template-columns:1fr}}@media(max-width:480px){main{padding:22px 14px}.grid{grid-template-columns:1fr}}@media print{body{background:white}main{padding:0}.card,.panel{break-inside:avoid}}
+:root{color-scheme:light;--ink:#20242a;--muted:#626970;--line:#e2e4e7}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:14px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:960px;margin:0 auto;padding:28px 28px 20px}header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+h1{font-size:20px;font-weight:600;line-height:1.4;margin:0}p{margin:8px 0}.brand{color:var(--muted);font-size:12px;margin-left:auto}
+.sample{font-size:11px;border:1px solid #c9cdd2;padding:1px 5px;color:#555b62}.meta,footer{font-size:12px;color:var(--muted)}.meta{margin:0 0 22px}
+table{width:100%;border-collapse:collapse;table-layout:fixed}caption{text-align:left;font-size:13px;font-weight:600;padding:0 0 8px}
+col.item{width:25%}col.state{width:17%}th,td{text-align:left;vertical-align:top;padding:11px 12px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+thead th{padding-top:8px;padding-bottom:8px;background:#f6f7f8;color:var(--muted);font-size:12px;font-weight:500}tbody th{font-weight:500}th:first-child{padding-left:10px}
+.badge{font-size:13px;color:#59616a;white-space:nowrap}.badge.error{color:#a12622}.badge.authorization_needed{color:#855500}.badge.verified{color:#256347}
+summary{cursor:pointer;color:var(--muted)}summary:focus-visible{outline:2px solid #355d83;outline-offset:4px}details p{font-size:12px;color:var(--muted);margin:8px 0 0}td details[open]{padding-bottom:4px}
+.report-details{border-bottom:1px solid var(--line);padding:14px 0}.report-details>summary{font-size:12px}.authorization{font-size:12px;color:var(--muted);margin:16px 0 0}footer{margin-top:12px}
+@media(max-width:520px){main{padding:18px 12px}header{gap:8px}.brand{width:100%;margin-left:0}.meta{margin-bottom:18px}h1{font-size:18px}col.item{width:28%}col.state{width:22%}th,td{padding:10px 6px}tbody th,td{font-size:13px}.badge{font-size:12px}}
+@media print{main{max-width:none;padding:0}tr{break-inside:avoid}}
 """
 
 
@@ -141,36 +144,46 @@ def project(report, now=None):
 
 
 def badge(state):
-    return '<span class="badge %s">%s · %s</span>' % (escape(state, quote=True), escape(STATES[state][0]), escape(state))
+    return '<span class="badge %s" title="%s">%s</span>' % (escape(state, quote=True), escape(state), escape(STATES[state][0]))
 
 
 def render(report, now=None):
     view = project(report, now)
-    cards = []
-    for card in view["cards"]:
-        detail = ("当前时间范围内的已观察字段：%d / %d。仅展示白名单事实；采集不等于运行有效。" %
-                  (card["observed"], card["total"])) if card["key"] in {"system", "proxy", "tun"} else "当前报告不包含可验收的实时路径证据；不会因报告完成而变绿。"
-        section, limitation = COVERAGE[card["key"]]
+    by_key = {card["key"]: card for card in view["cards"]}
+    labels = {"ipv4": "IPv4", "ipv6": "IPv6", "dns_leak": "DNS 泄露", "udp": "UDP",
+              "stun": "STUN", "browser": "WebRTC", "tun": "TUN", "dns": "DNS 配置",
+              "system": "系统与目标", "proxy": "代理入口", "failure": "失效 / 防直连"}
+    order = ("ipv4", "ipv6", "dns_leak", "udp", "stun", "browser", "tun", "dns", "system", "proxy", "failure")
+    rows = []
+    for key in order:
+        card = by_key[key]
+        section, limitation = COVERAGE[key]
         evidence_at = card["evidence_at"].isoformat() if card["evidence_at"] else "未知 / 未执行"
-        detail += " 证据最早时间（UTC）：" + evidence_at + "。路径：未知 / 未独立绑定。"
-        details = "".join("<li>" + escape(item) + "</li>" for item in card["details"])
-        cards.append('<article class="card"><small>%s</small><h3>%s</h3>%s<p>%s</p><ul>%s</ul><p class="muted">%s</p><small>设计依据：D-ENV-v0.3 %s</small></article>' %
-                     (escape(card["module"]), escape(card["title"]), badge(card["state"]), escape(detail), details, escape(limitation), escape(section)))
-    cards.append('<article class="card"><small>PC0 · 操作权限</small><h3>下一步操作</h3>%s<p>此快照不授予任何操作权限。联网探测、配置修改与接触 Claude 均须单独核实并授权。</p></article>' % badge("authorization_needed"))
-    legend = ''.join('<div>%s<p class="muted">%s</p></div>' % (badge(s), escape(d)) for s, (_, d) in STATES.items())
-    sample = "合成演示 · 不是你的设备检测结果" if view["synthetic"] else "离线报告快照 · 未独立核验来源或目标"
-    freshness = "快照时间在 24 小时内；仍不保证当前设置未变化" if view["snapshot_fresh"] else "快照过期、时间缺失或来自未来；请重新获取获准的目标证据"
+        if card["details"]:
+            fact = "；".join(card["details"])
+        elif card["state"] == "error":
+            fact = "报告存在错误或冲突"
+        elif card["state"] == "authorization_needed":
+            fact = "缺少授权或权限"
+        else:
+            fact = "无检测证据" if card["state"] == "not_run" else "证据不足"
+        evidence = "当前有效观察字段：%d / %d。证据最早时间（UTC）：%s。路径：未知 / 未独立绑定。" % (card["observed"], card["total"], evidence_at)
+        rows.append('<tr data-check="%s"><th scope="row">%s</th><td>%s</td><td><details><summary>%s</summary><p>%s</p><p>%s</p><p>依据：D-ENV-v0.3 %s · %s。状态：%s</p></details></td></tr>' %
+                    (key, escape(labels[key]), badge(card["state"]), escape(fact), escape(evidence), escape(limitation), escape(section), escape(card["module"]), escape(card["state"])))
+    sample = '<span class="sample">合成演示</span>' if view["synthetic"] else '<span class="sample">离线快照</span>'
+    freshness = "" if view["snapshot_fresh"] else " · 时间缺失、过期或无效"
+    execution_note = "" if report.get("execution_status") == "completed" else " · " + view["execution"]
+    sample_note = "合成示例，不是你的设备检测结果。" if view["synthetic"] else "输入来源和目标未经独立核验。"
     return '''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer"><title>Claude-Guardian · 环境状态</title><style>''' + CSS + '''</style></head><body><main>
-<header><div class="eyebrow">CLAUDE-GUARDIAN / LOCAL STATUS</div><h1>环境状态，一眼看清</h1><p class="muted">系统、代理与网络检查的证据和缺口，保留各自边界。</p></header>
-<div class="notice"><strong>''' + escape(sample) + '''</strong><p>这是静态页面，不会自动检查、联网、启动应用或修改设置。环境就绪尚未验证；不提供账号安全保证。</p></div>
-<section aria-labelledby="overview"><h2 id="overview">检查概览 · ''' + badge(view["overall"]) + '''</h2><div class="grid">''' + ''.join(cards) + '''</div></section>
-<section class="panel"><h2>证据与时间</h2><div class="meta"><span>报告时间（UTC）：''' + escape(view["observed_at"]) + '''</span><span>页面生成（UTC）：''' + escape(view["generated_at"]) + '''</span></div><p>''' + escape(view["execution"]) + '''</p><p>''' + escape(freshness) + '''</p><p class="muted">时间来自报告与生成主机，时钟未外部校验。重新打开同一 HTML 不会刷新状态；请重新生成。来源、设备、用户和命名空间须由宿主独立确认；本页不是完整诊断报告。</p></section>
-<section class="panel"><h2>建议下一步</h2><ol><li>确认报告属于本次目标设备、用户及执行环境；过期或目标变化时重新采集</li><li>优先查看原始本地报告中的错误与缺失项；本页仅展示白名单摘要</li><li>需要出口、DNS 或浏览器检查时，先列出端点、数据披露与范围，再申请本次授权</li><li>需要修改配置时，先审阅精确差异、备份与恢复方案；此页面没有执行入口</li></ol></section>
-<section class="panel"><h2>状态怎么读</h2><div class="legend">''' + legend + '''</div></section>
-<footer>本地文件 · 无脚本 / 无外部资源 / 无自动刷新 · 分享前仍请人工复核摘要。支持报告：guardian-report/0.1 · env-inventory/0.2</footer>
+<header><h1>环境状态</h1>''' + sample + '''<span class="brand">Claude-Guardian</span></header>
+<p class="meta">快照（UTC）：''' + escape(view["observed_at"]) + escape(freshness) + escape(execution_note) + '''</p>
+<table><caption>检查结果</caption><colgroup><col class="item"><col class="state"><col></colgroup><thead><tr><th scope="col">项目</th><th scope="col">状态</th><th scope="col">关键事实 · 展开查看证据</th></tr></thead><tbody>''' + ''.join(rows) + '''</tbody></table>
+<details class="report-details"><summary>报告信息与限制</summary><p>''' + escape(sample_note) + escape(view["execution"]) + '''。</p><p>页面生成（UTC）：''' + escape(view["generated_at"]) + '''。快照及字段有效期为 24 小时；时钟未经外部核验，重新打开不会刷新。</p><p>当前报告缺少完整验收证据，不生成 verified（已验证）。unknown 为证据不足；not_run 为没有对应检测证据。采集完成、配置声明或网络成功均不代表环境就绪或平台许可。</p><p>仅显示白名单摘要；不含原始地址、路径或设备标识。支持 guardian-report/0.1 与 env-inventory/0.2；完整证据请查看本地原始报告，分享前人工复核。</p></details>
+<p class="authorization">操作权限：联网探测、修改配置或接触 Claude 须另行授权。</p>
+<footer>静态快照 · 无自动检测</footer>
 </main></body></html>\n'''
 
 

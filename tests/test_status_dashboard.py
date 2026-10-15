@@ -1,5 +1,6 @@
 """Offline dashboard projection and local-only CLI regression tests."""
 from datetime import datetime, timedelta, timezone
+from html.parser import HTMLParser
 import importlib.util
 import json
 from pathlib import Path
@@ -25,6 +26,38 @@ def report():
             'findings': []}
 
 
+class StructureParser(HTMLParser):
+    """Record semantics and only initially visible text, without a browser."""
+    def __init__(self):
+        super().__init__()
+        self.tags = []
+        self.visible = []
+        self.details_depth = 0
+        self.in_summary = False
+        self.in_style = False
+
+    def handle_starttag(self, tag, attrs):
+        self.tags.append((tag, dict(attrs)))
+        if tag == 'details':
+            self.details_depth += 1
+        if tag == 'summary':
+            self.in_summary = True
+        if tag == 'style':
+            self.in_style = True
+
+    def handle_endtag(self, tag):
+        if tag == 'details':
+            self.details_depth -= 1
+        if tag == 'summary':
+            self.in_summary = False
+        if tag == 'style':
+            self.in_style = False
+
+    def handle_data(self, data):
+        if not self.in_style and (not self.details_depth or self.in_summary):
+            self.visible.append(data)
+
+
 class DashboardTests(unittest.TestCase):
     def test_spec_categories_remain_separate_and_explicit(self):
         view = dashboard.project(report(), NOW)
@@ -33,6 +66,54 @@ class DashboardTests(unittest.TestCase):
         html = dashboard.render(report(), NOW)
         for text in ['AAAA', 'DoH', 'Fake-IP', 'host/srflx/relay', 'Binding', '路径：未知', 'D-ENV-v0.3']:
             self.assertIn(text, html)
+
+    def test_compact_table_semantics_and_primary_order(self):
+        parser = StructureParser(); parser.feed(dashboard.render(report(), NOW))
+        rows = [attrs['data-check'] for tag, attrs in parser.tags if tag == 'tr' and 'data-check' in attrs]
+        self.assertEqual(rows, ['ipv4', 'ipv6', 'dns_leak', 'udp', 'stun', 'browser', 'tun', 'dns', 'system', 'proxy', 'failure'])
+        self.assertEqual(sum(tag == 'table' for tag, _ in parser.tags), 1)
+        self.assertEqual(sum(tag == 'caption' for tag, _ in parser.tags), 1)
+        self.assertEqual(sum(tag == 'th' and attrs.get('scope') == 'row' for tag, attrs in parser.tags), 11)
+        self.assertEqual(sum(tag == 'th' and attrs.get('scope') == 'col' for tag, attrs in parser.tags), 3)
+        self.assertFalse(any(tag in {'article', 'script', 'iframe', 'form', 'img', 'link'} for tag, _ in parser.tags))
+
+    def test_evidence_is_native_collapsed_and_main_view_is_brief(self):
+        parser = StructureParser(); parser.feed(dashboard.render(report(), NOW))
+        details = [attrs for tag, attrs in parser.tags if tag == 'details']
+        self.assertEqual(len(details), 12)
+        self.assertTrue(all('open' not in attrs for attrs in details))
+        self.assertEqual(sum(tag == 'summary' for tag, _ in parser.tags), 12)
+        visible = ''.join(parser.visible)
+        self.assertIn('合成演示', visible)
+        self.assertIn(NOW.isoformat(), visible)
+        self.assertIn('系统：macOS', visible)
+        self.assertEqual(visible.count('操作权限：'), 1)
+        for text in ['D-ENV-v0.3', 'Fake-IP', '证据最早时间', '建议下一步', '状态怎么读', '一眼看清']:
+            self.assertNotIn(text, visible)
+        self.assertLess(len(visible), 500)
+
+    def test_all_state_labels_are_textual_and_keyboard_focus_visible(self):
+        for state, (label, _) in dashboard.STATES.items():
+            self.assertIn('>' + label + '</span>', dashboard.badge(state))
+        self.assertIn('summary:focus-visible', dashboard.CSS)
+        self.assertIn('@media(max-width:520px)', dashboard.CSS)
+        self.assertNotIn('min-width:', dashboard.CSS)
+
+    def test_stale_and_non_demo_labels_remain_visible(self):
+        obj = report(); obj.pop('record_kind')
+        obj['snapshot']['observed_at'] = (NOW-timedelta(days=2)).isoformat()
+        parser = StructureParser(); parser.feed(dashboard.render(obj, NOW))
+        visible = ''.join(parser.visible)
+        self.assertIn('离线快照', visible)
+        self.assertIn('时间缺失、过期或无效', visible)
+        self.assertNotIn('合成演示', visible)
+        self.assertNotIn('macOS', visible)
+
+    def test_execution_failure_is_visible_without_expanding(self):
+        for state, label in [('failed', '报告执行失败'), ('blocked', '报告执行受阻'), ('interrupted', '报告执行中断')]:
+            obj = report(); obj['execution_status'] = state
+            parser = StructureParser(); parser.feed(dashboard.render(obj, NOW))
+            self.assertIn(label, ''.join(parser.visible))
 
     def test_duplicate_fact_ids_rejected(self):
         for field, values in [('S01', ['macos', 'windows']), ('P12', [True, False]), ('S01', ['macos', 'macos'])]:
