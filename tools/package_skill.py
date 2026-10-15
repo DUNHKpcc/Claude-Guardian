@@ -2,6 +2,7 @@
 """Build a reproducible Skill archive, with GPL license, without user reports."""
 import argparse
 import hashlib
+import json
 from pathlib import Path
 import zipfile
 
@@ -17,8 +18,24 @@ def main():
         "references/intake.md", "references/contact-and-safety.md",
         "references/routes-and-platforms.md", "references/network-and-remedies.md",
         "references/accounts-and-payments.md", "references/incidents-and-integrations.md",
-        "references/evidence-policy.md",
+        "references/evidence-policy.md", "references/source-library.md", "sources/manifest.json",
     ]
+    manifest = json.loads((skill / 'sources/manifest.json').read_text())
+    for source in manifest['sources']:
+        records = [(source['path'], source['distributed_sha256'])]
+        records.extend((item['path'], item['sha256']) for item in source.get('companions', []))
+        for relative, digest in records:
+            path = Path(relative)
+            if path.is_absolute() or '..' in path.parts or not path.parts or path.parts[0] != 'sources':
+                parser.error('Invalid source manifest path')
+            candidate = skill / path
+            if candidate.is_symlink() or not candidate.is_file() or candidate.resolve().is_relative_to(skill.resolve()) is False:
+                parser.error('Invalid source manifest file')
+            if hashlib.sha256(candidate.read_bytes()).hexdigest() != digest:
+                parser.error('Source manifest hash mismatch')
+            release_paths.append(relative)
+    if len(release_paths) != len(set(release_paths)):
+        parser.error('Duplicate release path')
     candidates = [skill / relative for relative in release_paths]
     # Explicit manifest: unrelated files and user reports cannot enter releases.
     if any(not p.is_file() or p.is_symlink() for p in candidates):

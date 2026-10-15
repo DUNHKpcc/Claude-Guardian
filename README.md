@@ -2,9 +2,9 @@
 
 面向 Codex 的 Claude 使用准备与环境诊断 Skill。许可证：**GPL-3.0-only**。
 
-## 当前版本：0.1.0 诊断预览
+## 当前版本：0.1.1 诊断预览
 
-首版提供分阶段访谈、明确授权后的少量本机元数据采集、离线事实分析与修复计划。它不承诺免封；检查通过也不代表平台认可网络环境。
+首版提供分阶段访谈、明确授权后的限定范围本机元数据采集、离线事实分析与修复计划。它不承诺免封；检查通过也不代表平台认可网络环境。
 
 - 首问订阅阶段，再按需了解系统、用途、目标套餐、账号经历和路线
 - 本机默认建议；VM 与 VPS 是独立可选方案
@@ -32,7 +32,7 @@ python3 skills/claude-guardian/scripts/guardian.py interview
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 tools/package_skill.py --output /tmp/claude-guardian-0.1.0.zip
+python3 tools/package_skill.py --output /tmp/claude-guardian-0.1.1.zip
 ```
 
 目录：
@@ -49,6 +49,10 @@ python3 tools/package_skill.py --output /tmp/claude-guardian-0.1.0.zip
 
 ## 发布与隐私
 
-测试与发行包只使用合成数据。用户画像、原始代理配置、订阅地址、账号、凭据、真实 IP 和个人报告不得提交仓库。上传的第三方资料仅作参考，未确立再分发许可，不原样收入发行包。
+测试与发行包只使用合成数据。用户画像、原始代理配置、订阅地址、账号、凭据、真实 IP 和个人报告不得提交仓库。用户已确认所提供资料由其制作并允许公开分发。来源资料随包提供，保留署名和原有许可声明；清理教程中的个人机器记录已去除。参阅 [来源资料库](skills/claude-guardian/references/source-library.md)。来源原文与经过核验的执行建议分别使用，不把阅读命令当作执行授权。
 
 后续迭代：补充真实 Mac/Windows 只读采集覆盖；确认中性探测端点与隐私边界；按操作完成平台实测后，再开放可审查差异、备份、受控修改和冲突安全恢复。
+
+## 自动检查覆盖
+
+每个 push / PR 在 Linux、macOS、Windows CI 上运行单测、回归和确定性打包检查。Mac/Windows CI 另外运行只读 OS 元数据 smoke；该 smoke 不证明真实用户桌面、Clash、浏览器或故障恢复验收通过。原生采集扩展到产品/构建版本、语言偏好、时区和代理/PAC 启用状态，不读取代理凭据或订阅内容。
