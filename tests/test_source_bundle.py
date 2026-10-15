@@ -43,6 +43,8 @@ class SourceBundleTests(unittest.TestCase):
                 names=archive.namelist()
                 self.assertTrue(all(info.create_system == 3 for info in archive.infolist()))
                 self.assertIn('claude-guardian/sources/S03-claude-experience.pdf',names)
+                self.assertIn('claude-guardian/scripts/status_dashboard.py',names)
+                self.assertIn('claude-guardian/scripts/probe_evidence.py',names)
                 self.assertFalse(any('private-report' in name for name in names))
 
     def test_tampered_source_rejected(self):

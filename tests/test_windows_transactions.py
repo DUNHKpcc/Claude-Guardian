@@ -210,7 +210,7 @@ class WindowsPlans(unittest.TestCase):
         self.assertEqual(self.api.closed, [4, 3, 2, 1])
 
     def test_bad_budget_and_slow_callback_fail_before_open(self):
-        for budget in [True, 0, -1, 61, float('nan'), float('inf'), '10']:
+        for budget in [True, 0, -1, 61, 10**1000, float('nan'), float('inf'), '10']:
             with self.subTest(budget=budget), self.assertRaisesRegex(w.TransactionError, '^INVALID_BUDGET$'):
                 self.plan(budget_seconds=budget)
         with patch.object(w.time, 'monotonic', return_value=0) as clock:
@@ -227,6 +227,175 @@ class WindowsPlans(unittest.TestCase):
         self.assertEqual(report['native_transaction_acceptance'], 'not_run')
         report['operations']['apply']['execution_status'] = 'completed'
         self.assertEqual(w.capabilities()['operations']['apply']['execution_status'], 'blocked')
+
+
+class OfflinePreflight(unittest.TestCase):
+    # Reuse the mocked plan fixture, not native acceptance evidence.
+    setUp = WindowsPlans.setUp
+    plan = WindowsPlans.plan
+    def test_offline_readiness_denies_partial_security_without_io(self):
+        p = self.plan()
+        self.factory.reset_mock()
+        with patch.object(w, '_native_windows', return_value=False):
+            result = w.preflight(p, target_ref='synthetic-target')
+        self.factory.assert_not_called()
+        self.assertEqual(result['execution_status'], 'completed')
+        self.assertEqual(result['write_readiness'], 'blocked')
+        self.assertEqual(result['reason'], 'SECURITY_METADATA_UNAVAILABLE')
+        self.assertEqual(result['plan_digest'], w.digest(p))
+        self.assertEqual(result['source_freshness'], 'not_checked')
+        self.assertEqual(result['target_binding'], 'not_checked')
+        self.assertEqual(result['changes'], [])
+        for secret in [PATH, 'synthetic-target', 'original', 'replacement']:
+            self.assertNotIn(secret, json.dumps(result))
+        result['write_readiness'] = 'ready'
+        self.assertEqual(w.preflight(p, target_ref='synthetic-target')['write_readiness'], 'blocked')
+
+    def test_preflight_mismatch_expiry_and_fake_completeness_fail(self):
+        p = self.plan()
+        self.factory.reset_mock()
+        with self.assertRaisesRegex(w.TransactionError, '^TARGET_MISMATCH$'):
+            w.preflight(p, target_ref='other')
+        with self.assertRaisesRegex(w.TransactionError, '^INVALID_TARGET$'):
+            w.preflight(p, target_ref=True)
+        with patch.object(w.time, 'time', return_value=p['expires_at']):
+            with self.assertRaisesRegex(w.TransactionError, '^INVALID_OR_EXPIRED_PLAN$'):
+                w.preflight(p, target_ref='synthetic-target')
+        for field, value in [('metadata_completeness', 'complete'), ('apply_status', 'ready')]:
+            forged = copy.deepcopy(p)
+            forged[field] = value
+            with self.assertRaisesRegex(w.TransactionError, '^INVALID_PLAN$'):
+                w.preflight(forged, target_ref='synthetic-target')
+        forged = copy.deepcopy(p)
+        forged['before']['security_scope'] = 'owner_group_dacl_sacl'
+        with self.assertRaisesRegex(w.TransactionError, '^INVALID_PLAN$'):
+            w.preflight(forged, target_ref='synthetic-target')
+        self.factory.assert_not_called()
+
+    def test_preflight_cancellation_and_budget(self):
+        p = self.plan()
+        self.factory.reset_mock()
+        for seconds in [10**1000, -10**1000, float('nan'), float('inf'), True]:
+            with self.assertRaisesRegex(w.TransactionError, '^INVALID_BUDGET$'):
+                w.preflight(p, target_ref='synthetic-target', budget_seconds=seconds)
+        for callback, code in [(lambda: True, 'CANCELLED'),
+                               (lambda: 'secret', 'CANCELLATION_CHECK_FAILED'),
+                               (Mock(side_effect=RuntimeError('secret')), 'CANCELLATION_CHECK_FAILED')]:
+            with self.assertRaisesRegex(w.TransactionError, '^' + code + '$'):
+                w.preflight(p, target_ref='synthetic-target', cancelled=callback)
+        with patch.object(w.time, 'monotonic', side_effect=[0, 0, 0, 11]):
+            with self.assertRaisesRegex(w.TransactionError, '^TIMEOUT$'):
+                w.preflight(p, target_ref='synthetic-target')
+        self.factory.assert_not_called()
+
+
+class BackupStreamFraming(unittest.TestCase):
+    # Opaque fake descriptors intentionally are NOT valid security evidence.
+    DATA = b'private-data-sentinel'
+    SECURITY = b'private-security-sentinel'
+
+    @staticmethod
+    def record(kind, payload=b'', attributes=0, name=b''):
+        return struct.pack('<IIqI', kind, attributes, len(payload), len(name)) + name + payload
+
+    def inspect(self, blob, **kwargs):
+        return w.inspect_backup_streams(blob, expected_size=len(self.DATA),
+                                       expected_sha256=w._hash(self.DATA), **kwargs)
+
+    def valid(self):
+        return self.record(1, self.DATA) + self.record(3, self.SECURITY, 2)
+
+    def test_framing_acceptance_never_security_or_native_acceptance(self):
+        for blob in [self.valid(), self.record(3, self.SECURITY) + self.record(1, self.DATA)]:
+            with self.subTest(blob_order=blob[:4]), patch.object(w, '_WinAPI') as api:
+                result = self.inspect(blob)
+            api.assert_not_called()
+            self.assertEqual(result['framing_status'], 'accepted')
+            self.assertEqual(result['stream_count'], 2)
+            self.assertEqual(result['security_descriptor_validation'], 'not_run')
+            self.assertEqual(result['security_completeness'], 'unknown')
+            self.assertEqual(result['native_capture_provenance'], 'not_verified')
+            self.assertEqual(result['metadata_completeness'], 'unknown')
+            self.assertEqual(result['apply_status'], 'unsupported')
+            self.assertNotIn('sentinel', json.dumps(result))
+            self.assertNotIn(w._hash(self.SECURITY), json.dumps(result))
+
+    def test_every_truncation_and_trailing_bytes_fail(self):
+        blob = self.valid()
+        for length in range(len(blob)):
+            with self.subTest(length=length), self.assertRaises(w.TransactionError):
+                self.inspect(blob[:length])
+        for trailer in [b'x', b'\0' * 20, self.record(1, self.DATA), self.record(3, self.SECURITY)]:
+            with self.subTest(trailer_length=len(trailer)), self.assertRaises(w.TransactionError):
+                self.inspect(blob + trailer)
+
+    def test_all_unimplemented_stream_classes_fail_closed(self):
+        for kind in [0, 2, 4, 5, 6, 7, 8, 9, 10, 11, 0xffffffff]:
+            with self.subTest(kind=kind), self.assertRaisesRegex(w.TransactionError, '^UNSUPPORTED_METADATA$'):
+                self.inspect(self.valid() + self.record(kind, b'private-sentinel'))
+
+    def test_names_and_unsafe_attributes_rejected_without_echo(self):
+        for kind in [1, 3]:
+            for attributes in [1, 3, 4, 8, 16, 0x80000000]:
+                with self.subTest(kind=kind, attributes=attributes), self.assertRaisesRegex(w.TransactionError, '^UNSUPPORTED_METADATA$'):
+                    self.inspect(self.record(kind, self.SECURITY, attributes))
+            with self.assertRaisesRegex(w.TransactionError, '^UNSUPPORTED_METADATA$'):
+                self.inspect(self.record(kind, self.SECURITY, name='secret'.encode('utf-16-le')))
+        with self.assertRaisesRegex(w.TransactionError, '^UNSUPPORTED_METADATA$'):
+            self.inspect(self.record(1, self.DATA, 2))
+
+    def test_invalid_lengths_and_missing_security_fail(self):
+        for header in [struct.pack('<IIqI', 1, 0, -1, 0),
+                       struct.pack('<IIqI', 1, 0, 2**63 - 1, 0),
+                       struct.pack('<IIqI', 3, 0, w.MAX_METADATA + 1, 0),
+                       struct.pack('<IIqI', 1, 0, 0, 1),
+                       struct.pack('<IIqI', 1, 0, 0, w.MAX_METADATA + 2)]:
+            with self.subTest(header=header), self.assertRaisesRegex(w.TransactionError, '^INVALID_BACKUP_STREAM$'):
+                self.inspect(header)
+        with self.assertRaisesRegex(w.TransactionError, '^SECURITY_METADATA_UNAVAILABLE$'):
+            self.inspect(self.record(1, self.DATA))
+        for security in [b'', b'x' * 19]:
+            with self.assertRaisesRegex(w.TransactionError, '^INVALID_BACKUP_STREAM$'):
+                self.inspect(self.record(1, self.DATA) + self.record(3, security))
+
+    def test_same_length_corruption_and_data_size_mismatch_fail(self):
+        for payload in [b'X' * len(self.DATA), self.DATA + b'x']:
+            with self.assertRaisesRegex(w.TransactionError, '^BACKUP_DATA_MISMATCH$'):
+                self.inspect(self.record(1, payload) + self.record(3, self.SECURITY))
+
+    def test_empty_data_and_maximum_payload_boundaries(self):
+        for payload in [b'', b'x' * w.MAX_BYTES]:
+            blob = self.record(1, payload) + self.record(3, b's' * w.MAX_METADATA)
+            result = w.inspect_backup_streams(blob, expected_size=len(payload),
+                                              expected_sha256=w._hash(payload))
+            self.assertTrue(result['data_matches_expectation'])
+            self.assertEqual(result['apply_status'], 'unsupported')
+        with self.assertRaisesRegex(w.TransactionError, '^INVALID_BACKUP_STREAM_INPUT$'):
+            self.inspect(b'x' * (w.MAX_BACKUP_BYTES + 1))
+
+    def test_input_types_expectations_and_cancellation(self):
+        for value in [None, 'private-sentinel', bytearray(self.valid()), memoryview(self.valid())]:
+            with self.assertRaisesRegex(w.TransactionError, '^INVALID_BACKUP_STREAM_INPUT$'):
+                self.inspect(value)
+        for size, digest in [(True, 'a' * 64), (-1, 'a' * 64), (w.MAX_BYTES + 1, 'a' * 64),
+                             (0, None), (0, 'A' * 64), (0, 'secret')]:
+            with self.assertRaisesRegex(w.TransactionError, '^INVALID_BACKUP_EXPECTATION$'):
+                w.inspect_backup_streams(self.valid(), expected_size=size, expected_sha256=digest)
+        with self.assertRaisesRegex(w.TransactionError, '^CANCELLED$'):
+            self.inspect(self.valid(), cancelled=lambda: True)
+        with self.assertRaisesRegex(w.TransactionError, '^CANCELLATION_CHECK_FAILED$'):
+            self.inspect(self.valid(), cancelled=Mock(side_effect=ValueError('secret')))
+        for seconds in [10**1000, -10**1000, float('nan'), float('inf'), True]:
+            with self.assertRaisesRegex(w.TransactionError, '^INVALID_BUDGET$'):
+                self.inspect(self.valid(), budget_seconds=seconds)
+        with patch.object(w.time, 'monotonic', side_effect=[0, 0, 0, 11]):
+            with self.assertRaisesRegex(w.TransactionError, '^TIMEOUT$'):
+                self.inspect(self.valid())
+
+    def test_cancel_after_record_and_at_completion(self):
+        for checks in [[False, False, True], [False, False, False, True]]:
+            with self.subTest(checks=checks), self.assertRaisesRegex(w.TransactionError, '^CANCELLED$'):
+                self.inspect(self.valid(), cancelled=Mock(side_effect=checks))
 
 
 class NativeABIContracts(unittest.TestCase):

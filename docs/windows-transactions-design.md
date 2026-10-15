@@ -1,6 +1,6 @@
 # Windows 精确文件事务：受控写入与离线恢复设计评审
 
-日期：2026-10-15。状态：**设计提案，尚未实现 Windows apply / rollback**。本文不批准任何真实文件变更、提权、安装或权限修改，也不改变现有操作门禁。
+日期：2026-10-15。状态：**所有者已接受默认不提权、完整元数据不能保证即停止的方向；尚未实现 Windows apply / rollback**。这是设计方向接受，不批准任何真实文件变更、提权、安装或权限修改，也不改变现有操作门禁。需要提权时须另行说明精确范围并请求单次授权；当前未实现或执行该路径。
 
 依据：[ENV §3、§17](../skills/claude-guardian/sources/design/D-ENV-v0.3.md)、[主规范 §4.2](../skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md)、[实现跟踪](implementation-tracker.md)，以及现有 `transactions.py` / `windows_transactions.py` 的实际边界。对应 ENG-08、VAL-02/06/07，重点覆盖 ENV-T25—28、67—68、102。
 
@@ -12,7 +12,7 @@
 
 现有基线 `be2e626a3626bfb853babf2b407fd67be146ec82` 的 [CI 38711511300](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38711511300) 和 [验证记录](validation.md) 已记录四项 Windows 原生临时夹具通过：只读计划、ADS/硬链接拒绝、junction 祖先拒绝、注入元数据失败后的句柄清理。最后一项**不是实际 ACL 拒绝测试**。这些证据不覆盖写入、私有备份、崩溃恢复或用户配置。
 
-本文新增的内容全部属于待实现设计。既有 `windows-read-only-file-plan/1` 仍不能用于提交；不能通过修改 `apply_status` 或增加一个布尔开关升级为可执行计划。
+下述原生事务机制仍属于待实现设计；本次只新增 §12 的离线预检和流格式解析。既有 `windows-read-only-file-plan/1` 仍不能用于提交；不能通过修改 `apply_status` 或增加一个布尔开关升级为可执行计划。
 
 ## 2. 与 POSIX 底座共用和不同的契约
 
@@ -195,3 +195,19 @@ POSIX 也依赖宿主排除并发写入，不能把 Windows 适配器要求提�
 3. 扩大到共享/组织文件、更多备份访问者、云同步目录、加密/复杂元数据，或变更备份保留策略，都是新增范围，不能借“Windows 支持”总括批准
 
 每次真实 apply/rollback 的精确计划授权，以及 PR 的所有者合并确认，始终独立存在。本设计及 CI 通过均不替代它们。
+
+
+## 12. 已实现的首个有界增量：离线预检与流格式解析
+
+2026-10-15：`windows_transactions.py` 新增两个纯内存接口，不打开文件、不调用原生 API、不启用令牌权限，也不创建备份或执行恢复。
+
+- `preflight(plan, target_ref=...)`：验证现有只读计划、目标引用和有效期，返回 `write_readiness=blocked` 与 `SECURITY_METADATA_UNAVAILABLE`。执行状态 `completed` 仅指解释完成；真实目标绑定、文件新鲜度仍为 `not_checked`。缺少完整安全信息、流采集、短名检查、元数据保存/回读和事务后端分别列出，不把失败归因为未经实际检测的用户权限不足
+- `inspect_backup_streams(blob, expected_size=..., expected_sha256=...)`：只解析调用者提供的有界字节。按 20 字节 `<IIqI` 前缀（不含 C 结构尾部填充）、名称字节数和负载长度处理 `WIN32_STREAM_ID`。要求恰好一份默认数据和一份安全描述符记录，顺序不限；数据必须匹配指定大小和哈希
+- 仅允许未命名的 `BACKUP_DATA`（属性为 0）以及 `BACKUP_SECURITY_DATA`（属性为 0 或 `STREAM_CONTAINS_SECURITY`）。拒绝其他 ID、未知或修改时读取/稀疏等属性、名称、重复、负长度、超限、截断和尾随垃圾。零字节数据允许；安全负载限制为 20—65536 字节，但**长度不是安全描述符有效性校验**
+- 安全负载是未解析的不透明字节。即使格式被接受，仍明确输出 `security_descriptor_validation=not_run`、`security_completeness=unknown`、`native_capture_provenance=not_verified`、`metadata_completeness=unknown`、`apply_status=unsupported`。不接受“完整”开关，不将此结果升级成执行计划
+- 两个接口支持协作式取消/预算检查，异常只含稳定代码；不输出原始字节、流名称、路径或安全描述符及其哈希。调用者输入本身仍应私密保存，报告不是授权凭证
+- `capabilities()` 分开描述离线接口、现有原生只读计划和未实现能力，明确 `no_elevation_or_privilege_enablement`。旧计划 schema 与 apply/verify/rollback 的无 I/O 拒绝行为保持不变
+
+格式依据：[WIN32_STREAM_ID](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-win32_stream_id)、[Microsoft WinBase.h 常量与结构](https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/WinBase.h)。[BackupRead](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-backupread) 明确限制 SACL 读取权限；有安全流不能证明该权限或完整 SACL。未来原生采集须独立证明成功到达 EOF、权限、上下文 abort 清理与句柄身份；当前解析器不能证明这些事情，也未调用 BackupRead/BackupWrite。
+
+新增 12 个合成测试覆盖：两种流顺序、空/最大负载、每一截断位置、同大小损坏、重复/未知记录、危险属性、名称、无效参数、取消/超时、秘密不回显、目标不匹配、过期和伪造完整性。云端 Linux 的该模块共发现35项，31通过、4项原生 Windows 测试跳过。此结果仅为离线契约证据，未新增原生 Windows 写入、安全描述符有效性或权限拒绝验收；§10 的原生待实现/未测矩阵保持不变。
