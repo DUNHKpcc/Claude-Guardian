@@ -31,3 +31,7 @@
 用户Mac只运行了旧提交 `9ebb3b626893128fe5cdb2ac1db719770b7bb277`：补做获准回环测试后共130个不同Python用例通过，33个事务用例在setup阶段因缺少`os.listxattr`出错，事务测试主体未运行；8项Node合成用例通过。后续Darwin描述符xattr修复有云端macOS CI证据，但尚未在用户Mac重测。用户本机可离线，原生验证暂停不妨碍云端开发。
 
 实际公网探测、真实代理/防火墙/浏览器修改、账号登录、真实清理和故障恢复仍未执行。上述通过不关闭全部218项设计验收。PR #2待所有者明确确认后合并。
+
+## PR #3 固定提交验证
+
+提交 `be2e626a3626bfb853babf2b407fd67be146ec82`，[CI 38711511300](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38711511300)：Linux/macOS发现343项、339通过、4项Windows原生夹具跳过；Windows发现343项、258通过、85项POSIX用例跳过（35事务、17静态读取、33请求读取）。Windows真实CI环境的4项临时文件测试通过：普通只读计划、ADS/硬链接拒绝、junction祖先拒绝、注入元数据权限失败后的句柄清理。最后一项不是真实ACL拒绝验收。各平台另8项Node合成测试及打包通过；ZIP SHA-256统一为 `b4c0b29bc6f78c9c06de61b1fae30e1573cde5d9ed5a807cd827e0a742f8ad4e`。未测试用户真实文件，未实现Windows写入或回滚。
