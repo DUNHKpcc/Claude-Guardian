@@ -414,3 +414,10 @@ ENV-04A / D-ENV §20.4.2：新增 macOS `os_dns_probe.py` 与 Windows `windows_d
 离线投影 `probe_evidence.py` 保留系统样本来源与失败/取消/过期状态，既有错误/授权缺口不被覆盖；不发明包 RCODE、DNS服务器、浏览器路径或无泄露结论。
 固定命令执行器的受控进程生命周期补充回归，不扩大允许命令集合。此批不含原生上下文核验模块；真实身份/运行时/权限适配仍另行开发验收。
 合成 helper、注入数据与 Windows 专用 mock 测试和实际解析严格分开，ENV-04/VAL-04及完整原场景仍未关闭。详见 `os-dns-probe.md`、`windows-dns-probe.md`、`probe-evidence.md` 与本批 validation 记录。
+
+
+## 13. 原生上下文与诊断会话（2026-10-15）
+
+ENV-01/02、ENG-01、UI-I01—I06：当前进程/控制台观察库提供有限身份连续性，私有短时句柄和白名单摘要分离。它不提供硬件归属、完整命名空间/ACL/依赖信任或实际操作授权。
+`diagnostic_session.py` 是 Mac/Windows 终端元数据入口及可调用宿主会话，fresh nonce范围同意、可选新文件保存、逐查询授权和失败锁定已实现。CLI无DNS选项；可调用DNS必须由真实宿主提供绑定/运行时/中性端点核验，不能用上下文观察或报告代替。
+该批不是完整原生UI、全盘点、完整访谈或可直接运行的生产DNS授权宿主。Windows元数据会话按实际平台选择后端，保留控制台账户关系未知与绑定阻塞；Windows DNS尚未接入会话。共享新文件输出边界拒绝Windows危险语法，ACL/存储性质仍须独立核实。合成/注入证据不关闭真实Mac/Windows原生验收；原ENV/VAL完整场景保持未完成。详见各新模块契约与validation。

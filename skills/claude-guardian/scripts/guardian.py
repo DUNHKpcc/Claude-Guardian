@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import ipaddress
 import json
 import os
+import ntpath
 from pathlib import Path
 import re
 import stat
@@ -665,7 +666,27 @@ def parser():
     return root
 
 
+def validate_windows_output_path(value):
+    """Syntax rejection only, never an ACL/local-drive or reparse-point proof."""
+    if (type(value) is not str or not 4 <= len(value) <= 4096
+            or not value[0].isascii() or not value[0].isalpha()
+            or value[1:3] != ':\\' or '/' in value
+            or ntpath.normpath(value) != value):
+        raise GuardianError('UNSAFE_OR_OFFLINE_PATH', 3)
+    reserved = {'CON', 'PRN', 'AUX', 'NUL', 'CONIN$', 'CONOUT$'}
+    reserved.update(prefix + suffix for prefix in ('COM', 'LPT')
+                    for suffix in '123456789¹²³')
+    for part in value[3:].split('\\'):
+        if (not part or part.endswith((' ', '.'))
+                or any(ord(c) < 32 or ord(c) == 127 or c in '<>:"|?*' for c in part)
+                or part.split('.')[0].rstrip(' .').upper() in reserved):
+            raise GuardianError('UNSAFE_OR_OFFLINE_PATH', 3)
+    return value
+
+
 def save_new(path, text):
+    if sys.platform == 'win32':
+        validate_windows_output_path(str(path))
     p = Path(path)
     if str(path).startswith(("//", "\\\\")) or unsafe_symlink(p):
         raise GuardianError("UNSAFE_OR_OFFLINE_PATH", 3)
