@@ -16,7 +16,7 @@
 
 ## ADR-004：主动检测端点与增强阻断（待后续决定）
 
-PD-03 的端点供应商、PD-04 的 macOS 增强出站组件尚未批准。首版不运行公网探测，不购买检测服务或新增常驻进程。未来选择端点时需列出运营方、传输数据、频率/流量预算、维护成本和失败含义。严格 kill-switch 目标未完成时不能标为已准备就绪。
+PD-03：用户已确认采用可替换的 ipify 与 Cloudflare STUN 作为首批候选服务；每次实际探测仍独立确认目标、路径和数据披露。PD-04：用户明确只考虑免费方案；基础版不强制安装，严格模式优先评估免费 LuLu，不引入付费依赖。此产品选择不授权实际安装、系统扩展审批或故障注入，亦不关闭严格隔离验收。首版不运行公网探测，不购买检测服务或新增常驻进程。未来选择端点时需列出运营方、传输数据、频率/流量预算、维护成本和失败含义。严格 kill-switch 目标未完成时不能标为已准备就绪。
 
 ## ADR-005：运行时与验证边界（可替换工程选择）
 
@@ -27,3 +27,9 @@ PD-03 的端点供应商、PD-04 的 macOS 增强出站组件尚未批准。首�
 ## 迭代纪律
 
 每次变更区分设计状态、实现状态、夹具结果、原生实测和当次授权。默认不常驻、不自动更新、不收集凭据。新增平台写操作应有独立差异、恢复方案与失败测试，再决定开放范围。
+
+## ADR-006：免费出站工具路线（2026-10-15 已确认）
+
+仅评估免费方案。Mac 基础路线不强制新增常驻工具；严格模式以 LuLu 为候选，安装/系统扩展/故障测试另行确认。Windows优先评估自带Windows Firewall出站规则。不得因免费候选无法满足要求而降低验收标准或误报隔离完成。
+
+参考：[Apple TN3165](https://developer.apple.com/documentation/technotes/tn3165-packet-filter-is-not-api) 不建议广泛发行的软件把PF当稳定API；[LuLu官方说明](https://objective-see.org/products/lulu.html) 的过滤覆盖及allow-list限制必须纳入测试；[Windows规则文档](https://learn.microsoft.com/en-za/windows/security/operating-system-security/network-security/windows-firewall/rules) 要求核对阻止/允许规则优先级、应用身份及策略合并，不能照抄“全阻止＋一条允许”而假设例外生效。

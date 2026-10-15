@@ -14,7 +14,7 @@ SKILL = ROOT / 'skills/claude-guardian'
 class SourceBundleTests(unittest.TestCase):
     def test_exact_manifest_and_hashes(self):
         manifest = json.loads((SKILL / 'sources/manifest.json').read_text(encoding='utf-8'))
-        self.assertEqual({s['id'] for s in manifest['sources']}, {'S01','S02','S03','S04','S05','S06','D-SPEC','D-ENV'})
+        self.assertEqual({s['id'] for s in manifest['sources']}, {'S01','S02','S03','S04','S05','S06','S07','D-SPEC','D-ENV'})
         for source in manifest['sources']:
             records=[(source['path'],source['distributed_sha256'])]
             records.extend((c['path'],c['sha256']) for c in source.get('companions',[]))
@@ -41,6 +41,7 @@ class SourceBundleTests(unittest.TestCase):
             self.assertEqual(outputs[0].read_bytes(),outputs[1].read_bytes())
             with zipfile.ZipFile(outputs[0]) as archive:
                 names=archive.namelist()
+                self.assertTrue(all(info.create_system == 3 for info in archive.infolist()))
                 self.assertIn('claude-guardian/sources/S03-claude-experience.pdf',names)
                 self.assertFalse(any('private-report' in name for name in names))
 
