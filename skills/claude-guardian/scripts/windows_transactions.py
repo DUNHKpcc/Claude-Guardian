@@ -42,8 +42,8 @@ import time
 import uuid
 from contextlib import contextmanager
 
-__all__ = ['TransactionError', 'capabilities', 'plan', 'preview', 'apply',
-           'verify', 'rollback', 'digest']
+__all__ = ['TransactionError', 'capabilities', 'plan', 'preview', 'preflight',
+           'inspect_backup_streams', 'apply', 'verify', 'rollback', 'digest']
 
 _OPERATIONS = ('plan', 'preview', 'apply', 'verify', 'rollback')
 _GAPS = (
@@ -89,6 +89,18 @@ def capabilities():
         'implementation_status': 'read_only_plan_with_unsupported_mutations',
         'native_transaction_acceptance': 'not_run',
         'target_binding': 'not_checked',
+        'privilege_policy': 'no_elevation_or_privilege_enablement',
+        'offline_operations': {
+            'preflight': 'diagnostic_only',
+            'inspect_backup_streams': 'framing_only_unverified_input',
+        },
+        'metadata_support': {
+            'security_read_scope': 'owner_group_dacl_only',
+            'full_security_capture': 'unimplemented',
+            'backup_stream_collection': 'unimplemented',
+            'short_name_inspection': 'unimplemented',
+            'preservation_and_readback': 'unimplemented',
+        },
         'operations': {
             operation: {'execution_status': ('available_unvalidated' if _native_windows()
                          and operation in ('plan', 'preview') else 'blocked'),
@@ -108,6 +120,9 @@ def _unsupported():
 
 MAX_BYTES = 4 * 1024 * 1024
 MAX_METADATA = 65536
+# Serialized WIN32_STREAM_ID prefix ends before cStreamName, not sizeof(struct).
+_BACKUP_HEADER = struct.Struct('<IIqI')
+MAX_BACKUP_BYTES = MAX_BYTES + MAX_METADATA + 2 * _BACKUP_HEADER.size
 _ALLOWED_ATTRIBUTES = 0x1 | 0x2 | 0x4 | 0x10 | 0x20 | 0x80 | 0x2000
 _ROOT = re.compile(r"^\\\\\?\\Volume\{[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\\")
 
@@ -136,8 +151,9 @@ def _path(path):
 
 class _Budget:
     def __init__(self, seconds, cancelled):
-        if (type(seconds) not in (int, float) or not math.isfinite(seconds)
-                or not 0 < seconds <= 60):
+        # Bound integers before math.isfinite's float conversion can overflow.
+        if (type(seconds) not in (int, float) or not 0 < seconds <= 60
+                or not math.isfinite(seconds)):
             _fail('INVALID_BUDGET')
         if cancelled is not None and not callable(cancelled):
             _fail('INVALID_CANCELLATION_CALLBACK')
@@ -159,6 +175,79 @@ class _Budget:
         # A slow cancellation callback counts against the same budget.
         if time.monotonic() >= self.deadline:
             _fail('TIMEOUT')
+
+
+def inspect_backup_streams(blob, *, expected_size, expected_sha256,
+                           cancelled=None, budget_seconds=10):
+    """Inspect bounded serialized backup framing, without native I/O or restore.
+
+    Input is private, caller-supplied bytes, never trusted native evidence. Only
+    one unnamed BACKUP_DATA and one unnamed BACKUP_SECURITY_DATA are allowed,
+    in either order. Security payload is opaque: even valid framing cannot prove
+    descriptor validity, SACL capture, EOF from BackupRead, or preservation.
+    No raw payload, name, descriptor, or descriptor hash is returned.
+
+    WIN32_STREAM_ID has a 20-byte serialized prefix followed by name and data;
+    do not consume C structure tail padding. IDs/flags follow Microsoft WinBase.h.
+    https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-win32_stream_id
+    https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-backupread
+    """
+    budget = _Budget(budget_seconds, cancelled)
+    budget.check()
+    if type(blob) is not bytes or len(blob) > MAX_BACKUP_BYTES:
+        _fail('INVALID_BACKUP_STREAM_INPUT')
+    if (type(expected_size) is not int or not 0 <= expected_size <= MAX_BYTES
+            or type(expected_sha256) is not str
+            or not re.fullmatch('[0-9a-f]{64}', expected_sha256)):
+        _fail('INVALID_BACKUP_EXPECTATION')
+    offset, seen = 0, set()
+    view = memoryview(blob)
+    while offset < len(blob):
+        budget.check()
+        if len(blob) - offset < _BACKUP_HEADER.size:
+            _fail('INVALID_BACKUP_STREAM')
+        kind, attributes, size, name_size = _BACKUP_HEADER.unpack_from(blob, offset)
+        offset += _BACKUP_HEADER.size
+        if size < 0 or name_size % 2 or name_size > MAX_METADATA:
+            _fail('INVALID_BACKUP_STREAM')
+        if kind not in (1, 3):
+            _fail('UNSUPPORTED_METADATA')
+        # Only normal default data and normal/contains-security descriptors.
+        # Reject modified-on-read, sparse/property/ghosted and all unknown bits.
+        if name_size or attributes not in ((0,) if kind == 1 else (0, 2)):
+            _fail('UNSUPPORTED_METADATA')
+        if kind in seen:
+            _fail('INVALID_BACKUP_STREAM')
+        if size > (MAX_BYTES if kind == 1 else MAX_METADATA):
+            _fail('INVALID_BACKUP_STREAM')
+        if size > len(blob) - offset:
+            _fail('INVALID_BACKUP_STREAM')
+        if kind == 1:
+            if size != expected_size or _hash(view[offset:offset + size]) != expected_sha256:
+                _fail('BACKUP_DATA_MISMATCH')
+        elif size < 20:  # Minimum descriptor header, not a descriptor validator.
+            _fail('INVALID_BACKUP_STREAM')
+        seen.add(kind)
+        offset += size
+    budget.check()
+    if 1 not in seen:
+        _fail('INVALID_BACKUP_STREAM')
+    if 3 not in seen:
+        _fail('SECURITY_METADATA_UNAVAILABLE')
+    return {
+        'schema_version': 'windows-backup-stream-inspection/1',
+        'framing_status': 'accepted',
+        'data_matches_expectation': True,
+        'stream_count': len(seen),
+        'security_stream_present': True,
+        'security_descriptor_validation': 'not_run',
+        'security_completeness': 'unknown',
+        'native_capture_provenance': 'not_verified',
+        'metadata_completeness': 'unknown',
+        'apply_status': 'unsupported',
+        'changes': [],
+        'recovery_required': False,
+    }
 
 
 class _CheckedAPI:
@@ -494,6 +583,52 @@ def preview(p):
             'changed': p['before']['sha256'] != p['after_sha256'],
             'apply_status': 'unsupported', 'metadata_completeness': 'partial',
             'verification_scope': 'diagnostic_exact_file_snapshot_only'}
+
+
+def preflight(p, *, target_ref, cancelled=None, budget_seconds=10):
+    """Explain why a diagnostic plan cannot be written; never probe or elevate.
+
+    Runs offline on every platform. Matching target_ref only checks caller input,
+    not actual device/user/namespace identity. It does not reread the file or
+    certify freshness. There is deliberately no approval/privilege override and
+    no accepted-input route to ready. A future native preflight needs a separate
+    evidence contract, not a caller-set metadata-complete flag.
+    """
+    budget = _Budget(budget_seconds, cancelled)
+    budget.check()
+    _validate(p)
+    if type(target_ref) is not str or not 0 < len(target_ref) <= 200:
+        _fail('INVALID_TARGET')
+    if p['target_ref'] != target_ref:
+        _fail('TARGET_MISMATCH')
+    if not p['created_at'] <= time.time() < p['expires_at']:
+        _fail('INVALID_OR_EXPIRED_PLAN')
+    result = {
+        'schema_version': 'windows-write-preflight/1',
+        'plan_digest': digest(p),
+        'execution_status': 'completed',
+        'write_readiness': 'blocked',
+        'reason': 'SECURITY_METADATA_UNAVAILABLE',
+        'evaluation_scope': 'offline_diagnostic_plan_only',
+        'target_binding': 'not_checked',
+        'source_freshness': 'not_checked',
+        'security_read_scope': p['before']['security_scope'],
+        'metadata_completeness': 'partial',
+        'preservation_status': 'unimplemented',
+        'privilege_policy': 'no_elevation_or_privilege_enablement',
+        'blockers': [
+            'FULL_SECURITY_CAPTURE_UNIMPLEMENTED',
+            'BACKUP_STREAM_COLLECTION_UNIMPLEMENTED',
+            'SHORT_NAME_INSPECTION_UNIMPLEMENTED',
+            'METADATA_PRESERVATION_UNIMPLEMENTED',
+            'WINDOWS_TRANSACTION_BACKEND_UNIMPLEMENTED',
+        ],
+        'apply_status': 'unsupported',
+        'changes': [],
+        'recovery_required': False,
+    }
+    budget.check()
+    return result
 
 
 def apply(p, *, target_ref, backup_directory, authorize=None,
