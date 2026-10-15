@@ -7,7 +7,9 @@
 - `fcc46b9a5a269f0aa3423edb898f49c6f4212413`：Mac/Windows系统DNS库、样本投影和命令清理修复；[三平台CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38760023126)成功。Linux/macOS648通过/6跳过，Windows542通过/112跳过，均654项
 - `044a891401aa0220ed3cac123eabee3c9a34eb98`：上下文/诊断会话增量已发布；首次Windows CI有三个测试可移植性错误，`a016769badfbfa1fd25aa9376dc2465c7455f16d`已修复。修复后[三平台CI 38765033394](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38765033394)成功；Windows首次PowerShell mock超时，仅重试失败job后通过，未放宽断言或生产预算
 - `db102e9e07181929c6a68699fbc21eeef813405e`：数值边界与私有配置候选已发布。Windows合成审批过期测试依赖短sleep导致一次失败，`f7baad5d7b01ab48e4300a7f93ca2d722b85d298`改为注入时钟，原断言/生产预算不变。新轮Linux/macOS通过，Windows重复PowerShell mock超时仍在定位，尚不能称三端通过
-- 本次发行包与CI自有上下文smoke：本地仅合成检查通过，真实CI上下文阶段待运行；已知headless阻塞将记跳过，不冒充桌面验收
+- `87364bdc51a808557c71a08d184a2cc98d874488`：[CI 38767766447](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38767766447)三端单元套件通过；Windows实际上下文smoke非零子进程失败，整个CI仍失败，后续构建步骤跳过。Mac上下文在capture/RUNTIME_PATH_INVALID阻塞并明确跳过，不能当完整ABI或桌面通过
+- 同轮Windows原15秒PowerShell mock通过，额外first/repeat诊断为0.343/0.297秒；此前间歇超时原因仍未知，不据本轮成功宣称修复
+- 新增合成浏览器截图流程：实际执行和下载查看像素前，视觉验收保持待验证
 
 以上标明三平台成功的各轮Node合成生命周期、编译及可复现打包通过。跳过不等于通过，CI临时环境与模拟API不代表用户电脑或真实网络验收。
 

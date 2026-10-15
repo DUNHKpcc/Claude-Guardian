@@ -20,6 +20,12 @@ TIMEOUT = 15
 BLOCKED = frozenset({'CONTEXT_INACTIVE', 'CONTEXT_FOREIGN',
     'CONTEXT_INACTIVE_OR_REMOTE', 'TARGET_USER_CONTEXT_MISMATCH',
     'PERMISSION_DENIED', 'RUNTIME_PATH_INVALID'})
+# Diagnostics only: every one of these remains a failing result.
+NATIVE_FAILURES = frozenset({'CONTEXT_UNKNOWN', 'CLEANUP_FAILED', 'CONTEXT_EXPIRED',
+    'CONTEXT_CHANGED', 'CANCELLED', 'INPUT_INVALID', 'UNSUPPORTED_PLATFORM'})
+FAILURE_PHASES = ({(code, phase) for code in NATIVE_FAILURES | {'NATIVE_ERROR', 'UNEXPECTED_ERROR'}
+                   for phase in ('capture', 'recheck')}
+                  | {('LOAD_FAILED', 'capture'), ('CONTRACT_FAILED', 'recheck')})
 MODULES = {'darwin': 'native_context', 'win32': 'windows_native_context'}
 
 
@@ -57,7 +63,7 @@ def observe(module):
         code = str(error)
         if code in BLOCKED:
             return {'state': 'blocked', 'code': code, 'phase': phase}
-        return {'state': 'failed', 'code': 'NATIVE_ERROR', 'phase': phase}
+        return {'state': 'failed', 'code': code if code in NATIVE_FAILURES else 'NATIVE_ERROR', 'phase': phase}
     except Exception:
         return {'state': 'failed', 'code': 'UNEXPECTED_ERROR', 'phase': phase}
 
@@ -150,20 +156,29 @@ def run_child():
 
 
 def decode_result(returncode, output):
-    # Never include output, exception text, private fields or paths in failures.
-    if returncode != 0 or len(output) > LIMIT:
-        raise AssertionError('Native smoke child failed')
+    # Exit status is process metadata, never child text. Bound and type-check it.
+    status = str(returncode) if type(returncode) is int and -(2**31) <= returncode < 2**32 else 'unknown'
+    if len(output) > LIMIT:
+        raise AssertionError('Native smoke output boundary failed; exit=' + status)
     try:
         report = json.loads(output)
     except (ValueError, UnicodeError):
-        raise AssertionError('Native smoke invalid envelope') from None
+        raise AssertionError('Native smoke invalid envelope; exit=' + status) from None
     if (type(report) is not dict or set(report) != {'state', 'code', 'phase'}
             or any(type(value) is not str for value in report.values())
-            or report['phase'] not in ('capture', 'recheck')
-            or not ((report['state'] == 'blocked' and report['code'] in BLOCKED)
-                    or (report['state'] == 'observed' and report['code'] == 'CONTINUITY_OBSERVED'
-                        and report['phase'] == 'recheck'))):
-        raise AssertionError('Native smoke invalid envelope')
+            or report['phase'] not in ('capture', 'recheck')):
+        raise AssertionError('Native smoke invalid envelope; exit=' + status)
+    if report['state'] == 'failed' and (report['code'], report['phase']) in FAILURE_PHASES:
+        # Only the reviewed literal enum pair crosses this boundary, never raw
+        # output or exception messages. Even exit=0 cannot turn failure into pass.
+        raise AssertionError('Native smoke child failed; exit=' + status
+                             + '; code=' + report['code'] + '; phase=' + report['phase'])
+    if not ((report['state'] == 'blocked' and report['code'] in BLOCKED)
+            or (report['state'] == 'observed' and report['code'] == 'CONTINUITY_OBSERVED'
+                and report['phase'] == 'recheck')):
+        raise AssertionError('Native smoke invalid envelope; exit=' + status)
+    if type(returncode) is not int or returncode != 0:
+        raise AssertionError('Native smoke inconsistent exit status; exit=' + status)
     return report
 
 
@@ -246,6 +261,40 @@ class SmokeBoundaryTests(unittest.TestCase):
             self.assertNotIn('PRIVATE', str(failure.exception))
         with self.assertRaises(AssertionError):
             decode_result(1, b'PRIVATE')
+
+    def test_known_failure_diagnostics_still_fail(self):
+        for code, phase in FAILURE_PHASES:
+            for exitcode in (0, 1, -9, 3221225477):
+                payload = json.dumps({'state': 'failed', 'code': code, 'phase': phase}).encode()
+                with self.assertRaises(AssertionError) as failure:
+                    decode_result(exitcode, payload)
+                self.assertEqual(str(failure.exception),
+                    'Native smoke child failed; exit=' + str(exitcode)
+                    + '; code=' + code + '; phase=' + phase)
+
+    def test_failure_diagnostics_reject_unknown_or_private_data(self):
+        cases = [b'PRIVATE-STDOUT', b'x' * (LIMIT + 1)]
+        for report in ({'state': 'failed', 'code': 'PRIVATE', 'phase': 'capture'},
+                       {'state': 'failed', 'code': 'LOAD_FAILED', 'phase': 'PRIVATE'},
+                       {'state': 'failed', 'code': 'LOAD_FAILED', 'phase': 'recheck'},
+                       {'state': 'failed', 'code': 'LOAD_FAILED', 'phase': 'capture', 'private': 'PRIVATE'}):
+            cases.append(json.dumps(report).encode())
+        for payload in cases:
+            with self.assertRaises(AssertionError) as failure:
+                decode_result(1, payload)
+            self.assertNotIn('PRIVATE', str(failure.exception))
+            self.assertIn('exit=1', str(failure.exception))
+        for exitcode in ('PRIVATE', True, 2**100):
+            with self.assertRaises(AssertionError) as failure:
+                decode_result(exitcode, b'PRIVATE')
+            self.assertEqual(str(failure.exception), 'Native smoke invalid envelope; exit=unknown')
+
+    def test_success_envelope_cannot_override_failed_exit(self):
+        for state, code, phase in (('blocked', 'CONTEXT_FOREIGN', 'capture'),
+                                   ('observed', 'CONTINUITY_OBSERVED', 'recheck')):
+            payload = json.dumps(dict(state=state, code=code, phase=phase)).encode()
+            with self.assertRaisesRegex(AssertionError, 'inconsistent exit status; exit=1'):
+                decode_result(1, payload)
 
     def test_valid_envelopes_and_successful_child(self):
         for report in ({'state': 'observed', 'code': 'CONTINUITY_OBSERVED', 'phase': 'recheck'},

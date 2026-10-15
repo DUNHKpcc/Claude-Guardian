@@ -137,3 +137,9 @@ BackupRead原生收集、完整安全描述符验证与保留（含SACL）、短
 Windows既有15秒mock-cmdlet测试重复超时，原因尚未确定。新增诊断只在普通单元套件之后、Windows且显式flag下执行，最长45秒用于固定阶段观察，不改变原语义测试的15秒、生产预算或通过条件；诊断first/repeat不能认作冷/热缓存证据。只有固定阶段/耗时/状态输出，无原始query/path/env/stderr。原单元失败仍使CI失败，不被诊断成功掩盖。
 
 原生上下文smoke首次实际执行将仅在CI自有Mac/Windows进程，Linux为n/a；已知headless/权限/路径阻塞记skip，未知ABI/超时/清理失败仍失败。CI绿色不是完整原生桌面验收，必须分别读取smoke结论。未访问用户设备或运行真实DNS。
+
+## 合成截图与原生错误诊断增量（2026-10-15，发布前本地证据）
+
+基于 `87364bdc51a808557c71a08d184a2cc98d874488`，新增合成浏览器截图workflow/工具/12测试/文档，以及native smoke安全失败诊断3回归。完整本地836项，828通过/8跳过；Node8项、运行时与工具compileall、diff与重复打包通过。运行时包未改变，SHA-256仍 `0519b9d1644d53125ecdd78d0d50e89d02db989da4af16a0af538f46d9ab78e2`。浏览器工具的本地测试无Chrome/网络，真实截图与像素检查尚待精确CI产物；PNG头夹具不作为图片交付。原生失败的固定代码/阶段诊断仍是失败，不放宽BLOCKED集合或输出任意私密文本。
+
+前一轮[CI 38767766447](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38767766447)三端完整821项单元测试通过：Linux/macOS813通过8跳过，Windows701通过120跳过。Windows随后实际上下文smoke非零子进程失败，后续Node/编译/打包未运行，整个CI失败；Mac实际上下文capture/RUNTIME_PATH_INVALID明确跳过，其他流水线步骤成功，不能宣称完整原生ABI验证。Windows原15秒mock语义测试此轮通过，after-suite诊断first/repeat为0.343/0.297秒且所有固定阶段完成，仅记录这次观察，不证明早先间歇超时原因或稳定修复。

@@ -67,6 +67,10 @@ binding. It intentionally does not rewrite collector reports as certified.
 - Unknown context errors (including possible ABI problems), unexpected exceptions,
   cleanup/expiry errors, crashes/nonzero exits, timeout, overflow, invalid output,
   or weakened report contracts fail the test. They are never relabeled as blocked
+  Strictly validated failure code/phase enums and a bounded integer process exit
+  status are included in the failure message, even when the child exits nonzero.
+  Unknown/malformed output stays suppressed; a valid failure envelope or a
+  nonzero exit can never become an observed/blocked success.
 - Linux n/a and disabled smoke are explicit skips, never native passes
 
 Before publication only the synthetic tests have been executed in this Linux
@@ -75,3 +79,13 @@ separately; do not infer native execution from an overall green workflow.
 The older general metadata smoke remains a distinct check and does not substitute
 for this context collector's result. Roll back by removing this test, workflow
 step, and guide; there are no installed services or configuration changes to undo.
+
+## First native-run diagnosis
+
+Run 38767766447, Windows job 116535339412, failed the native-context step while
+its ordinary unit suite passed. The original parent decoder discarded nonzero
+child envelopes, so that log did not establish an ABI root cause. The diagnostic
+change preserves failing semantics and exposes only reviewed error enums and
+capture/recheck stage plus exit status. Native success is still unestablished.
+The macOS step on that run was explicitly blocked with RUNTIME_PATH_INVALID
+at capture; this does not establish full ABI or desktop acceptance.

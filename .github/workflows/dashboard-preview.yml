@@ -1,0 +1,34 @@
+name: Synthetic dashboard browser preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dashboard-preview.yml'
+      - 'tools/render_dashboard_preview.py'
+      - 'tests/test_dashboard_preview.py'
+      - 'skills/claude-guardian/scripts/**'
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test synthetic preview boundaries (no browser)
+        run: python -m unittest discover -s tests -p test_dashboard_preview.py -v
+      - name: Capture synthetic HTML with installed sandboxed Chrome
+        run: python tools/render_dashboard_preview.py --capture-ci --output "$RUNNER_TEMP/guardian-dashboard-preview"
+      - name: Upload only synthetic screenshots and manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-preview-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/guardian-dashboard-preview/desktop.png
+            ${{ runner.temp }}/guardian-dashboard-preview/mobile.png
+            ${{ runner.temp }}/guardian-dashboard-preview/manifest.json
+          if-no-files-found: error
+          retention-days: 7
