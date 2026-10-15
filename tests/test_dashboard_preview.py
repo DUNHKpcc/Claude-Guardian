@@ -114,6 +114,8 @@ class PreviewTests(unittest.TestCase):
             self.assertFalse((output / 'manifest.json').exists())
 
 
+    # These tests mock Linux behavior even on Windows, which has no SIGKILL.
+    @patch.object(preview.signal, 'SIGKILL', 9, create=True)
     def test_browser_group_cleanup_success_timeout_cancel_and_failure(self):
         for outcome in (0, 7, subprocess.TimeoutExpired('browser', 60), KeyboardInterrupt()):
             with self.subTest(outcome=type(outcome).__name__), \
@@ -137,6 +139,7 @@ class PreviewTests(unittest.TestCase):
                 killpg.assert_called_once_with(54321, preview.signal.SIGKILL)
                 self.assertEqual(process.wait.call_args_list[-1].kwargs, {'timeout': 5})
 
+    @patch.object(preview.signal, 'SIGKILL', 9, create=True)
     def test_cleanup_failure_is_explicit_and_reap_bounded(self):
         with patch.object(preview.subprocess, 'Popen') as popen, \
              patch.object(preview.os, 'killpg', side_effect=PermissionError(), create=True), \
