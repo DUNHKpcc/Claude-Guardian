@@ -16,7 +16,7 @@ def main():
     release_paths = [
         "SKILL.md", "scripts/guardian.py", "scripts/interview_flow.py", "scripts/interview_cli.py",
         "scripts/inventory_cli.py", "scripts/clash_inventory.py", "scripts/controller_inventory.py",
-        "scripts/windows_transactions.py", "scripts/workflow_guard.py",
+        "scripts/windows_transactions.py", "scripts/workflow_guard.py", "scripts/remedy_plans.py",
         "scripts/network_probes.py", "scripts/transactions.py", "scripts/serve_webrtc.py", "assets/webrtc-probe.html",
         "references/intake.md", "references/contact-and-safety.md",
         "references/routes-and-platforms.md", "references/network-and-remedies.md",
