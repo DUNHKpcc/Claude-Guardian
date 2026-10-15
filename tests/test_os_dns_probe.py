@@ -132,10 +132,13 @@ class GateTests(unittest.TestCase):
         result, runner = self.run_probe(cancelled=lambda: True)
         self.assertEqual(result['error_code'], 'CANCELLED')
         runner.assert_not_called()
+        # Drive callback expiry independently of host sleep/timer granularity.
+        now = [10.0]
         def slow(*args):
-            time.sleep(.06)
+            now[0] += .06
             return True
-        result, runner = self.run_probe(approve_query=slow, budget=m.Budget(.05))
+        with patch.object(m.time, 'monotonic', side_effect=lambda: now[0]):
+            result, runner = self.run_probe(approve_query=slow, budget=m.Budget(.05))
         self.assertEqual(result['error_code'], 'TIMEOUT')
         runner.assert_not_called()
 
