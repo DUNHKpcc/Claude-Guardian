@@ -49,6 +49,7 @@ def main():
     with zipfile.ZipFile(args.output, 'x', compression=zipfile.ZIP_DEFLATED) as archive:
         for source, target in sorted(files, key=lambda pair: str(pair[1])):
             info = zipfile.ZipInfo(target.as_posix(), date_time=(2026, 10, 15, 0, 0, 0))
+            info.create_system = 3  # fixed Unix ZIP metadata on every build host
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o100644 << 16
             archive.writestr(info, source.read_bytes())

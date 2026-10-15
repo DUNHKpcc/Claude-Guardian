@@ -41,6 +41,7 @@ class SourceBundleTests(unittest.TestCase):
             self.assertEqual(outputs[0].read_bytes(),outputs[1].read_bytes())
             with zipfile.ZipFile(outputs[0]) as archive:
                 names=archive.namelist()
+                self.assertTrue(all(info.create_system == 3 for info in archive.infolist()))
                 self.assertIn('claude-guardian/sources/S03-claude-experience.pdf',names)
                 self.assertFalse(any('private-report' in name for name in names))
 
