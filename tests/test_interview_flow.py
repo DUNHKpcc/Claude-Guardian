@@ -3,6 +3,7 @@ import importlib.util
 import json
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("interview_flow", ROOT / "skills/claude-guardian/scripts/interview_flow.py")
@@ -21,6 +22,165 @@ def ids(s):
 
 
 class InterviewTests(unittest.TestCase):
+    def test_accept_default_records_basis_without_second_route_question_or_permission(self):
+        original = state()
+        saved = json.dumps(original, sort_keys=True)
+        chosen = f.record_fact(original, "Q-C05", "accepted_default", source="user:accept")
+        self.assertEqual(chosen["context"]["route"], "local")
+        self.assertEqual(chosen["context"]["route_selection_basis"], "accepted_default")
+        self.assertEqual(chosen["facts"]["Q-C05"]["source"], "user:accept")
+        self.assertNotIn("Q-C05", ids(chosen))
+        self.assertIn("Q-L01", ids(chosen))
+        self.assertEqual(f.assessment(chosen)["route_confirmation"], "confirmed")
+        self.assertEqual(f.assessment(chosen)["G3"]["status"], "blocked")
+        self.assertEqual(chosen["context"]["contact_phase"], "PC0")
+        self.assertFalse(any(chosen["persistence_consent"].values()))
+        self.assertEqual(json.dumps(original, sort_keys=True), saved)
+        again = f.record_fact(chosen, "Q-C05", "accepted_default", source="user:repeat")
+        self.assertNotIn("Q-C05", ids(again))
+
+    def test_accept_default_does_not_replace_another_route_or_explicit_choice(self):
+        for route in ("vm", "vps", "compare", "local"):
+            chosen = f.record_fact(state(), "Q-C05", route, source="user:choice")
+            saved = json.dumps(chosen, sort_keys=True)
+            with self.subTest(route=route), self.assertRaises(f.InterviewError):
+                f.record_fact(chosen, "Q-C05", "accepted_default", source="user:ambiguous")
+            self.assertEqual(json.dumps(chosen, sort_keys=True), saved)
+
+    def test_inferred_default_acceptance_does_not_confirm_route(self):
+        chosen = f.record_fact(state(), "Q-C05", "accepted_default", state_name="inferred", source="host:guess")
+        self.assertEqual(f.assessment(chosen)["route_confirmation"], "unconfirmed")
+        self.assertNotIn("Q-L01", ids(chosen))
+
+    def test_multi_fact_turn_is_absorbed_before_scheduling_with_roles_and_provenance(self):
+        original = f.new_state("device-a", "account-a")
+        answers = [{"question_id": qid, "value": value} for qid, value in (
+            ("Q-J01", "first_subscription"), ("Q-OS01", "macos"),
+            ("Q-C05", "local"), ("Q-C08", "Pro"))]
+        before = json.dumps((original, answers), sort_keys=True)
+        result = f.record_facts(original, answers, source="user:single-turn")
+        self.assertEqual(f.next_question(result)["id"], "Q-C01")
+        self.assertNotIn("Q-C05", ids(result))
+        unresolved = {x["id"] for x in f.assessment(result)["G1"]["unresolved_fields"]}
+        self.assertTrue(unresolved.isdisjoint({"Q-J01", "Q-C02", "Q-C05", "Q-C08"}))
+        for qid in ("Q-J01", "Q-C02", "Q-C05", "Q-C08"):
+            fact = result["facts"][qid]
+            self.assertEqual(fact["source"], "user:single-turn")
+            self.assertEqual(fact["subject_ref"], "account-a" if qid in ("Q-J01", "Q-C08") else "device-a")
+            self.assertIsNotNone(fact["observed_at"])
+        self.assertEqual(f.assessment(result)["G3"]["status"], "blocked")
+        self.assertFalse(any(result["persistence_consent"].values()))
+        self.assertEqual(json.dumps((original, answers), sort_keys=True), before)
+
+    def test_multi_fact_turn_does_not_invent_unspecified_plan(self):
+        result = f.record_facts(f.new_state("device-a", "account-a"), [
+            {"question_id": "Q-J01", "value": "first_subscription"},
+            {"question_id": "Q-C02", "value": "macos"},
+            {"question_id": "Q-C05", "value": "accepted_default"}], source="user:turn")
+        self.assertNotIn("Q-C08", result["facts"])
+        self.assertIn("Q-C08", {x["id"] for x in f.assessment(result)["G1"]["unresolved_fields"]})
+        self.assertEqual(result["context"]["route_selection_basis"], "accepted_default")
+
+    def test_multi_fact_initial_turn_order_is_independent_and_offline(self):
+        from itertools import permutations
+        answers = [{"question_id": qid, "value": value} for qid, value in (
+            ("Q-J01", "first_subscription"), ("Q-C02", "macos"),
+            ("Q-C05", "accepted_default"), ("Q-C08", "Pro"))]
+        expected = None
+        with patch.object(f, "_now", return_value="2026-10-15T00:00:00+00:00"), \
+                patch("builtins.open", side_effect=AssertionError("no writes or reads")), \
+                patch("socket.socket", side_effect=AssertionError("no network")), \
+                patch("subprocess.Popen", side_effect=AssertionError("no execution")):
+            for order in permutations(answers):
+                result = f.record_facts(f.new_state("device-a", "account-a"), list(order), source="user:turn")
+                if expected is None:
+                    expected = result
+                self.assertEqual(result, expected)
+                self.assertEqual(f.next_question(result)["id"], "Q-C01")
+
+    def test_multi_fact_turn_rejects_duplicate_alias_and_journey_conflicts(self):
+        for pair in (("Q-C02", "Q-C02"), ("Q-C02", "Q-OS01"), ("Q-J01", "Q-J02")):
+            original = state()
+            before = json.dumps(original, sort_keys=True)
+            with self.subTest(pair=pair), self.assertRaises(f.InterviewError):
+                f.record_facts(original, [{"question_id": q, "value": "unknown"} for q in pair], source="user:turn")
+            self.assertEqual(json.dumps(original, sort_keys=True), before)
+
+    def test_multi_fact_existing_task_intent_is_independent_of_journey_order(self):
+        from itertools import permutations
+        for journey_id in ("Q-J01", "Q-J02"):
+            for task, intent in (("upgrade", "upgrade"), ("renew", "renew"), ("network", "none")):
+                answers = [{"question_id": journey_id, "value": "existing_subscriber"},
+                           {"question_id": "Q-C11", "value": task},
+                           {"question_id": "Q-C02", "value": "macos"}]
+                expected = None
+                with patch.object(f, "_now", return_value="2026-10-15T00:00:00+00:00"):
+                    for order in permutations(answers):
+                        original = f.new_state("device-a", "account-a")
+                        result = f.record_facts(original, list(order), source="user:one-turn")
+                        if expected is None:
+                            expected = result
+                        self.assertEqual(result, expected)
+                        self.assertEqual(result["payment_intent"], intent)
+                        self.assertEqual(result["context"]["task"], task)
+                        self.assertEqual(result["facts"][journey_id]["value"], "existing_subscriber")
+                        self.assertEqual(result["facts"]["Q-C11"]["value"], task)
+                        self.assertEqual(result["facts"]["Q-C11"]["subject_ref"], "device-a")
+                        self.assertEqual(result["context"]["contact_phase"], "PC0")
+                        self.assertEqual(f.assessment(result)["G3"]["status"], "blocked")
+                        self.assertEqual(original["facts"], {})
+
+    def test_multi_fact_new_subscription_old_user_task_conflict_is_atomic(self):
+        for journey_id in ("Q-J01", "Q-J02"):
+            for journey in ("first_subscription", "returning_subscription"):
+                facts = [{"question_id": journey_id, "value": journey},
+                         {"question_id": "Q-C11", "value": "upgrade"}]
+                for answers in (facts, list(reversed(facts))):
+                    original = f.new_state("device-a", "account-a")
+                    before = json.dumps(original, sort_keys=True)
+                    with self.assertRaises(f.InterviewError):
+                        f.record_facts(original, answers, source="user:conflict")
+                    self.assertEqual(json.dumps(original, sort_keys=True), before)
+        with self.assertRaises(f.InterviewError):
+            f.record_facts(state(), [{"question_id": "Q-C11", "value": "upgrade"}], source="user:conflict")
+
+    def test_multi_fact_turn_invalid_late_fact_is_atomic(self):
+        for invalid in ({"question_id": "Q-C07", "value": "owner"},
+                        {"question_id": "Q-H03", "value": {"password": "sentinel"}},
+                        {"question_id": "Q-C02", "value": "macos", "authorized": True},
+                        {"question_id": "Q-C02", "value": "macos", "subject_ref": "other"},
+                        {"question_id": "Q-C02", "value": "macos", "state": "invalid"}):
+            original = f.new_state("device-a", "account-a")
+            before = json.dumps(original, sort_keys=True)
+            with self.subTest(invalid=invalid), self.assertRaises(f.InterviewError):
+                f.record_facts(original, [{"question_id": "Q-J01", "value": "first_subscription"}, invalid], source="user:turn")
+            self.assertEqual(json.dumps(original, sort_keys=True), before)
+
+    def test_multi_fact_turn_bounded_envelope_and_sources(self):
+        for invalid in (None, {}, [], "text", [None], [{"question_id": []}],
+                        [{"question_id": "Q-C02"}] * 96):
+            with self.subTest(invalid=invalid), self.assertRaises(f.InterviewError):
+                f.record_facts(state(), invalid, source="user:turn")
+        with self.assertRaises(f.InterviewError):
+            f.record_facts(state(), [{"question_id": "Q-C02", "value": "macos"}])
+        result = f.record_facts(state(), [
+            {"question_id": "Q-C02", "value": "macos", "source": "user:explicit"},
+            {"question_id": "Q-C08", "state": "unknown"}], source="user:shared")
+        self.assertEqual(result["facts"]["Q-C02"]["source"], "user:explicit")
+        self.assertEqual(result["facts"]["Q-C08"]["state"], "unknown")
+        self.assertEqual(result["facts"]["Q-C08"]["source"], "user:shared")
+
+    def test_multi_fact_malformed_state_is_a_fixed_atomic_error(self):
+        for invalid_state in ([], {}, True, 1, None, "unsupported"):
+            for qid in ("Q-C11", "Q-C05", "Q-J01", "Q-C02"):
+                original = f.new_state("device-a", "account-a")
+                before = json.dumps(original, sort_keys=True)
+                answers = [{"question_id": "Q-C08", "value": "Pro"},
+                           {"question_id": qid, "value": "upgrade", "state": invalid_state}]
+                with self.subTest(qid=qid, state=invalid_state), self.assertRaisesRegex(f.InterviewError, "^Invalid answer state$"):
+                    f.record_facts(original, answers, source="user:turn")
+                self.assertEqual(json.dumps(original, sort_keys=True), before)
+
     def test_complete_registry(self):
         self.assertEqual(len(f.QUESTION_PROMPTS), 95)
         self.assertIn("Q-C07", f.QUESTION_PROMPTS)

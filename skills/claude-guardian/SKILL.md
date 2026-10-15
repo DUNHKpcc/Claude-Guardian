@@ -39,6 +39,8 @@ Windows监听者核对库 `scripts/windows_listener_binding.py` 仅供可信宿�
 
 POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 预先保留在可信本地位置。inspect只读用户选定回执，输出未验证候选摘要；preview/rollback要求独立确认的目标、备份批次与摘要。rollback仅从真实终端逐阶段重新确认，并要求实际排除其他写入者。不得把回执作为授权；prepared状态不自动重放，Windows不支持。仅在精确文件事务范围内恢复，不代表应用/网络效果已恢复。
 
+单轮多个已明确事实可通过 `--answer-file` 的 `{"answers":[...]}` 批量提交；每项沿用 `question_id/value/state/source` 格式，旧单项格式仍支持。宿主负责从自然语言提取事实，CLI不做自由文本解析或猜测未给出的套餐。整批验证失败不保存部分状态；重复/别名冲突、订阅阶段与老用户任务矛盾须澄清。当前本机默认建议可用Q-C05值 `accepted_default` 接受，不再重复确认路线；不会覆盖已选VM/VPS，也不构成动作或保存许可。
+
 历史紧凑访谈迁移由 `scripts/interview_migration.py` 的纯宿主接口完成，不自动替换CLI续接。仅识别明确旧schema，按命名字段复用事实为过期证据；旧Q-C07/旧Q-C08和权限不继承。需要新的目标/账号别名及事实复核；旧账号停用提示须先确认是否仍需处理，不能凭旧设备历史认定当前账号停用。
 
 ## 首问示例

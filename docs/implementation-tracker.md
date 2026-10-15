@@ -457,3 +457,8 @@ UI-I06：合成截图从固定官方Noto源下载有哈希/OFL核验的字体，
 
 实际CI已将Windows失败定位到token_restrictions/return_size_mismatch；专用class21读取器接受已核验的1/4字节返回形式，拒绝其他长度、脏高字节、API错误和全部非零restriction，不改变通用DWORD读取器或闭门原则。35项合成回归通过，新原生结果待CI。
 UI-I06：d9582ce的实际Chrome双尺寸截图已取回、核验与查看，中文及极简布局可读无明显裁切；交互和用户设备仍未验收。
+
+
+## 20. 单轮访谈事实批处理（2026-10-15）
+
+T53/T81、D-SPEC §6.3—6.4：record_facts与CLI answers列表吸收宿主已规范化的一轮多事实后再调度，保留同轮时间及设备/账号角色，拒绝重复canonical/替代旅程ID和冲突；失败不产生部分状态。旅程优先派生任务，避免JSON顺序改变payment_intent。accepted_default仅接受当前本机建议，已选路线不被覆盖，G3保持blocked。不是自然语言解析器或完整Codex UI；真实语义提取、自由文本多字段识别及完整案例验收仍未完成。

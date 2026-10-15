@@ -180,7 +180,7 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 
 ### 不依赖用户Mac即可实施的优先任务
 
-1. **补精确回归缺口**：T53接受默认、T81多字段导入。每项写明输入、预期与未执行动作，不能仅增加数量。
+1. **补宿主自然语言与交互证据**：T53接受默认和T81规范化多字段批处理已有下节合成回归；自由文本提取、真实Codex交互仍待验证，不能仅由数量关闭案例。
 2. **完善离线事实/版本契约**：Windows SKU/UI空override/DST、WSL/用户上下文、Mac进程/硬件架构区分、控制器多实例选择与revision变化的合成样例；真实绑定适配器仍待相应平台。
 3. **独立DNS及STUN集成**：DNS协议与三类查询库已有实现；需补可信宿主绑定/运行时核验及Windows会话查询接入。STUN库已有有界底座，但宿主授权、名称到固定地址绑定和真实目标路径尚未集成。未批准公开端点前不发请求，不得自动进入PC1。
 4. **ENV-06离线处理计划/规则编译器**：已有条件计划、依赖图与DIRECT嵌套合成断言，以及窄范围字节保留候选；仍需精确原生规则/组织优先级验证、真实nameserver-policy合并语义、更多格式与四模板执行适配。不把候选生成当Mihomo接受。
@@ -189,7 +189,7 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 
 未映射清单由下述静态核对维护；未映射通常表示没有足够精确的断言，不表示可删需求：
 
-- 主规范：T04、T05、T06、T09、T12、T14、T23、T25、T28、T31、T32、T33、T39、T40、T42、T50、T53、T65、T67、T79、T85
+- 主规范：T04、T05、T06、T09、T12、T14、T23、T25、T28、T31、T32、T33、T39、T40、T42、T50、T65、T67、T79、T85
 - ENV：ENV-T03、ENV-T04、ENV-T06、ENV-T07、ENV-T11、ENV-T14、ENV-T15、ENV-T18、ENV-T19、ENV-T21、ENV-T22、ENV-T23、ENV-T24、ENV-T29、ENV-T30、ENV-T31、ENV-T32、ENV-T35、ENV-T37、ENV-T38、ENV-T39、ENV-T40、ENV-T41、ENV-T42、ENV-T43、ENV-T44、ENV-T48、ENV-T49、ENV-T52、ENV-T53、ENV-T55、ENV-T56、ENV-T57、ENV-T62、ENV-T71、ENV-T76、ENV-T78、ENV-T79、ENV-T84、ENV-T86、ENV-T88、ENV-T91、ENV-T94、ENV-T104、ENV-T114、ENV-T116、ENV-T120
 
 复核方法：从本文件表格首列提取原ID（含范围），与跟踪表218项比较；从测试AST核对文中方法名存在。本静态核对不执行测试，也不生成通过率。后续新增测试应更新相应行的实际断言/限制，再由执行证据决定状态。
@@ -201,3 +201,8 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 ## 后续历史迁移子证据
 
 `tests/test_interview_migration.py` 的15项合成测试核对真实compact/report旧格式、命名字段和旧问题ID错位、Q-C07/旧Q-C08丢弃、设备历史不归因账号、过期事实/未知时效、新别名与不继承许可、停用提示复核、取消/冲突/凭据拒绝和纯函数不保存。这是T82 / D.11部分工程证据；宿主界面接入、自然语言多字段与接受默认行为仍未由此完成。不据新增测试数量推算覆盖率。
+
+## 单轮默认接受与规范化多事实子证据
+
+T53：`tests/test_interview_flow.py::InterviewTests.test_accept_default_records_basis_without_second_route_question_or_permission` 核对accepted_default、无重复Q-C05及G3/PC0/保存门禁不变；显式VM/VPS/compare不被覆盖。
+T81：`test_multi_fact_turn_is_absorbed_before_scheduling_with_roles_and_provenance` 与CLI批处理回归覆盖规范事实一次吸收、只问缺口、私有保存续接及错误原子拒绝。缺套餐不推断；自然语言解析仍由宿主承担，故不关闭整个T81。新API还对订阅阶段/任务顺序与冲突作回归，保持已有逐事实接口契约。

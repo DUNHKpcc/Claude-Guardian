@@ -163,3 +163,9 @@ d9582ce的合成截图run38771591023成功，artifact11991666940归属该提交�
 实际CI上下文smoke：Windows在capture/CONTEXT_FOREIGN明确阻塞跳过，Mac在capture/RUNTIME_PATH_INVALID阻塞跳过。修复后的Windows不再出现此前token_restrictions返回大小错误，但后续未到达的ABI路径和真实桌面验收仍未通过，Mac新部分元数据API尚无原生执行证据。无真实用户设备或DNS探测。
 
 [同提交合成截图CI 38772721875](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38772721875)成功；下文记录已取回并查看像素的d9582ce截图，不能将静态截图当作交互验收。此前失败轮次保留为历史记录。
+
+## 单轮访谈事实批处理（2026-10-15，发布前隔离证据）
+
+基于已验证代码基线（完整SHA `bebea617012b958a8835045c8621433083b7d509`），4份代码/测试加共享能力/证据文档。新增16项回归，独立复核发现并修复旅程/任务顺序导致payment_intent不同，以及非字符串state泄露TypeError；两类均保留回归。独立重测两种旅程ID的顺序组合与24种畸形state，原状态不变、G3关闭。完整Linux881项873通过/8跳过，Node8、compileall、diff及重复打包通过，包SHA-256 `02f822e26833172f00816625a0e924c940639f598f164c948cdbd97a44bc4a87`。
+
+批处理只接收规范化事实，不理解自由文本；source/设备账号角色/同轮时间保留，保存仍须显式output。旧单项CLI格式与record_fact顺序接口保留，冲突需宿主澄清，未知套餐不推断。T53/T81仅相应子证据，不代表完整真实Codex交互或动作许可。精确提交CI须后续核验。

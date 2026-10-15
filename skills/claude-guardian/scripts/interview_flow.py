@@ -1,6 +1,6 @@
 """Offline adaptive interview; no network, subprocess, file writes or implicit consent.
 
-Public API: new_state, record_fact, set_context, next_question, assessment,
+Public API: new_state, record_fact, record_facts, set_context, next_question, assessment,
 mark_asked, defer_branch, resume_branch, complete_purchase, dumps_state,
 loads_state, validate_state. All updates return copies. Persisting returned JSON
 is exclusively the host's responsibility and requires explicit opt-in per scope.
@@ -344,6 +344,14 @@ def record_fact(state, question_id, value=None, *, state_name="reported", source
         result["payment_intent"] = {"first_subscription": "new_subscription", "returning_subscription": "resubscribe"}.get(value, "unresolved")
     if qid == "Q-C05" and state_name in {"reported", "observed"} and value in {"local", "vm", "vps", "compare"}:
         result["context"].update(route=value, route_selection_basis="explicit_choice" if value != "compare" else "default_proposal")
+    if qid == "Q-C05" and state_name in {"reported", "observed"} and value == "accepted_default":
+        # Accept only the actual local proposal, never silently replace a chosen
+        # VM/VPS or a comparison with a different route. Repeating the same
+        # accepted answer is harmless; it is still not execution permission.
+        context = result["context"]
+        if context["route"] != "local" or context["route_selection_basis"] not in {"default_proposal", "accepted_default"}:
+            raise InterviewError("No current local default proposal to accept")
+        context["route_selection_basis"] = "accepted_default"
     if qid == "Q-C11" and state_name in {"reported", "observed"} and value in ENUM_CONTEXT["task"]:
         result["context"]["task"] = value
         result["payment_intent"] = value if value in {"renew", "upgrade", "change_channel"} else "none"
@@ -352,6 +360,47 @@ def record_fact(state, question_id, value=None, *, state_name="reported", source
     if qid == "Q-C03" and value == "current_suspension" and state_name in {"reported", "observed"}:
         result["context"]["incident"] = "suspension"
     validate_state(result)
+    return result
+
+
+def record_facts(state, answers, *, source=None):
+    """Atomically absorb normalized facts from one reply, before choosing a question.
+
+    The host extracts explicit facts; this is not a natural-language parser.
+    Each item uses question_id, value, optional state and source. Per-item source
+    overrides the shared source. Duplicate canonical/alternative journey IDs are
+    rejected instead of applying order-dependent corrections within one reply.
+    Journey facts precede derived task updates regardless of JSON order. A
+    resolved old-subscriber task conflicts with an explicit first/returning
+    subscription journey and requires host clarification, not a guessed intent.
+    Invalid input returns no partial state and never mutates the caller's state.
+    No envelope field can grant action, contact or persistence permission.
+    """
+    validate_state(state)
+    if not isinstance(answers, list) or not 1 <= len(answers) <= len(QUESTION_PROMPTS):
+        raise InterviewError("Expected a bounded nonempty answer list")
+    seen = set()
+    for item in answers:
+        if not isinstance(item, dict) or not isinstance(item.get("question_id"), str) or set(item) - {"question_id", "value", "state", "source"}:
+            raise InterviewError("Invalid answer envelope")
+        state_name = item.get("state", "reported")
+        if type(state_name) is not str or state_name not in FACT_STATES:
+            raise InterviewError("Invalid answer state")
+        qid = canonical(item["question_id"])
+        identity = "Q-J01" if qid == "Q-J02" else qid
+        if identity in seen:
+            raise InterviewError("Duplicate fact in one reply; clarify before recording")
+        seen.add(identity)
+    result = deepcopy(state)
+    observed_at = _now()
+    ordered = sorted(answers, key=lambda item: item["question_id"] not in {"Q-J01", "Q-J02"})
+    for item in ordered:
+        if (item["question_id"] == "Q-C11" and item.get("state", "reported") in {"reported", "observed"}
+                and journey(result) in {"first_subscription", "returning_subscription"}):
+            raise InterviewError("Old-subscriber task conflicts with subscription journey; clarify first")
+        result = record_fact(result, item["question_id"], item.get("value"),
+                             state_name=item.get("state", "reported"),
+                             source=item.get("source", source), observed_at=observed_at)
     return result
 
 

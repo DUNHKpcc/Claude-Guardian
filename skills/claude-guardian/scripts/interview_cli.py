@@ -14,7 +14,7 @@ def main(argv=None):
     parser.add_argument('--input', help='Previously explicitly saved private state JSON')
     parser.add_argument('--target-ref', help='Target alias; must match when resuming')
     parser.add_argument('--account-ref', help='Account alias; must match when resuming')
-    parser.add_argument('--answer-file', help='Local JSON: question_id, value, state, source alias')
+    parser.add_argument('--answer-file', help='Local JSON: one question_id/value/state/source answer, or {"answers": [same answer objects]} from one reply')
     parser.add_argument('--context-file', help='Explicit host routing facts; not action permission')
     parser.add_argument('--output', help='Opt-in private state file; never overwrites')
     args=parser.parse_args(argv)
@@ -31,10 +31,11 @@ def main(argv=None):
             state=flow.set_context(state,**guardian.load_json(args.context_file))
         if args.answer_file:
             item=guardian.load_json(args.answer_file)
-            if set(item)-{'question_id','value','state','source'}:
-                raise flow.InterviewError('Invalid answer envelope')
-            state=flow.record_fact(state,item['question_id'],item.get('value'),
-                state_name=item.get('state','reported'),source=item.get('source','user:current-turn'))
+            if isinstance(item,dict) and set(item)=={'answers'}:
+                answers=item['answers']
+            else:
+                answers=[item]
+            state=flow.record_facts(state,answers,source='user:current-turn')
         question=flow.next_question(state)
         # Asking is recorded only when a user response is absorbed. Merely rendering
         # CLI output must not lose the question if the host failed to deliver it.
