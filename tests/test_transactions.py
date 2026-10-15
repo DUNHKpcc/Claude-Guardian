@@ -330,10 +330,99 @@ class Transactions(unittest.TestCase):
             self.assertEqual(t.verify(receipt)['check_status'], 'pass')
             self.assertEqual(self.rollback(receipt)['state'], 'restored')
 
+    def test_native_temporary_file_xattr_presence_and_refusal(self):
+        # Synthetic file only. Darwin fsetxattr signature verified in Apple's
+        # xnu/bsd/sys/xattr.h, adjacent to flistxattr; never a production write.
+        fd = os.open(self.file, os.O_RDWR | os.O_NOFOLLOW)
+        try:
+            self.assertFalse(t._has_xattrs(fd))
+            if t.sys.platform == 'darwin':
+                library = t.ctypes.CDLL('/usr/lib/libSystem.B.dylib', use_errno=True)
+                setter = library.fsetxattr
+                setter.argtypes = [t.ctypes.c_int, t.ctypes.c_char_p, t.ctypes.c_void_p,
+                                   t.ctypes.c_size_t, t.ctypes.c_uint32, t.ctypes.c_int]
+                setter.restype = t.ctypes.c_int
+                value = t.ctypes.create_string_buffer(b'test')
+                self.assertEqual(setter(fd, b'user.guardian.synthetic', value, 4, 0, 0), 0)
+            else:
+                os.setxattr(fd, 'user.guardian.synthetic', b'test')
+            self.assertTrue(t._has_xattrs(fd))
+        finally:
+            os.close(fd)
+        with self.assertRaisesRegex(t.TransactionError, '^UNSUPPORTED_FILE_METADATA$'):
+            t.plan(str(self.file), b'replacement', 'synthetic-device')
+
+    def test_darwin_present_xattrs_reject_file_without_content_write(self):
+        before = self.file.read_bytes()
+        with patch.object(t.sys, 'platform', 'darwin'), \
+                patch.object(t.ctypes, 'CDLL', return_value=Mock(flistxattr=Mock(return_value=1))):
+            with self.assertRaisesRegex(t.TransactionError, '^UNSUPPORTED_FILE_METADATA$'):
+                t.plan(str(self.file), b'replacement', 'synthetic-device')
+        self.assertEqual(self.file.read_bytes(), before)
+        self.assertEqual(list(self.backups.iterdir()), [])
+
     def test_duplicate_apply_fails_closed(self):
         self.apply()
         with self.assertRaisesRegex(t.TransactionError, 'STALE_FILE'):
             self.apply()
+
+
+class ExtendedAttributePlatformTests(unittest.TestCase):
+    def test_darwin_descriptor_abi_no_names_or_allocation(self):
+        for result in (0, 1, 4096, 2**62):
+            query = Mock(return_value=result)
+            library = Mock(flistxattr=query)
+            with patch.object(t.sys, 'platform', 'darwin'), \
+                    patch.object(t.ctypes, 'CDLL', return_value=library) as loader:
+                self.assertEqual(t._has_xattrs(12), result > 0)
+            loader.assert_called_once_with('/usr/lib/libSystem.B.dylib', use_errno=True)
+            query.assert_called_once_with(12, None, 0, 0x0020)
+            self.assertEqual(query.argtypes, [t.ctypes.c_int, t.ctypes.c_void_p,
+                                             t.ctypes.c_size_t, t.ctypes.c_int])
+            self.assertIs(query.restype, t.ctypes.c_ssize_t)
+
+    def test_darwin_errors_fail_closed(self):
+        for result in (-1, -2, None, True, 2**100):
+            with self.subTest(result=result), patch.object(t.sys, 'platform', 'darwin'), \
+                    patch.object(t.ctypes, 'CDLL', return_value=Mock(flistxattr=Mock(return_value=result))):
+                with self.assertRaisesRegex(t.TransactionError, '^XATTR_CHECK_FAILED$'):
+                    t._has_xattrs(12)
+        for error in (OSError('private detail'), AttributeError('missing symbol')):
+            with patch.object(t.sys, 'platform', 'darwin'), \
+                    patch.object(t.ctypes, 'CDLL', side_effect=error):
+                with self.assertRaisesRegex(t.TransactionError, '^XATTR_CHECK_FAILED$'):
+                    t._has_xattrs(12)
+
+    def test_descriptor_arguments_rejected_before_library_load(self):
+        for fd in (None, True, -1, '/tmp/file', 2**40):
+            with patch.object(t.ctypes, 'CDLL') as loader:
+                with self.assertRaisesRegex(t.TransactionError, '^XATTR_CHECK_FAILED$'):
+                    t._has_xattrs(fd)
+                loader.assert_not_called()
+
+    def test_darwin_support_does_not_require_linux_os_listxattr(self):
+        with patch.object(t.sys, 'platform', 'darwin'), patch.object(t.os, 'name', 'posix'), \
+                patch.object(t.os, 'listxattr', None, create=True), \
+                patch.object(t.os, 'O_NOFOLLOW', 1, create=True), \
+                patch.object(t.os, 'O_DIRECTORY', 1, create=True), \
+                patch.object(t.os, 'supports_dir_fd', {t.os.open}):
+            t._support()
+
+    def test_non_darwin_still_requires_descriptor_xattr_support(self):
+        with patch.object(t.sys, 'platform', 'linux'), \
+                patch.object(t.os, 'listxattr', None, create=True):
+            with self.assertRaisesRegex(t.TransactionError, '^PLATFORM_UNSUPPORTED$'):
+                t._support()
+
+    def test_linux_fd_only_and_errors(self):
+        with patch.object(t.sys, 'platform', 'linux'), \
+                patch.object(t.os, 'listxattr', return_value=['user.synthetic'], create=True) as query:
+            self.assertTrue(t._has_xattrs(12))
+            query.assert_called_once_with(12)
+        with patch.object(t.sys, 'platform', 'linux'), \
+                patch.object(t.os, 'listxattr', side_effect=OSError('private'), create=True):
+            with self.assertRaisesRegex(t.TransactionError, '^XATTR_CHECK_FAILED$'):
+                t._has_xattrs(12)
 
 
 if __name__ == '__main__':

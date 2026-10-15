@@ -21,11 +21,13 @@ Plans contain private replacement bytes. Do not log/serialize plans into public
 reports. preview() emits only hashes/lengths; it never emits content or paths.
 """
 import base64
+import ctypes
 import hashlib
 import json
 import math
 import os
 import stat
+import sys
 import time
 import uuid
 from contextlib import contextmanager
@@ -138,8 +140,42 @@ def _path(value):
 
 def _support():
     if (os.name != 'posix' or not hasattr(os, 'O_NOFOLLOW')
-            or not hasattr(os, 'listxattr') or os.open not in os.supports_dir_fd):
+            or not hasattr(os, 'O_DIRECTORY') or os.open not in os.supports_dir_fd
+            or (sys.platform != 'darwin' and not callable(getattr(os, 'listxattr', None)))):
         _fail('PLATFORM_UNSUPPORTED')
+
+
+def _has_xattrs(fd):
+    """Inspect the already-open file, with no pathname fallback or value reads.
+
+    Darwin ABI verified against Apple's xnu/bsd/sys/xattr.h and flistxattr(2):
+    https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/xattr.h
+    https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/flistxattr.2.html
+    A NULL buffer requests only the required size; no untrusted-size allocation,
+    retries, names or attribute values. XATTR_SHOWCOMPRESSION includes compression
+    metadata normally hidden from the list. Any failure blocks the transaction.
+    Listing observes attributes accessible to the current execution identity.
+    """
+    if type(fd) is not int or not 0 <= fd <= 2**31 - 1:
+        _fail('XATTR_CHECK_FAILED')
+    if sys.platform == 'darwin':
+        try:
+            # Fixed trusted OS library, never find_library/search-path resolution.
+            library = ctypes.CDLL('/usr/lib/libSystem.B.dylib', use_errno=True)
+            query = library.flistxattr
+            query.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
+            query.restype = ctypes.c_ssize_t
+            size = query(fd, None, 0, 0x0020)  # XATTR_SHOWCOMPRESSION
+        except (OSError, AttributeError, TypeError, ValueError):
+            _fail('XATTR_CHECK_FAILED')
+        if type(size) is not int or not 0 <= size <= 2**(ctypes.sizeof(ctypes.c_ssize_t) * 8 - 1) - 1:
+            _fail('XATTR_CHECK_FAILED')
+        return size > 0
+    try:
+        # CPython's supported fd form on Linux; never convert fd back to a path.
+        return bool(os.listxattr(fd))
+    except (OSError, AttributeError, TypeError, ValueError):
+        _fail('XATTR_CHECK_FAILED')
 
 
 @contextmanager
@@ -187,7 +223,7 @@ def _read(fd, name):
         if (s.st_size > MAX_BYTES or s.st_uid != os.geteuid()
                 or s.st_gid != os.getegid()):
             _fail('UNSUPPORTED_FILE_SIZE_OR_OWNER')
-        if stat.S_IMODE(s.st_mode) & 0o7000 or os.listxattr(f):
+        if stat.S_IMODE(s.st_mode) & 0o7000 or _has_xattrs(f):
             _fail('UNSUPPORTED_FILE_METADATA')
         data = bytearray()
         while len(data) <= MAX_BYTES:
