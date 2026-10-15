@@ -11,6 +11,9 @@ from pathlib import Path
 import subprocess
 import threading
 import sys
+import re
+import math
+from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
 
 ENDPOINTS = {
@@ -19,6 +22,9 @@ ENDPOINTS = {
     "ipify_dual": ("https://api64.ipify.org?format=json", None),
 }
 MAX_BODY = 4096
+MAX_HEADERS = 8192
+MAX_RETRY_AFTER_SECONDS = 86400
+MAX_RETRY_AFTER_VALUE = 128
 
 
 class ProbeError(ValueError):
@@ -26,9 +32,111 @@ class ProbeError(ValueError):
 
 
 class Response:
-    def __init__(self, status, body):
+    def __init__(self, status, body, retry_after_values=()):
         self.status = status
         self.body = body
+        self.retry_after_values = retry_after_values
+
+
+def parse_retry_after(values=(), *, response_observed_at=None, observed_clock_trusted=False):
+    """Sanitized advice only. Never schedules work or treats a cap as permission.
+
+    HTTP-date conversion requires a caller-attested, timezone-aware receipt clock.
+    The attestation is evidence supplied by the host, not a clock validation service.
+    Excessive delays are withheld rather than shortened into unsafe retry advice.
+    """
+    trusted = False
+    observed_utc = None
+    if observed_clock_trusted is True and isinstance(response_observed_at, datetime):
+        try:
+            if response_observed_at.tzinfo is not None and response_observed_at.utcoffset() is not None:
+                observed_utc = response_observed_at.astimezone(timezone.utc)
+                trusted = True
+        except Exception:
+            # Broken/custom timezone callbacks are untrusted clock evidence, not
+            # a transport error. Never propagate their potentially private text.
+            observed_utc = None
+    result = dict(status="missing", delay_seconds=None, maximum_seconds=MAX_RETRY_AFTER_SECONDS,
+                  clock_trust="caller_attested" if trusted else "unknown", automatic_retry=False)
+    if not isinstance(values, (tuple, list)):
+        result["status"] = "invalid"
+        return result
+    if len(values) > 1:
+        result["status"] = "duplicate"
+        return result
+    if not values:
+        return result
+    value = values[0]
+    if (not isinstance(value, str) or len(value) > MAX_RETRY_AFTER_VALUE
+            or any(ord(c) < 32 or ord(c) > 126 for c in value)):
+        result["status"] = "invalid"
+        return result
+    value = value.strip(' ')
+    if re.fullmatch(r"[0-9]+", value):
+        seconds = int(value)
+    else:
+        # HTTP-date's three wire formats; reject permissive parser suffixes/CRLF.
+        weekday = r"(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)"
+        month = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
+        formats = (weekday + r", [0-9]{2} " + month + r" [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT",
+                   r"(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), [0-9]{2}-" + month + r"-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT",
+                   weekday + " " + month + r" [ 0-9][0-9] [0-9]{2}:[0-9]{2}:[0-9]{2} [0-9]{4}")
+        if not any(re.fullmatch(pattern, value) for pattern in formats):
+            result["status"] = "invalid"
+            return result
+        try:
+            date = parsedate_to_datetime(value)
+            if date.tzinfo is None:  # obsolete asctime HTTP-date is always GMT
+                date = date.replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError, OverflowError):
+            result["status"] = "invalid"
+            return result
+        if not trusted:
+            result["status"] = "clock_untrusted"
+            return result
+        delta = (date - observed_utc).total_seconds()
+        if delta < 0:
+            result["status"] = "past_date"
+            return result
+        seconds = math.ceil(delta)
+    if seconds > MAX_RETRY_AFTER_SECONDS:
+        result["status"] = "exceeds_cap"
+        return result
+    result.update(status="valid", delay_seconds=seconds)
+    return result
+
+
+def _parse_curl_response(raw, max_body):
+    """Discard all header fields except bounded Retry-After multiplicity/values."""
+    header_bytes = 0
+    while True:
+        block, separator, raw = raw.partition(b"\r\n\r\n")
+        header_bytes += len(block) + 4
+        if not separator or header_bytes > MAX_HEADERS:
+            raise ProbeError("invalid_transport_response")
+        lines = block.split(b"\r\n")
+        match = re.fullmatch(rb"HTTP/1\.[01] ([0-9]{3})(?: [^\r\n]*)?", lines[0])
+        if not match:
+            raise ProbeError("invalid_transport_response")
+        status = int(match.group(1))
+        if 100 <= status < 200:
+            continue
+        values = []
+        for line in lines[1:]:
+            if line.startswith((b" ", b"\t")) or b":" not in line:
+                raise ProbeError("invalid_transport_response")
+            name, value = line.split(b":", 1)
+            if name.lower() == b"retry-after":
+                # Preserve duplicates; never retain arbitrary header contents.
+                if len(values) < 2:
+                    values.append(value.strip(b" \t").decode("ascii", errors="replace")
+                                  if len(value) <= MAX_RETRY_AFTER_VALUE else None)
+        body, separator, code = raw.rpartition(b"\n")
+        if not separator or len(code) != 3 or not code.isdigit() or int(code) != status:
+            raise ProbeError("invalid_transport_response")
+        if len(body) > max_body:
+            raise ProbeError("response_too_large")
+        return Response(status, body, values)
 
 
 def _fixed_curl():
@@ -70,7 +178,7 @@ class SystemRouteTransport:
                    "--connect-timeout", str(connect_timeout), "--max-time", str(total_timeout),
                    "--retry", "0", "--proto", "=https", "--http1.1", "--proxy", "",
                    "--noproxy", "*", "--max-filesize", str(max_body),
-                   "--write-out", "\n%{http_code}", "--url", url]
+                   "--include", "--write-out", "\n%{http_code}", "--url", url]
         try:
             proc = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                     stderr=subprocess.DEVNULL, env=env, cwd=working_directory,
@@ -80,6 +188,7 @@ class SystemRouteTransport:
         chunks = []
         overflow = threading.Event()
         failed = threading.Event()
+        incomplete_headers = threading.Event()
         cleanup_failed = False
 
         def kill_child():
@@ -90,6 +199,30 @@ class SystemRouteTransport:
 
         def read_bounded():
             try:
+                header_count = 0
+                while True:
+                    block = bytearray()
+                    while not block.endswith(b"\r\n\r\n"):
+                        value = proc.stdout.read(1)
+                        if not value:
+                            # A curl DNS/connect/TLS failure can end before headers.
+                            # Do not kill here: preserve its native exit code while
+                            # the existing bounded parent wait reaps the process.
+                            incomplete_headers.set()
+                            return
+                        block.extend(value)
+                        header_count += len(value)
+                        if header_count > MAX_HEADERS:
+                            overflow.set()
+                            kill_child()
+                            return
+                    chunks.append(bytes(block))
+                    status_line = bytes(block).split(b"\r\n", 1)[0]
+                    match = re.fullmatch(rb"HTTP/1\.[01] ([0-9]{3})(?: [^\r\n]*)?", status_line)
+                    if not match:
+                        raise ValueError("invalid status")
+                    if not 100 <= int(match.group(1)) < 200:
+                        break
                 remaining = max_body + 5  # body + newline/status + one overflow byte
                 while remaining:
                     value = proc.stdout.read(remaining)
@@ -137,18 +270,21 @@ class SystemRouteTransport:
             phase = {2: "transport_unsupported", 5: "dns_error", 6: "dns_error",
                      7: "connect_error", 28: "timeout", 35: "tls_error", 60: "tls_error"}
             raise ProbeError(phase.get(proc.returncode, "transport_error"))
-        raw = b"".join(chunks)
-        body, separator, code = raw.rpartition(b"\n")
-        if not separator or len(code) != 3 or not code.isdigit():
+        if incomplete_headers.is_set():
             raise ProbeError("invalid_transport_response")
-        return Response(int(code), body)
+        return _parse_curl_response(b"".join(chunks), max_body)
 
 
 def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_ref,
-                   path_kind="direct_socket_os_route_tun_unknown", transport=None):
+                   path_kind="direct_socket_os_route_tun_unknown", transport=None,
+                   response_clock=None):
     """One request, no retries; approved_endpoints must contain the exact URL.
 
     approved_paths must explicitly include the requested path for this run.
+    Optional response_clock() is called immediately after transport returns and
+    yields (aware receipt datetime, explicit trust bool). Default local clock is
+    untrusted; the helper does not verify clock synchronization. Never provide a
+    pre-request timestamp. This guidance cannot authorize waiting or another call.
 
     target_ref is a caller-verified local target/context alias, never transmitted.
     An injected transport must expose path_kind and request(url,
@@ -179,16 +315,27 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
                   path_association="unknown", browser_path="not_observed",
                   started_at=datetime.now(timezone.utc).isoformat(), request_count=1,
                   limits={"connect_seconds": 5, "total_seconds": 10, "max_body_bytes": MAX_BODY,
-                          "retries": 0},
+                          "retries": 0, "max_header_bytes": MAX_HEADERS},
+                  retry_after=None,
                   interpretation="One neutral HTTPS sample; no safety or target-route certification")
     try:
         response = transport.request(url, connect_timeout=5, total_timeout=10, max_body=MAX_BODY)
+        observed_at, clock_trusted = datetime.now(timezone.utc), False
+        if response_clock is not None:
+            try:
+                observed_at, clock_trusted = response_clock()
+            except Exception:
+                observed_at, clock_trusted = None, False
         result["http_status"] = response.status
         if not isinstance(response.body, bytes) or len(response.body) > MAX_BODY:
             raise ProbeError("response_too_large_or_invalid")
         if 300 <= response.status < 400:
             raise ProbeError("redirect_rejected")
         if response.status == 429:
+            result["retry_after"] = parse_retry_after(
+                getattr(response, "retry_after_values", ()),
+                response_observed_at=observed_at,
+                observed_clock_trusted=clock_trusted)
             raise ProbeError("rate_limited_no_retry")
         if response.status != 200:
             raise ProbeError("http_error")
