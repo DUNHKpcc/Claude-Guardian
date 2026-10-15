@@ -5,15 +5,17 @@
 - `06735926b14c15259272735d495af9707008e29c`：Windows离线预检、极简面板和HTTPS/STUN附件；[三平台CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38752978424)成功。Linux/macOS 517通过/5跳过，Windows416通过/106跳过，均522项
 - `974ee563d22451aba0008f9fe2822995d94c1bd3`：DNS编解码、Mihomo查询库和面板DNS样本；[三平台CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38756716054)成功。Linux/macOS579通过/5跳过，Windows478通过/106跳过，均584项
 - `fcc46b9a5a269f0aa3423edb898f49c6f4212413`：Mac/Windows系统DNS库、样本投影和命令清理修复；[三平台CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38760023126)成功。Linux/macOS648通过/6跳过，Windows542通过/112跳过，均654项
-- 本次上下文/诊断会话增量：发布与三平台CI结果待固定提交核验，不能借用前述结果
+- `044a891401aa0220ed3cac123eabee3c9a34eb98`：上下文/诊断会话增量已发布；首次Windows CI有三个测试可移植性错误，`a016769badfbfa1fd25aa9376dc2465c7455f16d`已修复。修复后[三平台CI 38765033394](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38765033394)成功；Windows首次PowerShell mock超时，仅重试失败job后通过，未放宽断言或生产预算
+- 本次数值边界与私有配置候选增量：发布与三平台CI待核验，候选不可apply、无文件修改能力
 
-以上各轮Node合成生命周期、编译及可复现打包通过。跳过不等于通过，CI临时环境与模拟API不代表用户电脑或真实网络验收。
+以上标明三平台成功的各轮Node合成生命周期、编译及可复现打包通过。跳过不等于通过，CI临时环境与模拟API不代表用户电脑或真实网络验收。
 
 ## 能用的入口与仍需集成的库
 
 - 离线面板：`status_dashboard.py --input <本地报告> --probes <可选本地附件> --output <新HTML文件>`；只投影已有证据，不运行探测、不打开浏览器。省略附件参数也可用
 - 诊断会话：先查看 `diagnostic_session.py --help`，再按其平台范围和精确读取提示决定是否运行。终端新nonce确认不替代可信设备/宿主权限。CLI仅做有限元数据读取；DNS保持关闭
 - HTTPS、STUN、Mihomo与系统DNS是宿主库接口，尚不能把永真回调、旧报告或JSON布尔当成生产集成。每个目标、名称、地址族与可能上游披露均需要对应授权
+- 配置候选库只在内存中改选定规则policy token、重解析核对并产生私有差异；没有apply，原生版本/归属/即时授权阻塞仍保留
 - Windows离线预检始终阻止写入；完整元数据保留、写入/回读/恢复仍未完成。已有POSIX恢复也仅限已授权的精确事务与备份范围
 
 ## 建议人工验收顺序（不会自动执行）

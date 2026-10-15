@@ -22,6 +22,7 @@ snapshot is inferred. Revision aliases are random per call, never raw digests.
 import http.client
 import io
 import json
+import math
 import re
 import select
 import socket
@@ -82,11 +83,32 @@ def _fail(code):
     raise ControllerError(code)
 
 
-def _guard(deadline, cancelled):
+def _checked_clock():
+    """Keep one operation's clock finite and nondecreasing before using it."""
+    previous = None
+
+    def read():
+        nonlocal previous
+        value = time.monotonic()
+        try:
+            finite = type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            finite = False
+        if not finite or (previous is not None and value < previous):
+            _fail('INPUT_OR_RESPONSE_INVALID')
+        previous = value
+        return float(value)
+
+    return read
+
+
+def _guard(deadline, cancelled, clock=None):
     if cancelled():
         _fail('CANCELLED')
-    if time.monotonic() >= deadline:
+    now = (clock or time.monotonic)()
+    if now >= deadline:
         _fail('TIMEOUT')
+    return now
 
 
 class _BoundedReader(io.RawIOBase):
@@ -323,22 +345,26 @@ def audit_controller(binding, paths, *, verify_binding, approve_read,
               'requests_attempted': 0}
     try:
         _validate(binding, paths, budget)
-        deadline = time.monotonic() + budget.max_seconds
+        clock = _checked_clock()
+        initial = clock()
+        deadline = initial + float(budget.max_seconds)
+        if not math.isfinite(deadline) or deadline <= initial:
+            _fail('INPUT_OR_RESPONSE_INVALID')
         for path in tuple(paths):
-            _guard(deadline, cancelled)
+            _guard(deadline, cancelled, clock)
             if verify_binding(binding) is not True:
                 _fail('CONTROLLER_NOT_BOUND')
             if approve_read(binding, path, budget) is not True:
                 _fail('AUTHORIZATION_MISSING')
-            _guard(deadline, cancelled)
+            _guard(deadline, cancelled, clock)
             # Approval may wait for a person while the selected process changes.
             # Recheck the live identity after that wait, immediately before I/O.
             if verify_binding(binding) is not True:
                 _fail('CONTROLLER_NOT_BOUND')
-            _guard(deadline, cancelled)
+            _guard(deadline, cancelled, clock)
             result['requests_attempted'] += 1
             status, raw = transport(binding, path, budget, deadline, cancelled)
-            _guard(deadline, cancelled)
+            _guard(deadline, cancelled, clock)
             if verify_binding(binding) is not True:
                 _fail('CONTROLLER_NOT_BOUND')
             if status in (401, 403):
@@ -346,7 +372,7 @@ def audit_controller(binding, paths, *, verify_binding, approve_read,
             if type(status) is not int or status != 200:
                 _fail('CONTROLLER_RESPONSE_REJECTED')
             projection = _project(path, _parse(raw, budget))
-            _guard(deadline, cancelled)
+            _guard(deadline, cancelled, clock)
             result['facts'].append({'layer': 'runtime_observed',
                                     'source_ref': 'controller' + path,
                                     'revision_ref': 'revision-' + uuid.uuid4().hex,

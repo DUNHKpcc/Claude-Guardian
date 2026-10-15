@@ -83,8 +83,15 @@ def _ref(value):
     return type(value) is str and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}', value) is not None
 
 
+def _finite_time(value):
+    try:
+        return type(value) in (int, float) and math.isfinite(value)
+    except OverflowError:
+        return False
+
+
 def _fresh(observed, expires, now):
-    return all(type(x) in (int, float) and math.isfinite(x) for x in (observed, expires, now)) and observed <= now < expires
+    return all(_finite_time(x) for x in (observed, expires, now)) and observed <= now < expires
 
 
 @dataclass(frozen=True)
@@ -286,13 +293,17 @@ class WorkflowGuard:
             started = self._clock()
             reply = self.authorize(request)
             finished = self._clock()
-            if (type(started) not in (int, float) or type(finished) not in (int, float)
-                    or not math.isfinite(started) or not math.isfinite(finished) or finished < started):
+            if (not _finite_time(started) or not _finite_time(finished) or finished < started):
                 return ('APPROVAL_CLOCK_INVALID',), request.evaluated_at
         except Exception:
             return ('HOST_APPROVAL_FAILED',), request.evaluated_at
         current = (self._generation, self.binding, self.requirements, self.adapters, self.state)
-        checked_at = request.evaluated_at + (finished - started)
+        try:
+            checked_at = request.evaluated_at + (finished - started)
+        except OverflowError:
+            return ('APPROVAL_CLOCK_INVALID',), request.evaluated_at
+        if not _finite_time(checked_at):
+            return ('APPROVAL_CLOCK_INVALID',), request.evaluated_at
         if context != current:
             return ('APPROVAL_CONTEXT_CHANGED',), checked_at
         return (() if reply is Reply.APPROVED else ('CURRENT_EXACT_APPROVAL_REQUIRED',)), checked_at
@@ -301,7 +312,7 @@ class WorkflowGuard:
         return (isinstance(readiness, Readiness) and readiness.valid()
                 and type(evidence) is tuple and len(evidence) <= 512
                 and all(isinstance(e, Evidence) for e in evidence)
-                and type(now) in (int, float) and math.isfinite(now))
+                and _finite_time(now))
 
     def _evidence(self, stage, evidence, now):
         checks = {CheckStage.PRECONTACT: self.requirements.precontact,
@@ -315,8 +326,7 @@ class WorkflowGuard:
             # Latest authoritative observation supersedes older passes, even if
             # the latest is unknown, failed, or expired. Tied conflicts deny.
             # Malformed/future native observations cannot resurrect an old pass.
-            valid_times = all(type(e.observed_at) in (int, float)
-                              and math.isfinite(e.observed_at) and e.observed_at <= now for e in records)
+            valid_times = all(_finite_time(e.observed_at) and e.observed_at <= now for e in records)
             if not records or not valid_times:
                 gaps.append('EVIDENCE_REQUIRED:' + check)
                 continue

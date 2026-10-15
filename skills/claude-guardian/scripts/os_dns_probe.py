@@ -86,11 +86,32 @@ except Exception:
 '''
 
 
-def _guard(deadline, cancelled):
+def _checked_clock():
+    """Keep one operation's clock finite and nondecreasing before using it."""
+    previous = None
+
+    def read():
+        nonlocal previous
+        value = time.monotonic()
+        try:
+            finite = type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            finite = False
+        if not finite or (previous is not None and value < previous):
+            raise ProbeError('OUTPUT_INVALID')
+        previous = value
+        return float(value)
+
+    return read
+
+
+def _guard(deadline, cancelled, clock=None):
     if cancelled():
         raise ProbeError('CANCELLED')
-    if time.monotonic() >= deadline:
+    now = (clock or time.monotonic)()
+    if now >= deadline:
         raise ProbeError('TIMEOUT')
+    return now
 
 
 def _validate(scope, budget):
@@ -105,7 +126,7 @@ def _validate(scope, budget):
             raise ProbeError('INPUT_INVALID')
     if b.platform != 'darwin' or sys.platform != 'darwin':
         raise ProbeError('UNSUPPORTED_PLATFORM')
-    if (type(budget.max_seconds) not in (int, float) or not math.isfinite(budget.max_seconds)
+    if (type(budget.max_seconds) not in (int, float)
             or not .05 <= budget.max_seconds <= 15):
         raise ProbeError('INPUT_INVALID')
     name = scope.name
@@ -235,8 +256,12 @@ def probe_os_dns(scope, *, verify_binding, verify_runtime, approve_query,
                              'dns_leak_absence', 'upstream_route', 'native_ownership_adapter']}
     try:
         _validate(scope, budget)
-        deadline = time.monotonic() + budget.max_seconds
-        guard = lambda: _guard(deadline, cancelled)
+        clock = _checked_clock()
+        initial = clock()
+        deadline = initial + float(budget.max_seconds)
+        if not math.isfinite(deadline) or deadline <= initial:
+            raise ProbeError('OUTPUT_INVALID')
+        guard = lambda: _guard(deadline, cancelled, clock)
         def verify():
             guard()
             if verify_binding(scope.binding) is not True:
@@ -251,17 +276,16 @@ def probe_os_dns(scope, *, verify_binding, verify_runtime, approve_query,
         verify()
         # Absolute name suppresses search-suffix expansion; no second query/retry.
         request = json.dumps([scope.absolute_name, scope.query_type]).encode('ascii')
-        guard()
+        started = guard()
         result['requests_attempted'] = 1
-        started = time.monotonic()
         raw = _run_child(scope.binding, request, deadline, cancelled)
         verify()
         projection = _project(raw, scope.query_type)
-        guard()
+        finished = guard()
         result['facts'] = [{'source_ref': 'os-system-resolution', 'layer': 'runtime_observed',
                             'observed_at': datetime.now(timezone.utc).isoformat(),
                             'clock_accuracy': 'not_verified',
-                            'elapsed_ms': round((time.monotonic() - started) * 1000, 3),
+                            'elapsed_ms': round((finished - started) * 1000, 3),
                             'value': projection}]
         result['execution_status'] = 'completed'
     except ProbeError as exc:

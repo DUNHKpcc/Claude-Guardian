@@ -97,11 +97,32 @@ try {
 '''
 
 
-def _guard(deadline, cancelled):
+def _checked_clock():
+    """Keep one operation's clock finite and nondecreasing before using it."""
+    previous = None
+
+    def read():
+        nonlocal previous
+        value = time.monotonic()
+        try:
+            finite = type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            finite = False
+        if not finite or (previous is not None and value < previous):
+            raise ProbeError('OUTPUT_INVALID')
+        previous = value
+        return float(value)
+
+    return read
+
+
+def _guard(deadline, cancelled, clock=None):
     if cancelled():
         raise ProbeError('CANCELLED')
-    if time.monotonic() >= deadline:
+    now = (clock or time.monotonic)()
+    if now >= deadline:
         raise ProbeError('TIMEOUT')
+    return now
 
 
 def _validate(scope, budget):
@@ -121,7 +142,7 @@ def _validate(scope, budget):
         raise ProbeError('INPUT_INVALID')
     if b.platform != 'win32' or sys.platform != 'win32':
         raise ProbeError('UNSUPPORTED_PLATFORM')
-    if (type(budget.max_seconds) not in (int, float) or not math.isfinite(budget.max_seconds)
+    if (type(budget.max_seconds) not in (int, float)
             or not .05 <= budget.max_seconds <= 15):
         raise ProbeError('INPUT_INVALID')
     name = scope.name
@@ -289,15 +310,19 @@ def probe_windows_dns(scope, *, verify_binding, verify_runtime, approve_query,
                        'upstream_route', 'native_ownership_adapter']}
     try:
         _validate(scope, budget)
-        deadline = time.monotonic() + budget.max_seconds
+        clock = _checked_clock()
+        initial = clock()
+        deadline = initial + float(budget.max_seconds)
+        if not math.isfinite(deadline) or deadline <= initial:
+            raise ProbeError('OUTPUT_INVALID')
         def verify():
-            _guard(deadline, cancelled)
+            _guard(deadline, cancelled, clock)
             if verify_binding(scope.binding) is not True:
                 raise ProbeError('TARGET_NOT_BOUND')
-            _guard(deadline, cancelled)
+            _guard(deadline, cancelled, clock)
             if verify_runtime(scope.binding) is not True:
                 raise ProbeError('RUNTIME_NOT_TRUSTED')
-            _guard(deadline, cancelled)
+            _guard(deadline, cancelled, clock)
         verify()
         if approve_query(scope, budget) is not True:
             raise ProbeError('AUTHORIZATION_MISSING')
@@ -306,16 +331,15 @@ def probe_windows_dns(scope, *, verify_binding, verify_runtime, approve_query,
                               'module': scope.binding.dnsclient_module}).encode('ascii')
         if len(request) > MAX_REQUEST:
             raise ProbeError('INPUT_INVALID')
-        _guard(deadline, cancelled)
+        started = _guard(deadline, cancelled, clock)
         result['requests_attempted'] = 1
-        started = time.monotonic()
         raw = _run_child(scope.binding, request, deadline, cancelled)
         verify()
         value = _project(raw, scope.query_type)
-        _guard(deadline, cancelled)
+        finished = _guard(deadline, cancelled, clock)
         result['facts'] = [{'source_ref': 'windows-system-dns', 'layer': 'runtime_observed',
             'observed_at': datetime.now(timezone.utc).isoformat(), 'clock_accuracy': 'not_verified',
-            'elapsed_ms': round((time.monotonic() - started) * 1000, 3), 'value': value}]
+            'elapsed_ms': round((finished - started) * 1000, 3), 'value': value}]
         result['execution_status'] = 'completed'
     except ProbeError as exc:
         code = exc.args[0] if exc.args else None

@@ -157,11 +157,26 @@ class _Budget:
             _fail('INVALID_BUDGET')
         if cancelled is not None and not callable(cancelled):
             _fail('INVALID_CANCELLATION_CALLBACK')
-        self.deadline = time.monotonic() + seconds
+        self.previous_tick = None
+        started = self._tick()
+        self.deadline = started + seconds
+        if not math.isfinite(self.deadline) or self.deadline <= started:
+            _fail('INVALID_BUDGET')
         self.cancelled = cancelled
 
+    def _tick(self):
+        value = time.monotonic()
+        try:
+            valid = type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            valid = False
+        if not valid or (self.previous_tick is not None and value < self.previous_tick):
+            _fail('INVALID_BUDGET')
+        self.previous_tick = value
+        return value
+
     def check(self):
-        if time.monotonic() >= self.deadline:
+        if self._tick() >= self.deadline:
             _fail('TIMEOUT')
         if self.cancelled is not None:
             try:
@@ -173,7 +188,7 @@ class _Budget:
             if value:
                 _fail('CANCELLED')
         # A slow cancellation callback counts against the same budget.
-        if time.monotonic() >= self.deadline:
+        if self._tick() >= self.deadline:
             _fail('TIMEOUT')
 
 
@@ -473,8 +488,8 @@ def plan(path, proposed, target_ref, *, ttl_seconds=600, now=None,
         _fail('INVALID_TARGET')
     now = time.time() if now is None else now
     if (type(ttl_seconds) not in (int, float) or not 0 < ttl_seconds <= 3600
-            or type(now) not in (int, float) or not math.isfinite(now)
-            or abs(now) > 1e12):
+            or type(now) not in (int, float) or abs(now) > 1e12
+            or not math.isfinite(now)):
         _fail('INVALID_EXPIRY')
     budget = _Budget(budget_seconds, cancelled)
     budget.check()
@@ -566,7 +581,8 @@ def _validate(p):
         if type(value) is not int or not 0 <= value <= MAX_BYTES:
             _fail('INVALID_PLAN')
     for value in (p['created_at'], p['expires_at']):
-        if type(value) not in (int, float) or not math.isfinite(value):
+        if (type(value) not in (int, float) or abs(value) > 1e12
+                or not math.isfinite(value)):
             _fail('INVALID_PLAN')
     if not 0 < p['expires_at'] - p['created_at'] <= 3600:
         _fail('INVALID_PLAN')

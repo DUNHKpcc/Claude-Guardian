@@ -94,3 +94,8 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 在已独立确认可信的目标 Mac 或 Windows 主机，`scripts/diagnostic_session.py --target-ref <目标别名>` 提供终端元数据流程：显示精确范围，30秒内输入新随机 nonce 确认；无 `--yes`、导入授权、DNS选项、自动浏览器或默认保存。可选 `--dashboard-output <明确批准的新本地文件>` 仅保存新文件，须先核实目录本地/已水合；不覆盖旧文件。
 
 可调用 DNS 会话必须额外提供真正的宿主绑定、运行时与中性端点核验实现，并为每个 A/AAAA 查询重新取得具体授权；独立CLI尚未实现这些前提，因此保持元数据范围。核验异常或否定在会话内不可由后来成功重查解除。后端按实际平台选择；Windows元数据仍保留控制台账户关系未知/绑定阻塞，Windows DNS会话未接入。Windows输出拒绝ADS/设备名等危险语法，但权限继承父目录ACL，0600不证明Windows隐私。所有结果保持PC0关闭；未经真实设备验收，不把测试成功等同于可安全执行探测。
+
+
+### 私有配置候选（不可应用）
+
+`scripts/config_edit_plan.py` 在内存中把原始语义修复请求与精确哈希绑定的已拥有扩展配置，编译为有限规则policy token修改候选。仅支持keep-existing中的特定已有DOMAIN/DOMAIN-SUFFIX三字段规则，保留其他字节并重新解析核对；不读写文件、无CLI、无apply、不触发事务。重复/歧义选择、未知版本和无效修订被拒绝；版本声明仍不等于兼容验收。候选私有材料含原文与精确差异，只能在获准私有本地审查，不上传或混入公开报告。所有原生适配、版本/归属、实际路由和动作授权阻塞保留，apply_supported始终false。

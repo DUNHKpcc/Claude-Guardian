@@ -159,7 +159,7 @@ class LocalProbeServer:
 
     def serve(self, duration_seconds=DEFAULT_DURATION, cancel_event=None):
         if (isinstance(duration_seconds, bool) or not isinstance(duration_seconds, (int, float))
-                or not math.isfinite(duration_seconds) or not 0 < duration_seconds <= MAX_DURATION):
+                or not 0 < duration_seconds <= MAX_DURATION or not math.isfinite(duration_seconds)):
             raise ValueError('Duration must be greater than zero and at most 900 seconds')
         if self._started or self._closed:
             raise RuntimeError('Server is single-use')

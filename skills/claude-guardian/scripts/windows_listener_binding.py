@@ -73,8 +73,8 @@ def _validate(s, b):
     for value in (s.target_ref, s.namespace_ref, s.desktop_user_ref):
         if type(value) is not str or not 1 <= len(value) <= 128:
             _fail('INPUT_INVALID')
-    if (type(b.max_seconds) not in (float, int) or not math.isfinite(b.max_seconds)
-            or not 0 < b.max_seconds <= 15):
+    if (type(b.max_seconds) not in (float, int) or not 0 < b.max_seconds <= 15
+            or not math.isfinite(b.max_seconds)):
         _fail('INPUT_INVALID')
     for value, limit in ((b.max_table_bytes, 1048576), (b.max_rows, 16384)):
         if type(value) is not int or not 1 <= value <= limit:
@@ -101,11 +101,26 @@ def verify_listener(selection, *, approve_read, verify_context, run_native,
               'snapshot': 'non_atomic', 'gate_state': 'closed', 'changes': []}
     try:
         _validate(selection, budget)
-        deadline = time.monotonic() + budget.max_seconds
+        previous_tick = None
+        def tick():
+            nonlocal previous_tick
+            value = time.monotonic()
+            try:
+                valid = type(value) in (int, float) and math.isfinite(value)
+            except OverflowError:
+                valid = False
+            if not valid or (previous_tick is not None and value < previous_tick):
+                _fail('NATIVE_READ_FAILED')
+            previous_tick = value
+            return value
+        started = tick()
+        deadline = started + budget.max_seconds
+        if not math.isfinite(deadline) or deadline <= started:
+            _fail('NATIVE_READ_FAILED')
         def guard():
             if cancelled():
                 _fail('CANCELLED')
-            if time.monotonic() >= deadline:
+            if tick() >= deadline:
                 _fail('TIMEOUT')
         guard()
         if not all(callable(x) for x in (approve_read, verify_context, run_native)):
