@@ -2,7 +2,7 @@
 // Synthetic pipe/DOM fixtures only. This file never starts Chrome.
 const assert = require('node:assert/strict');
 const {EventEmitter} = require('node:events');
-const {PipeClient, checkViewport, InteractionError, failureRecord} = require('../tools/check_dashboard_interactions.cjs');
+const {PipeClient, checkViewport, keyboardEvents, InteractionError, failureRecord} = require('../tools/check_dashboard_interactions.cjs');
 function fixture() {
   const child = new EventEmitter(); child.stdio = Array.from({length:5}, () => new EventEmitter());
   const writes = [];
@@ -10,6 +10,16 @@ function fixture() {
   return {client: new PipeClient(child), child, writes};
 }
 async function tests() {
+  for (const [name, text, downType, virtualKey] of [['Enter','\r','keyDown',13],['Space',' ','keyDown',32],['Tab','','rawKeyDown',9]]) {
+    const [down, up] = keyboardEvents(name);
+    assert.equal(down.type,downType); assert.equal(down.text,text); assert.equal(down.unmodifiedText,text);
+    assert.equal(down.windowsVirtualKeyCode,virtualKey); assert.equal(up.windowsVirtualKeyCode,virtualKey);
+    assert.equal(up.type,'keyUp'); assert.equal(down.modifiers,0); assert.equal(up.modifiers,0);
+    assert.ok(!('text' in up)); assert.ok(!('nativeVirtualKeyCode' in down)); assert.ok(!('nativeVirtualKeyCode' in up));
+  }
+  assert.ok(keyboardEvents('Tab',8).every(event => event.modifiers === 8));
+  assert.throws(() => keyboardEvents('Unknown'),/INTERACTION_ARGUMENTS/);
+  assert.throws(() => keyboardEvents('Enter',8),/INTERACTION_ARGUMENTS/);
   assert.deepEqual(failureRecord(new InteractionError('INTERACTION_COMMAND_FAILED','DOM.querySelectorAll')),
     {schema_version:'guardian-interaction-failure/0.1',code:'INTERACTION_COMMAND_FAILED',stage:'DOM.querySelectorAll'});
   for (const error of [new Error('private-sentinel'), new InteractionError('private-sentinel','/private/path')]) {
@@ -44,7 +54,7 @@ async function tests() {
   }
   // Deterministic fake browser checks the harness assertions, not Chrome behavior.
   async function runFake(change) {
-    let focus = -1; const opened = Array(12).fill(false); const methods = [];
+    let focus = -1; let spacePressed = false; const opened = Array(12).fill(false); const methods = [];
     const client = {events: [], async command(method, p = {}, session) {
       methods.push(method);
       if (method === 'Target.createTarget') return {targetId:'owned'};
@@ -61,9 +71,19 @@ async function tests() {
       if (method === 'Accessibility.getFullAXTree') return {nodes:[{backendDOMNodeId:focus+2,properties:[{name:'focused',value:{value:true}}]}]};
       if (method === 'CSS.getComputedStyleForNode') return {computedStyle:[{name:'outline-style',value:change==='outline'?'none':'solid'},{name:'outline-width',value:'2px'}]};
       if (method === 'Page.getLayoutMetrics') return {cssLayoutViewport:{clientWidth:390},cssContentSize:{width:change==='overflow'?500:390}};
-      if (method === 'Input.dispatchKeyEvent' && p.type === 'keyDown') {
-        if (p.key === 'Tab') focus += p.modifiers === 8 ? -1 : 1;
-        else opened[focus] = !opened[focus];
+      if (method === 'Input.dispatchKeyEvent') {
+        assert.ok(!('nativeVirtualKeyCode' in p));
+        if (p.type === 'rawKeyDown' && p.key === 'Tab') focus += p.modifiers === 8 ? -1 : 1;
+        if (p.type === 'keyDown' && p.key === 'Enter') {
+          assert.equal(p.text,'\r'); assert.equal(p.unmodifiedText,'\r');
+          opened[focus] = !opened[focus];
+        }
+        if (p.type === 'keyDown' && p.key === ' ') {
+          assert.equal(p.text,' '); assert.equal(p.unmodifiedText,' '); spacePressed = true;
+        }
+        if (p.type === 'keyUp' && p.key === ' ') {
+          assert.ok(spacePressed); opened[focus] = !opened[focus]; spacePressed = false;
+        }
       }
       return {};
     }};

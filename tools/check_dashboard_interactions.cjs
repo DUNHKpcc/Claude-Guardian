@@ -77,6 +77,25 @@ async function eventually(check, code) {
   for (let i = 0; i < 40; i++) { if (await check()) return; await delay(25); }
   throw new InteractionError(code);
 }
+// CDP text defaults to empty; Enter activation needs its carriage-return text.
+// Match the protocol's keyDown/text versus rawKeyDown distinction, as used by
+// Puppeteer's CdpKeyboard and USKeyboardLayout. No platform-native keycode is
+// fabricated from a Windows virtual code on the Linux runner.
+// https://chromedevtools.github.io/devtools-protocol/tot/Input/#method-dispatchKeyEvent
+// https://github.com/puppeteer/puppeteer/blob/main/packages/puppeteer-core/src/cdp/Input.ts
+function keyboardEvents(name, modifiers = 0) {
+  const definitions = {
+    Tab: {key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9, text: ''},
+    Enter: {key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r'},
+    Space: {key: ' ', code: 'Space', windowsVirtualKeyCode: 32, text: ' '}
+  };
+  requireCondition(Object.hasOwn(definitions, name) && (modifiers === 0 || (name === 'Tab' && modifiers === 8)),
+    'INTERACTION_ARGUMENTS');
+  const {text, ...identity} = definitions[name];
+  const common = {...identity, modifiers, location: 0};
+  return [{...common, type: text ? 'keyDown' : 'rawKeyDown', text, unmodifiedText: text, autoRepeat: false},
+    {...common, type: 'keyUp'}];
+}
 async function checkViewport(client, pageURL, width, height) {
   const {targetId} = await client.command('Target.createTarget', {url: 'about:blank'});
   const {sessionId} = await client.command('Target.attachToTarget', {targetId, flatten: true});
@@ -102,14 +121,13 @@ async function checkViewport(client, pageURL, width, height) {
     requireCondition(metrics.cssLayoutViewport.clientWidth === width &&
       metrics.cssContentSize.width <= width + 1, 'INTERACTION_HORIZONTAL_OVERFLOW');
   };
-  const key = async (name, code, virtualKey) => {
-    for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', {
-      type, key: name, code, windowsVirtualKeyCode: virtualKey, nativeVirtualKeyCode: virtualKey});
+  const key = async (name, modifiers = 0) => {
+    for (const event of keyboardEvents(name, modifiers)) await send('Input.dispatchKeyEvent', event);
   };
   await noOverflow();
   for (let i = 0; i < summaries.length; i++) {
     requireCondition(!(await isOpen(details[i])), 'INTERACTION_NOT_INITIALLY_COLLAPSED');
-    await key('Tab', 'Tab', 9);
+    await key('Tab');
     const {node} = await send('DOM.describeNode', {nodeId: summaries[i]});
     const focused = async () => (await send('Accessibility.getFullAXTree')).nodes.some(ax =>
       ax.backendDOMNodeId === node.backendNodeId && ax.properties?.some(p => p.name === 'focused' && p.value.value === true));
@@ -118,23 +136,22 @@ async function checkViewport(client, pageURL, width, height) {
     const css = Object.fromEntries(styles.map(item => [item.name, item.value]));
     requireCondition(css['outline-style'] !== 'none' && parseFloat(css['outline-width']) > 0,
       'INTERACTION_FOCUS_INDICATOR_MISSING');
-    await key('Enter', 'Enter', 13);
+    await key('Enter');
     await eventually(() => isOpen(details[i]), 'INTERACTION_ENTER_DID_NOT_EXPAND');
     await noOverflow();
-    await key('Enter', 'Enter', 13);
+    await key('Enter');
     await eventually(async () => !(await isOpen(details[i])), 'INTERACTION_ENTER_DID_NOT_COLLAPSE');
-    await key(' ', 'Space', 32);
+    await key('Space');
     await eventually(() => isOpen(details[i]), 'INTERACTION_SPACE_DID_NOT_EXPAND');
-    await key(' ', 'Space', 32);
+    await key('Space');
     await eventually(async () => !(await isOpen(details[i])), 'INTERACTION_SPACE_DID_NOT_COLLAPSE');
   }
   // Reopen every disclosure through keyboard input in a fresh traversal, so
   // overflowing content cannot hide behind our one-at-a-time checks.
   for (let i = summaries.length - 1; i >= 0; i--) {
-    await key('Enter', 'Enter', 13);
+    await key('Enter');
     await eventually(() => isOpen(details[i]), 'INTERACTION_ALL_OPEN_FAILED');
-    if (i > 0) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', {
-      type, key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9, modifiers: 8});
+    if (i > 0) await key('Tab', 8);
   }
   await noOverflow();
   const requests = client.events.slice(firstEvent).filter(event =>
@@ -193,4 +210,4 @@ if (require.main === module) main().catch(error => {
   }
   console.error(record.code); process.exitCode = 2;
 });
-module.exports = {PipeClient, InteractionError, checkViewport, failureRecord, FAILURE_CODES, FAILURE_STAGES};
+module.exports = {PipeClient, InteractionError, checkViewport, keyboardEvents, failureRecord, FAILURE_CODES, FAILURE_STAGES};
