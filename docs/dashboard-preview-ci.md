@@ -90,3 +90,15 @@ The same CI job now runs `check_dashboard_interactions.py` with its Node standar
 Page-scoped request observations must contain only the one local document and no subresources. This does not prove whole-browser network isolation or actual diagnostics. Font acquisition remains the separate explicitly opted-in fixed-asset operation. The helper writes `interaction.json` only after validated checks and owned-process cleanup succeed. Protocol calls have five-second limits; the exchange has a60-second timer and the supervising process a90-second limit, in addition to the existing five-minute CI job limit. These are CI test bounds, not production guarantees.
 
 Local protocol fixtures test the harness, not browser behavior. Real interaction acceptance is recorded only after the exact CI job succeeds and its artifact is retrieved; prior static PNG inspection remains separate. No user browser or profile is accessed.
+
+### Verified real interaction result
+
+Commit `af3be41ba287c3b9c2f44775c25d97bb04b8c1be`,
+[run38778430369](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38778430369),
+artifact11994278104 completed successfully and was downloaded and hash-checked.
+Chrome155 passed all twelve disclosure keyboard/focus checks and both viewport
+layout bounds. The artifact explicitly retains `network_isolation_verified: false`.
+Initial runs failed Enter activation because the helper omitted text-bearing CDP
+key fields; the corrected event generator passed without changing native-state
+assertions or browser security flags. This is synthetic CI interaction evidence,
+not a user-device or real diagnostic outcome.

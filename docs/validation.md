@@ -175,3 +175,13 @@ d9582ce的合成截图run38771591023成功，artifact11991666940归属该提交�
 基于fb8ceede新增4份独立CI工具/测试与workflow及证据文档。完整Linux889项881通过/8跳过，Node8生命周期与独立Node合成协议检查、compileall、diff及重复打包通过，发行运行时代码未变，包SHA-256仍 `02f822e26833172f00816625a0e924c940639f598f164c948cdbd97a44bc4a87`。24项dashboard工具边界（其中8项新交互工具测试）独立复核通过；没有在本地执行Chrome。真实键盘事件、焦点与折叠/布局结果只能由精确CI产物建立，不能以模拟协议结果充当验收。
 
 前一代码提交fb8ceede的CI38775571648三端成功：881项，Linux873/8、macOS872/9、Windows760/121通过/跳过；Node/compile/可复现包成功。真实上下文smoke仍明确Mac RUNTIME_PATH_INVALID与Windows CONTEXT_FOREIGN阻塞，不改变原生设备、DNS或运行时信任限制。
+
+## 浏览器交互实际回执与稳定代码基线（2026-10-15）
+
+代码基线 `af3be41ba287c3b9c2f44775c25d97bb04b8c1be`：[三平台CI38778429996](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38778429996)成功。892项测试：Linux884通过/8跳过，macOS883通过/9跳过，Windows771通过/121跳过；Node、编译与可复现包通过。包SHA-256 `02f822e26833172f00816625a0e924c940639f598f164c948cdbd97a44bc4a87`。
+
+[真实Chrome交互CI38778430369](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38778430369)成功。artifact `11994278104`已取回校验，Chrome155在1440×1000和390×1100下实际验证12处summary的Tab焦点/可见焦点轮廓、Enter/Space展开折叠、全展开无横向溢出；页面范围观测只有一个本地文档、零子资源。此为CI合成页面交互证据，不能证明全浏览器网络隔离、真实诊断结果或用户设备。原生上下文仍为Mac RUNTIME_PATH_INVALID、Windows CONTEXT_FOREIGN阻塞跳过，后续ABI/运行时/namespace/设备授权缺口保持。
+
+失败历史保留：43d63f6首次交互未输出可用诊断；29ab8bd定位Enter未展开。af3be41修正CDP文本键事件和错误的native keycode映射，原DOM/焦点/布局断言及安全策略未放宽；不靠重试或skip掩盖失败。
+
+取回ZIP SHA-256 `f1720114914c02d0d09ac90ed7e445298d212c668848edc4ba0cf10ebb115973`，interaction.json SHA-256 `1d8b20287c57882011cefd2d3d805a3977d9f5bc5adf9efa7923ba539490897b`；schema/两viewport/固定结果/原HTML hash均核验，network_isolation_verified=false。PNG哈希同时与manifest核对；此前逐图视觉复核仍有独立固定提交记录。

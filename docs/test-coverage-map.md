@@ -206,3 +206,9 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 
 T53：`tests/test_interview_flow.py::InterviewTests.test_accept_default_records_basis_without_second_route_question_or_permission` 核对accepted_default、无重复Q-C05及G3/PC0/保存门禁不变；显式VM/VPS/compare不被覆盖。
 T81：`test_multi_fact_turn_is_absorbed_before_scheduling_with_roles_and_provenance` 与CLI批处理回归覆盖规范事实一次吸收、只问缺口、私有保存续接及错误原子拒绝。缺套餐不推断；自然语言解析仍由宿主承担，故不关闭整个T81。新API还对订阅阶段/任务顺序与冲突作回归，保持已有逐事实接口契约。
+
+## 真实合成页面键盘交互子证据
+
+UI-I06（不新增原验收ID）：`af3be41ba287c3b9c2f44775c25d97bb04b8c1be`，[CI38778430369](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38778430369)、artifact11994278104已取回核验。实际Chrome在1440×1000/390×1100下用Input键盘事件核对12个summary焦点及轮廓、Enter/Space原生open状态、全展开无横向溢出；没有页面脚本求值、DOM强制修改或CSP绕过。页面请求只有本地Document，network_isolation_verified=false。不证明用户浏览器、真实诊断、全网络隔离或全部UI流程；218项完整案例仍保留原边界。
+
+首次43d63f6失败、29ab8bd定位Enter事件不完整，af3be41修正协议事件字段后通过；模拟协议测试用于检查驱动器，不替代此实际执行。相同代码三平台CI38778429996成功，892项Linux884/8、Mac883/9、Windows771/121通过/跳过；原生Mac/Windows继续明确阻塞skip，不升级成通过。
