@@ -138,7 +138,7 @@ class InventoryTests(unittest.TestCase):
     def test_expanded_native_handoff_keeps_gate_closed(self):
         args = argparse.Namespace(target_ref='device-1', confirm_target=True, authorize_audit=True, target_os='macos', target_kind='local', namespace='desktop', execution_location='native_local', user_context='same')
         extra = [('S02','macOS-product-15.2;build-24C101','mac-version'), ('S08','IANA:Asia:Shanghai','mac-timezone-link'), ('P06',g.proxy_summary(MAC_PROXY),'mac-proxy')]
-        with patch.object(g.sys, 'platform','darwin'), patch.object(g, 'extended_inventory', return_value=(extra, [])):
+        with patch.object(g.sys, 'platform','darwin'), patch.object(g, 'extended_inventory', return_value=(extra, [])), patch.object(g.os, 'uname', return_value=type('Uname', (), {'release':'fixture-kernel'})(), create=True):
             report = g.native_check(args)
         output = g.analyze(report, 'device-1', True)
         self.assertEqual(output['contact_control']['gate_state'], 'closed')

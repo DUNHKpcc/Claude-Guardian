@@ -1,0 +1,4 @@
+* text=auto eol=lf
+# Preserve exact authorized source bytes and manifest hashes on all platforms.
+skills/claude-guardian/sources/** -text
+*.pdf binary

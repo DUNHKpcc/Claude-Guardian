@@ -20,7 +20,7 @@ def main():
         "references/accounts-and-payments.md", "references/incidents-and-integrations.md",
         "references/evidence-policy.md", "references/source-library.md", "sources/manifest.json",
     ]
-    manifest = json.loads((skill / 'sources/manifest.json').read_text())
+    manifest = json.loads((skill / 'sources/manifest.json').read_text(encoding='utf-8'))
     for source in manifest['sources']:
         records = [(source['path'], source['distributed_sha256'])]
         records.extend((item['path'], item['sha256']) for item in source.get('companions', []))

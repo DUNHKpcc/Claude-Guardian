@@ -184,7 +184,33 @@ class InterviewTests(unittest.TestCase):
 
 class FileAndCLITests(unittest.TestCase):
     def run_cli(self, *args, cwd=None):
-        return subprocess.run([sys.executable, str(SCRIPT), *args], cwd=cwd, capture_output=True, text=True, timeout=10, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+        return subprocess.run([sys.executable, str(SCRIPT), *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", timeout=10, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+
+    def test_cli_utf8_even_when_inherited_stdout_is_ascii(self):
+        result = subprocess.run([sys.executable, str(SCRIPT), "interview"], capture_output=True,
+                                env=dict(os.environ, PYTHONIOENCODING="ascii"), timeout=10)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(json.loads(result.stdout.decode("utf-8"))["question"]["id"], "Q-J01")
+
+    def test_only_root_owned_macos_system_aliases_allowed(self):
+        class Node:
+            def __init__(self, name, linked=False, uid=0, parents=()):
+                self.name, self.linked, self.uid, self.parents = name, linked, uid, parents
+            def __str__(self):
+                return self.name
+            def is_symlink(self):
+                return self.linked
+            def lstat(self):
+                return type("Stat", (), {"st_uid": self.uid})()
+        alias = Node("/var", linked=True)
+        target = Node("/var/folders/test.json", parents=(alias,))
+        with patch.object(g.sys, "platform", "darwin"), patch.object(g.os, "readlink", return_value="/private/var"):
+            self.assertFalse(g.unsafe_symlink(target))
+            with patch.object(g.os, "readlink", return_value="/other"):
+                self.assertTrue(g.unsafe_symlink(target))
+            alias.uid = 1000
+            self.assertTrue(g.unsafe_symlink(target))
+            self.assertTrue(g.unsafe_symlink(Node("/tmp/user-link", linked=True)))
 
     def test_interview_smoke_no_persistence(self):
         with tempfile.TemporaryDirectory() as d:

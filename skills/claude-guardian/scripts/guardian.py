@@ -65,13 +65,28 @@ def redact(value):
     return re.sub(r"[0-9A-Fa-f:]*:[0-9A-Fa-f:]+(?:%[A-Za-z0-9]+)?", ipv6, value)
 
 
+def unsafe_symlink(path):
+    """Allow only Apple's root-owned OS aliases, never arbitrary user links."""
+    for part in [path, *path.parents]:
+        if not part.is_symlink():
+            continue
+        if sys.platform == "darwin" and str(part) in {"/var", "/tmp", "/etc"}:
+            try:
+                if part.lstat().st_uid == 0 and os.readlink(part) == "/private" + str(part):
+                    continue
+            except OSError:
+                pass
+        return True
+    return False
+
+
 def load_json(path):
     # No recursive discovery, symlinks, devices, UNC paths or oversized input.
     if str(path).startswith(("\\\\", "//")):
         raise GuardianError("UNSAFE_OR_OFFLINE_PATH")
     p = Path(path)
     try:
-        if any(part.is_symlink() for part in [p, *p.parents]):
+        if unsafe_symlink(p):
             raise GuardianError("UNSAFE_OR_OFFLINE_PATH")
         st = p.stat()
         if not stat.S_ISREG(st.st_mode) or st.st_size > MAX_BYTES:
@@ -583,7 +598,7 @@ def parser():
 
 def save_new(path, text):
     p = Path(path)
-    if str(path).startswith(("//", "\\\\")) or any(part.is_symlink() for part in [p, *p.parents]):
+    if str(path).startswith(("//", "\\\\")) or unsafe_symlink(p):
         raise GuardianError("UNSAFE_OR_OFFLINE_PATH", 3)
     try:
         fd = os.open(str(p), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -594,6 +609,9 @@ def save_new(path, text):
 
 
 def main(argv=None):
+    # JSON CLI output is always UTF-8, including Windows redirected stdout.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="strict")
     args = parser().parse_args(argv)
     code = 0
     try:
