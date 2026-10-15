@@ -1,5 +1,13 @@
 # 2026-10-16 验收交接
 
+## 最新可核验基线
+
+`78535f69b523287a0304c1be017dd60e491554f0`：[三平台CI 38772721879](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38772721879)全部成功。865项单元测试：Linux857通过/8跳过，macOS856通过/9跳过，Windows744通过/121跳过；三端Node合成生命周期、编译、可复现打包全部成功。包SHA-256：`46ef4ca7348147797a64960bd75868431afb31543fba982c93489bb19366c8ad`。
+
+实际CI上下文smoke：Windows在capture/CONTEXT_FOREIGN明确阻塞跳过，Mac在capture/RUNTIME_PATH_INVALID阻塞跳过。修复后的Windows不再出现此前token_restrictions返回大小错误，但后续未到达的ABI路径和真实桌面验收仍未通过，Mac新部分元数据API尚无原生执行证据。无真实用户设备或DNS探测。
+
+[同提交合成截图CI 38772721875](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38772721875)成功；下文记录已取回并查看像素的d9582ce截图，不能将静态截图当作交互验收。此前失败轮次保留为历史记录。
+
 ## 已发布与已验证
 
 - `06735926b14c15259272735d495af9707008e29c`：Windows离线预检、极简面板和HTTPS/STUN附件；[三平台CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38752978424)成功。Linux/macOS 517通过/5跳过，Windows416通过/106跳过，均522项

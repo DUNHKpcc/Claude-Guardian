@@ -155,3 +155,11 @@ Windows既有15秒mock-cmdlet测试重复超时，原因尚未确定。新增诊
 基于d9582ce，专用class21零初始化DWORD读取器接受长度1/4，长度1仅在高字节全零时有效；所有非零值继续被限制检查拒绝。官方DWORD契约与报告过的返回长度差异分别说明，不从固定错误枚举推断本次实际长度。通用读取器、native调用次数和跳过集合未变。独立35项合成复核通过；完整Linux865项857通过/8跳过，Node8、compileall、diff、可复现包通过，包SHA-256 `46ef4ca7348147797a64960bd75868431afb31543fba982c93489bb19366c8ad`。真实Windows结果须检查本次精确push CI，不能提前标绿。
 
 d9582ce的合成截图run38771591023成功，artifact11991666940归属该提交，ZIP SHA-256 `a88189d838d85218d8cedde34f8a2d35d2ee66393374fd156e38200f2e3e0dbd`。实际下载且逐图查看：desktop1440×1000 SHA-256 `55f0c6d7fa05d43b90150683ec50159b55bb02bfd01c4dbf38be1f8e901da479`；mobile390×1100 `2677a889fc735a715fd595f59fb20b8d456488fbf6b59158f8860b8b781d72ca`。中文可读、极简表格/合成标签/未知状态可见、无明显裁切。此为静态布局证据，不证明折叠交互、真实设备、DNS或网络隔离。
+
+## 最终代码基线CI回执（2026-10-15）
+
+`78535f69b523287a0304c1be017dd60e491554f0`：[三平台CI 38772721879](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38772721879)全部成功。865项单元测试：Linux857通过/8跳过，macOS856通过/9跳过，Windows744通过/121跳过；三端Node合成生命周期、编译、可复现打包全部成功。包SHA-256：`46ef4ca7348147797a64960bd75868431afb31543fba982c93489bb19366c8ad`。
+
+实际CI上下文smoke：Windows在capture/CONTEXT_FOREIGN明确阻塞跳过，Mac在capture/RUNTIME_PATH_INVALID阻塞跳过。修复后的Windows不再出现此前token_restrictions返回大小错误，但后续未到达的ABI路径和真实桌面验收仍未通过，Mac新部分元数据API尚无原生执行证据。无真实用户设备或DNS探测。
+
+[同提交合成截图CI 38772721875](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38772721875)成功；下文记录已取回并查看像素的d9582ce截图，不能将静态截图当作交互验收。此前失败轮次保留为历史记录。

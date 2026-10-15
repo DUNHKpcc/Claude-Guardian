@@ -100,3 +100,15 @@ fields, extra fields, and diagnostic fields on observed/blocked envelopes.
 These fields are diagnostics only and every such envelope still fails. No native
 return values, last-error numbers, paths, identifiers, or exception text are
 included. The next CI run is needed to identify the failing branch.
+
+## Verified follow-up outcome
+
+Commit `78535f69b523287a0304c1be017dd60e491554f0`, run
+[38772721879](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38772721879),
+completed successfully on all three platforms. After the class-21 return-width
+fix, Windows capture reported the existing `CONTEXT_FOREIGN` blocked condition;
+macOS capture still reported `RUNTIME_PATH_INVALID`. Both actual native tests
+were explicit skips, not observed contexts or complete ABI/desktop acceptance.
+No additional blocked codes were introduced. The earlier failures remain part
+of the diagnostic history. The new Mac metadata-only fallback was not exercised
+by this strict context smoke.

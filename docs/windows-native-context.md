@@ -104,9 +104,10 @@ runtime_path_screen=local_drive_syntax_only and runtime_integrity=not_verified.
 runs synthetic fixtures only on every platform. It checks foreign/service/remote
 contexts, impersonation errors, private data, native buffer lengths/pointers,
 cleanup, cancellation, expiry, mutation, path syntax, and closed binding. It does
-not invoke Windows native APIs, even in Windows CI. Native acceptance and ABI
-validation are not_run; separate explicit approval is required before enabling
-owned-process metadata checks in Windows CI or on a device.
+not invoke Windows native APIs, even in Windows CI. The separate owned-CI smoke was run with explicit scope; after the class-21
+compatibility fix, commit78535f69 run38772721879 reached CONTEXT_FOREIGN and
+was explicitly blocked. This does not establish complete ABI or desktop
+acceptance. Actual user-device checks still require their own authorization.
 
 Remove this module, its test, and this guide to roll back, plus any separately
 approved package registration. There are no installed dependencies, services,
