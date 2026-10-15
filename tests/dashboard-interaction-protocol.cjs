@@ -2,7 +2,7 @@
 // Synthetic pipe/DOM fixtures only. This file never starts Chrome.
 const assert = require('node:assert/strict');
 const {EventEmitter} = require('node:events');
-const {PipeClient, checkViewport} = require('../tools/check_dashboard_interactions.cjs');
+const {PipeClient, checkViewport, InteractionError, failureRecord} = require('../tools/check_dashboard_interactions.cjs');
 function fixture() {
   const child = new EventEmitter(); child.stdio = Array.from({length:5}, () => new EventEmitter());
   const writes = [];
@@ -10,6 +10,11 @@ function fixture() {
   return {client: new PipeClient(child), child, writes};
 }
 async function tests() {
+  assert.deepEqual(failureRecord(new InteractionError('INTERACTION_COMMAND_FAILED','DOM.querySelectorAll')),
+    {schema_version:'guardian-interaction-failure/0.1',code:'INTERACTION_COMMAND_FAILED',stage:'DOM.querySelectorAll'});
+  for (const error of [new Error('private-sentinel'), new InteractionError('private-sentinel','/private/path')]) {
+    assert.deepEqual(failureRecord(error), {schema_version:'guardian-interaction-failure/0.1',code:'INTERACTION_FAILED',stage:'unknown'});
+  }
   {
     const {client, child, writes} = fixture();
     const result = client.command('Page.enable', {}, 'owned-session');

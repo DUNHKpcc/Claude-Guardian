@@ -4,7 +4,18 @@ const {spawn} = require('node:child_process');
 const fs = require('node:fs');
 const {pathToFileURL} = require('node:url');
 
-class InteractionError extends Error {}
+const FAILURE_CODES = new Set(["INTERACTION_ALL_OPEN_FAILED", "INTERACTION_ARGUMENTS", "INTERACTION_BROWSER_EXITED", "INTERACTION_BROWSER_REAP_TIMEOUT", "INTERACTION_BROWSER_START_FAILED", "INTERACTION_COMMAND_FAILED", "INTERACTION_COMMAND_TIMEOUT", "INTERACTION_DETAILS_COUNT", "INTERACTION_DOCUMENT_MISMATCH", "INTERACTION_ENTER_DID_NOT_COLLAPSE", "INTERACTION_ENTER_DID_NOT_EXPAND", "INTERACTION_EVENT_LIMIT", "INTERACTION_FAILED", "INTERACTION_FOCUS_INDICATOR_MISSING", "INTERACTION_HORIZONTAL_OVERFLOW", "INTERACTION_KEYBOARD_FOCUS_ORDER", "INTERACTION_LOAD_TIMEOUT", "INTERACTION_NAVIGATION_FAILED", "INTERACTION_NOT_INITIALLY_COLLAPSED", "INTERACTION_PIPE_CLOSED", "INTERACTION_PIPE_ERROR", "INTERACTION_PROTOCOL_INVALID", "INTERACTION_PROTOCOL_LIMIT", "INTERACTION_REQUIRES_CI", "INTERACTION_SPACE_DID_NOT_COLLAPSE", "INTERACTION_SPACE_DID_NOT_EXPAND", "INTERACTION_TOTAL_TIMEOUT", "INTERACTION_UNEXPECTED_PAGE_RESOURCE", "INTERACTION_UNEXPECTED_REPLY", "INTERACTION_VERSION_INVALID"]);
+const FAILURE_STAGES = new Set(["Accessibility.enable", "Accessibility.getFullAXTree", "Browser.getVersion", "CSS.enable", "CSS.getComputedStyleForNode", "DOM.describeNode", "DOM.enable", "DOM.getAttributes", "DOM.getDocument", "DOM.querySelectorAll", "Emulation.setDeviceMetricsOverride", "Input.dispatchKeyEvent", "Network.enable", "Page.bringToFront", "Page.enable", "Page.getLayoutMetrics", "Page.navigate", "Target.attachToTarget", "Target.closeTarget", "Target.createTarget", "cleanup", "save_result", "startup", "unknown"]);
+let currentStage = "startup";
+let diagnosticPath = null;
+class InteractionError extends Error {
+  constructor(code, stage = currentStage) { super(code); this.stage = stage; }
+}
+function failureRecord(error) {
+  return {schema_version: "guardian-interaction-failure/0.1",
+    code: error instanceof InteractionError && FAILURE_CODES.has(error.message) ? error.message : "INTERACTION_FAILED",
+    stage: error instanceof InteractionError && FAILURE_STAGES.has(error.stage) ? error.stage : "unknown"};
+}
 function requireCondition(value, code) { if (!value) throw new InteractionError(code); }
 class PipeClient {
   constructor(child) {
@@ -51,6 +62,7 @@ class PipeClient {
     }
   }
   command(method, params = {}, sessionId) {
+    currentStage = FAILURE_STAGES.has(method) ? method : "unknown";
     if (this.failed) return Promise.reject(this.failed);
     const id = this.next++;
     return new Promise((resolve, reject) => {
@@ -138,8 +150,9 @@ async function checkViewport(client, pageURL, width, height) {
 async function main() {
   requireCondition(process.env.GITHUB_ACTIONS === 'true' && process.env.RUNNER_OS === 'Linux' &&
     process.platform === 'linux' && process.getuid() !== 0, 'INTERACTION_REQUIRES_CI');
-  const [browser, page, profile, output] = process.argv.slice(2);
-  requireCondition(browser && page && profile && output && process.argv.length === 6, 'INTERACTION_ARGUMENTS');
+  const [browser, page, profile, output, diagnostic] = process.argv.slice(2);
+  requireCondition(browser && page && profile && output && diagnostic && process.argv.length === 7, 'INTERACTION_ARGUMENTS');
+  diagnosticPath = diagnostic;
   const child = spawn(browser, ['--headless', '--no-first-run', '--no-default-browser-check',
     '--disable-background-networking', '--disable-component-update', '--disable-default-apps',
     '--disable-sync', '--metrics-recording-only', '--force-device-scale-factor=1', '--hide-scrollbars',
@@ -154,11 +167,15 @@ async function main() {
     for (const [width, height] of [[1440, 1000], [390, 1100]]) {
       results.push(await checkViewport(client, pathToFileURL(page).href, width, height));
     }
+    currentStage = 'save_result';
     fs.writeFileSync(output, JSON.stringify({schema_version: 'guardian-dashboard-interaction/0.1',
       record_kind: 'synthetic_example', browser_version: product,
       evidence_kind: 'ci_real_chrome_keyboard_and_layout',
       network_isolation_verified: false, viewports: results}) + '\n', {flag: 'wx', mode: 0o600});
+  } catch (error) {
+    throw error instanceof InteractionError ? error : new InteractionError('INTERACTION_FAILED');
   } finally {
+    currentStage = 'cleanup';
     clearTimeout(whole); client.fail('INTERACTION_FINISHED');
     child.kill('SIGKILL');
     if (child.exitCode === null && child.signalCode === null) await new Promise((resolve, reject) => {
@@ -168,6 +185,12 @@ async function main() {
   }
 }
 if (require.main === module) main().catch(error => {
-  console.error(error instanceof InteractionError ? error.message : 'INTERACTION_FAILED'); process.exitCode = 2;
+  const record = failureRecord(error);
+  // Private fixed-enum diagnostic only; never copy protocol responses or paths.
+  if (diagnosticPath) {
+    try { fs.writeFileSync(diagnosticPath, JSON.stringify(record), {flag: 'wx', mode: 0o600}); }
+    catch { /* Parent reports a missing diagnostic as failure, never acceptance. */ }
+  }
+  console.error(record.code); process.exitCode = 2;
 });
-module.exports = {PipeClient, InteractionError, checkViewport};
+module.exports = {PipeClient, InteractionError, checkViewport, failureRecord, FAILURE_CODES, FAILURE_STAGES};
