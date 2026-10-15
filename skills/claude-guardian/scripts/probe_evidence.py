@@ -1,4 +1,4 @@
-"""Bounded offline projection of HTTPS/STUN output, never an authority source.
+"""Bounded offline projection of HTTPS/STUN/Mihomo DNS output, never an authority source.
 
 All input, including target aliases, timestamps and success, is a declaration.
 No transport is imported or invoked. This projection cannot construct workflow
@@ -16,7 +16,8 @@ PATHS = {'direct_socket_os_route_tun_unknown': '系统路由（TUN 未知）',
 ENDPOINTS = {'ipify_v4': ('https://api.ipify.org?format=json', 4),
              'ipify_v6': ('https://api6.ipify.org?format=json', 6),
              'ipify_dual': ('https://api64.ipify.org?format=json', None)}
-STATUS_LABELS = {'observed': '已记录成功声明', 'unknown': '结果未知',
+STATUS_LABELS = {'observed': '已记录成功声明', 'response_observed': '已记录响应声明',
+                 'context_unknown': '目标或路径上下文未知', 'unknown': '结果未知',
                  'cancelled': '已取消', 'stale': '证据已过期',
                  'target_mismatch': '目标声明不匹配', 'path_mismatch': '路径声明不匹配',
                  'time_invalid': '时间缺失或无效', 'authorization_needed': '授权或权限不足',
@@ -37,6 +38,89 @@ def _ref(value):
     return type(value) is str and 0 < len(value) <= 128 and value.strip() and not any(ord(c) < 32 for c in value)
 
 
+MIHOMO_SCHEMA = 'guardian-mihomo-dns-probe/0.1'
+MIHOMO_PATH = 'mihomo_dns_query'
+MIHOMO_ERRORS = frozenset({'CANCELLED', 'TIMEOUT', 'BUDGET_EXCEEDED',
+    'INPUT_OR_RESPONSE_INVALID', 'CONTROLLER_NOT_BOUND', 'AUTHORIZATION_MISSING',
+    'AUTHENTICATION_HANDOFF_REQUIRED', 'CONTROLLER_RESPONSE_REJECTED',
+    'PERMISSION_DENIED', 'PC0_TARGET_FORBIDDEN', 'RESPONSE_CONTEXT_MISMATCH'})
+
+
+def _mihomo_sample(item, target, index, now):
+    """Mihomo exports no binding: context is a separate, unverified declaration."""
+    raw = item['result']
+    facts, error = raw.get('facts'), raw.get('error_code')
+    execution = raw.get('execution_status')
+    if (raw.get('operation') != 'probe' or raw.get('coverage') != 'mihomo_dns_query_sample_only'
+            or raw.get('gate_state') != 'closed' or type(facts) is not list
+            or type(raw.get('requests_attempted')) is not int or raw['requests_attempted'] not in (0, 1)
+            or execution not in ('completed', 'blocked')
+            or (error is not None and (type(error) is not str or error not in MIHOMO_ERRORS))
+            or (execution == 'completed' and (error is not None or len(facts) != 1 or raw['requests_attempted'] != 1))
+            or (execution == 'blocked' and (facts or error is None))):
+        raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
+    summary = None
+    if facts:
+        fact = facts[0]
+        if (type(fact) is not dict or fact.get('source_ref') != 'mihomo-dns-query'
+                or fact.get('layer') != 'runtime_observed' or type(fact.get('value')) is not dict):
+            raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
+        value = fact['value']
+        classes = value.get('address_class_counts')
+        if (type(classes) is not dict or value.get('query_type') not in ('A', 'AAAA')
+                or value.get('question_matches') is not True
+                or value.get('address_family') != ('IPv4' if value['query_type'] == 'A' else 'IPv6')
+                or type(value.get('rcode')) is not int or not 0 <= value['rcode'] <= 4095
+                or type(value.get('truncated')) is not bool
+                or any(type(value.get(k)) is not int or not 0 <= value[k] <= 256
+                       for k in ('answer_count', 'address_count', 'cname_count'))
+                or any(type(classes.get(k)) is not int or not 0 <= classes[k] <= 256
+                       for k in ('globally_routable', 'non_global'))
+                or value['address_count'] + value['cname_count'] != value['answer_count']
+                or classes['globally_routable'] + classes['non_global'] != value['address_count']):
+            raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
+        summary = {key: value[key] for key in ('query_type', 'rcode', 'truncated', 'answer_count', 'address_count', 'cname_count')}
+        summary.update(globally_routable=classes['globally_routable'], non_global=classes['non_global'])
+        at = _time(fact.get('observed_at'))
+    else:
+        at = _time(item.get('captured_at'))  # optional receipt time for failures only
+    context = item.get('context', {})
+    if type(context) is not dict:
+        raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
+    target_ref, path = context.get('target_ref'), context.get('path_kind')
+    target_present = bool(_ref(target_ref))
+    target_matches = target_present and target_ref == target
+    path_matches = path == MIHOMO_PATH and item.get('expected_path_kind') == MIHOMO_PATH
+    time_valid = at is not None and at <= now
+    freshness = 'invalid' if not time_valid else 'stale' if (now-at).total_seconds() > 86400 else 'current'
+    if error == 'CANCELLED':
+        status = 'cancelled'
+    elif error in ('CONTROLLER_NOT_BOUND', 'RESPONSE_CONTEXT_MISMATCH') or (target_present and not target_matches):
+        status = 'target_mismatch'
+    elif (path is not None and path != MIHOMO_PATH) or (item.get('expected_path_kind') is not None and item['expected_path_kind'] != MIHOMO_PATH):
+        status = 'path_mismatch'
+    elif error in ('AUTHORIZATION_MISSING', 'AUTHENTICATION_HANDOFF_REQUIRED', 'PERMISSION_DENIED'):
+        status = 'authorization_needed'
+    elif error == 'TIMEOUT':
+        status = 'timeout'
+    elif error is not None:
+        status = 'error'
+    elif not target_present or not path_matches:
+        status = 'context_unknown'
+    elif not time_valid:
+        status = 'time_invalid'
+    elif freshness == 'stale':
+        status = 'stale'
+    else:
+        status = 'response_observed'  # negative/truncated response is not success
+    return dict(index=index, keys=('dns',), status=status,
+        target='matching_declaration' if target_matches else 'mismatch' if target_present else 'unknown',
+        path=MIHOMO_PATH if path == MIHOMO_PATH else 'unknown', path_matches=path_matches,
+        family=(4 if summary['query_type'] == 'A' else 6) if summary else None,
+        observed_at=at.isoformat() if at else None, freshness=freshness,
+        endpoint='mihomo_dns_query', sample_type='mihomo_dns', provenance='unverified_import', dns=summary)
+
+
 def project_samples(bundle, now):
     """Return only fixed labels/enums/counts/parsed dates; reject malformed envelopes.
 
@@ -55,6 +139,9 @@ def project_samples(bundle, now):
         if type(item) is not dict or type(item.get('result')) is not dict:
             raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
         raw = item['result']
+        if raw.get('schema_version') == MIHOMO_SCHEMA:
+            output.append(_mihomo_sample(item, bundle['target_ref'], index, now))
+            continue
         kind = raw.get('sample_type')
         if kind not in ('probe_https', 'independent_stun'):
             raise GuardianError('DASHBOARD_PROBE_REPORT_UNSUPPORTED')
@@ -128,6 +215,17 @@ def project_samples(bundle, now):
 
 def sample_text(sample):
     """Render only the adapter's finite projection, never raw result fields."""
+    if sample['sample_type'] == 'mihomo_dns':
+        value = sample['dns']
+        response = ('查询 %s / IPv%d；rcode %d；截断 %s；答案 %d / 地址 %d / CNAME %d；全局单播地址类 %d / 非全局地址类 %d' % (
+            value['query_type'], sample['family'], value['rcode'], '是' if value['truncated'] else '否',
+            value['answer_count'], value['address_count'], value['cname_count'],
+            value['globally_routable'], value['non_global'])) if value else '无响应事实'
+        return '样本 %d：%s；Mihomo DNS 查询；%s；%s；%s；UTC %s；时效：%s。仅响应摘要；缓存来源、Fake-IP 和上游路径未验证，不证明无 DNS 泄露' % (
+            sample['index'], STATUS_LABELS[sample['status']], response,
+            '控制器查询路径声明一致（未核验）' if sample['path_matches'] else '控制器查询路径声明未知或不匹配',
+            {'matching_declaration': '目标声明一致（未核验）', 'mismatch': '目标声明不匹配', 'unknown': '目标上下文未知'}[sample['target']],
+            sample['observed_at'] or '未知', {'current': '当前声明', 'stale': '过期', 'invalid': '无效'}[sample['freshness']])
     return '样本 %d：%s；%s；%s；%s；%s；UTC %s；时效：%s' % (
         sample['index'], STATUS_LABELS[sample['status']],
         'HTTPS ' + sample['endpoint'] if sample['sample_type'] == 'probe_https' else (

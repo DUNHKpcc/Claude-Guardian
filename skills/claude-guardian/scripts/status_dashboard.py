@@ -165,7 +165,7 @@ def render(report, now=None, probe_report=None):
     view = project(report, now, probe_report)
     by_key = {card["key"]: card for card in view["cards"]}
     labels = {"ipv4": "IPv4", "ipv6": "IPv6", "dns_leak": "DNS 泄露", "udp": "UDP",
-              "stun": "STUN", "browser": "WebRTC", "tun": "TUN", "dns": "DNS 配置",
+              "stun": "STUN", "browser": "WebRTC", "tun": "TUN", "dns": "DNS 配置 / 查询",
               "system": "系统与目标", "proxy": "代理入口", "failure": "失效 / 防直连"}
     order = ("ipv4", "ipv6", "dns_leak", "udp", "stun", "browser", "tun", "dns", "system", "proxy", "failure")
     rows = []

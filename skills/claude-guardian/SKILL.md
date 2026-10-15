@@ -70,3 +70,11 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 ## 本地环境状态面板
 
 使用 `scripts/status_dashboard.py --input <已授权的本地报告.json> --output <新HTML路径>` 可将 `guardian-report/0.1` 或 `env-inventory/0.2` 投影为离线HTML。由用户自行打开，不启动后台或联网。显示系统、代理、TUN、IPv4/IPv6、DNS配置与泄露、UDP、独立STUN、浏览器/WebRTC、故障防直连及授权状态。现有报告缺少的网络检测证据明确为未执行，采集完成不等于验证通过。仅展示白名单事实和逐字段时效，隐藏地址、路径、身份与秘密。页面是生成时快照，不随浏览时间刷新；分享前仍需核对。该入口不授权任何新的采集或探测。
+
+
+### DNS 库与离线样本
+
+`scripts/dns_probe.py` 仅生成/解析有界 A/AAAA 消息，无网络传输或 CLI。
+`scripts/mihomo_dns_probe.py` 为可选宿主库：每次要求可信宿主核实控制器绑定、精确名称/类型/单请求范围与新的探测授权，才能查询其数值回环端点。该请求可能让控制器联系上游解析器并披露查询名称；配置只读授权不能替代网络探测同意。无扫描、凭据、重试、备用路径、缓存清理或配置写入；认证要求交接，不能禁用认证绕过。没有原生绑定/授权 UI 集成，不自动执行。
+
+面板的 `--probes <已授权本地证据附件.json>` 可导入 HTTPS/STUN 及 Mihomo DNS 白名单摘要；只读本地输入，不触发上述库。输入来源、目标及时间声明仍不可信，样本不会变成操作许可、verified 或 workflow_guard 通过。Mihomo 查询不证明系统/浏览器 DNS 路径、上游实际发包、DNS 无泄露或完整 ENV-04 验收。

@@ -392,3 +392,17 @@ ENV-03/04 的既有结果可通过 `guardian-probe-evidence/0.1` 附件接入三
 任意 JSON 布尔或来源字符串不能成为宿主证明、操作许可或 workflow_guard 的通过证据。
 未运行公网、浏览器或用户设备；真实目标链路关联、可信宿主集成、完整 DNS/WebRTC/UDP
 与失效/恢复仍待完成。详见 `docs/environment-dashboard.md`。
+
+
+## 11. DNS 协议与 Mihomo 查询增量（2026-10-15）
+
+ENV-04 / D-ENV §20.4：`dns_probe.py` 提供纯 A/AAAA wire 编解码与问题/响应关联；
+`mihomo_dns_probe.py` 实现 §20.4.2 的部分内核查询库接口，严格区分配置审计与主动查询授权。
+可信宿主须核实当前控制器身份/目标/命名空间与单次名称、类型、路径、预算授权；
+无 CLI、原生所有权核验、端点注册表或授权 UI。使用凭据的控制器要求交接，不禁用认证。
+`probe_evidence.py` / `status_dashboard.py` 仅投影已取得的 Mihomo 白名单样本，不触发查询。
+DNS 卡片保留样本失败/取消/过期，不证明系统或浏览器采用该路径，不关闭 DNS 泄露验收。
+纯协议合成测试、注入 transport 与测试自有回环监听器的证据分别记录于 `validation.md`；
+没有真实控制器、公网、用户设备或浏览器实测。系统解析、DoH、可信宿主集成、权威关联及
+完整泄露/故障恢复仍待完成，ENV-04 / VAL-04 与全部原验收状态不因测试数变化而关闭。
+详见 `dns-probe.md`、`mihomo-dns-probe.md`、`probe-evidence.md`。
