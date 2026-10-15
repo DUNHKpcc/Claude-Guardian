@@ -94,7 +94,7 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 | T15、ENV-T10、ENV-T13、ENV-T80 | `tests/test_network_probes.py::ContractTests.test_success_does_not_certify_browser_or_route`、`test_browser_claim_or_proxy_fallback_rejected` | IP回显成功仍path_association unknown/browser not_observed；拒冒称browser或显式代理。没有Claude DIRECT路径、MCP或真实ISP对照 |
 | ENV-T12、ENV-T65 | `tests/test_network_probes.py::ContractTests.test_ipv6_and_dual_are_separate`、`test_http_failure_never_retries`、`test_bounds_timeout_and_secret_suppression` | v6/dual分开，族不符报错；跳转/429/失败unknown且一次请求；超时和4KiB限额。使用FakeTransport，无实际双栈网络 |
 | ENV-T50、ENV-T75、ENV-T77 | `tests/test_network_probes.py::ContractTests.test_endpoint_and_path_consent`、`test_arbitrary_endpoints_rejected`、`test_webrtc_asset_is_opt_in_and_no_media` | 精确端点/路径批准、任意含Claude URL拒绝；页面无外部JS/fetch/媒体/TURN。未证明任意第三方检测网站子请求安全 |
-| ENV-T54 | `tests/test_network_probes.py::ContractTests.test_http_failure_never_retries` | 429停止并报rate_limited_no_retry；**没有Retry-After解析断言**，不能关闭完整案例 |
+| ENV-T54 | `tests/test_network_probes.py::ContractTests.test_http_failure_never_retries`、`RetryAfterTests.test_delta_seconds_zero_and_cap`、`test_bad_duplicate_negative_and_excessive_values_are_sanitized`、`test_http_date_requires_actual_trusted_aware_observation`、`test_429_always_stops_once_without_sleep_and_clock_is_after_response` | 429停止；有界delta/date提示、重复/负值/过长/未知时钟处理与不重试均有合成断言；非真实服务限流验收，不能关闭完整案例 |
 | ENV-T20、ENV-T98 | `tests/test_network_probes.py::ContractTests.test_curl_security_flags_offline`；`tests/test_network_probes.py::ProcessCleanupTests.test_environment_has_no_user_injected_hooks`、`test_windows_root_is_os_api_not_environment` | curl配置禁用，代理/证书环境不继承，Windows路径取OS API；不验证真实应用旧环境来源、NO_PROXY语义或子进程采用 |
 | ENV-T16、ENV-T47 | `tests/test_network_probes.py::ContractTests.test_webrtc_asset_is_opt_in_and_no_media`；`tests/test_webrtc_server.py::LifecycleTests.test_explicit_cancellation`、`test_deadline_closes_even_incomplete_request` | 页面静态unknown/12秒，回环服务超时取消关闭；浏览器ICE无候选和策略是不同层，见下述JS补充 |
 | ENV-T17、ENV-T50 | `tests/test_webrtc_server.py::ServerTests.test_host_is_exact_bound_authority`、`test_cross_origin_requests_rejected`、`test_fixed_asset_only_and_security_headers` | 本地HTTP服务限固定资源/authority/origin及安全头；不是目标Claude origin的浏览器策略接受/撤回测试 |
@@ -134,16 +134,16 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 最重要的未关闭能力：
 
 1. 原生绑定/采集：47字段与26采集规格逐字段对照，桌面用户/HKCU、WSL命名空间、Rosetta/硬件架构、真实网络服务、多个Clash实例选择和监听者绑定。测试中的绑定字符串不能代替可信采集。
-2. DNS/STUN：当前 `test_network_probes.py` 测HTTPS IP回显与进程清理，**没有原生DNS/STUN解析器单测**。页面使用RTCPeerConnection不等于实现/验证ENV §20.6的事务ID、来源、XOR-MAPPED IPv4/6与最多3发送协议要求。
+2. DNS仍缺独立解析/获准真实路径证据；STUN现有 `tests/test_stun_probe.py` 的32项纯编解码、伪传输及自有IPv4/IPv6回环测试作为ENV §20.6部分工程证据，见下文。不是公网端点、浏览器策略或Claude真实路径验收。
 3. 写入适配：Clash四类模板/规则语义/GUI回写刷新、浏览器原生策略、launcher子进程采用、时区/语言写入、C0—C4精确清理、免费故障阻断技术与恢复均不能由通用文件事务关闭。
 4. 访谈全语义：问题登记数量、出现某前缀、文档含关键词远弱于原案例全部条件；旧画像迁移、自然语言多字段吸收、接受默认、各支付前提、完整Codex UI/取消路径需专例。
 5. 发行：来源许可证/当前官方内容核验、秘密全链路、升级撤回与操作级能力矩阵需要独立证据。原始来源文档历史“仅Spec”声明不应改写；当前实现状态由跟踪/验证文档说明。
 
 ### 不依赖用户Mac即可实施的优先任务
 
-1. **补精确回归缺口**：ENV-T54 Retry-After有界解析/未知值、T82旧画像保留有效字段且废弃C07/旧C08、T53接受默认、T81多字段导入。每项写明输入、预期与未执行动作，不能仅增加数量。
+1. **补精确回归缺口**：T82旧画像保留有效字段且废弃C07/旧C08、T53接受默认、T81多字段导入。每项写明输入、预期与未执行动作，不能仅增加数量。
 2. **完善离线事实/版本契约**：Windows SKU/UI空override/DST、WSL/用户上下文、Mac进程/硬件架构区分、控制器多实例选择与revision变化的合成样例；真实绑定适配器仍待相应平台。
-3. **独立DNS/STUN协议底座**：先做二进制解析、事务/来源/长度/族拒绝、预算与取消的伪传输测试；未批准公开端点前不发真实请求。不得让新协议自动进入PC1。
+3. **独立DNS及STUN集成**：DNS协议/获准解析路径仍待实现；STUN库已有有界底座，但宿主授权、名称到固定地址绑定和真实目标路径尚未集成。未批准公开端点前不发请求，不得自动进入PC1。
 4. **ENV-06离线处理计划/规则编译器**：从精确事实到条件计划、组织/救援优先级、nameserver-policy语义、DIRECT嵌套、不可表达格式报错；先验证不产生apply/网络，不把临时文件成功当Mihomo接受。
 5. **普通终端恢复与故障注入**：针对POSIX临时文件写独立进程恢复、日志中断/权限/后续修改回归；Windows继续明确读计划边界。实际系统ACL/应用锁/控制通道断连留待各自平台授权验证。
 6. **建立逐案例执行记录**：固定commit/构建hash、方法、输入/预期/实际、平台、跳过原因、证据类型。CI原生临时测试与用户设备真实软件/流程验收分栏，避免再次由总数推断完成。
@@ -154,3 +154,7 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 - ENV：ENV-T03、ENV-T04、ENV-T06、ENV-T07、ENV-T08、ENV-T11、ENV-T14、ENV-T15、ENV-T18、ENV-T19、ENV-T21、ENV-T22、ENV-T23、ENV-T24、ENV-T29、ENV-T30、ENV-T31、ENV-T32、ENV-T35、ENV-T37、ENV-T38、ENV-T39、ENV-T40、ENV-T41、ENV-T42、ENV-T43、ENV-T44、ENV-T45、ENV-T46、ENV-T48、ENV-T49、ENV-T51、ENV-T52、ENV-T53、ENV-T55、ENV-T56、ENV-T57、ENV-T59、ENV-T62、ENV-T63、ENV-T71、ENV-T76、ENV-T78、ENV-T79、ENV-T84、ENV-T86、ENV-T88、ENV-T91、ENV-T93、ENV-T94、ENV-T104、ENV-T114、ENV-T116、ENV-T120
 
 复核方法：从本文件表格首列提取原ID（含范围），与跟踪表218项比较；从测试AST核对文中方法名存在。本静态核对不执行测试，也不生成通过率。后续新增测试应更新相应行的实际断言/限制，再由执行证据决定状态。
+
+## 后续STUN子证据（不改变原案例完整验收状态）
+
+`tests/test_stun_probe.py`：`test_rfc5769_ipv4_mapping_vector`与IPv6对应向量覆盖映射解码；`test_three_sends_same_transaction_and_deadline`覆盖同事务最多三次发送；`test_correlated_terminal_responses_stop_before_good_packet`与`test_unknown_required_does_not_hide_corruption`覆盖终止错误/完整校验顺序；`test_invalid_clocks_fail_closed`、`test_constant_clock_and_nonblocking_timeout_bounded`、`test_cleanup_rechecks_cancellation_target_clock_and_approval`覆盖无效时钟、循环预算和清理后撤回。`test_ipv4_owned_udp`、`test_ipv6_owned_udp`仅连接测试自建回环响应器。以上补充ENV-04 §20.6，不等于所有ENV-T16/47/50等端到端条件已满足，不修改旧映射143/75的统计含义。

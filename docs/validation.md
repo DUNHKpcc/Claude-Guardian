@@ -35,3 +35,11 @@
 ## PR #3 固定提交验证
 
 提交 `be2e626a3626bfb853babf2b407fd67be146ec82`，[CI 38711511300](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38711511300)：Linux/macOS发现343项、339通过、4项Windows原生夹具跳过；Windows发现343项、258通过、85项POSIX用例跳过（35事务、17静态读取、33请求读取）。Windows真实CI环境的4项临时文件测试通过：普通只读计划、ADS/硬链接拒绝、junction祖先拒绝、注入元数据权限失败后的句柄清理。最后一项不是真实ACL拒绝验收。各平台另8项Node合成测试及打包通过；ZIP SHA-256统一为 `b4c0b29bc6f78c9c06de61b1fae30e1573cde5d9ed5a807cd827e0a742f8ad4e`。未测试用户真实文件，未实现Windows写入或回滚。
+
+## PR #3—5 后续固定提交
+
+- PR #3 `9441d3385a0f82f1bc45a7da41e81766d84bf7a0`，[CI 38712347446](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38712347446)：Linux/macOS 349通过/4跳过，Windows268通过/85跳过，共353；三端包 `6fadbcd067070894f0838fc95e539e36f6be6736452a2c6ea28c38607fbcabcd`
+- PR #4 `89029537d3545b62a955610210abd236775deb08`，[CI 38713285829](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38713285829)：Linux/macOS372通过/4跳过，Windows290通过/86跳过，共376；三端包 `d6b6e917cfe9761c366d197dce496f54c548cf48f87c8a3b17a0c1ed72b1367c`
+- PR #5 `75ff97182dfbaeabd2e763881893982ba6cfb4de`，[CI 38714405280](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38714405280)：Linux/macOS402通过/5跳过，Windows321通过/86跳过，共407；三端包 `6cf6fd487d1481149e2c919b9a4a545a9a09b9ac6271b9d15bfd43160a8fdd18`
+
+各轮另8项Node合成生命周期测试、编译和重复打包通过。Windows跳过均为POSIX限定项；Linux/macOS跳过为Windows原生夹具。PR #5的Windows自有临时IPv4/IPv6监听器身份测试实际通过，关闭监听器后拒绝旧状态；不读取用户进程，不证明完整应用实例或命名空间身份。命名空间仍依赖宿主断言，未使用Microsoft标记保留的compartment API。以上均是固定版本证据，不继承到未运行的新提交。
