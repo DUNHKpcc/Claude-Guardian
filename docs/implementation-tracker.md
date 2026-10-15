@@ -406,3 +406,11 @@ DNS 卡片保留样本失败/取消/过期，不证明系统或浏览器采用�
 没有真实控制器、公网、用户设备或浏览器实测。系统解析、DoH、可信宿主集成、权威关联及
 完整泄露/故障恢复仍待完成，ENV-04 / VAL-04 与全部原验收状态不因测试数变化而关闭。
 详见 `dns-probe.md`、`mihomo-dns-probe.md`、`probe-evidence.md`。
+
+
+## 12. 系统 DNS 样本与固定命令清理（2026-10-15）
+
+ENV-04A / D-ENV §20.4.2：新增 macOS `os_dns_probe.py` 与 Windows `windows_dns_probe.py`，分别使用规定的 getaddrinfo 与 Resolve-DnsName -DnsOnly 路径，单独授权 A/AAAA，保持可信宿主绑定/运行时前提。没有新的 CLI、自动查询、运行时安装、缓存/配置修改或真实设备操作。
+离线投影 `probe_evidence.py` 保留系统样本来源与失败/取消/过期状态，既有错误/授权缺口不被覆盖；不发明包 RCODE、DNS服务器、浏览器路径或无泄露结论。
+固定命令执行器的受控进程生命周期补充回归，不扩大允许命令集合。此批不含原生上下文核验模块；真实身份/运行时/权限适配仍另行开发验收。
+合成 helper、注入数据与 Windows 专用 mock 测试和实际解析严格分开，ENV-04/VAL-04及完整原场景仍未关闭。详见 `os-dns-probe.md`、`windows-dns-probe.md`、`probe-evidence.md` 与本批 validation 记录。

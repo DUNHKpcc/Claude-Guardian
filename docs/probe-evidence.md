@@ -67,3 +67,33 @@ Mihomo 兼容性测试调用实际探测函数并注入字节响应；禁止 soc
 subprocess 与渲染期间的 probe 调用。覆盖两族、负响应/截断、失败无事实、上下文、
 非法计数、时间、混合样本和秘密哨兵。没有实际控制器、公网 DNS、真实设备或浏览器渲染验收。
 回滚本次投影分支、状态标签和新增测试/文档即可；没有持久配置或运行状态变更。
+
+## macOS / Windows 系统解析样本
+
+还可在同一附件中导入两个分别定义的结果，全部只进入 DNS 配置 / 查询行：
+
+| 输入 schema | coverage | fact source_ref | value resolver_api / 附件路径类别 |
+| --- | --- | --- | --- |
+| guardian-os-dns-probe/0.1 | macos_system_resolution_sample_only | os-system-resolution | macos_getaddrinfo |
+| guardian-windows-dns-probe/0.1 | windows_system_dns_sample_only | windows-system-dns | windows_Resolve-DnsName_DnsOnly |
+
+`context.path_kind` 与 `expected_path_kind` 使用上表最后一列的精确值，
+`context.target_ref` 仍只与附件目标声明比较。schema、coverage、来源和 API 必须配套，
+不能把 macOS getaddrinfo 改个标签当作 Windows Resolve-DnsName，更不能当作 Mihomo 查询。
+任意未来 OS schema 均不自动接纳。来源名称是固定枚举，不显示输入的自由文本来源。
+
+系统结果只提供最终地址数和分类数，不像 Mihomo 响应有 DNS rcode、截断、答案/CNAME 字段。
+面板不会制造这些字段，也不会把空地址列表解释为 NXDOMAIN、IPv6 阻断或无泄露。
+数量必须为 0—128 的整数（拒绝布尔），两类地址之和必须等于总地址数。
+所有成功或空列表结果仅标“已记录响应声明”，保留独立的系统 API 来源标签。
+DNS 报文、服务器、缓存/hosts 来源、Fake-IP 和上游实际路径仍未知。
+
+失败无事实时保留固定错误码及取消、超时、授权/权限、目标不匹配等状态。
+`UNSUPPORTED_PLATFORM`、`RUNTIME_NOT_TRUSTED`、`CLEANUP_FAILED` 等不是普通成功或未知；
+Windows 的 `DEPENDENCY_MISSING` 也单独保留，不能静默安装依赖或尝试替代 API。
+失败报告不得夹带 facts；未识别或矛盾的数据拒绝生成。错误码白名单不从附件扩展。
+时间、上下文、既有报告错误/授权缺口、字段隐私和操作门禁沿用上述限制。
+
+回归：`python -m unittest discover -s tests -p test_os_dns_dashboard.py -v`。
+测试通过注入子进程 runner 取得实际 macOS/Windows 函数输出，并禁止原生解析与进程启动；
+因此只能证明跨 schema 的离线投影，不代表 macOS、Windows 或用户设备的真实 DNS 验收。

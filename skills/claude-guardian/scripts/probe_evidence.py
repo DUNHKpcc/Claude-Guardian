@@ -121,6 +121,92 @@ def _mihomo_sample(item, target, index, now):
         endpoint='mihomo_dns_query', sample_type='mihomo_dns', provenance='unverified_import', dns=summary)
 
 
+OS_DNS_SCHEMAS = {
+    'guardian-os-dns-probe/0.1': ('macos_system_resolution_sample_only',
+        'os-system-resolution', 'macos_getaddrinfo', 'macOS 系统解析 getaddrinfo'),
+    'guardian-windows-dns-probe/0.1': ('windows_system_dns_sample_only',
+        'windows-system-dns', 'windows_Resolve-DnsName_DnsOnly', 'Windows 系统解析 Resolve-DnsName -DnsOnly'),
+}
+OS_DNS_ERRORS = frozenset({'INPUT_INVALID', 'UNSUPPORTED_PLATFORM', 'PC0_TARGET_FORBIDDEN',
+    'TARGET_NOT_BOUND', 'RUNTIME_NOT_TRUSTED', 'AUTHORIZATION_MISSING', 'CANCELLED', 'TIMEOUT',
+    'OUTPUT_INVALID', 'OUTPUT_LIMIT', 'RESOLUTION_FAILED', 'PROCESS_FAILED', 'CLEANUP_FAILED',
+    'PERMISSION_DENIED'})
+
+
+def _os_dns_sample(item, target, index, now):
+    """Final system-resolution counts, distinct from DNS packets/Mihomo replies."""
+    raw = item['result']
+    coverage, source, resolver, label = OS_DNS_SCHEMAS[raw['schema_version']]
+    errors = OS_DNS_ERRORS | {'DEPENDENCY_MISSING'} if raw['schema_version'] == 'guardian-windows-dns-probe/0.1' else OS_DNS_ERRORS
+    facts, error, execution = raw.get('facts'), raw.get('error_code'), raw.get('execution_status')
+    if (raw.get('operation') != 'probe' or raw.get('coverage') != coverage
+            or raw.get('gate_state') != 'closed' or type(facts) is not list
+            or type(raw.get('requests_attempted')) is not int or raw['requests_attempted'] not in (0, 1)
+            or execution not in ('completed', 'blocked')
+            or (error is not None and (type(error) is not str or error not in errors))
+            or (execution == 'completed' and (error is not None or len(facts) != 1 or raw['requests_attempted'] != 1))
+            or (execution == 'blocked' and (facts or error is None))):
+        raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
+    summary = None
+    if facts:
+        fact = facts[0]
+        if (type(fact) is not dict or fact.get('source_ref') != source
+                or fact.get('layer') != 'runtime_observed' or type(fact.get('value')) is not dict):
+            raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
+        value = fact['value']
+        classes = value.get('address_class_counts')
+        if (value.get('resolver_api') != resolver or value.get('query_type') not in ('A', 'AAAA')
+                or value.get('address_family') != ('IPv4' if value['query_type'] == 'A' else 'IPv6')
+                or type(value.get('address_count')) is not int or not 0 <= value['address_count'] <= 128
+                or type(classes) is not dict
+                or any(type(classes.get(k)) is not int or not 0 <= classes[k] <= 128
+                       for k in ('globally_routable', 'non_global'))
+                or classes['globally_routable'] + classes['non_global'] != value['address_count']
+                or value.get('dns_rcode') is not None or value.get('dns_packet_observed') is not False):
+            raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
+        summary = dict(query_type=value['query_type'], address_count=value['address_count'],
+                       globally_routable=classes['globally_routable'], non_global=classes['non_global'])
+        at = _time(fact.get('observed_at'))
+    else:
+        at = _time(item.get('captured_at'))
+    context = item.get('context', {})
+    if type(context) is not dict:
+        raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
+    target_ref, path = context.get('target_ref'), context.get('path_kind')
+    target_present = bool(_ref(target_ref))
+    target_matches = target_present and target_ref == target
+    path_matches = path == resolver and item.get('expected_path_kind') == resolver
+    time_valid = at is not None and at <= now
+    freshness = 'invalid' if not time_valid else 'stale' if (now-at).total_seconds() > 86400 else 'current'
+    if error == 'CANCELLED':
+        status = 'cancelled'
+    elif error == 'TARGET_NOT_BOUND' or (target_present and not target_matches):
+        status = 'target_mismatch'
+    elif (path is not None and path != resolver) or (item.get('expected_path_kind') is not None and item['expected_path_kind'] != resolver):
+        status = 'path_mismatch'
+    elif error in ('AUTHORIZATION_MISSING', 'PERMISSION_DENIED'):
+        status = 'authorization_needed'
+    elif error == 'TIMEOUT':
+        status = 'timeout'
+    elif error is not None:
+        status = 'error'
+    elif not target_present or not path_matches:
+        status = 'context_unknown'
+    elif not time_valid:
+        status = 'time_invalid'
+    elif freshness == 'stale':
+        status = 'stale'
+    else:
+        status = 'response_observed'
+    return dict(index=index, keys=('dns',), status=status,
+        target='matching_declaration' if target_matches else 'mismatch' if target_present else 'unknown',
+        path=resolver if path == resolver else 'unknown', path_matches=path_matches,
+        family=(4 if summary['query_type'] == 'A' else 6) if summary else None,
+        observed_at=at.isoformat() if at else None, freshness=freshness,
+        endpoint=resolver, sample_type='os_dns', provenance='unverified_import', dns=summary,
+        source_label=label, error_code=error)
+
+
 def project_samples(bundle, now):
     """Return only fixed labels/enums/counts/parsed dates; reject malformed envelopes.
 
@@ -139,6 +225,9 @@ def project_samples(bundle, now):
         if type(item) is not dict or type(item.get('result')) is not dict:
             raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
         raw = item['result']
+        if type(raw.get('schema_version')) is str and raw['schema_version'] in OS_DNS_SCHEMAS:
+            output.append(_os_dns_sample(item, bundle['target_ref'], index, now))
+            continue
         if raw.get('schema_version') == MIHOMO_SCHEMA:
             output.append(_mihomo_sample(item, bundle['target_ref'], index, now))
             continue
@@ -215,6 +304,17 @@ def project_samples(bundle, now):
 
 def sample_text(sample):
     """Render only the adapter's finite projection, never raw result fields."""
+    if sample['sample_type'] == 'os_dns':
+        value = sample['dns']
+        response = ('查询 %s / IPv%d；地址 %d；全局单播地址类 %d / 非全局地址类 %d' % (
+            value['query_type'], sample['family'], value['address_count'],
+            value['globally_routable'], value['non_global'])) if value else '无解析事实'
+        return '样本 %d：%s；%s；%s；%s；%s；UTC %s；时效：%s；原因：%s。系统解析样本，没有 DNS 报文/RCODE 证据；缓存来源、服务器和上游路径未知，不证明无 DNS 泄露' % (
+            sample['index'], STATUS_LABELS[sample['status']], sample['source_label'], response,
+            '解析 API 路径声明一致（未核验）' if sample['path_matches'] else '解析 API 路径声明未知或不匹配',
+            {'matching_declaration': '目标声明一致（未核验）', 'mismatch': '目标声明不匹配', 'unknown': '目标上下文未知'}[sample['target']],
+            sample['observed_at'] or '未知', {'current': '当前声明', 'stale': '过期', 'invalid': '无效'}[sample['freshness']],
+            sample['error_code'] or '无错误声明')
     if sample['sample_type'] == 'mihomo_dns':
         value = sample['dns']
         response = ('查询 %s / IPv%d；rcode %d；截断 %s；答案 %d / 地址 %d / CNAME %d；全局单播地址类 %d / 非全局地址类 %d' % (

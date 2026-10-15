@@ -47,6 +47,8 @@ class SourceBundleTests(unittest.TestCase):
                 self.assertIn('claude-guardian/scripts/probe_evidence.py',names)
                 self.assertIn('claude-guardian/scripts/dns_probe.py',names)
                 self.assertIn('claude-guardian/scripts/mihomo_dns_probe.py',names)
+                self.assertIn('claude-guardian/scripts/os_dns_probe.py',names)
+                self.assertIn('claude-guardian/scripts/windows_dns_probe.py',names)
                 self.assertFalse(any('private-report' in name for name in names))
 
     def test_tampered_source_rejected(self):

@@ -321,25 +321,56 @@ def fixed_command(collector_id):
     return (exe, '-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script), {'SystemRoot': root, 'WINDIR': root, 'PATH': root + '\\System32', 'PSModulePath': root + '\\System32\\WindowsPowerShell\\v1.0\\Modules'}
 
 
+def _fixed_pipe_ready(stream):
+    """Poll our stdout pipe without a blocking read or a platform/version dependency."""
+    if sys.platform != 'win32':
+        import select
+        return bool(select.select([stream.fileno()], [], [], 0)[0])
+    # Windows select() accepts sockets only; PeekNamedPipe also supports Popen's
+    # anonymous pipes, including Python 3.10 (before nonblocking Windows pipes).
+    import ctypes
+    from ctypes import wintypes
+    import msvcrt
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    peek = kernel.PeekNamedPipe
+    peek.argtypes = (wintypes.HANDLE, wintypes.LPVOID, wintypes.DWORD,
+                     ctypes.POINTER(wintypes.DWORD), ctypes.POINTER(wintypes.DWORD),
+                     ctypes.POINTER(wintypes.DWORD))
+    peek.restype = wintypes.BOOL
+    available = wintypes.DWORD()
+    if not peek(msvcrt.get_osfhandle(stream.fileno()), None, 0, None,
+                ctypes.byref(available), None):
+        if ctypes.get_last_error() == 109:  # ERROR_BROKEN_PIPE: read returns EOF.
+            return True
+        raise OSError('stdout pipe unavailable')
+    return available.value > 0
+
+
 def run_fixed(collector_id):
-    """Capture only bounded stdout in memory; stderr never enters a report."""
+    """Capture bounded stdout; always reclaim our child, reader and pipe."""
     import subprocess
     import threading
     command, environment = fixed_command(collector_id)
     output = bytearray()
     exceeded = threading.Event()
     failed = threading.Event()
+    stop = threading.Event()
     try:
         process = subprocess.Popen(command, shell=False, stdin=subprocess.DEVNULL,
                                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                   env=environment, cwd=command[0].rsplit('/' if sys.platform == 'darwin' else '\\', 1)[0])
+                                   bufsize=0, env=environment,
+                                   cwd=command[0].rsplit('/' if sys.platform == 'darwin' else '\\', 1)[0])
     except PermissionError:
         raise GuardianError('PERMISSION_DENIED', 3) from None
     except OSError:
         raise GuardianError('RUNTIME_OR_PARSER_UNAVAILABLE') from None
+
     def drain():
         try:
-            while True:
+            while not stop.is_set():
+                if not _fixed_pipe_ready(process.stdout):
+                    stop.wait(.01)
+                    continue
                 chunk = os.read(process.stdout.fileno(), 4096)
                 if not chunk:
                     break
@@ -348,27 +379,65 @@ def run_fixed(collector_id):
                     process.kill()
                     break
                 output.extend(chunk)
-        except OSError:
+        except Exception:
+            # A reader failure must never print raw exception/command data from
+            # a background thread. Main reports only the stable failure code.
             failed.set()
-        finally:
-            process.stdout.close()
-    reader = threading.Thread(target=drain, daemon=True)
-    reader.start()
+            try:
+                process.kill()
+            except Exception:
+                pass
+
+    reader = None
+    waited = False
+    cleanup_failed = False
     try:
+        # Construction and start belong inside the same ownership boundary as wait.
+        reader = threading.Thread(target=drain, daemon=True)
+        reader.start()
         process.wait(timeout=COMMAND_TIMEOUT)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait(timeout=1)
+        waited = True
         reader.join(timeout=1)
+        if exceeded.is_set() or reader.is_alive():
+            raise GuardianError('BUDGET_EXCEEDED')
+        if failed.is_set() or process.returncode:
+            raise GuardianError('OS_QUERY_FAILED')
+    except subprocess.TimeoutExpired:
         raise GuardianError('BUDGET_EXCEEDED') from None
-    except BaseException:
-        process.kill()
-        raise
-    reader.join(timeout=1)
-    if exceeded.is_set() or reader.is_alive():
-        raise GuardianError('BUDGET_EXCEEDED')
-    if failed.is_set() or process.returncode:
-        raise GuardianError('OS_QUERY_FAILED')
+    except (OSError, RuntimeError, ValueError):
+        raise GuardianError('OS_QUERY_FAILED') from None
+    finally:
+        # Stop polling before closing the pipe. Inherited writers cannot hold the
+        # reader alive indefinitely; only this owned child is killed/reaped.
+        active_error = sys.exc_info()[1]
+        stop.set()
+        try:
+            if not waited:
+                try:
+                    process.kill()
+                except Exception:
+                    cleanup_failed = True
+                finally:
+                    try:
+                        process.wait(timeout=1)
+                    except Exception:
+                        cleanup_failed = True
+        finally:
+            try:
+                if reader is not None and reader.ident is not None:
+                    reader.join(timeout=1)
+                    cleanup_failed |= reader.is_alive()
+            except Exception:
+                cleanup_failed = True
+            finally:
+                try:
+                    process.stdout.close()
+                except Exception:
+                    cleanup_failed = True
+        if cleanup_failed:
+            if isinstance(active_error, (KeyboardInterrupt, SystemExit)):
+                raise active_error from GuardianError('OS_QUERY_FAILED')
+            raise GuardianError('OS_QUERY_FAILED') from None
     try:
         return output.decode('utf-8-sig', errors='strict').strip()
     except UnicodeError:

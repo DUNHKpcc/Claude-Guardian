@@ -102,7 +102,8 @@ class InventoryTests(unittest.TestCase):
             for forbidden in ('Invoke-Expression', 'Invoke-WebRequest', 'ExecutionPolicy', 'Get-ChildItem'):
                 self.assertNotIn(forbidden, script)
 
-    def test_bounded_runner_mocked_io(self):
+    @patch.object(g, '_fixed_pipe_ready', return_value=True)
+    def test_bounded_runner_mocked_io(self, _ready):
         process = Mock(returncode=0)
         process.stdout.fileno.return_value = 17
         with patch.object(g, 'fixed_command', return_value=(('/usr/bin/sw_vers','-productVersion'), {'LC_ALL':'C'})), patch('subprocess.Popen', return_value=process) as launch, patch.object(g.os, 'read', side_effect=[b'15.2\n', b'']):
@@ -116,7 +117,8 @@ class InventoryTests(unittest.TestCase):
                 g.run_fixed('mac-version')
             process.kill.assert_called_once()
 
-    def test_process_failures_never_echo_raw_output(self):
+    @patch.object(g, '_fixed_pipe_ready', return_value=True)
+    def test_process_failures_never_echo_raw_output(self, _ready):
         for returncode, chunks, expected in [(1, [b"secret-password", b""], "OS_QUERY_FAILED"), (0, [b"\xff", b""], "INPUT_OR_RESPONSE_INVALID")]:
             process = Mock(returncode=returncode)
             process.stdout.fileno.return_value = 17
@@ -127,7 +129,8 @@ class InventoryTests(unittest.TestCase):
             with self.assertRaisesRegex(g.GuardianError, 'PERMISSION_DENIED'):
                 g.run_fixed('mac-version')
 
-    def test_timeout_suppresses_command_output(self):
+    @patch.object(g, '_fixed_pipe_ready', return_value=True)
+    def test_timeout_suppresses_command_output(self, _ready):
         process = Mock(returncode=-9)
         process.wait.side_effect = [subprocess.TimeoutExpired('secret', 5), None]
         with patch.object(g, 'fixed_command', return_value=(('/usr/bin/sw_vers',), {})), patch('subprocess.Popen', return_value=process), patch.object(g.os, 'read', return_value=b''):
