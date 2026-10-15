@@ -5,6 +5,7 @@ import importlib
 import json
 from pathlib import Path
 import pickle
+import posixpath
 import stat
 import sys
 from types import SimpleNamespace
@@ -141,6 +142,13 @@ class ContextTests(unittest.TestCase):
 
 
 class PathTests(unittest.TestCase):
+    def setUp(self):
+        # These are synthetic macOS path fixtures, even on a Windows test host.
+        # Keep POSIX lexical semantics while lstat itself remains mocked below.
+        lexical = patch.object(m.os.path, 'normpath', posixpath.normpath)
+        lexical.start()
+        self.addCleanup(lexical.stop)
+
     def fake_stat(self, path):
         return SimpleNamespace(st_mode=(stat.S_IFREG | 0o755) if path.endswith('python')
             else (stat.S_IFDIR | 0o755), st_uid=0, st_gid=0, st_dev=1, st_ino=2,

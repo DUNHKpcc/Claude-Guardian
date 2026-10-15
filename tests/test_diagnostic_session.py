@@ -263,10 +263,10 @@ class SessionTests(unittest.TestCase):
             path = str(Path(directory).resolve() / 'preview.html')
             output = io.StringIO()
             self.assertEqual(m.run(['--target-ref', 'target', '--dashboard-output', path], outgoing=output), 0)
-            original = Path(path).read_text()
+            original = Path(path).read_text(encoding="utf-8")
             self.assertIn('<html', original)
             self.assertEqual(m.run(['--target-ref', 'target', '--dashboard-output', path], outgoing=io.StringIO()), 2)
-            self.assertEqual(Path(path).read_text(), original)
+            self.assertEqual(Path(path).read_text(encoding="utf-8"), original)
         self.child.assert_not_called()
 
 
