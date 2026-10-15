@@ -186,6 +186,139 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(result['probe_evidence']['samples'][0]['context'], {})
         self.assertEqual(result['report']['facts'][0]['state'], 'stale')
 
+    def _partial_identity(self):
+        return m.native_context._Identity(pid=100, uid=501, euid=501, gid=20,
+            egid=20, groups=(20,), posix_session=100, security_session=901,
+            security_attributes=0x10, console_uid=501, graphical_uid=501,
+            on_console=True, login_done=True)
+
+    def test_mac_invalid_path_recovers_actual_metadata_helper_without_dns(self):
+        self.capture.side_effect = m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        api = Mock()
+        api.read.return_value = self._partial_identity()
+        with patch.object(m.native_context, '_MacAPI', return_value=api), \
+                patch.object(m.native_context, '_runtime', side_effect=m.native_context.ContextError('RUNTIME_PATH_INVALID')):
+            result = self.execute(dns_host=self.host, queries=[('reserved.test', 'A')])
+        self.assertEqual(result['status'], 'partial')
+        self.assertEqual(result['errors'], ['RUNTIME_PATH_INVALID'])
+        self.assertEqual(result['context']['observation_kind'], 'metadata_only_no_handle')
+        self.assertEqual(result['context']['runtime_path_screen'], 'blocked_path_invalid')
+        self.assertEqual(result['context']['runtime_integrity'], 'not_verified')
+        self.assertEqual(result['dns_availability'], 'blocked_context_handle_unavailable')
+        self.assertEqual(result['report']['facts'][0]['value'], 'macos')
+        self.assertEqual(result['report']['facts'][0]['state'], 'observed')
+        self.assertEqual(result['probe_evidence']['samples'], [])
+        self.assertEqual(self.consent.call_count, 1)
+        self.host.verify_binding.assert_not_called()
+        self.host.verify_runtime.assert_not_called()
+        self.host.verify_neutral.assert_not_called()
+        self.recheck.assert_not_called()
+        self.child.assert_not_called()
+        self.assertNotIn('uid', json.dumps(result['context']))
+        self.assertNotIn('_identity', json.dumps(result))
+        self.assertNotIn('/trusted', json.dumps(result))
+
+    def test_mac_metadata_fallback_preserves_remaining_budget(self):
+        self.capture.side_effect = m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        with patch.object(m.native_context, 'observe_context_metadata', return_value={
+                'observation_kind': 'metadata_only_no_handle'}) as observe, \
+                patch.object(m.time, 'monotonic', side_effect=[100, 158, 159, 159]):
+            result = self.execute(dns_host=self.host, queries=[('reserved.test', 'A')])
+        self.assertEqual(result['status'], 'partial')
+        self.assertEqual(observe.call_args.kwargs['max_seconds'], 2)
+        self.child.assert_not_called()
+
+    def test_mac_fallback_expired_budget_cannot_restart(self):
+        self.capture.side_effect = m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        with patch.object(m.native_context, 'observe_context_metadata') as observe, \
+                patch.object(m.time, 'monotonic', side_effect=[100, 161]):
+            result = self.execute()
+        self.assertEqual(result['errors'], ['CONTEXT_EXPIRED'])
+        observe.assert_not_called()
+        self.assertEqual(result['report']['facts'], [])
+
+    def test_mac_fallback_late_result_or_reversed_clock_is_discarded(self):
+        self.capture.side_effect = m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        for ticks in ([100, 101, 161], [100, 158, 157]):
+            with self.subTest(ticks=ticks), \
+                    patch.object(m.native_context, 'observe_context_metadata', return_value={
+                        'observation_kind': 'metadata_only_no_handle'}), \
+                    patch.object(m.time, 'monotonic', side_effect=ticks):
+                result = self.execute()
+            self.assertEqual(result['errors'], ['CONTEXT_EXPIRED'])
+            self.assertEqual(result['report']['facts'], [])
+            self.assertNotIn('context', result)
+
+    def test_mac_final_fallback_guard_discards_installed_metadata(self):
+        self.capture.side_effect = m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        for ticks in ([100, 101, 102, 161], [100, 101, 102, 101]):
+            with self.subTest(ticks=ticks), \
+                    patch.object(m.native_context, 'observe_context_metadata', return_value={
+                        'observation_kind': 'metadata_only_no_handle'}), \
+                    patch.object(m.time, 'monotonic', side_effect=ticks):
+                result = self.execute()
+            self.assertEqual(result['status'], 'blocked')
+            self.assertEqual(result['errors'], ['RUNTIME_PATH_INVALID', 'CONTEXT_EXPIRED'])
+            self.assertEqual(result['report']['facts'], [])
+            self.assertNotIn('context', result)
+
+    def test_mac_final_fallback_cancellation_discards_installed_metadata(self):
+        self.capture.side_effect = m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        cancelled = [False]
+        def observed_at():
+            cancelled[0] = True
+            return '2026-10-15T00:00:00+00:00'
+        with patch.object(m.native_context, 'observe_context_metadata', return_value={
+                'observation_kind': 'metadata_only_no_handle'}), patch.object(m, '_now', side_effect=observed_at):
+            result = self.execute(cancelled=lambda: cancelled[0])
+        self.assertEqual(result['status'], 'cancelled')
+        self.assertEqual(result['report']['facts'], [])
+        self.assertNotIn('context', result)
+
+    def test_mac_other_capture_failures_never_fallback(self):
+        with patch.object(m.native_context, 'observe_context_metadata') as observe:
+            for code in ('CONTEXT_UNKNOWN', 'CONTEXT_FOREIGN', 'CONTEXT_CHANGED',
+                         'PERMISSION_DENIED', 'CANCELLED', 'TARGET_USER_CONTEXT_MISMATCH'):
+                with self.subTest(code=code):
+                    self.capture.side_effect = m.native_context.ContextError(code)
+                    result = self.execute()
+                    self.assertEqual(result['errors'], [code])
+            observe.assert_not_called()
+
+    def test_mac_fallback_does_not_hide_new_identity_failure(self):
+        self.capture.side_effect = m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        identity = self._partial_identity()
+        from dataclasses import replace
+        api = Mock()
+        api.read.side_effect = [identity, replace(identity, console_uid=502)]
+        with patch.object(m.native_context, '_MacAPI', return_value=api), \
+                patch.object(m.native_context, '_runtime', side_effect=m.native_context.ContextError('RUNTIME_PATH_INVALID')):
+            result = self.execute()
+        self.assertEqual(result['errors'], ['TARGET_USER_CONTEXT_MISMATCH'])
+        self.assertEqual(result['report']['facts'], [])
+        self.assertNotIn('context', result)
+
+    def test_mac_fallback_does_not_hide_unknown_runtime_error(self):
+        self.capture.side_effect = m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        api = Mock()
+        api.read.return_value = self._partial_identity()
+        with patch.object(m.native_context, '_MacAPI', return_value=api), \
+                patch.object(m.native_context, '_runtime', side_effect=m.native_context.ContextError('CONTEXT_UNKNOWN')):
+            result = self.execute()
+        self.assertEqual(result['errors'], ['CONTEXT_UNKNOWN'])
+        self.assertEqual(result['report']['facts'], [])
+
+    def test_mac_cancel_after_strict_failure_stops_fallback(self):
+        cancelled = [False]
+        def capture(**kwargs):
+            cancelled[0] = True
+            raise m.native_context.ContextError('RUNTIME_PATH_INVALID')
+        self.capture.side_effect = capture
+        with patch.object(m.native_context, 'observe_context_metadata') as observe:
+            result = self.execute(cancelled=lambda: cancelled[0])
+        self.assertEqual(result['status'], 'cancelled')
+        observe.assert_not_called()
+
     def test_runtime_missing_stops_before_query_consent(self):
         self.host.verify_runtime.return_value = False
         result = self.execute(dns_host=self.host, queries=[('reserved.test', 'A')])

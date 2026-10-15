@@ -9,7 +9,8 @@
 - `db102e9e07181929c6a68699fbc21eeef813405e`：数值边界与私有配置候选已发布。Windows合成审批过期测试依赖短sleep导致一次失败，`f7baad5d7b01ab48e4300a7f93ca2d722b85d298`改为注入时钟，原断言/生产预算不变。新轮Linux/macOS通过，Windows重复PowerShell mock超时仍在定位，尚不能称三端通过
 - `87364bdc51a808557c71a08d184a2cc98d874488`：[CI 38767766447](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38767766447)三端单元套件通过；Windows实际上下文smoke非零子进程失败，整个CI仍失败，后续构建步骤跳过。Mac上下文在capture/RUNTIME_PATH_INVALID阻塞并明确跳过，不能当完整ABI或桌面通过
 - 同轮Windows原15秒PowerShell mock通过，额外first/repeat诊断为0.343/0.297秒；此前间歇超时原因仍未知，不据本轮成功宣称修复
-- 新增合成浏览器截图流程：实际执行和下载查看像素前，视觉验收保持待验证
+- `56509f49c0e0c704f982a0779d10db54ec5ef727` 首轮新截图测试在Windows缺少模拟SIGKILL常量，`3a5d98a4e6622831c40fa577da9d54956289fcc8`已修复。[CI 38769891354](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38769891354) Linux/macOS成功，Windows836项单测715通过/121跳过，随后实际原生smoke失败：CONTEXT_UNKNOWN/capture；整个CI未通过，仍需固定阶段诊断定位
+- 合成浏览器[首次截图流程](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38768934000)因runner缺少中文字体在启动Chrome前失败，无PNG。本批加入临时内嵌字体修复；实际执行和下载查看像素前，视觉验收保持待验证
 
 以上标明三平台成功的各轮Node合成生命周期、编译及可复现打包通过。跳过不等于通过，CI临时环境与模拟API不代表用户电脑或真实网络验收。
 

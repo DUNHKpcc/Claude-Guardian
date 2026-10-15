@@ -281,15 +281,72 @@ def describe_context(handle):
     """Redacted snapshot summary; does not re-read or establish freshness."""
     if type(handle) is not ContextHandle or handle._marker is not _MARKER:
         raise ContextError('INPUT_INVALID')
+    return _summary(handle._runtime.screen)
+
+
+def _summary(runtime_screen):
     return {'schema_version': 'guardian-native-context/0.1',
         'platform': 'darwin', 'coverage': 'current_process_primary_console_only',
         'desktop_user_relation': 'same_at_observation',
         'session_state': 'active_console_at_observation',
         'target_association': 'requires_trusted_host_assertion',
         'filesystem_namespace': 'unknown', 'network_namespace': 'unknown',
-        'runtime_path_screen': handle._runtime.screen,
+        'runtime_path_screen': runtime_screen,
         'runtime_integrity': 'not_verified', 'gate_state': 'closed',
         'changes': [], 'native_platform_validation': 'not_run',
         'remaining_host_requirements': ['selected_target_association',
             'execution_namespace', 'runtime_and_dependency_trust',
             'operation_specific_live_approval']}
+
+
+def observe_context_metadata(*, max_seconds=5.0, cancelled=lambda: False):
+    """Bounded metadata-only observation; never returns a ContextHandle.
+
+    Preserves independently observed identity if restrictive runtime path syntax/
+    node screening fails. Identity, expiry and cancellation failures still raise.
+    Neither successful nor partial metadata may be passed as an execution gate.
+    Host authorization for these exact reads is required before this call.
+    """
+    if (type(max_seconds) not in (int, float) or not .1 <= max_seconds <= 60
+            or not math.isfinite(max_seconds) or not callable(cancelled)):
+        raise ContextError('INPUT_INVALID')
+    if sys.platform != 'darwin':
+        raise ContextError('UNSUPPORTED_PLATFORM')
+    started = time.monotonic()
+    deadline = started + max_seconds
+    _guard(cancelled, deadline)
+    try:
+        api = _MacAPI()
+        first = api.read()
+        _validate_identity(first)
+        _guard(cancelled, deadline)
+        runtime_error = None
+        try:
+            screen = _runtime().screen
+        except ContextError as error:
+            # Only this known restrictive screen failure can degrade metadata.
+            # Permission, cancellation, unknown API and identity errors cannot.
+            if str(error) != 'RUNTIME_PATH_INVALID':
+                raise
+            screen = 'blocked_path_invalid'
+            runtime_error = 'RUNTIME_PATH_INVALID'
+        _guard(cancelled, deadline)
+        second = api.read()
+        _validate_identity(second)
+        if first != second:
+            raise ContextError('CONTEXT_CHANGED')
+        _guard(cancelled, deadline)
+        if time.monotonic() < started:
+            raise ContextError('CONTEXT_EXPIRED')
+        result = _summary(screen)
+        result.update(observation_state='partial' if runtime_error else 'observed',
+                      runtime_path_error=runtime_error,
+                      runtime_path_continuity='not_established',
+                      observation_kind='metadata_only_no_handle')
+        return result
+    except ContextError:
+        raise
+    except PermissionError:
+        raise ContextError('PERMISSION_DENIED') from None
+    except (OSError, AttributeError, ValueError, TypeError):
+        raise ContextError('CONTEXT_UNKNOWN') from None

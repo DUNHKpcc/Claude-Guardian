@@ -141,6 +141,79 @@ class ContextTests(unittest.TestCase):
             self.assertEqual(str(caught.exception), code)
 
 
+class MetadataTests(unittest.TestCase):
+    setUp = ContextTests.setUp
+    def test_invalid_runtime_retains_only_metadata(self):
+        with patch.object(m, '_runtime', side_effect=m.ContextError('RUNTIME_PATH_INVALID')):
+            report = m.observe_context_metadata()
+            with self.assertRaisesRegex(m.ContextError, 'RUNTIME_PATH_INVALID'):
+                m.capture_current_context()
+        self.assertIs(type(report), dict)
+        self.assertEqual(report['observation_state'], 'partial')
+        self.assertEqual(report['observation_kind'], 'metadata_only_no_handle')
+        self.assertEqual(report['runtime_path_screen'], 'blocked_path_invalid')
+        self.assertEqual(report['runtime_path_error'], 'RUNTIME_PATH_INVALID')
+        self.assertEqual(report['runtime_path_continuity'], 'not_established')
+        self.assertEqual(report['runtime_integrity'], 'not_verified')
+        self.assertEqual(report['gate_state'], 'closed')
+        self.assertEqual(report['desktop_user_relation'], 'same_at_observation')
+        self.assertNotIn('501', json.dumps(report))
+        self.assertNotIn('/trusted', json.dumps(report))
+        with self.assertRaisesRegex(m.ContextError, 'INPUT_INVALID'):
+            m.recheck_context(report)
+        import os_dns_probe
+        forbidden = Mock(side_effect=AssertionError('metadata must not authorize DNS'))
+        with patch.object(os_dns_probe, '_run_child', forbidden):
+            outcome = os_dns_probe.probe_os_dns(
+                os_dns_probe.QueryScope(report, 'reserved.test', 'A'),
+                verify_binding=forbidden, verify_runtime=forbidden,
+                approve_query=forbidden)
+        self.assertEqual(outcome['error_code'], 'INPUT_INVALID')
+        self.assertEqual(outcome['requests_attempted'], 0)
+        forbidden.assert_not_called()
+
+    def test_metadata_with_valid_paths_still_has_no_handle(self):
+        report = m.observe_context_metadata()
+        self.assertEqual(report['observation_state'], 'observed')
+        self.assertIsNone(report['runtime_path_error'])
+        self.assertEqual(report['runtime_path_continuity'], 'not_established')
+        self.assertEqual(report['runtime_integrity'], 'not_verified')
+        self.assertEqual(report['gate_state'], 'closed')
+        with self.assertRaisesRegex(m.ContextError, 'INPUT_INVALID'):
+            m.recheck_context(report)
+
+    def test_partial_never_hides_changed_or_inactive_identity(self):
+        for last, code in ((identity(security_session=902), 'CONTEXT_CHANGED'),
+                           (identity(on_console=False), 'CONTEXT_INACTIVE')):
+            self.api.read.side_effect = [identity(), last]
+            with patch.object(m, '_runtime', side_effect=m.ContextError('RUNTIME_PATH_INVALID')):
+                with self.assertRaisesRegex(m.ContextError, code):
+                    m.observe_context_metadata()
+
+    def test_partial_never_hides_cancel_expiry_or_other_errors(self):
+        with patch.object(m, '_runtime', side_effect=m.ContextError('RUNTIME_PATH_INVALID')):
+            with self.assertRaisesRegex(m.ContextError, 'CANCELLED'):
+                m.observe_context_metadata(cancelled=Mock(side_effect=[False, False, True]))
+        for error, code in ((PermissionError('/secret'), 'PERMISSION_DENIED'),
+                            (OSError('/secret'), 'CONTEXT_UNKNOWN'),
+                            (m.ContextError('CANCELLED'), 'CANCELLED')):
+            with patch.object(m, '_runtime', side_effect=error):
+                with self.assertRaisesRegex(m.ContextError, code):
+                    m.observe_context_metadata()
+        with patch.object(m.time, 'monotonic', side_effect=[0, 0, 0, 6]), \
+             patch.object(m, '_runtime', side_effect=m.ContextError('RUNTIME_PATH_INVALID')):
+            with self.assertRaisesRegex(m.ContextError, 'CONTEXT_EXPIRED'):
+                m.observe_context_metadata(max_seconds=5)
+
+    def test_metadata_bounds_and_unsupported(self):
+        for value in (0, True, 61, float('nan'), 10**1000):
+            with self.assertRaisesRegex(m.ContextError, 'INPUT_INVALID'):
+                m.observe_context_metadata(max_seconds=value)
+        with patch.object(m.sys, 'platform', 'win32'):
+            with self.assertRaisesRegex(m.ContextError, 'UNSUPPORTED_PLATFORM'):
+                m.observe_context_metadata()
+
+
 class PathTests(unittest.TestCase):
     def setUp(self):
         # These are synthetic macOS path fixtures, even on a Windows test host.

@@ -121,3 +121,15 @@ credentials, or device settings to undo.
 - [WTSGetActiveConsoleSessionId](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-wtsgetactiveconsolesessionid): physical-console session and transition sentinel
 - [WTSQueryUserToken](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-wtsqueryusertoken): privileged service requirements; deliberately not used
 - [LoadLibraryExW](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexw): constrained system32 DLL search
+
+### Native CI failure localization
+
+Windows ContextError may carry fixed `stage` and `reason` diagnostic enums in
+addition to the unchanged public error code. These locate an existing failure
+boundary (DLL initialization, owned token/session read, SID bounds, WTS state or
+protocol, identity validation, runtime syntax, or cleanup). They contain no API
+return values, PID, SID, path, account name, or raw native error. The smoke harness
+must independently allowlist them before output. They do not authorize extra
+reads, weaken validation, or turn CONTEXT_UNKNOWN into an accepted headless
+outcome. Diagnostics remain observations; Windows CI evidence must be recorded
+separately from user-device acceptance.

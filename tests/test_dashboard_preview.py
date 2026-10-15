@@ -170,6 +170,83 @@ class PreviewTests(unittest.TestCase):
             time.sleep(0.8)
             self.assertFalse(Path(marker).exists())
 
+    def font_response(self, opener, data=b'synthetic font bytes', headers=None):
+        response = opener.return_value.open.return_value.__enter__.return_value
+        response.status = 200
+        response.geturl.return_value = preview.FONT_URL
+        response.headers = headers or {}
+        response.read.side_effect = [data, b'']
+        return response
+
+    def test_pinned_font_download_hash_and_byte_bounds(self):
+        data = b'synthetic font bytes'
+        with patch.object(preview.urllib.request, 'build_opener') as opener, \
+             patch.object(preview, 'FONT_SHA256', preview.hashlib.sha256(data).hexdigest()):
+            self.font_response(opener, data)
+            self.assertEqual(preview.download_font(), data)
+            opener.return_value.open.assert_called_once_with(preview.FONT_URL, timeout=30)
+            handlers = opener.call_args.args
+            self.assertEqual(handlers[0].proxies, {})
+            self.assertIsInstance(handlers[1], preview.NoFontRedirect)
+        with patch.object(preview.urllib.request, 'build_opener') as opener:
+            self.font_response(opener)
+            with self.assertRaisesRegex(preview.PreviewError, 'HASH_MISMATCH'):
+                preview.download_font()
+        for headers in ({'Content-Length': str(preview.FONT_LIMIT + 1)}, {'Content-Length': '-1'}):
+            with patch.object(preview.urllib.request, 'build_opener') as opener:
+                response = self.font_response(opener, headers=headers)
+                with self.assertRaisesRegex(preview.PreviewError, 'SIZE_REJECTED'):
+                    preview.download_font()
+                response.read.assert_not_called()
+        with patch.object(preview.urllib.request, 'build_opener') as opener, \
+             patch.object(preview, 'FONT_LIMIT', 4):
+            self.font_response(opener, b'12345')
+            with self.assertRaisesRegex(preview.PreviewError, 'SIZE_REJECTED'):
+                preview.download_font()
+
+    def test_font_redirect_http_error_and_timeout_fail_closed(self):
+        with self.assertRaisesRegex(preview.PreviewError, 'REDIRECT_REJECTED'):
+            preview.NoFontRedirect().redirect_request(None, None, 302, '', {}, 'https://other.example/font')
+        for status, url in ((403, preview.FONT_URL), (200, 'https://other.example/font')):
+            with patch.object(preview.urllib.request, 'build_opener') as opener:
+                response = self.font_response(opener)
+                response.status = status
+                response.geturl.return_value = url
+                with self.assertRaisesRegex(preview.PreviewError, 'RESPONSE_REJECTED'):
+                    preview.download_font()
+                response.read.assert_not_called()
+        with patch.object(preview.urllib.request, 'build_opener') as opener, \
+             patch.object(preview.time, 'monotonic', side_effect=[0, 61]):
+            self.font_response(opener)
+            with self.assertRaisesRegex(preview.PreviewError, 'DOWNLOAD_TIMEOUT'):
+                preview.download_font()
+        with patch.object(preview.urllib.request, 'build_opener') as opener:
+            opener.return_value.open.side_effect = OSError('network unavailable')
+            with self.assertRaises(OSError): preview.download_font()
+
+    def test_font_environment_owned_paths_and_no_global_mutation(self):
+        before = dict(os.environ)
+        with tempfile.TemporaryDirectory() as tmp, patch.object(preview, 'download_font', return_value=b'fixture'):
+            work = Path(tmp)
+            env = preview.font_environment(work)
+            self.assertEqual(dict(os.environ), before)
+            config = Path(env['FONTCONFIG_FILE']).read_text()
+            self.assertIn(str(work / 'fonts'), config)
+            self.assertIn(str(work / 'font-cache'), config)
+            self.assertNotIn('<include', config)
+            self.assertNotIn('/etc/fonts', config)
+            self.assertEqual(env['FONTCONFIG_PATH'], str(work))
+            self.assertNotIn('FONTCONFIG_SYSROOT', env)
+
+    def test_font_download_requires_explicit_ci_optin(self):
+        with patch.object(preview, 'require_ci'), patch.object(preview, 'capture_with_environment'), \
+             patch.object(preview, 'download_font') as download:
+            preview.capture('unused')
+            download.assert_not_called()
+        with patch.dict(os.environ, {}, clear=True), patch.object(preview, 'download_font') as download:
+            with self.assertRaises(preview.PreviewError): preview.capture('unused', ci_font=True)
+            download.assert_not_called()
+
     def test_invalid_png_and_dimensions(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'test.png'

@@ -89,3 +89,14 @@ change preserves failing semantics and exposes only reviewed error enums and
 capture/recheck stage plus exit status. Native success is still unestablished.
 The macOS step on that run was explicitly blocked with RUNTIME_PATH_INVALID
 at capture; this does not establish full ABI or desktop acceptance.
+
+Run 38769891354, Windows job 116542628031, subsequently returned the sanitized
+failure `exit=1; code=CONTEXT_UNKNOWN; phase=capture`. This establishes a native
+capture failure, not its root cause. Windows native-context failures may now add
+exact `stage` and `reason` fields drawn from fixed code vocabularies, including
+literal `unknown`. Missing or unrecognized attributes become `unknown` inside
+the child; the parent independently rejects unrecognized enum values, partial
+fields, extra fields, and diagnostic fields on observed/blocked envelopes.
+These fields are diagnostics only and every such envelope still fails. No native
+return values, last-error numbers, paths, identifiers, or exception text are
+included. The next CI run is needed to identify the failing branch.

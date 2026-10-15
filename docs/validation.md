@@ -143,3 +143,9 @@ Windows既有15秒mock-cmdlet测试重复超时，原因尚未确定。新增诊
 基于 `87364bdc51a808557c71a08d184a2cc98d874488`，新增合成浏览器截图workflow/工具/12测试/文档，以及native smoke安全失败诊断3回归。完整本地836项，828通过/8跳过；Node8项、运行时与工具compileall、diff与重复打包通过。运行时包未改变，SHA-256仍 `0519b9d1644d53125ecdd78d0d50e89d02db989da4af16a0af538f46d9ab78e2`。浏览器工具的本地测试无Chrome/网络，真实截图与像素检查尚待精确CI产物；PNG头夹具不作为图片交付。原生失败的固定代码/阶段诊断仍是失败，不放宽BLOCKED集合或输出任意私密文本。
 
 前一轮[CI 38767766447](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38767766447)三端完整821项单元测试通过：Linux/macOS813通过8跳过，Windows701通过120跳过。Windows随后实际上下文smoke非零子进程失败，后续Node/编译/打包未运行，整个CI失败；Mac实际上下文capture/RUNTIME_PATH_INVALID明确跳过，其他流水线步骤成功，不能宣称完整原生ABI验证。Windows原15秒mock语义测试此轮通过，after-suite诊断first/repeat为0.343/0.297秒且所有固定阶段完成，仅记录这次观察，不证明早先间歇超时原因或稳定修复。
+
+## 部分元数据、字体与原生失败定位（2026-10-15，发布前隔离证据）
+
+基于 `3a5d98a4e6622831c40fa577da9d54956289fcc8`，15份经复核实现/测试/专用文档及5份共享能力/证据文档。完整Linux隔离862项：854通过/8跳过；Node8、脚本与工具compileall、diff及重复打包通过。最终包SHA-256 `aba457e0ef47344eb4c47007b84306653d2b0739ad5efda1f5424f314e423487`。Mac元数据API与session fallback仅合成回归；Windows诊断32项、会话54项、字体预览16项；smoke21项中20通过/1Linux跳过，另532种枚举/退出组合复核未改变失败语义。
+
+前轮CI38769891354 Linux/macOS整体成功；Windows836项单元715通过/121跳过，但实际smoke为`exit=1; code=CONTEXT_UNKNOWN; phase=capture`，全轮失败，原生根因未定。Windows原15秒mock再次通过，after-suite诊断first/repeat为0.344/0.328秒，仍不证明历史间歇超时已修复。截图首次因缺CJK字体在Chrome前失败、没有PNG。本批通过显式CI标志获取固定上游字体及许可、验证哈希，仅临时页面内嵌，未实际执行下载/截图前不宣称视觉通过。所有新实际CI结论待固定提交运行后补记；没有用户设备读取或真实DNS。

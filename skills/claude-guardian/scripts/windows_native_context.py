@@ -12,8 +12,44 @@ import time
 from dataclasses import dataclass, field
 
 
+_STAGES = frozenset({'unknown', 'dll_initialization', 'thread_token',
+    'process_session', 'active_console', 'process_token', 'token_user',
+    'token_statistics', 'token_session', 'token_elevation', 'token_app_container',
+    'token_restrictions', 'token_ui_access', 'wts_state', 'wts_protocol',
+    'token_cleanup', 'identity_validation', 'runtime_paths', 'collection'})
+_REASONS = frozenset({'unknown', 'api_call_failed', 'return_size_mismatch',
+    'sid_pointer_bounds', 'sid_header_invalid', 'sid_size_bounds',
+    'unexpected_exception'})
+
+
+def _diagnostic(value, allowed):
+    return value if type(value) is str and value in allowed else 'unknown'
+
+
 class ContextError(Exception):
-    """Stable public codes only; no raw native diagnostics."""
+    """Stable code and optional fixed diagnostic enums; no native identifiers."""
+    def __init__(self, code, *, stage='unknown', reason='unknown'):
+        super().__init__(code)
+        self.stage = _diagnostic(stage, _STAGES)
+        self.reason = _diagnostic(reason, _REASONS)
+
+
+def _step(stage, function, *args):
+    """Attribute existing failures without changing native calls or decisions."""
+    try:
+        return function(*args)
+    except ContextError as error:
+        error.stage = _diagnostic(error.stage, _STAGES)
+        error.reason = _diagnostic(error.reason, _REASONS)
+        if error.stage == 'unknown':
+            error.stage = _diagnostic(stage, _STAGES)
+        raise
+    except PermissionError:
+        raise ContextError('PERMISSION_DENIED', stage=stage,
+                           reason='unexpected_exception') from None
+    except (OSError, AttributeError, ValueError, TypeError):
+        raise ContextError('CONTEXT_UNKNOWN', stage=stage,
+                           reason='unexpected_exception') from None
 
 
 _U32 = ctypes.c_uint32
@@ -81,7 +117,7 @@ def _function(lib, name, result, *args):
 
 def _native_error():
     raise ContextError('PERMISSION_DENIED' if ctypes.get_last_error() == 5
-                       else 'CONTEXT_UNKNOWN')
+                       else 'CONTEXT_UNKNOWN', reason='api_call_failed')
 
 
 class _WindowsAPI:
@@ -116,7 +152,7 @@ class _WindowsAPI:
         token = _PTR()
         # OpenAsSelf changes access checking only; it does not impersonate.
         if self.open_thread(self.thread(), 0x0008, 1, ctypes.byref(token)):
-            self._close(token)
+            _step('token_cleanup', self._close, token)
             raise ContextError('CONTEXT_FOREIGN')
         if ctypes.get_last_error() != 1008:  # ERROR_NO_TOKEN only
             _native_error()
@@ -127,7 +163,7 @@ class _WindowsAPI:
                          ctypes.byref(length)):
             _native_error()
         if length.value != ctypes.sizeof(value):
-            raise ContextError('CONTEXT_UNKNOWN')
+            raise ContextError('CONTEXT_UNKNOWN', reason='return_size_mismatch')
         return value
 
     def _sid(self, token):
@@ -137,15 +173,17 @@ class _WindowsAPI:
         if not self.info(token, 1, buffer, len(buffer), ctypes.byref(length)):
             _native_error()
         if not ctypes.sizeof(_TokenUser) <= length.value <= len(buffer):
-            raise ContextError('CONTEXT_UNKNOWN')
+            raise ContextError('CONTEXT_UNKNOWN', reason='return_size_mismatch')
         start, end = ctypes.addressof(buffer), ctypes.addressof(buffer) + length.value
         address = _TokenUser.from_buffer(buffer).sid
         if not address or not start + ctypes.sizeof(_TokenUser) <= address <= end - 8:
-            raise ContextError('CONTEXT_UNKNOWN')
+            raise ContextError('CONTEXT_UNKNOWN', reason='sid_pointer_bounds')
         header = ctypes.string_at(address, 8)
         size = 8 + 4 * header[1]
-        if header[0] != 1 or header[1] > 15 or address + size > end:
-            raise ContextError('CONTEXT_UNKNOWN')
+        if header[0] != 1 or header[1] > 15:
+            raise ContextError('CONTEXT_UNKNOWN', reason='sid_header_invalid')
+        if address + size > end:
+            raise ContextError('CONTEXT_UNKNOWN', reason='sid_size_bounds')
         return ctypes.string_at(address, size)
 
     def _wts(self, kind, structure):
@@ -156,42 +194,43 @@ class _WindowsAPI:
                               ctypes.byref(length)):
                 _native_error()
             if not pointer.value or length.value != ctypes.sizeof(structure):
-                raise ContextError('CONTEXT_UNKNOWN')
+                raise ContextError('CONTEXT_UNKNOWN', reason='return_size_mismatch')
             return structure.from_buffer_copy(ctypes.string_at(pointer, length.value)).value
         finally:
             if pointer.value:
                 self.free(pointer)
 
     def read(self):
-        self._no_impersonation()
+        _step('thread_token', self._no_impersonation)
         pid, tid, session = self.pid(), self.tid(), _U32()
-        if not self.session(pid, ctypes.byref(session)):
-            _native_error()
+        if not _step('process_session', self.session, pid, ctypes.byref(session)):
+            _step('process_session', _native_error)
         # Reject a foreign/non-console session before any WTS session query.
-        console = self.console()
+        console = _step('active_console', self.console)
         if not session.value or console == 0xffffffff or session.value != console:
             raise ContextError('CONTEXT_FOREIGN')
         token = _PTR()
-        if not self.open_process(self.process(), 0x0008, ctypes.byref(token)):
-            _native_error()
+        if not _step('process_token', self.open_process, self.process(), 0x0008, ctypes.byref(token)):
+            _step('process_token', _native_error)
         try:
-            sid = self._sid(token)
-            stats = self._fixed(token, 10, _Statistics)
+            sid = _step('token_user', self._sid, token)
+            stats = _step('token_statistics', self._fixed, token, 10, _Statistics)
             if stats.kind != 1:  # TokenPrimary
                 raise ContextError('CONTEXT_FOREIGN')
-            session_id = self._fixed(token, 12, _U32).value
-            elevated = self._fixed(token, 20, _U32).value
-            app = self._fixed(token, 29, _U32).value
-            restricted = self._fixed(token, 21, _U32).value  # TokenHasRestrictions
-            ui_access = self._fixed(token, 26, _U32).value
+            session_id = _step('token_session', self._fixed, token, 12, _U32).value
+            elevated = _step('token_elevation', self._fixed, token, 20, _U32).value
+            app = _step('token_app_container', self._fixed, token, 29, _U32).value
+            restricted = _step('token_restrictions', self._fixed, token, 21, _U32).value  # TokenHasRestrictions
+            ui_access = _step('token_ui_access', self._fixed, token, 26, _U32).value
             luid = lambda value: (value.low, value.high)
             identity = _Identity(pid, tid, session.value, session_id, console,
-                self._wts(8, _I32), self._wts(16, ctypes.c_uint16), sid,
+                _step('wts_state', self._wts, 8, _I32),
+                _step('wts_protocol', self._wts, 16, ctypes.c_uint16), sid,
                 luid(stats.token), luid(stats.authentication), luid(stats.modified),
                 elevated, app, restricted, ui_access)
         finally:
-            self._close(token)
-        self._no_impersonation()
+            _step('token_cleanup', self._close, token)
+        _step('thread_token', self._no_impersonation)
         return identity
 
 
@@ -253,14 +292,14 @@ def _collect(cancelled, deadline, previous):
         raise ContextError('UNSUPPORTED_PLATFORM')
     previous = _guard(cancelled, deadline, previous)
     try:
-        api = _WindowsAPI()
-        first = api.read()
-        _validate_identity(first)
+        api = _step('dll_initialization', _WindowsAPI)
+        first = _step('collection', api.read)
+        _step('identity_validation', _validate_identity, first)
         previous = _guard(cancelled, deadline, previous)
-        runtime = _runtime()
+        runtime = _step('runtime_paths', _runtime)
         previous = _guard(cancelled, deadline, previous)
-        second = api.read()
-        _validate_identity(second)
+        second = _step('collection', api.read)
+        _step('identity_validation', _validate_identity, second)
         if first != second:
             raise ContextError('CONTEXT_CHANGED')
         previous = _guard(cancelled, deadline, previous)

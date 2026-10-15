@@ -41,6 +41,17 @@ API, continuity, path-screen and platform limitations; Windows details are in
 a cloud result must never represent the user's Mac. Missing permission, inactive
 console, unsupported context, symlinked runtime paths, and expiry remain visible.
 
+If strict macOS context capture fails specifically with `RUNTIME_PATH_INVALID`,
+the session may recover a useful partial observation using
+`observe_context_metadata` within the remaining original 60-second budget
+(capped at five seconds for this retry). This repeats only the already approved
+metadata scope. It never resets the deadline and returns no context handle.
+The original path-screen failure remains visible; runtime and namespace trust
+remain unknown. Even when a DNS host and queries were supplied, this partial
+path does not invoke host verifiers, request DNS consent, or launch a query.
+Identity, permission, cancellation, expiry, and other failures do not trigger
+this fallback. A later failure or late result discards the partial observation.
+
 JSON goes to stdout. The callable API also returns HTML in memory. To explicitly
 save a dashboard to a new private, local, already-hydrated file:
 
@@ -139,7 +150,7 @@ or platform permission. No output is a resumable capability.
 python -m unittest discover -s tests -p test_diagnostic_session.py -v
 ```
 
-44 synthetic session tests exercise the actual session plus existing DNS library and
+54 synthetic session tests exercise the actual session plus existing DNS library and
 existing dashboard using injected context and resolver responses. Tests cover
 separate consent, nonce replay, bounded partial terminal input, decline/cancel,
 delayed approval, target rebind, context change after query, missing runtime or

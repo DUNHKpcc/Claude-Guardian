@@ -187,6 +187,7 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
     backend = windows_native_context if sys.platform == 'win32' else native_context
     local_os = 'windows' if sys.platform == 'win32' else 'macos'
     handle = None
+    metadata_only = False
     continuity_failure = None
     def checked():
         # The probe sanitizes callback exceptions. Latch continuity rejection so
@@ -245,9 +246,39 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
                     'network': 'none', 'changes': 'none'}) is not True:
             raise SessionError('DECLINED')
         _guard(cancelled)
-        handle = backend.capture_current_context(max_age_seconds=60, cancelled=cancelled)
-        checked()
-        result['context'] = backend.describe_context(handle)
+        started = time.monotonic()
+        if type(started) not in (int, float) or not 0 <= started < 1e100:
+            raise SessionError('CONTEXT_EXPIRED')
+        last_tick = started
+        def remaining_budget():
+            nonlocal last_tick
+            _guard(cancelled)
+            current = time.monotonic()
+            if (type(current) not in (int, float) or not last_tick <= current < started + 60):
+                raise SessionError('CONTEXT_EXPIRED')
+            last_tick = current
+            return started + 60 - current
+        try:
+            handle = backend.capture_current_context(max_age_seconds=60, cancelled=cancelled)
+        except native_context.ContextError as exc:
+            if local_os != 'macos' or exc.args != ('RUNTIME_PATH_INVALID',):
+                raise
+            # An invalid runtime path is not an identity failure. Re-observe only
+            # the already approved metadata within the original capture budget.
+            # This helper deliberately returns no handle, even if paths now pass.
+            remaining = remaining_budget()
+            if remaining < .1:
+                raise SessionError('CONTEXT_EXPIRED')
+            partial = native_context.observe_context_metadata(
+                max_seconds=min(5.0, remaining), cancelled=cancelled)
+            remaining_budget()
+            metadata_only = True
+            result['context'] = partial
+            result['errors'].append('RUNTIME_PATH_INVALID')
+            result['dns_availability'] = 'blocked_context_handle_unavailable'
+        if handle is not None:
+            checked()
+            result['context'] = backend.describe_context(handle)
         report['facts'] = [{'id': 'S01', 'value': local_os, 'state': 'observed',
                             'source_refs': ['native-current-context'], 'observed_at': _now(),
                             'coverage': result['context'].get('coverage', 'limited_process_context')}]
@@ -257,9 +288,9 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
             result['dns_availability'] = 'blocked_windows_session_dns_integration_unavailable'
             if queries:
                 raise SessionError('WINDOWS_SESSION_DNS_UNAVAILABLE')
-        elif dns_host is not None:
+        elif handle is not None and dns_host is not None:
             result['dns_availability'] = 'requires_live_host_checks_and_query_consent'
-        for pair in queries:
+        for pair in queries if handle is not None else ():
             checked()
             if dns_host is None:
                 result['errors'].append('DNS_HOST_INTEGRATION_REQUIRED')
@@ -319,7 +350,10 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
                 if probe['error_code'] in {'CANCELLED', 'TIMEOUT', 'TARGET_NOT_BOUND',
                         'RUNTIME_NOT_TRUSTED', 'AUTHORIZATION_MISSING', 'CLEANUP_FAILED'}:
                     raise SessionError(probe['error_code'])
-        checked()
+        if handle is not None:
+            checked()
+        else:
+            remaining_budget()
     except (KeyboardInterrupt, EOFError):
         result['errors'].append('CANCELLED')
         result['status'] = 'cancelled'
@@ -341,6 +375,11 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
         result['errors'].append('SESSION_FAILED')
         result['status'] = 'blocked'
     if result['status'] in ('blocked', 'cancelled'):
+        if metadata_only:
+            # A no-handle fallback cannot retain facts after its final budget or
+            # cancellation guard fails. Strict-handle history is separate below.
+            result.pop('context', None)
+            report['facts'] = []
         # Retained evidence remains historical and unavailable for current-target
         # conclusions after interruption/rebinding. DNS failures remain visible.
         for fact in report['facts']:

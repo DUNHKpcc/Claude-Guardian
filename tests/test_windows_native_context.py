@@ -77,6 +77,37 @@ class ContextTests(unittest.TestCase):
             self.factory.side_effect = error
             self.assert_code(code, m.capture_current_context)
 
+    def test_fixed_diagnostic_stage_and_reason(self):
+        self.factory.side_effect = OSError('PRIVATE-PATH')
+        with self.assertRaises(m.ContextError) as failure:
+            m.capture_current_context()
+        self.assertEqual((str(failure.exception), failure.exception.stage, failure.exception.reason),
+                         ('CONTEXT_UNKNOWN', 'dll_initialization', 'unexpected_exception'))
+        self.assertNotIn('PRIVATE', repr(failure.exception))
+        self.factory.side_effect = None
+        self.factory.return_value.read.side_effect = m.ContextError(
+            'CONTEXT_UNKNOWN', stage='token_user', reason='sid_pointer_bounds')
+        with self.assertRaises(m.ContextError) as failure:
+            m.capture_current_context()
+        self.assertEqual((failure.exception.stage, failure.exception.reason),
+                         ('token_user', 'sid_pointer_bounds'))
+
+    def test_unknown_diagnostics_suppressed_at_creation_and_propagation(self):
+        for value in ('PRIVATE-PATH', None, [], {'private': 'PRIVATE-SID'}, 42, True):
+            error = m.ContextError('CONTEXT_UNKNOWN', stage=value, reason=value)
+            self.assertEqual((error.stage, error.reason), ('unknown', 'unknown'))
+            error.stage, error.reason = value, value
+            self.factory.return_value.read.side_effect = error
+            with self.assertRaises(m.ContextError) as failure:
+                m.capture_current_context()
+            self.assertEqual((failure.exception.stage, failure.exception.reason),
+                             ('collection', 'unknown'))
+            self.assertNotIn('PRIVATE', repr(failure.exception))
+        error = m.ContextError('CONTEXT_UNKNOWN')
+        with self.assertRaises(m.ContextError) as failure:
+            m._step('PRIVATE', mock.Mock(side_effect=error))
+        self.assertEqual((failure.exception.stage, failure.exception.reason), ('unknown', 'unknown'))
+
     def test_changed_during_capture(self):
         self.factory.return_value.read.side_effect = [IDENTITY, dataclasses.replace(IDENTITY, modified_id=(31, 0))]
         self.assert_code('CONTEXT_CHANGED', m.capture_current_context)
@@ -232,6 +263,21 @@ class APIBoundaryTests(unittest.TestCase):
         with self.assertRaisesRegex(m.ContextError, 'CONTEXT_UNKNOWN'):
             self.api._fixed(1, 12, m._U32)
 
+    def test_return_size_diagnostic_and_native_error_remain_failures(self):
+        def info(token, kind, value, size, length):
+            length._obj.value = size + 1
+            return 1
+        self.api.info = info
+        with self.assertRaises(m.ContextError) as failure:
+            m._step('token_statistics', self.api._fixed, 1, 10, m._Statistics)
+        self.assertEqual((str(failure.exception), failure.exception.stage, failure.exception.reason),
+                         ('CONTEXT_UNKNOWN', 'token_statistics', 'return_size_mismatch'))
+        with mock.patch.object(m.ctypes, 'get_last_error', return_value=87, create=True):
+            with self.assertRaises(m.ContextError) as failure:
+                m._step('process_token', m._native_error)
+        self.assertEqual((str(failure.exception), failure.exception.stage, failure.exception.reason),
+                         ('CONTEXT_UNKNOWN', 'process_token', 'api_call_failed'))
+
     def test_close_failure(self):
         self.api.close = lambda h: 0
         with self.assertRaisesRegex(m.ContextError, 'CLEANUP_FAILED'):
@@ -274,6 +320,21 @@ class APIBoundaryTests(unittest.TestCase):
         self.api._wts.side_effect = m.ContextError('CONTEXT_UNKNOWN')
         with self.assertRaisesRegex(m.ContextError, 'CONTEXT_UNKNOWN'):
             self.api.read()
+        self.api.close.assert_called_once()
+
+    def test_cleanup_failure_takes_precedence_over_sid_failure(self):
+        self.api._no_impersonation = lambda: None
+        self.api.pid, self.api.tid = lambda: 321, lambda: 654
+        self.api.session = lambda pid, output: setattr(output._obj, 'value', 1) or 1
+        self.api.console = lambda: 1
+        self.api.process = lambda: -1
+        self.api.open_process = lambda process, access, output: setattr(output._obj, 'value', 42) or 1
+        self.api._sid = mock.Mock(side_effect=m.ContextError('CONTEXT_UNKNOWN', reason='sid_pointer_bounds'))
+        self.api.close = mock.Mock(return_value=0)
+        with self.assertRaises(m.ContextError) as failure:
+            self.api.read()
+        self.assertEqual((str(failure.exception), failure.exception.stage, failure.exception.reason),
+                         ('CLEANUP_FAILED', 'token_cleanup', 'unknown'))
         self.api.close.assert_called_once()
 
     def test_runtime_syntax_only(self):

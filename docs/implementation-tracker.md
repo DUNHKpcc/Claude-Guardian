@@ -445,3 +445,9 @@ ENV-01/02 / ENG-01：显式CI-only上下文smoke通过有界自有子进程调�
 
 UI-I06：新增独立GitHub Actions合成面板截图流程，固定输入/时间、CSP无外部资源、已有Chrome默认sandbox与中文字体前置检查、桌面/窄窗口PNG/manifest限定产物。不安装浏览器，不使用用户配置。合成截图须实际执行且取回查看像素后才可认定视觉QA；不证明真实设备/网络或交互功能验收。
 CI上下文smoke新增非零子进程的严格固定错误代码/阶段/有界退出码诊断，不打印原始字节/私有身份且所有失败仍失败。Windows首次实际smoke未通过，不能将失败归因于headless或标记跳过；Mac目前capture/RUNTIME_PATH_INVALID为明确阻塞，不是完整ABI或桌面验收。
+
+
+## 18. 部分元数据与失败定位（2026-10-15）
+
+ENV-01/02：Mac元数据专用API返回无句柄、closed gate、runtime/namespace未知的报告；严格capture/recheck保持不变。会话只对RUNTIME_PATH_INVALID重试相同已授权元数据范围，使用原期限剩余预算，失败/过期/取消丢弃结果，不能继续DNS。Windows增加固定错误阶段/原因供CI定位，尚未确定CONTEXT_UNKNOWN的原生根因。
+UI-I06：合成截图从固定官方Noto源下载有哈希/OFL核验的字体，仅在临时页面内嵌，不安装；读取超时不等于硬总期限，外层CI为五分钟。实际PNG及像素检查仍待本次CI。

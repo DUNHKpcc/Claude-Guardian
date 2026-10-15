@@ -65,10 +65,41 @@ always retain `gate_state: closed`, namespace `unknown`, and runtime integrity
 `not_verified`. Persisted reports cannot restore the private observation or grant
 permission. No target-association or approval JSON parser is provided.
 
+## Partial metadata without an execution handle
+
+`observe_context_metadata(max_seconds=5, cancelled=...)` is a separate read-only
+API, bounded to 0.1–60 seconds. It returns only a redacted dictionary, never a
+`ContextHandle`. Its exact local reads still require prior host authorization.
+It samples and validates identity before and after runtime screening and rejects
+changed/inactive/foreign identity, cancellation, expiry and permission/unknown
+errors. Only the restrictive `RUNTIME_PATH_INVALID` screen failure may produce
+partial metadata. The report then explicitly contains:
+
+- `observation_state: partial`
+- `observation_kind: metadata_only_no_handle`
+- `runtime_path_screen: blocked_path_invalid`
+- `runtime_path_error: RUNTIME_PATH_INVALID`
+- `runtime_path_continuity: not_established`
+- `runtime_integrity: not_verified` and `gate_state: closed`
+
+A normal metadata result also has no handle and makes no runtime-continuity
+claim. This API cannot provide DNS bindings or approvals, and its dictionary is
+rejected by `recheck_context`. The strict capture/recheck API retains its existing
+path-failure behavior. An interactive host may deliberately use the metadata-only
+API within its separately approved scope and remaining overall deadline; there
+is no automatic retry, fallback, CI smoke reinterpretation, or gate change here.
+
+The macOS job in [CI run 38767766447](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38767766447)
+reported `RUNTIME_PATH_INVALID` during strict capture on macos-26-arm64. Its
+privacy-preserving log does not identify the offending path or condition. A
+symlink is one possible rejected condition, not an established cause. That run's
+blocked smoke remains blocked; synthetic partial-metadata tests do not replace
+native validation of this new API.
+
 ## Runtime path screening is deliberately incomplete
 
 Symlinks, non-normalized paths, non-regular executable nodes, non-directory
-ancestors, unreadable nodes and excessively deep paths reject collection. For
+ancestors, unreadable nodes and excessively deep paths reject strict collection. For
 otherwise inspectable paths, non-root ownership or group/other-write mode bits
 produce `rejected_writable_or_nonroot`. The native identity observation may still
 be returned, but the path screen must not be used to approve that runtime.

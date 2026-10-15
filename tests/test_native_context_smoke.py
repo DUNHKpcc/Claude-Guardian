@@ -26,6 +26,13 @@ NATIVE_FAILURES = frozenset({'CONTEXT_UNKNOWN', 'CLEANUP_FAILED', 'CONTEXT_EXPIR
 FAILURE_PHASES = ({(code, phase) for code in NATIVE_FAILURES | {'NATIVE_ERROR', 'UNEXPECTED_ERROR'}
                    for phase in ('capture', 'recheck')}
                   | {('LOAD_FAILED', 'capture'), ('CONTRACT_FAILED', 'recheck')})
+DIAGNOSTIC_STAGES = frozenset({'unknown', 'dll_initialization', 'thread_token',
+    'process_session', 'active_console', 'process_token', 'token_user',
+    'token_statistics', 'token_session', 'token_elevation', 'token_app_container',
+    'token_restrictions', 'token_ui_access', 'wts_state', 'wts_protocol',
+    'token_cleanup', 'identity_validation', 'runtime_paths', 'collection'})
+DIAGNOSTIC_REASONS = frozenset({'unknown', 'api_call_failed', 'return_size_mismatch',
+    'sid_pointer_bounds', 'sid_header_invalid', 'sid_size_bounds', 'unexpected_exception'})
 MODULES = {'darwin': 'native_context', 'win32': 'windows_native_context'}
 
 
@@ -63,7 +70,12 @@ def observe(module):
         code = str(error)
         if code in BLOCKED:
             return {'state': 'blocked', 'code': code, 'phase': phase}
-        return {'state': 'failed', 'code': code if code in NATIVE_FAILURES else 'NATIVE_ERROR', 'phase': phase}
+        result = {'state': 'failed', 'code': code if code in NATIVE_FAILURES else 'NATIVE_ERROR', 'phase': phase}
+        if sys.platform == 'win32':
+            for field, allowed in (('stage', DIAGNOSTIC_STAGES), ('reason', DIAGNOSTIC_REASONS)):
+                value = getattr(error, field, 'unknown')
+                result[field] = value if type(value) is str and value in allowed else 'unknown'
+        return result
     except Exception:
         return {'state': 'failed', 'code': 'UNEXPECTED_ERROR', 'phase': phase}
 
@@ -164,15 +176,23 @@ def decode_result(returncode, output):
         report = json.loads(output)
     except (ValueError, UnicodeError):
         raise AssertionError('Native smoke invalid envelope; exit=' + status) from None
-    if (type(report) is not dict or set(report) != {'state', 'code', 'phase'}
+    if (type(report) is not dict or set(report) not in (
+            {'state', 'code', 'phase'}, {'state', 'code', 'phase', 'stage', 'reason'})
             or any(type(value) is not str for value in report.values())
             or report['phase'] not in ('capture', 'recheck')):
         raise AssertionError('Native smoke invalid envelope; exit=' + status)
+    diagnostic = ''
+    if 'stage' in report:
+        if (report['state'] != 'failed' or report['code'] not in NATIVE_FAILURES | {'NATIVE_ERROR'}
+                or report['stage'] not in DIAGNOSTIC_STAGES
+                or report['reason'] not in DIAGNOSTIC_REASONS):
+            raise AssertionError('Native smoke invalid envelope; exit=' + status)
+        diagnostic = '; stage=' + report['stage'] + '; reason=' + report['reason']
     if report['state'] == 'failed' and (report['code'], report['phase']) in FAILURE_PHASES:
         # Only the reviewed literal enum pair crosses this boundary, never raw
         # output or exception messages. Even exit=0 cannot turn failure into pass.
         raise AssertionError('Native smoke child failed; exit=' + status
-                             + '; code=' + report['code'] + '; phase=' + report['phase'])
+                             + '; code=' + report['code'] + '; phase=' + report['phase'] + diagnostic)
     if not ((report['state'] == 'blocked' and report['code'] in BLOCKED)
             or (report['state'] == 'observed' and report['code'] == 'CONTINUITY_OBSERVED'
                 and report['phase'] == 'recheck')):
@@ -261,6 +281,55 @@ class SmokeBoundaryTests(unittest.TestCase):
             self.assertNotIn('PRIVATE', str(failure.exception))
         with self.assertRaises(AssertionError):
             decode_result(1, b'PRIVATE')
+
+    def test_windows_diagnostic_vocab_remains_failure(self):
+        with mock.patch.object(sys, 'platform', 'win32'):
+            for stage in DIAGNOSTIC_STAGES:
+                for reason in DIAGNOSTIC_REASONS:
+                    module = self.module()
+                    error = module.ContextError('CONTEXT_UNKNOWN')
+                    error.stage, error.reason = stage, reason
+                    module.capture_current_context.side_effect = error
+                    report = observe(module)
+                    self.assertEqual(report, dict(state='failed', code='CONTEXT_UNKNOWN',
+                                                  phase='capture', stage=stage, reason=reason))
+                    with self.assertRaises(AssertionError) as failure:
+                        decode_result(1, json.dumps(report).encode())
+                    self.assertEqual(str(failure.exception),
+                        'Native smoke child failed; exit=1; code=CONTEXT_UNKNOWN; phase=capture'
+                        + '; stage=' + stage + '; reason=' + reason)
+
+    def test_windows_unknown_attributes_are_redacted(self):
+        with mock.patch.object(sys, 'platform', 'win32'):
+            for value in ('PRIVATE-PATH', [], {}, 123, None):
+                module = self.module()
+                error = module.ContextError('CONTEXT_UNKNOWN')
+                error.stage = error.reason = value
+                module.capture_current_context.side_effect = error
+                report = observe(module)
+                self.assertEqual((report['stage'], report['reason']), ('unknown', 'unknown'))
+                self.assertNotIn('PRIVATE', json.dumps(report))
+            module.capture_current_context.side_effect = module.ContextError('CONTEXT_UNKNOWN')
+            report = observe(module)
+            self.assertEqual((report['stage'], report['reason']), ('unknown', 'unknown'))
+
+    def test_parent_rejects_nonallowlisted_or_nonfailure_diagnostics(self):
+        base = dict(state='failed', code='CONTEXT_UNKNOWN', phase='capture',
+                    stage='token_user', reason='return_size_mismatch')
+        cases = []
+        for field in ('stage', 'reason'):
+            for value in ('PRIVATE', [], {}, 123, None):
+                cases.append(dict(base, **{field: value}))
+            missing = base.copy()
+            del missing[field]
+            cases.append(missing)
+        cases.extend([dict(base, state='blocked', code='CONTEXT_FOREIGN'),
+                      dict(base, state='observed', code='CONTINUITY_OBSERVED', phase='recheck'),
+                      dict(base, code='LOAD_FAILED'), dict(base, secret='PRIVATE')])
+        for report in cases:
+            with self.assertRaises(AssertionError) as failure:
+                decode_result(1, json.dumps(report).encode())
+            self.assertEqual(str(failure.exception), 'Native smoke invalid envelope; exit=1')
 
     def test_known_failure_diagnostics_still_fail(self):
         for code, phase in FAILURE_PHASES:
