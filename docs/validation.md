@@ -185,3 +185,11 @@ d9582ce的合成截图run38771591023成功，artifact11991666940归属该提交�
 失败历史保留：43d63f6首次交互未输出可用诊断；29ab8bd定位Enter未展开。af3be41修正CDP文本键事件和错误的native keycode映射，原DOM/焦点/布局断言及安全策略未放宽；不靠重试或skip掩盖失败。
 
 取回ZIP SHA-256 `f1720114914c02d0d09ac90ed7e445298d212c668848edc4ba0cf10ebb115973`，interaction.json SHA-256 `1d8b20287c57882011cefd2d3d805a3977d9f5bc5adf9efa7923ba539490897b`；schema/两viewport/固定结果/原HTML hash均核验，network_isolation_verified=false。PNG哈希同时与manifest核对；此前逐图视觉复核仍有独立固定提交记录。
+
+## Python 3.10 最低运行时任务（2026-10-15，推送前证据）
+
+基于43ec2a228ca0c7092d5585f1b1aca531389530c0，新增独立Linux最低版本CI及四项workflow结构回归。官方[action v6引用](https://api.github.com/repos/actions/setup-python/git/ref/tags/v6)与[固定提交定义](https://github.com/actions/setup-python/blob/ece7cb06caefa5fff74198d8649806c4678c61a1/action.yml)已核对；使用完整SHA，不新增生产依赖或用户设备安装。CI可使用runner缓存或官方actions/python-versions发行运行时，版本范围固定3.10并打印实际补丁版本，不宣称跨补丁二进制可复现。
+
+本地Python3.12.14完整896项：888通过/8跳过；四项workflow回归、Node8生命周期与合成协议、compileall、diff检查及重复打包通过。发行包SHA-256仍为`02f822e26833172f00816625a0e924c940639f598f164c948cdbd97a44bc4a87`，生产包内容未改变。前一workflow缺少minimum-python任务会被新结构回归拒绝。
+
+Python3.10实际执行目前not_run，须本次精确push CI回执；语法检查和本地3.12运行不替代最低版本执行。新任务完整套件保留原平台跳过，不显式启用原生smoke；再单列脱离源码发行包运行、编译和重复打包。结果仅覆盖Linux CI解释器，不关闭Mac/Windows最低版本、真实桌面、原生运行时信任、网络或218原案例。三平台默认运行时任务保持原样。风险限CI解释器下载/runner兼容与额外任务耗时；回滚为撤销本批workflow、测试和文档，无用户设备恢复动作。

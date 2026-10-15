@@ -56,3 +56,31 @@ jobs:
           print('CI native metadata smoke:', target, 'facts:', len(report['facts']))
           print('No browser, proxy-path, permissions or user-desktop certification')
           PY
+  minimum-python:
+    name: Python 3.10 Linux runtime (not native desktop acceptance)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up minimum supported Python in disposable CI
+        # Official actions/setup-python v6, verified 2026-10-15.
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.10'
+          architecture: x64
+      - name: Verify actual interpreter version
+        run: python -c "import sys; print(sys.version); assert sys.version_info[:2] == (3, 10)"
+      - name: Install pinned test parser
+        run: python -m pip install -r requirements-dev.txt
+      - name: Full unit and regression suite on minimum Python
+        run: python -m unittest discover -s tests -v
+      - name: Detached release package runtime without optional dependencies
+        run: python -m unittest discover -s tests -p test_installed_skill.py -v
+      - name: Compile runtime on minimum Python
+        run: python -m compileall -q skills/claude-guardian/scripts
+      - name: Build and verify reproducible package on minimum Python
+        shell: bash
+        run: |
+          python tools/package_skill.py --output "$RUNNER_TEMP/minimum-a.zip"
+          python tools/package_skill.py --output "$RUNNER_TEMP/minimum-b.zip"
+          python -c "import os,pathlib; p=pathlib.Path(os.environ['RUNNER_TEMP']); assert (p/'minimum-a.zip').read_bytes() == (p/'minimum-b.zip').read_bytes()"
