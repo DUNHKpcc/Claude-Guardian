@@ -14,7 +14,7 @@ def main():
     args = parser.parse_args()
     skill = ROOT / 'skills' / 'claude-guardian'
     release_paths = [
-        "SKILL.md", "scripts/guardian.py", "scripts/interview_flow.py", "scripts/interview_cli.py",
+        "SKILL.md", "scripts/guardian.py", "scripts/interview_flow.py", "scripts/interview_cli.py", "scripts/interview_migration.py",
         "scripts/inventory_cli.py", "scripts/clash_inventory.py", "scripts/controller_inventory.py",
         "scripts/windows_listener_binding.py", "scripts/windows_transactions.py", "scripts/workflow_guard.py", "scripts/remedy_plans.py",
         "scripts/recovery_cli.py", "scripts/stun_probe.py", "scripts/network_probes.py", "scripts/transactions.py", "scripts/serve_webrtc.py", "assets/webrtc-probe.html",

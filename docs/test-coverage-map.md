@@ -141,7 +141,7 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 
 ### 不依赖用户Mac即可实施的优先任务
 
-1. **补精确回归缺口**：T82旧画像保留有效字段且废弃C07/旧C08、T53接受默认、T81多字段导入。每项写明输入、预期与未执行动作，不能仅增加数量。
+1. **补精确回归缺口**：T53接受默认、T81多字段导入。每项写明输入、预期与未执行动作，不能仅增加数量。
 2. **完善离线事实/版本契约**：Windows SKU/UI空override/DST、WSL/用户上下文、Mac进程/硬件架构区分、控制器多实例选择与revision变化的合成样例；真实绑定适配器仍待相应平台。
 3. **独立DNS及STUN集成**：DNS协议/获准解析路径仍待实现；STUN库已有有界底座，但宿主授权、名称到固定地址绑定和真实目标路径尚未集成。未批准公开端点前不发请求，不得自动进入PC1。
 4. **ENV-06离线处理计划/规则编译器**：从精确事实到条件计划、组织/救援优先级、nameserver-policy语义、DIRECT嵌套、不可表达格式报错；先验证不产生apply/网络，不把临时文件成功当Mihomo接受。
@@ -158,3 +158,7 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 ## 后续STUN子证据（不改变原案例完整验收状态）
 
 `tests/test_stun_probe.py`：`test_rfc5769_ipv4_mapping_vector`与IPv6对应向量覆盖映射解码；`test_three_sends_same_transaction_and_deadline`覆盖同事务最多三次发送；`test_correlated_terminal_responses_stop_before_good_packet`与`test_unknown_required_does_not_hide_corruption`覆盖终止错误/完整校验顺序；`test_invalid_clocks_fail_closed`、`test_constant_clock_and_nonblocking_timeout_bounded`、`test_cleanup_rechecks_cancellation_target_clock_and_approval`覆盖无效时钟、循环预算和清理后撤回。`test_ipv4_owned_udp`、`test_ipv6_owned_udp`仅连接测试自建回环响应器。以上补充ENV-04 §20.6，不等于所有ENV-T16/47/50等端到端条件已满足，不修改旧映射143/75的统计含义。
+
+## 后续历史迁移子证据
+
+`tests/test_interview_migration.py` 的15项合成测试核对真实compact/report旧格式、命名字段和旧问题ID错位、Q-C07/旧Q-C08丢弃、设备历史不归因账号、过期事实/未知时效、新别名与不继承许可、停用提示复核、取消/冲突/凭据拒绝和纯函数不保存。这是T82 / D.11部分工程证据；宿主界面接入、自然语言多字段与接受默认行为仍未由此完成。旧143/75统计为原映射快照，不据新增测试数量推算覆盖率。
