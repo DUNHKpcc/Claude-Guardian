@@ -43,3 +43,19 @@
 - PR #5 `75ff97182dfbaeabd2e763881893982ba6cfb4de`，[CI 38714405280](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38714405280)：Linux/macOS402通过/5跳过，Windows321通过/86跳过，共407；三端包 `6cf6fd487d1481149e2c919b9a4a545a9a09b9ac6271b9d15bfd43160a8fdd18`
 
 各轮另8项Node合成生命周期测试、编译和重复打包通过。Windows跳过均为POSIX限定项；Linux/macOS跳过为Windows原生夹具。PR #5的Windows自有临时IPv4/IPv6监听器身份测试实际通过，关闭监听器后拒绝旧状态；不读取用户进程，不证明完整应用实例或命名空间身份。命名空间仍依赖宿主断言，未使用Microsoft标记保留的compartment API。以上均是固定版本证据，不继承到未运行的新提交。
+
+
+## 离线环境面板独立分支验证（2026-10-15）
+
+以 main `78072c2a84652e304f681d8c16b1dc591c515b27` 的相同树为基线，
+仅加入面板、打包清单与相关文档，不包含并行的 Windows preflight 增量。
+本地 Linux：`python -m unittest discover -s tests -v` 发现492项，487通过、5项Windows原生用例跳过。
+其中 `test_status_dashboard.py` 18项合成测试通过，覆盖秘密/HTML哨兵、白名单、逐字段时效、
+未知来源、重复/非法ID拒绝、未知ID不计证据、无网络/进程调用与拒绝覆盖。
+`node tests/webrtc-lifecycle.cjs` 的8项合成场景、compileall及重复构建一致性通过。
+包SHA-256：`fa96fe015aa665c99051892ca913411bdc916639fcc75b0294d968d86a257948`。
+三平台CI结果以PR最终提交检查为准，不继承之前提交结果。
+
+静态示例仅使用合成数据，未收录到仓库。实际浏览器渲染因执行环境阻止而为 `not_run`；
+响应式CSS代码检查不代替桌面/窄屏截图。网络组件结果未集成，仍为 `not_run`；
+不将11类展示范围或测试数量当作ENV-01—05/ENV-10完整验收。无用户设备/配置操作。
