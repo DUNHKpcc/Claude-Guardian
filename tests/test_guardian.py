@@ -19,7 +19,7 @@ spec.loader.exec_module(g)
 
 
 def fixture():
-    obj = json.loads((ROOT / "tests/fixtures/proxy-port-conflict.json").read_text())
+    obj = json.loads((ROOT / "tests/fixtures/proxy-port-conflict.json").read_text(encoding="utf-8"))
     for fact in obj["facts"]:
         fact["observed_at"] = datetime.now(timezone.utc).isoformat()
     return obj
@@ -206,6 +206,8 @@ class FileAndCLITests(unittest.TestCase):
         target = Node("/var/folders/test.json", parents=(alias,))
         with patch.object(g.sys, "platform", "darwin"), patch.object(g.os, "readlink", return_value="/private/var"):
             self.assertFalse(g.unsafe_symlink(target))
+            with patch.object(g.os, "readlink", return_value="private/var"):
+                self.assertFalse(g.unsafe_symlink(target))
             with patch.object(g.os, "readlink", return_value="/other"):
                 self.assertTrue(g.unsafe_symlink(target))
             alias.uid = 1000
@@ -285,10 +287,10 @@ class FileAndCLITests(unittest.TestCase):
             output = Path(d) / "report.json"
             first = self.run_cli("interview", "--output", str(output))
             self.assertEqual(first.returncode, 0)
-            content = output.read_text()
+            content = output.read_text(encoding="utf-8")
             second = self.run_cli("interview", "--output", str(output))
             self.assertEqual(second.returncode, 3)
-            self.assertEqual(output.read_text(), content)
+            self.assertEqual(output.read_text(encoding="utf-8"), content)
             self.assertIn("OUTPUT_SAVE_FAILED", second.stdout)
             if os.name != "nt":
                 self.assertEqual(output.stat().st_mode & 0o777, 0o600)
@@ -319,7 +321,7 @@ class FileAndCLITests(unittest.TestCase):
                 g.load_json(link)
             with self.assertRaisesRegex(g.GuardianError, "UNSAFE_OR_OFFLINE_PATH"):
                 g.save_new(link, "new")
-            self.assertEqual(target.read_text(), "{}")
+            self.assertEqual(target.read_text(encoding="utf-8"), "{}")
 
     def test_no_mutation_or_network_commands(self):
         for command in ["apply", "probe", "rollback", "cleanup", "login"]:

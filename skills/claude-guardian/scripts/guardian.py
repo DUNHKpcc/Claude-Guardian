@@ -72,7 +72,7 @@ def unsafe_symlink(path):
             continue
         if sys.platform == "darwin" and str(part) in {"/var", "/tmp", "/etc"}:
             try:
-                if part.lstat().st_uid == 0 and os.readlink(part) == "/private" + str(part):
+                if part.lstat().st_uid == 0 and os.readlink(part) in {"/private" + str(part), "private" + str(part)}:
                     continue
             except OSError:
                 pass
