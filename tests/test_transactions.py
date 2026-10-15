@@ -168,6 +168,19 @@ class Transactions(unittest.TestCase):
         with self.assertRaisesRegex(t.TransactionError, 'BACKUP_CORRUPT'):
             self.rollback(receipt)
 
+    def test_same_size_corrupt_backup_blocks_recovery(self):
+        receipt = self.apply()
+        backup = self.backups / receipt['batch'] / 'original.bin'
+        original = backup.read_bytes()
+        self.assertTrue(original)
+        changed = bytes([original[0] ^ 1]) + original[1:]
+        backup.write_bytes(changed)
+        self.assertEqual(backup.stat().st_size, len(original))
+        current = self.file.read_bytes()
+        with self.assertRaisesRegex(t.TransactionError, 'BACKUP_CORRUPT'):
+            self.rollback(receipt)
+        self.assertEqual(self.file.read_bytes(), current)
+
     def test_prepared_receipt_not_blindly_restored(self):
         receipt = self.apply()
         receipt['state'] = 'prepared'
