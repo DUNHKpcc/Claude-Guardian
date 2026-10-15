@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "path_base": "skill_root",
+  "distribution_note": "用户确认这些是其制作的资料并允许公开分发。此记录不把第三方署名、引用或代码重新许可为项目许可证；各资料保留原有声明。",
+  "sources": [
+    {
+      "id": "S01",
+      "category": "reading",
+      "title": "NodeSeek 服务器行业黑话",
+      "original_filename": "服务器行业黑话.md",
+      "original_sha256": "e2660c1b049d73e7a927594743f079cb0a5f10be9f72bad7928f10a5838bb68b",
+      "path": "sources/S01-server-glossary.md",
+      "distributed_sha256": "e2660c1b049d73e7a927594743f079cb0a5f10be9f72bad7928f10a5838bb68b",
+      "changes": [],
+      "attribution": "来源页 https://www.nodeseek.com/post-1033-1；保留原文来源声明",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
+    },
+    {
+      "id": "S02",
+      "category": "reading",
+      "title": "AI 所有支付方式汇总（核验版）",
+      "original_filename": "AI 所有支付方式汇总_核验版.md",
+      "original_sha256": "9fc0962d5386011d3c292fd30a8f8530544899a82bda62d9c574ff62d4e52c75",
+      "path": "sources/S02-ai-payments.md",
+      "distributed_sha256": "9fc0962d5386011d3c292fd30a8f8530544899a82bda62d9c574ff62d4e52c75",
+      "changes": [],
+      "attribution": "原文署名 DUNHKPcc；保留免费开源声明与证据来源",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
+    },
+    {
+      "id": "S03",
+      "category": "reading",
+      "title": "Claude 使用经验与防封策略（5 页 PDF）",
+      "original_filename": "Anthropic claude code 防封策略 Q群1124987353.pdf",
+      "original_sha256": "ffd8ab0e3f8c597733f842c3b17e4bea8d9ac9585f6a21d4e12039b0b32ed792",
+      "path": "sources/S03-claude-experience.pdf",
+      "distributed_sha256": "ffd8ab0e3f8c597733f842c3b17e4bea8d9ac9585f6a21d4e12039b0b32ed792",
+      "changes": [],
+      "attribution": "保留所提供 PDF、标题及其中相关链接",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可",
+      "companions": [
+        {
+          "path": "sources/S03-extracted-text.md",
+          "sha256": "63939e28f7dfb777fc7fb3cf4364bdc07605eba30d1a1f5e8f686e759ce1bc70",
+          "limitations": [
+            "仅提取 PDF 文字层；第 4 页手机表格和第 5 页事件表格需阅读 PDF 图片",
+            "未经完整人工转录，不作为完整原文替代"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "category": "reading",
+      "title": "Claude 防封号指南（2026）",
+      "original_filename": "Anthropic claude code 防封策略2.md",
+      "original_sha256": "281b2881c5a016b5188aa71c1e7162e1742c98170d9685f2a4e24503ee7a5992",
+      "path": "sources/S04-claude-guide.md",
+      "distributed_sha256": "281b2881c5a016b5188aa71c1e7162e1742c98170d9685f2a4e24503ee7a5992",
+      "changes": [],
+      "attribution": "原文指向 Fishason/Claude-anti-ban 并声明 MIT；原引用 LICENSE 和 CONTRIBUTING.md 未随输入提供",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
+    },
+    {
+      "id": "S05",
+      "category": "reading",
+      "title": "Claude 本地防护实战",
+      "original_filename": "Claude本地防护实战_月落惊征.md",
+      "original_sha256": "f2a975d359161312763f02d6c5d2b4e796e52a57edf2a9ecb233445c8d2389d9",
+      "path": "sources/S05-local-protection.md",
+      "distributed_sha256": "f2a975d359161312763f02d6c5d2b4e796e52a57edf2a9ecb233445c8d2389d9",
+      "changes": [],
+      "attribution": "原文作者 月落惊征；https://x.com/yueluo_jz/status/2105578466309808617；保留整理说明与署名",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
+    },
+    {
+      "id": "S06",
+      "category": "reading",
+      "title": "macOS Claude 清理教程（保留 CLI，脱敏阅读版）",
+      "original_filename": "macOS Claude 清理教程 保留 CLI.md",
+      "original_sha256": "c49c3bfab9823e15a46bc13aeccf2045dd16bb8d3e553b90ae3aca2f52d75f99",
+      "path": "sources/S06-macos-cleanup-sanitized.md",
+      "distributed_sha256": "2fc1d7694bd636b2bd449a31961872958155af78855b921caf9f72a796498a91",
+      "changes": [
+        "增加公开脱敏阅读版说明",
+        "移除原第 230–259 行个人用户名、私有备份路径和机器执行历史；替换为通用验收提示",
+        "保留备份敏感性与回滚风险说明"
+      ],
+      "attribution": "用户提供的教程；个人机器执行记录已脱敏，不代表读者机器状态",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
+    },
+    {
+      "id": "D-SPEC",
+      "category": "design",
+      "title": "Skill 设计规范 v0.1.10",
+      "original_filename": "Claude_AntiBan_Skill_Design_Spec_v0.1.10.md",
+      "original_sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+      "path": "sources/design/D-SPEC-v0.1.10.md",
+      "distributed_sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+      "changes": [],
+      "attribution": "用户提供的设计规范快照",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
+    },
+    {
+      "id": "D-ENV",
+      "category": "design",
+      "title": "环境脚本设计规范 v0.3",
+      "original_filename": "Claude_Environment_Scripts_Design_Spec_v0.3.md",
+      "original_sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+      "path": "sources/design/D-ENV-v0.3.md",
+      "distributed_sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+      "changes": [],
+      "attribution": "用户提供的设计规范快照",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
+    }
+  ]
+}

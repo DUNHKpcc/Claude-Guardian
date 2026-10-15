@@ -15,7 +15,7 @@ import stat
 import sys
 import time
 
-VERSION = "0.1.0-diagnostic-preview"
+VERSION = "0.1.1-diagnostic-preview"
 INPUT_SCHEMA = "guardian-offline/0.1"
 STATES = {"observed", "reported", "derived", "unknown", "blocked", "not_applicable", "not_found_in_scope", "conflict", "stale"}
 FACT_IDS = {"H%02d" % n for n in range(1, 8)} | {"S%02d" % n for n in range(1, 17)} | {"P%02d" % n for n in range(1, 25)}
@@ -65,13 +65,28 @@ def redact(value):
     return re.sub(r"[0-9A-Fa-f:]*:[0-9A-Fa-f:]+(?:%[A-Za-z0-9]+)?", ipv6, value)
 
 
+def unsafe_symlink(path):
+    """Allow only Apple's root-owned OS aliases, never arbitrary user links."""
+    for part in [path, *path.parents]:
+        if not part.is_symlink():
+            continue
+        if sys.platform == "darwin" and str(part) in {"/var", "/tmp", "/etc"}:
+            try:
+                if part.lstat().st_uid == 0 and os.readlink(part) in {"/private" + str(part), "private" + str(part)}:
+                    continue
+            except OSError:
+                pass
+        return True
+    return False
+
+
 def load_json(path):
     # No recursive discovery, symlinks, devices, UNC paths or oversized input.
     if str(path).startswith(("\\\\", "//")):
         raise GuardianError("UNSAFE_OR_OFFLINE_PATH")
     p = Path(path)
     try:
-        if any(part.is_symlink() for part in [p, *p.parents]):
+        if unsafe_symlink(p):
             raise GuardianError("UNSAFE_OR_OFFLINE_PATH")
         st = p.stat()
         if not stat.S_ISREG(st.st_mode) or st.st_size > MAX_BYTES:
@@ -175,7 +190,9 @@ def validate_offline(obj, target):
         if age > MAX_AGE or age < -300:
             fact["state"] = "stale"
         # Restrict useful semantic structures; unknown keys do not become secret channels.
-        if fact["id"] in {"P06", "P09"} and (isinstance(fact.get("value"), dict) or fact["state"] in {"observed", "reported"}):
+        if fact["id"] == "P06" and isinstance(fact.get("value"), str) and re.fullmatch(PROXY_SUMMARY, fact["value"]):
+            pass
+        elif fact["id"] in {"P06", "P09"} and (isinstance(fact.get("value"), dict) or fact["state"] in {"observed", "reported"}):
             val = fact.get("value")
             keys = {"enabled", "port"} if fact["id"] == "P06" else {"selected_instance_port", "port_owner_matches"}
             if not isinstance(val, dict) or set(val) != keys:
@@ -240,6 +257,8 @@ def analyze(obj, target, planning=False):
     report["facts"] = obj.get("facts", [])
     index = {f["id"]: f for f in report["facts"]}
     report["missing_fields"] = [f for f in ["S01", "P06", "P09", "P11", "P12"] if f not in index or index[f]["state"] not in {"observed", "reported"}]
+    if isinstance(index.get("P06", {}).get("value"), str) and "P06" not in report["missing_fields"]:
+        report["missing_fields"].append("P06")
     if any(f["state"] == "stale" for f in report["facts"]):
         finding(report, "STALE_EVIDENCE_REAUDIT_REQUIRED")
     if obj.get("snapshot_state", "unknown") not in {"stable", "unknown", "changed"}:
@@ -248,7 +267,7 @@ def analyze(obj, target, planning=False):
         finding(report, "SNAPSHOT_CHANGED_DURING_AUDIT")
     report["next_actions"] = ["Resolve missing or stale target facts", "Prepare neutral endpoint proposal; endpoint selection and probe authorization pending"]
     p6, p9 = index.get("P06", {}), index.get("P09", {})
-    usable = all(f.get("state") == "observed" and f.get("layer") in {"os_query", "runtime"} for f in (p6, p9))
+    usable = isinstance(p6.get("value"), dict) and isinstance(p9.get("value"), dict) and all(f.get("state") == "observed" and f.get("layer") in {"os_query", "runtime"} for f in (p6, p9))
     conflict = usable and p6["value"]["enabled"] and p9["value"]["port_owner_matches"] and p6["value"]["port"] != p9["value"]["selected_instance_port"]
     configuration_ready = conflict and obj.get("snapshot_state") == "stable" and all(index.get(field, {}).get("state") == "observed" and index.get(field, {}).get("layer") in {"os_query", "runtime"} for field in ("P11", "P12"))
     if conflict:
@@ -267,6 +286,192 @@ def analyze(obj, target, planning=False):
     return report
 
 
+# Fixed read-only collectors. No user-supplied argument or command is accepted.
+COMMAND_TIMEOUT = 5
+COMMAND_MAX_BYTES = 65536
+WINDOWS_SYSTEM_QUERY = """$ErrorActionPreference='Stop'; [Console]::OutputEncoding=New-Object System.Text.UTF8Encoding($false); $o=Get-CimInstance -ClassName Win32_OperatingSystem; $t=Get-TimeZone; [ordered]@{version=$o.Version;build=$o.BuildNumber;sku=[int]$o.OperatingSystemSKU;ui=(Get-UICulture).Name;timezone=$t.Id} | ConvertTo-Json -Compress"""
+WINDOWS_PROXY_QUERY = """$ErrorActionPreference='Stop'; [Console]::OutputEncoding=New-Object System.Text.UTF8Encoding($false); $p=Get-ItemProperty -LiteralPath 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'; [ordered]@{enabled=if($null -eq $p.ProxyEnable){$null}else{[int]$p.ProxyEnable};pac=([bool]$p.AutoConfigURL)} | ConvertTo-Json -Compress"""
+MAC_COMMANDS = {
+    'mac-version': ('/usr/bin/sw_vers', '-productVersion'),
+    'mac-build': ('/usr/bin/sw_vers', '-buildVersion'),
+    'mac-locale': ('/usr/bin/defaults', 'read', '-g', 'AppleLocale'),
+    'mac-languages': ('/usr/bin/defaults', 'read', '-g', 'AppleLanguages'),
+    'mac-proxy': ('/usr/sbin/scutil', '--proxy'),
+}
+
+
+def fixed_command(collector_id):
+    if collector_id in MAC_COMMANDS:
+        if sys.platform != 'darwin':
+            raise GuardianError('TARGET_USER_CONTEXT_MISMATCH', 3)
+        return MAC_COMMANDS[collector_id], {'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'LC_ALL': 'C'}
+    if collector_id not in {'windows-system', 'windows-proxy'}:
+        raise GuardianError('PRECONTACT_ACTION_REJECTED', 3)
+    if sys.platform != 'win32':
+        raise GuardianError('TARGET_USER_CONTEXT_MISMATCH', 3)
+    # Resolve the OS directory using the OS API, never caller-controlled PATH/SystemRoot.
+    import ctypes
+    buffer = ctypes.create_unicode_buffer(32768)
+    size = ctypes.windll.kernel32.GetWindowsDirectoryW(buffer, len(buffer))
+    if not 0 < size < len(buffer):
+        raise GuardianError('RUNTIME_OR_PARSER_UNAVAILABLE')
+    root = buffer.value
+    exe = root + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'
+    script = WINDOWS_SYSTEM_QUERY if collector_id == 'windows-system' else WINDOWS_PROXY_QUERY
+    return (exe, '-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script), {'SystemRoot': root, 'WINDIR': root, 'PATH': root + '\\System32', 'PSModulePath': root + '\\System32\\WindowsPowerShell\\v1.0\\Modules'}
+
+
+def run_fixed(collector_id):
+    """Capture only bounded stdout in memory; stderr never enters a report."""
+    import subprocess
+    import threading
+    command, environment = fixed_command(collector_id)
+    output = bytearray()
+    exceeded = threading.Event()
+    failed = threading.Event()
+    try:
+        process = subprocess.Popen(command, shell=False, stdin=subprocess.DEVNULL,
+                                   stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                   env=environment, cwd=command[0].rsplit('/' if sys.platform == 'darwin' else '\\', 1)[0])
+    except PermissionError:
+        raise GuardianError('PERMISSION_DENIED', 3) from None
+    except OSError:
+        raise GuardianError('RUNTIME_OR_PARSER_UNAVAILABLE') from None
+    def drain():
+        try:
+            while True:
+                chunk = os.read(process.stdout.fileno(), 4096)
+                if not chunk:
+                    break
+                if len(output) + len(chunk) > COMMAND_MAX_BYTES:
+                    exceeded.set()
+                    process.kill()
+                    break
+                output.extend(chunk)
+        except OSError:
+            failed.set()
+        finally:
+            process.stdout.close()
+    reader = threading.Thread(target=drain, daemon=True)
+    reader.start()
+    try:
+        process.wait(timeout=COMMAND_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait(timeout=1)
+        reader.join(timeout=1)
+        raise GuardianError('BUDGET_EXCEEDED') from None
+    except BaseException:
+        process.kill()
+        raise
+    reader.join(timeout=1)
+    if exceeded.is_set() or reader.is_alive():
+        raise GuardianError('BUDGET_EXCEEDED')
+    if failed.is_set() or process.returncode:
+        raise GuardianError('OS_QUERY_FAILED')
+    try:
+        return output.decode('utf-8-sig', errors='strict').strip()
+    except UnicodeError:
+        raise GuardianError('INPUT_OR_RESPONSE_INVALID') from None
+
+
+def checked_text(value, expression):
+    if not isinstance(value, str) or len(value) > 160 or not re.fullmatch(expression, value):
+        raise GuardianError('INPUT_OR_RESPONSE_INVALID')
+    return value
+
+
+def proxy_summary(raw):
+    """Parse only default enable flags; explicitly do not flatten scoped service data."""
+    depth = 0
+    flags = {}
+    scoped = False
+    for line in raw.splitlines():
+        line = line.strip()
+        if depth == 1:
+            if re.match(r'__SCOPED__\s*:', line):
+                scoped = True
+            match = re.fullmatch(r'(HTTPEnable|HTTPSEnable|SOCKSEnable|ProxyAutoConfigEnable|ProxyAutoDiscoveryEnable)\s*:\s*([01])', line)
+            if match:
+                if match[1] in flags:
+                    raise GuardianError('INPUT_OR_RESPONSE_INVALID')
+                flags[match[1]] = 'enabled' if match[2] == '1' else 'disabled'
+        # scutil's container delimiters are structural lines, never count URL braces.
+        if re.fullmatch(r'(?:[^:]+\s*:\s*)?<(?:dictionary|array)>\s*\{', line):
+            depth += 1
+        elif line == '}':
+            depth -= 1
+        if not 0 <= depth <= 16:
+            raise GuardianError('INPUT_OR_RESPONSE_INVALID')
+    if depth or not raw.startswith('<dictionary> {'):
+        raise GuardianError('INPUT_OR_RESPONSE_INVALID')
+    return ';'.join('%s=%s' % (name, flags.get(key, 'unknown')) for name, key in [('http', 'HTTPEnable'), ('https', 'HTTPSEnable'), ('socks', 'SOCKSEnable'), ('pac', 'ProxyAutoConfigEnable'), ('wpad', 'ProxyAutoDiscoveryEnable')]) + ';scoped=' + ('present' if scoped else 'not_reported')
+
+
+PROXY_SUMMARY = r'(?:http=(?:enabled|disabled|unknown);https=(?:enabled|disabled|unknown);socks=(?:enabled|disabled|unknown);pac=(?:enabled|disabled|unknown);wpad=(?:enabled|disabled|unknown);scoped=(?:present|not_reported)|user_proxy=(?:enabled|disabled|unknown);pac_url=(?:present|absent);winhttp=not_collected)'
+
+
+def extended_inventory(actual, runner=run_fixed):
+    """Return filtered facts plus field-level gaps; raw failures are never returned."""
+    results, errors = [], []
+    def collect(field, source, parse):
+        try:
+            raw = runner(source)
+            if not isinstance(raw, str) or len(raw.encode('utf-8')) > COMMAND_MAX_BYTES:
+                raise GuardianError('BUDGET_EXCEEDED')
+            results.append((field, parse(raw), source))
+        except GuardianError as error:
+            errors.append((field, error.code))
+        except (ValueError, TypeError, KeyError, OSError):
+            errors.append((field, 'INPUT_OR_RESPONSE_INVALID'))
+    if actual == 'macos':
+        collect('S02', 'mac-version', lambda x: 'macOS-product-' + checked_text(x, r'\d{1,3}(?:\.\d{1,3}){1,2}'))
+        collect('S02-build', 'mac-build', lambda x: checked_text(x, r'[0-9]{1,3}[A-Z][0-9]{1,6}[a-z]?'))
+        collect('S07', 'mac-locale', lambda x: checked_text(x, r'[a-zA-Z]{2,8}(?:[_-][A-Za-z0-9]{2,16})*(?:@calendar=[a-z]+)?'))
+        def languages(raw):
+            if not raw.startswith('(') or not raw.endswith(')'):
+                raise ValueError()
+            values = [v.strip().strip('"') for v in raw[1:-1].split(',') if v.strip()]
+            if not 1 <= len(values) <= 16:
+                raise ValueError()
+            return ','.join(checked_text(v, r'[A-Za-z]{2,8}(?:-[A-Za-z0-9]{2,8})*') for v in values)
+        collect('S06', 'mac-languages', languages)
+        collect('P06', 'mac-proxy', proxy_summary)
+        # Metadata only: do not follow the symlink or read timezone-file contents.
+        try:
+            path = os.readlink('/etc/localtime')
+            match = re.fullmatch(r'/(?:var/db/timezone|usr/share)/zoneinfo/([A-Za-z0-9_+\-/]+)', path)
+            if not match or '..' in match[1].split('/'):
+                raise ValueError()
+            results.append(('S08', 'IANA:' + match[1].replace('/', ':'), 'mac-timezone-link'))
+        except (ValueError, OSError):
+            errors.append(('S08', 'SYSTEM_TIMEZONE_UNAVAILABLE'))
+        build = next((v for f, v, _ in results if f == 'S02-build'), None)
+        results = [(f, v + (';build-' + build if build else '') if f == 'S02' else v, s) for f, v, s in results if f != 'S02-build']
+    elif actual == 'windows':
+        def system(raw):
+            obj = json.loads(raw)
+            version = checked_text(obj['version'], r'\d{1,3}(?:\.\d{1,6}){1,3}')
+            build = checked_text(obj['build'], r'\d{1,8}')
+            if type(obj['sku']) is not int or not 0 <= obj['sku'] <= 10000:
+                raise ValueError()
+            ui = checked_text(obj['ui'], r'[A-Za-z]{2,8}(?:-[A-Za-z0-9]{2,8})*')
+            zone = checked_text(obj['timezone'], r'[A-Za-z0-9 .()+_-]{1,100}')
+            results.extend([('S03', obj['sku'], 'windows-system'), ('S06', ui, 'windows-system'), ('S08', 'Windows:' + zone, 'windows-system')])
+            return 'Windows-version-' + version + ';build-' + build
+        collect('S02', 'windows-system', system)
+        def proxy(raw):
+            obj = json.loads(raw)
+            enabled = obj['enabled']
+            if (enabled is not None and (type(enabled) is not int or enabled not in (0, 1))) or type(obj['pac']) is not bool:
+                raise ValueError()
+            return 'user_proxy=%s;pac_url=%s;winhttp=not_collected' % ('unknown' if enabled is None else 'enabled' if enabled else 'disabled', 'present' if obj['pac'] else 'absent')
+        collect('P06', 'windows-proxy', proxy)
+    else:
+        raise GuardianError('TARGET_USER_CONTEXT_MISMATCH', 3)
+    return results, errors
+
+
 def native_check(args):
     report = base("audit", args.target_ref)
     report["schema_version"] = "env-inventory/0.2"
@@ -283,7 +488,7 @@ def native_check(args):
         raise GuardianError("TARGET_USER_CONTEXT_MISMATCH", 3)
     report["record_kind"] = "device_observation"
     report["target_binding"] = {"binding_state": "bound_by_explicit_operator_attestation", "declared_os": actual, "requested_role": "local_desktop", "execution_location": args.execution_location, "desktop_user_relation": args.user_context, "filesystem_namespace": "host_desktop", "network_namespace": "not_verified"}
-    # No process launches or directories scanned. These APIs only describe this process/OS.
+    # Minimal fallback: these APIs only describe this process/OS.
     if actual == "windows":
         win = sys.getwindowsversion()
         version = "%s.%s.%s" % (win.major, win.minor, win.build)
@@ -291,10 +496,22 @@ def native_check(args):
         version = os.uname().release  # Darwin kernel; not mislabeled as macOS product release.
     values = [("S01", actual), ("S02", version), ("S09", int(time.localtime().tm_gmtoff) if hasattr(time.localtime(), "tm_gmtoff") else -time.altzone if time.localtime().tm_isdst else -time.timezone)]
     for field, value in values:
-        report["facts"].append({"id": field, "value": value, "state": "observed", "source_refs": ["native-stdlib-os"], "context_ref": args.target_ref, "observed_at": now(), "reason_code": "KERNEL_VERSION_ONLY" if field == "S02" else "READ_ONLY_PROCESS_CONTEXT", "layer": "os_query", "coverage": "current_process_os"})
-    report["missing_fields"] = ["S03: Windows edition", "S04: hardware versus process architecture", "S06: desktop UI language", "S08: timezone identifier", "S10: automatic time and timezone", "S13: approved installation inventory", "S14: related running processes", "P01-P24: proxy inventory not implemented"]
-    finding(report, "MINIMAL_METADATA_ONLY")
-    report["next_actions"] = ["Supply narrowly scoped offline proxy observations", "Complete platform validation before expanding collectors"]
+        report["facts"].append({"id": field, "value": value, "state": "observed", "source_refs": ["native-stdlib-os"], "context_ref": args.target_ref, "observed_at": now(), "reason_code": ("KERNEL_VERSION_ONLY" if actual == "macos" else "WINDOWS_VERSION_API_ONLY") if field == "S02" else "READ_ONLY_PROCESS_CONTEXT", "layer": "os_query", "coverage": "current_process_os"})
+    extra, errors = extended_inventory(actual)
+    for field, value, source in extra:
+        report["facts"] = [f for f in report["facts"] if f["id"] != field]
+        report["facts"].append({"id": field, "value": value, "state": "observed", "source_refs": [source, "mac-build"] if field == "S02" and actual == "macos" and ";build-" in value else [source], "context_ref": args.target_ref, "observed_at": now(), "reason_code": ("PREFERRED_LANGUAGES_NOT_EFFECTIVE_UI" if actual == "macos" else "PROCESS_UI_CULTURE") if field == "S06" else "READ_ONLY_LIMITED_METADATA", "layer": "os_query", "coverage": "default_flags_only" if field == "P06" else "target_os_metadata"})
+    for field, error in errors:
+        finding(report, error)
+        report["missing_fields"].append(field + ": " + error)
+    report["missing_fields"] += ["S04: hardware versus process architecture", "S10: automatic time and timezone", "S13: approved installation inventory", "S14: related running processes", "P06: endpoints, bypass rules, scoped details and WinHTTP not collected", "P01-P24: other proxy and runtime inventory not implemented"]
+    if actual == "macos":
+        report["missing_fields"].append("S03: not applicable on macOS")
+    elif not any(f["id"] == "S03" for f in report["facts"]):
+        report["missing_fields"].append("S03: Windows edition SKU unavailable")
+    finding(report, "LIMITED_METADATA_ONLY" if extra else "MINIMAL_METADATA_ONLY")
+    report["limits"].update(command_timeout_seconds=COMMAND_TIMEOUT, command_stdout_max_bytes=COMMAND_MAX_BYTES)
+    report["next_actions"] = ["Supply narrowly scoped offline proxy observations", "Complete native platform validation; synthetic tests do not certify compatibility"]
     return report
 
 
@@ -381,7 +598,7 @@ def parser():
 
 def save_new(path, text):
     p = Path(path)
-    if str(path).startswith(("//", "\\\\")) or any(part.is_symlink() for part in [p, *p.parents]):
+    if str(path).startswith(("//", "\\\\")) or unsafe_symlink(p):
         raise GuardianError("UNSAFE_OR_OFFLINE_PATH", 3)
     try:
         fd = os.open(str(p), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -392,6 +609,9 @@ def save_new(path, text):
 
 
 def main(argv=None):
+    # JSON CLI output is always UTF-8, including Windows redirected stdout.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="strict")
     args = parser().parse_args(argv)
     code = 0
     try:

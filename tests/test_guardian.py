@@ -19,7 +19,7 @@ spec.loader.exec_module(g)
 
 
 def fixture():
-    obj = json.loads((ROOT / "tests/fixtures/proxy-port-conflict.json").read_text())
+    obj = json.loads((ROOT / "tests/fixtures/proxy-port-conflict.json").read_text(encoding="utf-8"))
     for fact in obj["facts"]:
         fact["observed_at"] = datetime.now(timezone.utc).isoformat()
     return obj
@@ -184,7 +184,35 @@ class InterviewTests(unittest.TestCase):
 
 class FileAndCLITests(unittest.TestCase):
     def run_cli(self, *args, cwd=None):
-        return subprocess.run([sys.executable, str(SCRIPT), *args], cwd=cwd, capture_output=True, text=True, timeout=10, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+        return subprocess.run([sys.executable, str(SCRIPT), *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", timeout=10, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+
+    def test_cli_utf8_even_when_inherited_stdout_is_ascii(self):
+        result = subprocess.run([sys.executable, str(SCRIPT), "interview"], capture_output=True,
+                                env=dict(os.environ, PYTHONIOENCODING="ascii"), timeout=10)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(json.loads(result.stdout.decode("utf-8"))["question"]["id"], "Q-J01")
+
+    def test_only_root_owned_macos_system_aliases_allowed(self):
+        class Node:
+            def __init__(self, name, linked=False, uid=0, parents=()):
+                self.name, self.linked, self.uid, self.parents = name, linked, uid, parents
+            def __str__(self):
+                return self.name
+            def is_symlink(self):
+                return self.linked
+            def lstat(self):
+                return type("Stat", (), {"st_uid": self.uid})()
+        alias = Node("/var", linked=True)
+        target = Node("/var/folders/test.json", parents=(alias,))
+        with patch.object(g.sys, "platform", "darwin"), patch.object(g.os, "readlink", return_value="/private/var"):
+            self.assertFalse(g.unsafe_symlink(target))
+            with patch.object(g.os, "readlink", return_value="private/var"):
+                self.assertFalse(g.unsafe_symlink(target))
+            with patch.object(g.os, "readlink", return_value="/other"):
+                self.assertTrue(g.unsafe_symlink(target))
+            alias.uid = 1000
+            self.assertTrue(g.unsafe_symlink(target))
+            self.assertTrue(g.unsafe_symlink(Node("/tmp/user-link", linked=True)))
 
     def test_interview_smoke_no_persistence(self):
         with tempfile.TemporaryDirectory() as d:
@@ -227,7 +255,7 @@ class FileAndCLITests(unittest.TestCase):
     def test_mocked_native_report_to_analysis_and_plan(self):
         # Mocking macOS dispatch on Linux verifies control flow, NOT native API validity.
         args = g.parser().parse_args(["check", "--target-ref", "device-1", "--target-os", "macos", "--confirm-target", "--authorize-audit", "--namespace", "desktop", "--execution-location", "native_local", "--user-context", "same"])
-        with patch.object(g.sys, "platform", "darwin"):
+        with patch.object(g.sys, "platform", "darwin"), patch.object(g, "extended_inventory", return_value=([], [])), patch.object(g.os, "uname", return_value=type("Uname", (), {"release": "fixture-kernel"})(), create=True):
             report = g.native_check(args)
         for planning in (False, True):
             result = g.analyze(copy.deepcopy(report), "device-1", planning)
@@ -259,10 +287,10 @@ class FileAndCLITests(unittest.TestCase):
             output = Path(d) / "report.json"
             first = self.run_cli("interview", "--output", str(output))
             self.assertEqual(first.returncode, 0)
-            content = output.read_text()
+            content = output.read_text(encoding="utf-8")
             second = self.run_cli("interview", "--output", str(output))
             self.assertEqual(second.returncode, 3)
-            self.assertEqual(output.read_text(), content)
+            self.assertEqual(output.read_text(encoding="utf-8"), content)
             self.assertIn("OUTPUT_SAVE_FAILED", second.stdout)
             if os.name != "nt":
                 self.assertEqual(output.stat().st_mode & 0o777, 0o600)
@@ -293,7 +321,7 @@ class FileAndCLITests(unittest.TestCase):
                 g.load_json(link)
             with self.assertRaisesRegex(g.GuardianError, "UNSAFE_OR_OFFLINE_PATH"):
                 g.save_new(link, "new")
-            self.assertEqual(target.read_text(), "{}")
+            self.assertEqual(target.read_text(encoding="utf-8"), "{}")
 
     def test_no_mutation_or_network_commands(self):
         for command in ["apply", "probe", "rollback", "cleanup", "login"]:
