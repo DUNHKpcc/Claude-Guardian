@@ -13,7 +13,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Install pinned test parser
+        run: python -m pip install -r requirements-dev.txt
       - name: Unit and regression suite
+        env:
+          GUARDIAN_TEST_WINDOWS_TRANSACTION_BOUNDARY: "1"
         run: python -m unittest discover -s tests -v
       - name: Synthetic WebRTC lifecycle regression (no network)
         run: node tests/webrtc-lifecycle.cjs

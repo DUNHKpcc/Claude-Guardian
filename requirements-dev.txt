@@ -1,0 +1,2 @@
+# Optional runtime parser is pinned here for reproducible test coverage only.
+PyYAML==6.0.3
