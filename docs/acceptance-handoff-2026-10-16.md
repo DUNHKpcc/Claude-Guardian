@@ -12,6 +12,9 @@
 - `56509f49c0e0c704f982a0779d10db54ec5ef727` 首轮新截图测试在Windows缺少模拟SIGKILL常量，`3a5d98a4e6622831c40fa577da9d54956289fcc8`已修复。[CI 38769891354](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38769891354) Linux/macOS成功，Windows836项单测715通过/121跳过，随后实际原生smoke失败：CONTEXT_UNKNOWN/capture；整个CI未通过，仍需固定阶段诊断定位
 - 合成浏览器[首次截图流程](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38768934000)因runner缺少中文字体在启动Chrome前失败，无PNG。本批加入临时内嵌字体修复；实际执行和下载查看像素前，视觉验收保持待验证
 
+- `d9582ce75e1f4d5094a9932b98d52f30dc6604dc`：[CI 38771591206](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38771591206) Linux/macOS成功，Windows862项单元741通过/121跳过，原生失败进一步定位token_restrictions/return_size_mismatch，整体仍失败；本批专用兼容修复等待新CI
+- 同提交[合成截图CI 38771591023](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38771591023)成功，artifact `11991666940` 已下载核对ZIP/PNG哈希并查看真实像素：1440×1000与390×1100中文清晰、无可见裁切。仅布局证据，不代表交互/网络/真实设备通过
+
 以上标明三平台成功的各轮Node合成生命周期、编译及可复现打包通过。跳过不等于通过，CI临时环境与模拟API不代表用户电脑或真实网络验收。
 
 ## 能用的入口与仍需集成的库

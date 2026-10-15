@@ -133,3 +133,26 @@ must independently allowlist them before output. They do not authorize extra
 reads, weaken validation, or turn CONTEXT_UNKNOWN into an accepted headless
 outcome. Diagnostics remain observations; Windows CI evidence must be recorded
 separately from user-device acceptance.
+
+### TokenHasRestrictions compatibility boundary
+
+Microsoft's [TOKEN_INFORMATION_CLASS reference](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ne-winnt-token_information_class)
+documents a DWORD for TokenHasRestrictions (class 21). A [first-hand reproduction
+on Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/6000453/gettokeninformation-tokenhasrestrictions-21-return)
+reports successful calls returning one byte and modifying only that byte; the
+answer explicitly does not establish an official cross-version contract.
+
+The dedicated class-21 reader therefore supplies a zero-initialized four-byte
+buffer and accepts returned lengths exactly 1 or 4. A one-byte result with any
+nonzero trailing byte is rejected, as are every other length and API failure.
+Every nonzero restriction value still fails context validation. The generic
+fixed-size reader, other token classes, elevation/user/session checks, and closed
+binding are unchanged. This is a narrow compatibility provision, not a general
+rule for accepting short native structures.
+
+CI run 38771591206, Windows job 116548509922, localized the pre-fix failure to
+`token_restrictions / return_size_mismatch`. That observation proves a size
+mismatch, **not its exact returned length**. Whether this compatibility change
+addresses the observed runner failure must be established by the subsequent
+native CI run; synthetic coverage alone cannot establish that result. No
+user-device compatibility is claimed.

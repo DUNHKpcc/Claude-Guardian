@@ -166,6 +166,20 @@ class _WindowsAPI:
             raise ContextError('CONTEXT_UNKNOWN', reason='return_size_mismatch')
         return value
 
+    def _restrictions(self, token):
+        # Class 21 alone has reported one-byte runtime behavior despite the
+        # documented DWORD contract. Keep a zeroed DWORD allocation and reject
+        # all other widths or writes outside the declared one-byte payload.
+        value, length = _U32(0), _U32()
+        if not self.info(token, 21, ctypes.byref(value), ctypes.sizeof(value),
+                         ctypes.byref(length)):
+            _native_error()
+        if length.value not in (1, 4):
+            raise ContextError('CONTEXT_UNKNOWN', reason='return_size_mismatch')
+        if length.value == 1 and value.value & 0xffffff00:
+            raise ContextError('CONTEXT_UNKNOWN', reason='return_size_mismatch')
+        return value.value
+
     def _sid(self, token):
         # TOKEN_USER has a variable-length SID. A fixed 256-byte allocation is
         # larger than TOKEN_USER + maximum SID (68); reject any unexpected size.
@@ -220,7 +234,7 @@ class _WindowsAPI:
             session_id = _step('token_session', self._fixed, token, 12, _U32).value
             elevated = _step('token_elevation', self._fixed, token, 20, _U32).value
             app = _step('token_app_container', self._fixed, token, 29, _U32).value
-            restricted = _step('token_restrictions', self._fixed, token, 21, _U32).value  # TokenHasRestrictions
+            restricted = _step('token_restrictions', self._restrictions, token)
             ui_access = _step('token_ui_access', self._fixed, token, 26, _U32).value
             luid = lambda value: (value.low, value.high)
             identity = _Identity(pid, tid, session.value, session_id, console,

@@ -451,3 +451,9 @@ CI上下文smoke新增非零子进程的严格固定错误代码/阶段/有界�
 
 ENV-01/02：Mac元数据专用API返回无句柄、closed gate、runtime/namespace未知的报告；严格capture/recheck保持不变。会话只对RUNTIME_PATH_INVALID重试相同已授权元数据范围，使用原期限剩余预算，失败/过期/取消丢弃结果，不能继续DNS。Windows增加固定错误阶段/原因供CI定位，尚未确定CONTEXT_UNKNOWN的原生根因。
 UI-I06：合成截图从固定官方Noto源下载有哈希/OFL核验的字体，仅在临时页面内嵌，不安装；读取超时不等于硬总期限，外层CI为五分钟。实际PNG及像素检查仍待本次CI。
+
+
+## 19. Windows restriction读取兼容与视觉证据（2026-10-15）
+
+实际CI已将Windows失败定位到token_restrictions/return_size_mismatch；专用class21读取器接受已核验的1/4字节返回形式，拒绝其他长度、脏高字节、API错误和全部非零restriction，不改变通用DWORD读取器或闭门原则。35项合成回归通过，新原生结果待CI。
+UI-I06：d9582ce的实际Chrome双尺寸截图已取回、核验与查看，中文及极简布局可读无明显裁切；交互和用户设备仍未验收。

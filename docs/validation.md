@@ -149,3 +149,9 @@ Windows既有15秒mock-cmdlet测试重复超时，原因尚未确定。新增诊
 基于 `3a5d98a4e6622831c40fa577da9d54956289fcc8`，15份经复核实现/测试/专用文档及5份共享能力/证据文档。完整Linux隔离862项：854通过/8跳过；Node8、脚本与工具compileall、diff及重复打包通过。最终包SHA-256 `aba457e0ef47344eb4c47007b84306653d2b0739ad5efda1f5424f314e423487`。Mac元数据API与session fallback仅合成回归；Windows诊断32项、会话54项、字体预览16项；smoke21项中20通过/1Linux跳过，另532种枚举/退出组合复核未改变失败语义。
 
 前轮CI38769891354 Linux/macOS整体成功；Windows836项单元715通过/121跳过，但实际smoke为`exit=1; code=CONTEXT_UNKNOWN; phase=capture`，全轮失败，原生根因未定。Windows原15秒mock再次通过，after-suite诊断first/repeat为0.344/0.328秒，仍不证明历史间歇超时已修复。截图首次因缺CJK字体在Chrome前失败、没有PNG。本批通过显式CI标志获取固定上游字体及许可、验证哈希，仅临时页面内嵌，未实际执行下载/截图前不宣称视觉通过。所有新实际CI结论待固定提交运行后补记；没有用户设备读取或真实DNS。
+
+## TokenHasRestrictions兼容修复（2026-10-15，发布前隔离证据）
+
+基于d9582ce，专用class21零初始化DWORD读取器接受长度1/4，长度1仅在高字节全零时有效；所有非零值继续被限制检查拒绝。官方DWORD契约与报告过的返回长度差异分别说明，不从固定错误枚举推断本次实际长度。通用读取器、native调用次数和跳过集合未变。独立35项合成复核通过；完整Linux865项857通过/8跳过，Node8、compileall、diff、可复现包通过，包SHA-256 `46ef4ca7348147797a64960bd75868431afb31543fba982c93489bb19366c8ad`。真实Windows结果须检查本次精确push CI，不能提前标绿。
+
+d9582ce的合成截图run38771591023成功，artifact11991666940归属该提交，ZIP SHA-256 `a88189d838d85218d8cedde34f8a2d35d2ee66393374fd156e38200f2e3e0dbd`。实际下载且逐图查看：desktop1440×1000 SHA-256 `55f0c6d7fa05d43b90150683ec50159b55bb02bfd01c4dbf38be1f8e901da479`；mobile390×1100 `2677a889fc735a715fd595f59fb20b8d456488fbf6b59158f8860b8b781d72ca`。中文可读、极简表格/合成标签/未知状态可见、无明显裁切。此为静态布局证据，不证明折叠交互、真实设备、DNS或网络隔离。

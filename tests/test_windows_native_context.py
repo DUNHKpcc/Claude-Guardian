@@ -255,6 +255,55 @@ class APIBoundaryTests(unittest.TestCase):
             else:
                 self.assertEqual(self.api._sid(1), SID)
 
+    def test_restrictions_only_one_or_four_byte_compatibility(self):
+        for returned in (0, 1, 2, 3, 4, 5, 256, 0xffffffff):
+            for value in (0, 1, 255, 256, 0xffffffff):
+                with self.subTest(returned=returned, value=value):
+                    def info(token, kind, output, capacity, length):
+                        self.assertEqual((token, kind, capacity, output._obj.value), (42, 21, 4, 0))
+                        output._obj.value = value
+                        length._obj.value = returned
+                        return 1
+                    self.api.info = info
+                    if returned not in (1, 4) or (returned == 1 and value > 255):
+                        with self.assertRaises(m.ContextError) as failure:
+                            self.api._restrictions(42)
+                        self.assertEqual((str(failure.exception), failure.exception.reason),
+                                         ('CONTEXT_UNKNOWN', 'return_size_mismatch'))
+                    else:
+                        self.assertEqual(self.api._restrictions(42), value)
+                        identity = dataclasses.replace(IDENTITY, restricted=value)
+                        if value:
+                            with self.assertRaises(m.ContextError):
+                                m._validate_identity(identity)
+                        else:
+                            m._validate_identity(identity)
+
+    def test_restrictions_byte_write_leaves_zero_tail_and_failure_rejected(self):
+        for byte in (0, 1, 255):
+            def info(token, kind, output, capacity, length):
+                ctypes.cast(output, ctypes.POINTER(ctypes.c_ubyte))[0] = byte
+                length._obj.value = 1
+                return 1
+            self.api.info = info
+            self.assertEqual(self.api._restrictions(42), byte)
+        self.api.info = lambda *args: 0
+        for code, expected in ((5, 'PERMISSION_DENIED'), (87, 'CONTEXT_UNKNOWN')):
+            with mock.patch.object(m.ctypes, 'get_last_error', return_value=code, create=True):
+                with self.assertRaises(m.ContextError) as failure:
+                    m._step('token_restrictions', self.api._restrictions, 42)
+                self.assertEqual((str(failure.exception), failure.exception.stage, failure.exception.reason),
+                                 (expected, 'token_restrictions', 'api_call_failed'))
+
+    def test_restrictions_compatibility_does_not_relax_generic_reader(self):
+        def info(token, kind, value, size, length):
+            length._obj.value = 1
+            return 1
+        self.api.info = info
+        for kind in (12, 20, 21, 26, 29):
+            with self.assertRaisesRegex(m.ContextError, 'CONTEXT_UNKNOWN'):
+                self.api._fixed(42, kind, m._U32)
+
     def test_fixed_length_enforced(self):
         def info(token, kind, value, size, length):
             length._obj.value = size + 1
@@ -312,6 +361,7 @@ class APIBoundaryTests(unittest.TestCase):
             self.assertEqual(token.value, 42)
             return stats if kind == 10 else m._U32(1 if kind == 12 else 0)
         self.api._fixed = fixed
+        self.api._restrictions = lambda token: 0
         self.api._wts = mock.Mock(return_value=0)
         self.assertEqual(self.api.read(), IDENTITY)
         self.api.close.assert_called_once()
