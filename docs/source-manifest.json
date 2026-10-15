@@ -1,0 +1,53 @@
+{
+  "baseline_date": "2026-10-15",
+  "files": [
+    {
+      "file": "Claude本地防护实战_月落惊征.md",
+      "sha256": "f2a975d359161312763f02d6c5d2b4e796e52a57edf2a9ecb233445c8d2389d9",
+      "role": "reference-only",
+      "redistribution": "not included; original rights not established"
+    },
+    {
+      "file": "服务器行业黑话.md",
+      "sha256": "e2660c1b049d73e7a927594743f079cb0a5f10be9f72bad7928f10a5838bb68b",
+      "role": "reference-only",
+      "redistribution": "not included; original rights not established"
+    },
+    {
+      "file": "macOS Claude 清理教程 保留 CLI.md",
+      "sha256": "c49c3bfab9823e15a46bc13aeccf2045dd16bb8d3e553b90ae3aca2f52d75f99",
+      "role": "reference-only",
+      "redistribution": "not included; original rights not established"
+    },
+    {
+      "file": "AI 所有支付方式汇总_核验版.md",
+      "sha256": "9fc0962d5386011d3c292fd30a8f8530544899a82bda62d9c574ff62d4e52c75",
+      "role": "reference-only",
+      "redistribution": "not included; original rights not established"
+    },
+    {
+      "file": "Claude_AntiBan_Skill_Design_Spec_v0.1.10.md",
+      "sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+      "role": "design-baseline",
+      "redistribution": "not included; original rights not established"
+    },
+    {
+      "file": "Anthropic claude code 防封策略2.md",
+      "sha256": "281b2881c5a016b5188aa71c1e7162e1742c98170d9685f2a4e24503ee7a5992",
+      "role": "reference-only",
+      "redistribution": "not included; original rights not established"
+    },
+    {
+      "file": "Anthropic claude code 防封策略 Q群1124987353.pdf",
+      "sha256": "ffd8ab0e3f8c597733f842c3b17e4bea8d9ac9585f6a21d4e12039b0b32ed792",
+      "role": "reference-only",
+      "redistribution": "not included; original rights not established"
+    },
+    {
+      "file": "Claude_Environment_Scripts_Design_Spec_v0.3.md",
+      "sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+      "role": "design-baseline",
+      "redistribution": "not included; original rights not established"
+    }
+  ]
+}

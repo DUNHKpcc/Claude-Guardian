@@ -1,0 +1,20 @@
+name: Diagnostic preview tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  pure-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run offline behavioral tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Compile runtime
+        run: python3 -m py_compile skills/claude-guardian/scripts/guardian.py
+      - name: Build deterministic package
+        run: |
+          python3 tools/package_skill.py --output /tmp/guardian-a.zip
+          python3 tools/package_skill.py --output /tmp/guardian-b.zip
+          cmp /tmp/guardian-a.zip /tmp/guardian-b.zip

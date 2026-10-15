@@ -1,0 +1,67 @@
+{
+  "schema_version": "guardian-offline/0.1",
+  "record_kind": "synthetic_example",
+  "target_ref": "device-1",
+  "target_binding": {
+    "declared_os": "macos",
+    "desktop_user_relation": "same",
+    "filesystem_namespace": "host_desktop",
+    "execution_location": "native_local"
+  },
+  "contact_phase": "precontact",
+  "gate_state": "closed",
+  "snapshot_state": "stable",
+  "facts": [
+    {
+      "id": "S01",
+      "value": "macos",
+      "state": "observed",
+      "context_ref": "device-1",
+      "observed_at": "2026-10-15T00:00:00Z",
+      "layer": "os_query",
+      "source_ref": "synthetic-os"
+    },
+    {
+      "id": "P06",
+      "value": {
+        "enabled": true,
+        "port": 7890
+      },
+      "state": "observed",
+      "context_ref": "device-1",
+      "observed_at": "2026-10-15T00:00:00Z",
+      "layer": "os_query",
+      "source_ref": "synthetic-proxy"
+    },
+    {
+      "id": "P09",
+      "value": {
+        "selected_instance_port": 7897,
+        "port_owner_matches": true
+      },
+      "state": "observed",
+      "context_ref": "device-1",
+      "observed_at": "2026-10-15T00:00:00Z",
+      "layer": "runtime",
+      "source_ref": "synthetic-listener"
+    },
+    {
+      "id": "P11",
+      "value": "rule",
+      "state": "observed",
+      "context_ref": "device-1",
+      "observed_at": "2026-10-15T00:00:00Z",
+      "layer": "runtime",
+      "source_ref": "synthetic-route"
+    },
+    {
+      "id": "P12",
+      "value": true,
+      "state": "observed",
+      "context_ref": "device-1",
+      "observed_at": "2026-10-15T00:00:00Z",
+      "layer": "runtime",
+      "source_ref": "synthetic-route"
+    }
+  ]
+}
