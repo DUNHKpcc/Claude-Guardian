@@ -3,6 +3,7 @@ import base64
 import importlib
 import json
 import os
+import re
 import tempfile
 from pathlib import Path
 import subprocess
@@ -278,8 +279,90 @@ if ($Name -cne 'reserved.test.' -or $Type -cne 'A' -or !$DnsOnly) { throw 'scope
 """ + '\n'.join("[pscustomobject]@{Type='A';Section='Answer';IPAddress='192.0.2."+str(i+1)+"'}" for i in range(answers)) + "\n}\nExport-ModuleMember -Function Resolve-DnsName", encoding='ascii')
                 binding = m.Binding('device', 'user', 'namespace', 'win32', exe, str(module), tmp, root)
                 request = json.dumps(dict(name='reserved.test.', kind='A', module=str(module))).encode('ascii')
-                raw = m._run_child(binding, request, time.monotonic()+15, lambda: False)
-                self.assertEqual(len(json.loads(raw)), answers)
+                started = time.monotonic()
+                with self.subTest(answer_count=answers):
+                    try:
+                        raw = m._run_child(binding, request, started+15, lambda: False)
+                    except m.ProbeError as exc:
+                        self.fail(f'owned mock answer_count={answers}, elapsed={time.monotonic()-started:.3f}s, code={exc.args[0]}')
+                    self.assertEqual(len(json.loads(raw)), answers)
+
+
+    @unittest.skipUnless(os.environ.get('GUARDIAN_WINDOWS_DNS_DIAGNOSTIC') == '1',
+                         'One-off CI-owned PowerShell stage diagnostic is opt-in')
+    def test_owned_powershell_stage_diagnostic(self):
+        """Observe first/repeat diagnostic startup, not acceptance or a longer budget.
+
+        Run this method alone after the normal unit suite, even if that suite fails.
+        Prior PowerShell activity means the first run may already be warm.
+        Its 45s observation ceiling is solely diagnostic;
+        the original fixed-script semantic fixture still requires <=15 seconds.
+        The only module is an owned mock function, which cannot issue DNS.
+        Only fixed stage labels and elapsed milliseconds leave the temp directory.
+        """
+        root = os.environ.get('SystemRoot', r'C:\Windows')
+        exe = str(Path(root) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
+        self.assertTrue(Path(exe).is_file(), 'Required CI Windows PowerShell missing')
+        with tempfile.TemporaryDirectory() as tmp:
+            module = Path(tmp) / 'DnsClient.psm1'
+            module.write_text("""function Resolve-DnsName {
+param([string]$Name,[string]$Type,[switch]$DnsOnly)
+if ($Name -cne 'reserved.test.' -or $Type -cne 'A' -or !$DnsOnly) { throw 'scope' }
+[pscustomobject]@{Type='A';Section='Answer';IPAddress='192.0.2.1'}
+}
+Export-ModuleMember -Function Resolve-DnsName
+""", encoding='ascii')
+            binding = m.Binding('device', 'user', 'namespace', 'win32', exe, str(module), tmp, root)
+            request = json.dumps(dict(name='reserved.test.', kind='A', module=str(module))).encode('ascii')
+            for iteration in ('first', 'repeat'):
+                trace = Path(tmp) / (iteration + '.txt')
+                quoted = str(trace).replace("'", "''")
+                prefix = ("$tracePath = '" + quoted + "'\n"
+                    "$traceClock = [Diagnostics.Stopwatch]::StartNew()\n"
+                    "function Mark-Stage([string]$label) { [IO.File]::AppendAllText($tracePath, $label + '=' + $traceClock.ElapsedMilliseconds + [Environment]::NewLine) }\n"
+                    "Mark-Stage 'script_start'\n")
+                script = m._SCRIPT
+                replacements = (
+                    ("    $buf = New-Object", "    Mark-Stage 'utility_imported'\n    $buf = New-Object"),
+                    ("    $n = 0", "    Mark-Stage 'stdin_start'\n    $n = 0"),
+                    ("    if ($n -gt 4096)", "    Mark-Stage 'stdin_eof'\n    if ($n -gt 4096)"),
+                    ("    Import-Module -Name $request.module", "    Mark-Stage 'json_parsed'\n    Import-Module -Name $request.module"),
+                    ("    $addresses = New-Object", "    Mark-Stage 'mock_module_imported'\n    $addresses = New-Object"),
+                    ("    $raw = Microsoft.PowerShell.Utility", "    Mark-Stage 'mock_cmdlet_finished'\n    $raw = Microsoft.PowerShell.Utility"),
+                    ("    [Console]::Out.Write($raw)", "    Mark-Stage 'json_serialized'\n    [Console]::Out.Write($raw)\n    Mark-Stage 'output_written'"),
+                )
+                for old, new in replacements:
+                    self.assertEqual(script.count(old), 1)
+                    script = script.replace(old, new)
+                started = time.monotonic()
+                original_spawn = subprocess.Popen
+                child_state = {}
+                children = []
+                def spawn(*args, **kwargs):
+                    child = original_spawn(*args, **kwargs)
+                    children.append(child)
+                    return child
+                def observe():
+                    if children:
+                        child_state['process'] = 'running' if children[0].poll() is None else 'exited'
+                        child_state['stdin_closed'] = children[0].stdin.closed
+                    if 'first_script_seconds' not in child_state and trace.exists():
+                        child_state['first_script_seconds'] = round(time.monotonic() - started, 3)
+                    return False
+                try:
+                    with patch.object(m, '_SCRIPT', prefix + script), patch.object(m.subprocess, 'Popen', side_effect=spawn):
+                        raw = m._run_child(binding, request, started + 45, observe)
+                    self.assertEqual(json.loads(raw), ['192.0.2.1'])
+                finally:
+                    # No raw stderr, paths, query names or addresses in CI output.
+                    elapsed = time.monotonic() - started
+                    if trace.exists():
+                        with trace.open('rb') as handle:
+                            rows = handle.read(4096).decode('utf-8').splitlines()
+                    else:
+                        rows = []
+                    safe = [row for row in rows if re.fullmatch(r'[a-z_]+=[0-9]+', row)]
+                    print(f'WINDOWS_DNS_DIAGNOSTIC {iteration} wall_seconds={elapsed:.3f} stages={safe} last_observation={child_state}', flush=True)
 
 
 if __name__ == '__main__':

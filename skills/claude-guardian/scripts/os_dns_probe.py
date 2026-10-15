@@ -160,8 +160,14 @@ def _run_child(binding, request, deadline, cancelled):
     try:
         _guard(deadline, cancelled)
         # <512 bytes fits an empty POSIX pipe. The trusted helper creates no children.
-        proc.stdin.write(request)
-        proc.stdin.close()
+        request_pipe_closed = False
+        try:
+            proc.stdin.write(request)
+            proc.stdin.close()
+        except BrokenPipeError:
+            # An already-exited helper may close its reader before buffered flush.
+            # Reap/classify its exit below, but never accept success without input.
+            request_pipe_closed = True
         os.set_blocking(proc.stdout.fileno(), False)
         raw = bytearray()
         with selectors.DefaultSelector() as selector:
@@ -184,7 +190,7 @@ def _run_child(binding, request, deadline, cancelled):
         _guard(deadline, cancelled)
         if proc.returncode == 20:
             raise ProbeError('RESOLUTION_FAILED')
-        if proc.returncode != 0:
+        if proc.returncode != 0 or request_pipe_closed:
             raise ProbeError('PROCESS_FAILED')
         return bytes(raw)
     finally:

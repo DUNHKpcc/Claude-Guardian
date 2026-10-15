@@ -6,7 +6,8 @@
 - `974ee563d22451aba0008f9fe2822995d94c1bd3`：DNS编解码、Mihomo查询库和面板DNS样本；[三平台CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38756716054)成功。Linux/macOS579通过/5跳过，Windows478通过/106跳过，均584项
 - `fcc46b9a5a269f0aa3423edb898f49c6f4212413`：Mac/Windows系统DNS库、样本投影和命令清理修复；[三平台CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38760023126)成功。Linux/macOS648通过/6跳过，Windows542通过/112跳过，均654项
 - `044a891401aa0220ed3cac123eabee3c9a34eb98`：上下文/诊断会话增量已发布；首次Windows CI有三个测试可移植性错误，`a016769badfbfa1fd25aa9376dc2465c7455f16d`已修复。修复后[三平台CI 38765033394](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38765033394)成功；Windows首次PowerShell mock超时，仅重试失败job后通过，未放宽断言或生产预算
-- 本次数值边界与私有配置候选增量：发布与三平台CI待核验，候选不可apply、无文件修改能力
+- `db102e9e07181929c6a68699fbc21eeef813405e`：数值边界与私有配置候选已发布。Windows合成审批过期测试依赖短sleep导致一次失败，`f7baad5d7b01ab48e4300a7f93ca2d722b85d298`改为注入时钟，原断言/生产预算不变。新轮Linux/macOS通过，Windows重复PowerShell mock超时仍在定位，尚不能称三端通过
+- 本次发行包与CI自有上下文smoke：本地仅合成检查通过，真实CI上下文阶段待运行；已知headless阻塞将记跳过，不冒充桌面验收
 
 以上标明三平台成功的各轮Node合成生命周期、编译及可复现打包通过。跳过不等于通过，CI临时环境与模拟API不代表用户电脑或真实网络验收。
 

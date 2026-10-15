@@ -189,6 +189,39 @@ class ChildTests(unittest.TestCase):
             with self.assertRaisesRegex(m.ProbeError, '^'+expected+'$'):
                 self.run_child('import sys; sys.exit('+str(code)+')')
 
+    def test_broken_request_pipe_reaps_and_preserves_fixed_exit_codes(self):
+        import io
+        from unittest.mock import Mock
+        class BrokenInput(io.BytesIO):
+            def __init__(self, stage):
+                super().__init__()
+                self.stage = stage
+            def write(self, data):
+                if self.stage == 'write':
+                    raise BrokenPipeError('private child pipe detail')
+                return super().write(data)
+            def close(self):
+                first = not self.closed
+                super().close()
+                if first and self.stage == 'close':
+                    raise BrokenPipeError('private child pipe detail')
+        for stage in ('write', 'close'):
+            for code, expected in ((20, 'RESOLUTION_FAILED'),
+                                   (21, 'PROCESS_FAILED'), (0, 'PROCESS_FAILED')):
+                with self.subTest(stage=stage, code=code):
+                    read_fd, write_fd = os.pipe()
+                    os.close(write_fd)
+                    stream = os.fdopen(read_fd, 'rb', buffering=0)
+                    proc = Mock(stdin=BrokenInput(stage), stdout=stream, returncode=code)
+                    proc.poll.return_value = code
+                    proc.wait.return_value = code
+                    with patch.object(m.subprocess, 'Popen', return_value=proc):
+                        with self.assertRaisesRegex(m.ProbeError, '^'+expected+'$'):
+                            m._run_child(scope().binding, b'[]', time.monotonic()+2, lambda: False)
+                    proc.wait.assert_called_once_with(timeout=1)
+                    self.assertTrue(proc.stdin.closed)
+                    self.assertTrue(stream.closed)
+
     def test_eof_before_exit_still_times_out(self):
         with self.assertRaisesRegex(m.ProbeError, '^TIMEOUT$'):
             self.run_child('import os,time; os.close(1); time.sleep(60)', seconds=.15)

@@ -1,0 +1,344 @@
+"""Explicit CI-owned metadata smoke; ordinary discovery never calls native APIs."""
+import contextlib
+import importlib.util
+import io
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import threading
+import unittest
+from types import SimpleNamespace
+from unittest import mock
+
+ROOT = Path(__file__).resolve().parents[1]
+FLAG = 'GUARDIAN_NATIVE_CONTEXT_CI'
+LIMIT = 2048
+TIMEOUT = 15
+# Unknown API/ABI failures are deliberately NOT accepted as headless outcomes.
+BLOCKED = frozenset({'CONTEXT_INACTIVE', 'CONTEXT_FOREIGN',
+    'CONTEXT_INACTIVE_OR_REMOTE', 'TARGET_USER_CONTEXT_MISMATCH',
+    'PERMISSION_DENIED', 'RUNTIME_PATH_INVALID'})
+MODULES = {'darwin': 'native_context', 'win32': 'windows_native_context'}
+
+
+def enabled():
+    return os.environ.get(FLAG) == '1' and os.environ.get('GITHUB_ACTIONS') == 'true'
+
+
+def load_native():
+    name = MODULES[sys.platform]
+    spec = importlib.util.spec_from_file_location(name,
+        ROOT / 'skills' / 'claude-guardian' / 'scripts' / (name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def observe(module):
+    """Only fixed enums leave the child; exceptions and private handles never do."""
+    phase = 'capture'
+    try:
+        handle = module.capture_current_context(max_age_seconds=5)
+        phase = 'recheck'
+        report = module.recheck_context(handle)
+        expected = {'platform': sys.platform, 'gate_state': 'closed', 'changes': [],
+            'filesystem_namespace': 'unknown', 'network_namespace': 'unknown',
+            'runtime_integrity': 'not_verified', 'native_platform_validation': 'not_run',
+            'target_association': 'requires_trusted_host_assertion'}
+        if sys.platform == 'win32':
+            expected.update(binding_state='blocked', desktop_user_relation='unknown')
+        if not isinstance(report, dict) or any(report.get(k) != v for k, v in expected.items()):
+            return {'state': 'failed', 'code': 'CONTRACT_FAILED', 'phase': phase}
+        return {'state': 'observed', 'code': 'CONTINUITY_OBSERVED', 'phase': phase}
+    except module.ContextError as error:
+        code = str(error)
+        if code in BLOCKED:
+            return {'state': 'blocked', 'code': code, 'phase': phase}
+        return {'state': 'failed', 'code': 'NATIVE_ERROR', 'phase': phase}
+    except Exception:
+        return {'state': 'failed', 'code': 'UNEXPECTED_ERROR', 'phase': phase}
+
+
+def child_main():
+    if not enabled() or sys.platform not in MODULES:
+        return 2
+    # Suppress even accidental Python diagnostics. Parent discards native stderr
+    # and validates stdout without ever printing unexpected bytes.
+    try:
+        with open(os.devnull, 'w') as sink, contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
+            result = observe(load_native())
+    except Exception:
+        result = {'state': 'failed', 'code': 'LOAD_FAILED', 'phase': 'capture'}
+    sys.stdout.write(json.dumps(result, separators=(',', ':')) + '\n')
+    return 0 if result['state'] != 'failed' else 1
+
+
+def run_child():
+    """Fixed self-child, no shell/commands from input; bounded bytes and lifetime."""
+    try:
+        process = subprocess.Popen([sys.executable, '-I', str(Path(__file__).resolve()), '--native-child'],
+            cwd=ROOT, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, bufsize=0)
+    except OSError:
+        raise AssertionError('Native smoke child launch failed') from None
+    output = bytearray()
+    overflow = threading.Event()
+    read_failed = threading.Event()
+    cleanup_failed = threading.Event()
+
+    def kill_owned():
+        try:
+            process.kill()
+        except Exception:
+            cleanup_failed.set()
+
+    def stop_and_reap():
+        kill_owned()
+        # Reap is attempted even if kill fails. Neither failure may leak details.
+        try:
+            process.wait(timeout=2)
+        except Exception:
+            cleanup_failed.set()
+
+    def drain():
+        try:
+            while True:
+                chunk = process.stdout.read(min(256, LIMIT + 1 - len(output)))
+                if not chunk:
+                    break
+                output.extend(chunk)
+                if len(output) > LIMIT:
+                    overflow.set()
+                    kill_owned()
+                    break
+        except Exception:
+            read_failed.set()
+
+    reader = threading.Thread(target=drain, daemon=True)
+    started = False
+    timed_out = False
+    try:
+        reader.start()
+        started = True
+        process.wait(timeout=TIMEOUT)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        stop_and_reap()
+    except Exception:
+        cleanup_failed.set()
+        stop_and_reap()
+    finally:
+        try:
+            if started:
+                reader.join(timeout=2)
+            if reader.is_alive():
+                cleanup_failed.set()
+            else:
+                process.stdout.close()
+        except Exception:
+            cleanup_failed.set()
+    if cleanup_failed.is_set():
+        raise AssertionError('Native smoke child cleanup failed') from None
+    if timed_out:
+        raise AssertionError('Native smoke child timed out')
+    if overflow.is_set() or read_failed.is_set():
+        raise AssertionError('Native smoke output boundary failed')
+    return decode_result(process.returncode, bytes(output))
+
+
+def decode_result(returncode, output):
+    # Never include output, exception text, private fields or paths in failures.
+    if returncode != 0 or len(output) > LIMIT:
+        raise AssertionError('Native smoke child failed')
+    try:
+        report = json.loads(output)
+    except (ValueError, UnicodeError):
+        raise AssertionError('Native smoke invalid envelope') from None
+    if (type(report) is not dict or set(report) != {'state', 'code', 'phase'}
+            or any(type(value) is not str for value in report.values())
+            or report['phase'] not in ('capture', 'recheck')
+            or not ((report['state'] == 'blocked' and report['code'] in BLOCKED)
+                    or (report['state'] == 'observed' and report['code'] == 'CONTINUITY_OBSERVED'
+                        and report['phase'] == 'recheck'))):
+        raise AssertionError('Native smoke invalid envelope')
+    return report
+
+
+class NativeContextSmokeTests(unittest.TestCase):
+    def test_ci_owned_native_context(self):
+        if sys.platform not in MODULES:
+            self.skipTest('n/a: no macOS or Windows native context on this platform')
+        if not enabled():
+            self.skipTest('native context CI smoke explicitly disabled')
+        report = run_child()
+        if report['state'] == 'blocked':
+            self.skipTest('CI native context blocked during ' + report['phase'] + ': ' + report['code']
+                          + '; remaining ABI paths unverified; no desktop acceptance')
+        print('CI native context: continuity observed; gate closed; no desktop acceptance', flush=True)
+
+
+class SmokeBoundaryTests(unittest.TestCase):
+    """All synthetic, including on Mac/Windows; no native calls or child launch."""
+    def module(self):
+        class ContextError(Exception):
+            pass
+        return SimpleNamespace(ContextError=ContextError,
+            capture_current_context=mock.Mock(return_value=object()),
+            recheck_context=mock.Mock(return_value={
+                'platform': sys.platform, 'gate_state': 'closed', 'changes': [],
+                'filesystem_namespace': 'unknown', 'network_namespace': 'unknown',
+                'runtime_integrity': 'not_verified', 'native_platform_validation': 'not_run',
+                'target_association': 'requires_trusted_host_assertion',
+                'binding_state': 'blocked', 'desktop_user_relation': 'unknown'}))
+
+    def test_explicit_flag_and_ci_both_required(self):
+        for env, expected in (({}, False), ({FLAG: '1'}, False),
+                ({'GITHUB_ACTIONS': 'true'}, False),
+                ({FLAG: 'true', 'GITHUB_ACTIONS': 'true'}, False),
+                ({FLAG: '1', 'GITHUB_ACTIONS': 'true'}, True)):
+            with mock.patch.dict(os.environ, env, clear=True):
+                self.assertEqual(enabled(), expected)
+
+    def test_child_no_native_when_disabled_or_linux(self):
+        with mock.patch(__name__ + '.load_native') as load:
+            with mock.patch(__name__ + '.enabled', return_value=False):
+                self.assertEqual(child_main(), 2)
+            with mock.patch(__name__ + '.enabled', return_value=True), mock.patch.object(sys, 'platform', 'linux'):
+                self.assertEqual(child_main(), 2)
+            load.assert_not_called()
+
+    def test_observed_contract_both_platforms(self):
+        for platform in MODULES:
+            with mock.patch.object(sys, 'platform', platform):
+                module = self.module()
+                self.assertEqual(observe(module)['state'], 'observed')
+                module.capture_current_context.assert_called_once_with(max_age_seconds=5)
+                module.recheck_context.assert_called_once_with(module.capture_current_context.return_value)
+                module.recheck_context.return_value['gate_state'] = 'open'
+                self.assertEqual(observe(module)['state'], 'failed')
+
+    def test_blocked_codes_and_phase(self):
+        for code in BLOCKED:
+            for phase in ('capture', 'recheck'):
+                module = self.module()
+                getattr(module, {'capture': 'capture_current_context', 'recheck': 'recheck_context'}[phase]).side_effect = module.ContextError(code)
+                self.assertEqual(observe(module), {'state': 'blocked', 'code': code, 'phase': phase})
+
+    def test_unknown_or_cleanup_exception_is_failure_and_redacted(self):
+        module = self.module()
+        for error in (module.ContextError('CONTEXT_UNKNOWN'), module.ContextError('CLEANUP_FAILED'),
+                      module.ContextError('CONTEXT_EXPIRED'), RuntimeError('PRIVATE-PATH-TOKEN')):
+            module.capture_current_context.side_effect = error
+            result = observe(module)
+            self.assertEqual(result['state'], 'failed')
+            self.assertNotIn('PRIVATE', json.dumps(result))
+
+    def test_envelope_rejects_leaks_and_invalid_states(self):
+        for value in (b'PRIVATE', b'"PRIVATE"', b'{}', b'x' * (LIMIT + 1),
+                b'{"state":"observed","code":"CONTINUITY_OBSERVED","phase":"capture"}',
+                b'{"state":"blocked","code":"CONTEXT_UNKNOWN","phase":"capture"}',
+                b'{"state":"blocked","code":"CONTEXT_FOREIGN","phase":"capture","sid":"PRIVATE"}'):
+            with self.assertRaises(AssertionError) as failure:
+                decode_result(0, value)
+            self.assertNotIn('PRIVATE', str(failure.exception))
+        with self.assertRaises(AssertionError):
+            decode_result(1, b'PRIVATE')
+
+    def test_valid_envelopes_and_successful_child(self):
+        for report in ({'state': 'observed', 'code': 'CONTINUITY_OBSERVED', 'phase': 'recheck'},
+                       {'state': 'blocked', 'code': 'CONTEXT_FOREIGN', 'phase': 'capture'}):
+            payload = json.dumps(report).encode()
+            child = mock.Mock(stdout=io.BytesIO(payload), returncode=0)
+            with mock.patch.object(subprocess, 'Popen', return_value=child):
+                self.assertEqual(run_child(), report)
+            child.kill.assert_not_called()
+            self.assertTrue(child.stdout.closed)
+
+    def test_launch_failure_does_not_expose_path(self):
+        with mock.patch.object(subprocess, 'Popen', side_effect=OSError('PRIVATE-PATH')):
+            with self.assertRaisesRegex(AssertionError, '^Native smoke child launch failed$'):
+                run_child()
+
+    def test_child_loader_exception_is_sanitized_failure(self):
+        with mock.patch(__name__ + '.enabled', return_value=True), \
+             mock.patch.object(sys, 'platform', 'darwin'), \
+             mock.patch(__name__ + '.load_native', side_effect=RuntimeError('PRIVATE')), \
+             contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(child_main(), 1)
+        self.assertEqual(json.loads(output.getvalue()),
+                         {'state': 'failed', 'code': 'LOAD_FAILED', 'phase': 'capture'})
+
+    def test_fixed_child_and_output_limit(self):
+        child = mock.Mock(stdout=io.BytesIO(b'x' * (LIMIT + 100)), returncode=0)
+        with mock.patch.object(subprocess, 'Popen', return_value=child) as launch:
+            with self.assertRaisesRegex(AssertionError, 'output boundary'):
+                run_child()
+        child.kill.assert_called_once()
+        args, kwargs = launch.call_args
+        self.assertEqual(args[0], [sys.executable, '-I', str(Path(__file__).resolve()), '--native-child'])
+        self.assertEqual(kwargs['stderr'], subprocess.DEVNULL)
+        self.assertNotIn('shell', kwargs)
+
+    def test_timeout_kills_and_reaps_child(self):
+        child = mock.Mock(stdout=io.BytesIO(b''), returncode=-1)
+        child.wait.side_effect = [subprocess.TimeoutExpired('fixed', TIMEOUT), 0]
+        with mock.patch.object(subprocess, 'Popen', return_value=child):
+            with self.assertRaisesRegex(AssertionError, 'timed out'):
+                run_child()
+        child.kill.assert_called_once()
+        self.assertEqual(child.wait.call_args_list, [mock.call(timeout=TIMEOUT), mock.call(timeout=2)])
+
+
+    def test_cleanup_errors_are_sanitized_and_reap_attempted(self):
+        for failure in ('kill', 'initial_wait', 'reap', 'close'):
+            with self.subTest(failure=failure):
+                pipe = mock.Mock(wraps=io.BytesIO(b''))
+                child = mock.Mock(stdout=pipe, returncode=-1)
+                child.wait.side_effect = [subprocess.TimeoutExpired('fixed', TIMEOUT), 0]
+                if failure == 'kill':
+                    child.kill.side_effect = OSError('PRIVATE-CLEANUP-DETAIL')
+                elif failure == 'initial_wait':
+                    child.wait.side_effect = [OSError('PRIVATE-WAIT-DETAIL'), 0]
+                elif failure == 'reap':
+                    child.wait.side_effect = [subprocess.TimeoutExpired('fixed', TIMEOUT),
+                                              OSError('PRIVATE-REAP-DETAIL')]
+                else:
+                    pipe.close.side_effect = OSError('PRIVATE-CLOSE-DETAIL')
+                with mock.patch.object(subprocess, 'Popen', return_value=child):
+                    with self.assertRaisesRegex(AssertionError, '^Native smoke child cleanup failed$'):
+                        run_child()
+                child.kill.assert_called_once()
+                self.assertEqual(child.wait.call_args_list,
+                                 [mock.call(timeout=TIMEOUT), mock.call(timeout=2)])
+                pipe.close.assert_called_once()
+
+    def test_overflow_kill_failure_is_sanitized(self):
+        child = mock.Mock(stdout=io.BytesIO(b'x' * (LIMIT + 1)), returncode=0)
+        child.kill.side_effect = OSError('PRIVATE-KILL-DETAIL')
+        with mock.patch.object(subprocess, 'Popen', return_value=child):
+            with self.assertRaisesRegex(AssertionError, '^Native smoke child cleanup failed$'):
+                run_child()
+        child.wait.assert_called_once_with(timeout=TIMEOUT)
+
+    def test_reader_start_failure_reaps_child(self):
+        child = mock.Mock(stdout=io.BytesIO(b''), returncode=0)
+        reader = mock.Mock()
+        reader.start.side_effect = RuntimeError('PRIVATE-THREAD-DETAIL')
+        reader.is_alive.return_value = False
+        with mock.patch.object(subprocess, 'Popen', return_value=child), \
+             mock.patch.object(threading, 'Thread', return_value=reader):
+            with self.assertRaisesRegex(AssertionError, '^Native smoke child cleanup failed$'):
+                run_child()
+        child.kill.assert_called_once()
+        child.wait.assert_called_once_with(timeout=2)
+        reader.join.assert_not_called()
+        self.assertTrue(child.stdout.closed)
+
+
+if __name__ == '__main__':
+    if sys.argv[1:] == ['--native-child']:
+        sys.exit(child_main())
+    unittest.main()

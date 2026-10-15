@@ -127,3 +127,13 @@ BackupRead原生收集、完整安全描述符验证与保留（含SACL）、短
 上下文批次 `044a891` 的Linux/macOS CI成功，但Windows发现三个测试可移植性问题（UTF-8默认解码与POSIX路径夹具）。`a016769` 仅更正这两份测试，保留全部断言与跳过数，运行时和包哈希未变；后续三端结果须看精确提交记录。修复后Windows原失败项通过，首次运行另遇既有PowerShell mock超时，仅重试失败job后通过，未放宽断言或生产时间界限。最终[三平台CI 38765033394](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38765033394)均成功，准确平台计数见日志；包哈希仍为 `396bb95a2a4ab558aa7c3fbb63c901b93d9ac6b26278111a5c25bdd604fb3b50`。未通过的历史轮次不记作成功。
 
 当前批次固定提交三平台CI另行核验，跳过不算通过。回滚代码/清单即可，无用户状态迁移或系统改动。
+
+## 包/上下文验收与进程诊断批次（2026-10-15，发布前本地证据）
+
+基于 main `f7baad5d7b01ab48e4300a7f93ca2d722b85d298`。本地完整821项，813通过/8跳过（原Windows专用、关闭的native smoke、关闭的Windows诊断）；Node8项、compileall、diff检查、重复打包通过，包SHA-256 `0519b9d1644d53125ecdd78d0d50e89d02db989da4af16a0af538f46d9ab78e2`。包含解压发行包9项、原生上下文smoke合成边界与显式CI-only实际阶段、Windows PowerShell单独stage观察，以及Mac helper提前退出BrokenPipe修复回归。
+
+本地首轮发现helper立即退出时stdin buffered close可泄露BrokenPipeError，修复后用确定性write/close×退出20/21/0六子案例覆盖：保留退出20为RESOLUTION_FAILED、其他失败及请求未交付的退出0为PROCESS_FAILED，始终回收进程并关闭管道；真实cleanup失败不吞掉。没有放宽探测预算或增加操作权限。
+
+Windows既有15秒mock-cmdlet测试重复超时，原因尚未确定。新增诊断只在普通单元套件之后、Windows且显式flag下执行，最长45秒用于固定阶段观察，不改变原语义测试的15秒、生产预算或通过条件；诊断first/repeat不能认作冷/热缓存证据。只有固定阶段/耗时/状态输出，无原始query/path/env/stderr。原单元失败仍使CI失败，不被诊断成功掩盖。
+
+原生上下文smoke首次实际执行将仅在CI自有Mac/Windows进程，Linux为n/a；已知headless/权限/路径阻塞记skip，未知ABI/超时/清理失败仍失败。CI绿色不是完整原生桌面验收，必须分别读取smoke结论。未访问用户设备或运行真实DNS。
