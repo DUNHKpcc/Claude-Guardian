@@ -1,10 +1,10 @@
 # 原验收案例与当前测试证据映射
 
-审阅日期：2026-10-15。静态审阅起点 HEAD：`be2e626a3626bfb853babf2b407fd67be146ec82`；包含当时工作树已有的 `tests/test_guides.py` 及随后补入的同大小备份损坏回归，不把工作树文件假称已提交。原案例全集取自 [implementation-tracker.md §8](implementation-tracker.md)：T01—T94 与 ENV-T01—ENV-T124，共218项。设计依据为主规范附录D、§11及ENV规范§19、§20。
+审阅日期：2026-10-15。代码快照：`78535f69b523287a0304c1be017dd60e491554f0`；核对时 main 为文档增量 `7318a6f6db5eb773e17e6606b282f38941736e56`，运行时代码未变。本轮仅静态核对源码、测试断言和已记录的固定提交执行证据，未运行原生采集或测试。原案例全集取自 [implementation-tracker.md §8](implementation-tracker.md)：T01—T94 与 ENV-T01—ENV-T124，共218项。设计依据为主规范附录D、§11及ENV规范§19、§20。
 
 ## 如何使用本表
 
-- **本次只读取代码/断言，没有运行测试，没有修改原218项状态；本表不新增任何整案例通过结论。** 执行结果、平台、提交及跳过原因应另见 [validation.md](validation.md)，不能把历史结果继承到后续工作树。
+- **本次只读取代码/断言和执行记录，没有运行测试，没有修改原218项状态；本表不新增任何整案例通过结论。** 执行结果、平台、提交及跳过原因应另见 [validation.md](validation.md)，不能把历史结果继承到后续工作树。
 - 每行都是**部分子证据**：测试确实断言了什么，以及原案例还缺什么。一个案例对应多个测试，并不等于所有条件都被验证。未列出的断言与代码存在也不自动算验收证据。
 - `tests/文件.py::类.test_方法` 是可直接定位的完整名称；表内先给文件/类，再列方法。源码路径统一以仓库根目录为起点。
 - 单元测试中的 `native_pass`、`TARGET_NATIVE`、`approved=True`、绑定回调都是构造输入，不能证明真人授权、真实设备身份或原生验收。POSIX临时文件、回环假服务比纯mock更接近运行，但仍不是实际配置/应用验收。
@@ -30,7 +30,7 @@
 | T36—T38、T83、T92、ENV-T85 | `test_apple_gift_card_branch_and_contact_deferral`、`test_other_payment_branches` | Apple指定问题存在；PC0推迟接触项、PC1出现A04；Google/网页/API/企业分支区分，组织项按条件出现 | Apple十项具体条件判定、G04旧权益措辞、商店/设备/账户/支付实证；手机不能继承PC结果 |
 | T56、T90 | `test_asked_is_not_answered`、`test_all_relevant_answered_is_coverage_not_action_permission` | 问过不等于答过；适用问题完成可令G1 complete/G2 pass但G3 blocked | 所有条件分支覆盖、实际动作适配器联动 |
 | T58—T64、T66、T68、T69、T72 | `test_windows_conditionals`、`test_macos_and_out_of_scope` | OS分支、时区问题/显示语言问题条件触发；mobile_only走OS12 | **不是这些平台案例通过**：SKU能力、单语言版限制、权限/受管、Linux出口和Win10支持状态尚未逐例断言 |
-| T82、ENV-T92 | `test_complete_registry`、`test_reject_invalid_saved_state` | C07不可展示/回答；含C07的保存状态拒绝 | 拒绝旧状态不等于完成兼容迁移；还缺保留其他有效答案、旧C08不误作目标套餐等回归 |
+| T82、ENV-T92 | `test_complete_registry`、`test_reject_invalid_saved_state` | C07不可展示/回答；含C07的保存状态拒绝 | 拒绝旧状态不等于完成兼容迁移；历史迁移已有保留/丢弃规则的合成回归（见末节）；宿主实际续接仍缺 |
 | T86 | `test_purchase_completion_stops_purchase_loop` | 购买完成改active_reported/payment_intent none，去掉购买问题，G3仍blocked | 购买时点、后续交付/验收的实际续接流程 |
 | T11、ENV-T34、ENV-T121 | `test_no_secret_or_inferred_sensitive_facts`、`test_credential_assignments_and_urls_rejected` | 凭据样例与敏感推断拒绝，public_export保存范围拒绝 | 不保证识别任意秘密；来源、错误、导出全链路仍须独立检查 |
 
@@ -103,7 +103,7 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 | ENV-T26 | `tests/test_transactions.py::Transactions.test_symlink_leaf_parent_backup_rejected`、`test_parent_swap_after_plan_is_rejected`、`test_hardlink_and_directory_rejected` | POSIX叶/父/备份链接、父路径替换及hardlink拒绝；不证明Windows reparse或真实应用路径 |
 | ENV-T27 | `tests/test_transactions.py::Transactions.test_backup_failure_never_writes_target`、`test_post_commit_journal_failure_retains_prepared_recovery`、`test_cancel_immediately_before_commit_retains_backup` | 故障时不误写或保留恢复记录，取消前保备份；不是多动作清理已做/未做/不可逆清单验收 |
 | ENV-T28 | `tests/test_transactions.py::Transactions.test_rollback_conflict_preserves_later_edit`、`test_metadata_change_blocks_rollback` | 后续字节/元数据变化拒绝rollback并保留用户编辑；未实现字段级语义恢复合并 |
-| ENV-T68 | `tests/test_transactions.py::Transactions.test_roundtrip_and_recovery_records`、`test_expired_plan_still_allows_independently_authorized_recovery` | 私有备份/receipt、正常恢复及过期计划独立批准恢复；network_effect not_tested；未证明Agent断连普通终端CLI可用 |
+| ENV-T68 | `tests/test_transactions.py::Transactions.test_roundtrip_and_recovery_records`、`test_expired_plan_still_allows_independently_authorized_recovery` | 私有备份/receipt、正常恢复及过期计划独立批准恢复；network_effect not_tested；独立进程/伪终端临时文件证据见F；真实Agent断连后恢复仍未验证 |
 | ENV-T60 | `tests/test_transactions.py::Transactions.test_duplicate_apply_fails_closed` | 重复apply拒绝；**拒绝重复不是完整幂等复用**，尚缺相同任务无变化返回有效既有状态 |
 | ENV-T26、ENV-T102 | `tests/test_windows_transactions.py::WindowsPlans.test_unsafe_metadata_blocks_data_read_and_closes_handles`；`tests/test_windows_transactions.py::NativeABIContracts.test_reparse_hydration_and_unknown_attributes_rejected`、`test_disk_locality_fails_closed` | FakeAPI与mock ABI拒不安全metadata/reparse/召回/非本地卷；原生测试另列，不能跨平台推广 |
 | ENV-T61、ENV-T124 | `tests/test_windows_transactions.py::WindowsPlans.test_mutations_never_call_approval_or_api_even_for_approved_plan`、`test_capability_report_cannot_enable_writes` | Windows apply/verify/rollback均明确UNIMPLEMENTED，且不调用API/批准；不是Windows写入/恢复能力 |
@@ -127,38 +127,77 @@ CLI补充（`tests/test_interview_cli.py::InterviewCLITests`）：
 | M14 / VAL-08；T11仅相关子项 | `tests/test_source_bundle.py::SourceBundleTests.test_exact_manifest_and_hashes` | 精确9个来源ID、文件/附件hash、路径限制、S06原始与分发hash不同且有changes；不证明来源去重(T09)、许可证可分发或论断准确 |
 | M14 / VAL-08；T11仅相关子项 | `tests/test_source_bundle.py::SourceBundleTests.test_package_reproducible_and_unlisted_files_excluded`、`test_tampered_source_rejected` | 两次同环境zip相等、固定元数据、未列私有哨兵文件不入包、篡改来源无产物；不是全仓秘密扫描，也不自行证明跨OS包一致 |
 
-## F. 全218项的未关闭范围与下一步
+## F. 当前增量的精确子证据（替代旧“尚未实现”描述）
+
+下表全部为部分证据。方法名按所列文件/类定位；没有特别注明时是合成输入/注入ABI。真实进程、临时文件和回环服务只证明夹具所在平台的对应边界，不证明真实桌面、实际配置或公网路径。
+
+| 原ID / 设计章节 | 测试定位 | 已断言的子条件；仍缺什么 |
+|---|---|---|
+| ENV §20.4（不新增验收ID） | `tests/test_dns_probe.py::DnsCodecTests.test_id_question_and_type_binding`、`test_truncated_never_exposes_addresses`、`test_alias_chain_is_local_only`、`test_pure_codec_never_resolves_or_opens_socket` | 纯DNS字节的事务/问题/type绑定、截断/别名处理及无网络；不是解析器实现已在真实路径验收，也不证明无泄露 |
+| ENV-T75、ENV-T108 | `tests/test_mihomo_dns_probe.py::ProbeTests.test_pc0_forbidden`、`test_exact_scope_and_rebinding_order`、`test_inventory_audit_still_rejects_dns` | 独立查询门禁与盘点白名单分开；PC0目标拒绝。不能从audit许可推导DNS批准；真实宿主门禁集成仍缺 |
+| ENV-T65、ENV-T109 | `tests/test_mihomo_dns_probe.py::ProbeTests.test_status_never_retries`、`test_owned_loopback_framing_redirect_auth`、`test_negative_response_is_sample_not_pass` | 注入/自有回环响应无重试、跳转或认证绕过，负响应不是通过；非真实Mihomo版本/端点验收 |
+| ENV-T46、ENV-T124 | `tests/test_mihomo_dashboard.py::MihomoDashboardTests.test_dns_sample_never_promotes_leak_or_other_rows`、`test_context_absent_or_mismatched_never_synthesized` | 导入样本不提升DNS泄露/浏览器等状态，导入provenance保持unverified；尚未比较随机测试域与Claude域实际不同policy |
+| ENV §20.4.1—20.4.3；ENV-T124 | `tests/test_os_dns_dashboard.py::OSDnsDashboardTests.test_only_dns_row_and_empty_is_not_nxdomain_or_blocking`、`test_windows_actual_output_is_distinct_and_no_native_resolver_runs`、`test_freshness_context_and_authority_are_declarations_only` | 注入系统解析样本与Mihomo来源分开，空答案不推断NXDOMAIN/阻断，authority仍是声明；不证明新DNS包、浏览器DoH路径或Fake-IP配置匹配 |
+| ENV-T75、ENV-T83、ENV-T95 | `tests/test_os_dns_probe.py::GateTests.test_invalid_query_and_pc0`、`test_binding_or_runtime_changes_discard_results`；`tests/test_windows_dns_probe.py::GateTests.test_binding_revocation_before_spawn`、`test_binding_revocation_after_spawn_discards_facts` | 注入绑定/运行时变更前拒启动、后丢结果，目标域受限；可信宿主核验器及实际namespace仍未交付 |
+| ENV §20.4.2 | `tests/test_os_dns_probe.py::HelperTests.test_real_helper_uses_only_exact_system_api_with_mock`；`tests/test_windows_dns_probe.py::PowerShellMockTests.test_fixed_script_with_owned_mock_cmdlet_no_dns` | Mac helper精确系统API使用mock，Windows固定脚本用自有mock cmdlet；不查询真实DNS。不是实际解析结果或桌面依赖/人工路径验收 |
+| T11、ENV-T34、ENV-T121 | `tests/test_os_dns_probe.py::GateTests.test_report_privacy_and_limits`；`tests/test_windows_dns_probe.py::GateTests.test_projection_and_privacy`；`tests/test_mihomo_dashboard.py::MihomoDashboardTests.test_unexpected_strings_html_secrets_never_echoed` | 指定哨兵、原始地址/名称和异常投影受限；不能证明任意秘密识别或全导出渠道安全 |
+| ENV §19、§20 调用预算/取消 | `tests/test_fixed_command_cleanup.py::FixedCommandCleanupTests.test_interrupt_reaps_and_closes`、`test_timeout_cleanup_failure_is_observable_and_sanitized`、`test_reader_start_failure_reaps_and_sanitizes`；`tests/test_os_dns_probe.py::CleanupFailureTests.test_failed_reaping_is_not_successful_cancellation` | 固定命令/受控子进程回收、关闭与清理失败可观察；这不是C0—C4用户数据清理，也不证明UI取消不放行的全部链路 |
+| ENV §19、§20 调用预算/取消 | `tests/test_windows_dns_probe.py::OwnedProcessTests.test_cancel_closes_handles_and_reaps_owned_pid`、`test_wait_failure_is_cleanup_failure_not_success`；`tests/test_os_dns_probe.py::ChildTests.test_broken_request_pipe_reaps_and_preserves_fixed_exit_codes` | 自有进程/注入故障验证取消、回收失败不冒成功及早退退出码保留；Windows管道mock不能替代原生所有句柄/锁/OS阻塞条件 |
+| ENV-T70、ENV-T93、ENV-T95 | `tests/test_native_context.py::ContextTests.test_reject_foreign_inactive_unknown`、`test_changes_during_capture_and_after_capture`、`test_path_screen_is_not_runtime_verifier`；`tests/test_windows_native_context.py::ContextTests.test_observation_never_binds_or_authorizes`、`test_reject_foreign_service_and_elevation` | 合成身份连续性与外国/未知上下文拒绝；Mac partial metadata无句柄。仍缺目标桌面/HKCU/namespace完整绑定；Windows控制台账户相等关系仍unknown |
+| ENV-T95、ENV-T124 | `tests/test_windows_native_context.py::APIBoundaryTests.test_restrictions_only_one_or_four_byte_compatibility`、`test_restrictions_byte_write_leaves_zero_tail_and_failure_rejected`、`test_restrictions_compatibility_does_not_relax_generic_reader` | 仅class21兼容1/4字节，脏尾/错误及非零restriction拒绝；合成ABI不是Windows实际修复通过，见本节CI快照 |
+| T94、ENV-T73、ENV-T83 | `tests/test_diagnostic_session.py::SessionTests.test_rebind_after_consent_no_dns`、`test_host_trust_loss_on_later_query_invalidates_retained_sample`、`test_mac_fallback_late_result_or_reversed_clock_is_discarded`；`TerminalTests.test_delayed_matching_reply_cannot_approve` | 注入上下文/查询证明失绑定、迟到nonce、fallback超时不放行；真实Codex UI与用户设备授权链尚未验收 |
+| ENV-T122 | `tests/test_diagnostic_session.py::SessionTests.test_metadata_only_does_not_synthesize_dns_authority`、`test_json_host_or_saved_grants_cannot_authorize`、`test_cli_no_yes_or_dns_or_import_options`；`WindowsSessionTests.test_windows_requested_dns_never_reaches_mac_probe` | 元数据/JSON/访谈不生成DNS授权，CLI没有DNS选项，Windows不误调用Mac；Windows DNS未接会话，生产宿主核验仍缺 |
+| ENV-T123 | `tests/test_diagnostic_session.py::SessionTests.test_cli_explicit_new_save_only`；`WindowsOutputPathTests.test_bad_windows_save_path_rejected_before_collection_or_open` | 明确新文件保存及Windows危险语法先拒绝；未证明本地存储/ACL、全取消时点和持久报告过期续接 |
+| ENV-T08、ENV-T45 | `tests/test_remedy_plans.py::RemedyPlansTests.test_local_dns_and_full_policy_preservation`、`test_dns_normal_and_failure_loops` | 声明式依赖图正常/失败循环及local_preserved/policy_merge_known阻塞；不解析真实split DNS、不实现nameserver-policy合并 |
+| ENV-T51、ENV-T118 | `tests/test_remedy_plans.py::RemedyPlansTests.test_compatibility_preserves_outer_ipv6`、`test_nested_direct_fallback_and_group_cycle`、`test_unknown_member_is_not_safe_terminal` | 外层地址族未知阻塞、嵌套DIRECT/图循环/未知成员拒绝；真实节点协议/UDP依赖、实际选择与故障回退未测 |
+| ENV-T59、T93 | `tests/test_remedy_plans.py::RemedyPlansTests.test_control_path_overlap_and_absent_rescue`、`test_control_claim_without_scopes_remains_unknown` | 声明的控制路径重叠/救援缺失阻塞；未证明组织强制规则真实优先级或实际控制通道可恢复 |
+| ENV-T61、ENV-T67 | `tests/test_remedy_plans.py::RemedyPlansTests.test_valid_projection_is_not_native_acceptance`、`test_target_revision_and_cancellation_stop_proposals`；`tests/test_config_edit_plan.py::ConfigEditTests.test_no_io_and_no_mutation`、`test_stale_cancelled_unknown_version_and_semantic_blockers` | 四模板仅语义计划，候选无I/O、apply_supported=false；版本/归属/原生适配/本次操作授权仍阻塞，不写配置 |
+| ENV §20.9 | `tests/test_config_edit_plan.py::ConfigEditTests.test_exact_bytes_and_hashes`、`test_unicode_bom_crlf_offsets_and_trailing_comment`、`test_binding_guards`、`test_changed_index_noop_and_unsupported_rule` | 仅keep-existing已有单行DOMAIN/DOMAIN-SUFFIX三字段policy token变更，其余字节保留并重解析；不是四模板完整编译、运行层冲突消解、GUI回读或Mihomo接受 |
+| ENV-T68 | `tests/test_recovery_cli.py::RecoveryCLI.test_independent_terminal_restores_bytes_retains_receipts`、`test_expired_plan_can_recover_with_fresh_approval` | POSIX自有临时文件、独立进程与伪终端完成新批准恢复并保留receipt；没有真实Agent断连、应用锁/ACL/配置恢复；Windows恢复不支持 |
+| ENV-T25、ENV-T27、ENV-T28 | `tests/test_recovery_cli.py::RecoveryCLI.test_corrupt_backup_and_receipt_are_blocked`、`test_crashed_prepared_states_never_replayed`、`test_edit_during_final_confirmation_is_preserved`、`test_journal_failure_reports_error_even_after_restoration` | 损坏拒绝、prepared中断需核对不重放、保护后续编辑、恢复后日志失败仍报错；不是多步骤真实清理或字段级语义恢复 |
+| T16、T73、ENV-T63、ENV-T122；VAL-08 | `tests/test_installed_skill.py::InstalledSkillTests.test_cli_help_without_repository_or_optional_packages`、`test_offline_interview_save_and_resume`、`test_imports_have_no_application_io_and_yaml_absence_is_explicit`、`test_capabilities_and_workflow_are_offline_and_closed` | ZIP解压离开仓库、禁site包后CLI/续接/导入与缺YAML闭门；不是实际Codex安装集成或所有Python版本运行兼容 |
+| T11、ENV-T121；VAL-08 | `tests/test_installed_skill.py::InstalledSkillTests.test_only_allowlisted_public_files_and_verified_sources_ship`、`test_required_modules_and_sibling_dependencies_are_bundled`、`test_skill_and_source_index_links_resolve_inside_bundle`、`test_python_310_syntax_baseline_only` | 清单、已知私有哨兵、内部依赖/链接/hash；Python3.10仅语法解析。来源许可、外部链接时效、升级撤回、任意秘密仍独立 |
+
+### 固定执行证据与实际验收的边界
+
+- `78535f69b523287a0304c1be017dd60e491554f0`：[三平台CI 38772721879](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38772721879)全部成功。865项单元测试：Linux 857通过/8跳过，macOS 856通过/9跳过，Windows 744通过/121跳过；各平台Node合成场景、编译与可复现包成功。计数只描述该次执行，不是需求完成比例。包SHA-256为 `46ef4ca7348147797a64960bd75868431afb31543fba982c93489bb19366c8ad`。
+- 历史系统DNS批次 `fcc46b9a5a269f0aa3423edb898f49c6f4212413` 的[三平台CI 38760023126](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38760023126)成功；包括Windows自有mock cmdlet，不是真实系统DNS。历史临时文件/监听器原生fixture按[validation.md](validation.md)各精确提交保留，不能继承到新版本。
+- 原生smoke单列：`d9582ce` 的Windows `token_restrictions/return_size_mismatch` 是历史失败；`78535f69` 本次不再出现该错误，但Windows在capture/`CONTEXT_FOREIGN`明确阻塞跳过，Mac在capture/`RUNTIME_PATH_INVALID`阻塞跳过。两者都不是capture/recheck完整通过，后续未到达ABI、目标桌面/namespace与Mac partial metadata原生执行仍无验收证据。
+- `d9582ce` 的[截图运行38771591023](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38771591023)、artifact `11991666940`已下载核验并查看两张真实Chrome PNG，1440×1000与390×1100中文布局可读。这只支持UI-I06静态合成布局；不关闭任何诊断案例，不证明折叠交互、真实设备、DNS或网络隔离。后续78535f69提交的[截图CI 38772721875](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38772721875)也成功；已取回逐图核验的证据仍指上述d9582ce产物，不把运行成功冒充另一轮像素复核。
+- 全桌面/网络验收仍 `not_run` 或按既有授权设备旧快照限定；当前代码没有本批用户设备、真实Clash配置/浏览器策略、公网端点、完整清理或故障恢复通过证据。缺失实现与未运行验收必须分别记录，不能把skip升级为pass。
+
+## G. 全218项的未关闭范围与下一步
 
 以上仅建立部分子证据，**218项都仍需逐案例结果或有依据的不适用结论**。这里未给整案例pass，也未把“没有对应测试”误写成“完全没有文档/实现”。精确未映射ID清单见下方；其余ID可按表中方法定位，但状态仍是部分。
 
 最重要的未关闭能力：
 
 1. 原生绑定/采集：47字段与26采集规格逐字段对照，桌面用户/HKCU、WSL命名空间、Rosetta/硬件架构、真实网络服务、多个Clash实例选择和监听者绑定。测试中的绑定字符串不能代替可信采集。
-2. DNS仍缺独立解析/获准真实路径证据；STUN现有 `tests/test_stun_probe.py` 的32项纯编解码、伪传输及自有IPv4/IPv6回环测试作为ENV §20.6部分工程证据，见下文。不是公网端点、浏览器策略或Claude真实路径验收。
-3. 写入适配：Clash四类模板/规则语义/GUI回写刷新、浏览器原生策略、launcher子进程采用、时区/语言写入、C0—C4精确清理、免费故障阻断技术与恢复均不能由通用文件事务关闭。
-4. 访谈全语义：问题登记数量、出现某前缀、文档含关键词远弱于原案例全部条件；旧画像迁移、自然语言多字段吸收、接受默认、各支付前提、完整Codex UI/取消路径需专例。
+2. DNS已有纯协议、Mihomo/系统解析库和离线投影；可信宿主授权/绑定、获准真实路径与权威关联仍缺。STUN现有 `tests/test_stun_probe.py` 的编解码、伪传输及自有IPv4/IPv6回环测试作为ENV §20.6部分工程证据，见下文。不是公网端点、浏览器策略或Claude真实路径验收。
+3. 写入适配：Clash四类模板已有合成语义计划、keep-existing已有窄范围候选编译；原生配置适配/GUI回写刷新、浏览器原生策略、launcher子进程采用、时区/语言写入、C0—C4精确清理、免费故障阻断技术与恢复均不能由通用文件事务关闭。
+4. 访谈全语义：问题登记数量、出现某前缀、文档含关键词远弱于原案例全部条件；旧画像迁移已有合成底座，实际续接、自然语言多字段吸收、接受默认、各支付前提、完整Codex UI/取消路径需专例。
 5. 发行：来源许可证/当前官方内容核验、秘密全链路、升级撤回与操作级能力矩阵需要独立证据。原始来源文档历史“仅Spec”声明不应改写；当前实现状态由跟踪/验证文档说明。
 
 ### 不依赖用户Mac即可实施的优先任务
 
 1. **补精确回归缺口**：T53接受默认、T81多字段导入。每项写明输入、预期与未执行动作，不能仅增加数量。
 2. **完善离线事实/版本契约**：Windows SKU/UI空override/DST、WSL/用户上下文、Mac进程/硬件架构区分、控制器多实例选择与revision变化的合成样例；真实绑定适配器仍待相应平台。
-3. **独立DNS及STUN集成**：DNS协议/获准解析路径仍待实现；STUN库已有有界底座，但宿主授权、名称到固定地址绑定和真实目标路径尚未集成。未批准公开端点前不发请求，不得自动进入PC1。
-4. **ENV-06离线处理计划/规则编译器**：从精确事实到条件计划、组织/救援优先级、nameserver-policy语义、DIRECT嵌套、不可表达格式报错；先验证不产生apply/网络，不把临时文件成功当Mihomo接受。
-5. **普通终端恢复与故障注入**：针对POSIX临时文件写独立进程恢复、日志中断/权限/后续修改回归；Windows继续明确读计划边界。实际系统ACL/应用锁/控制通道断连留待各自平台授权验证。
+3. **独立DNS及STUN集成**：DNS协议与三类查询库已有实现；需补可信宿主绑定/运行时核验及Windows会话查询接入。STUN库已有有界底座，但宿主授权、名称到固定地址绑定和真实目标路径尚未集成。未批准公开端点前不发请求，不得自动进入PC1。
+4. **ENV-06离线处理计划/规则编译器**：已有条件计划、依赖图与DIRECT嵌套合成断言，以及窄范围字节保留候选；仍需精确原生规则/组织优先级验证、真实nameserver-policy合并语义、更多格式与四模板执行适配。不把候选生成当Mihomo接受。
+5. **普通终端恢复与故障注入**：POSIX独立进程恢复、日志中断和后续修改已有临时夹具；prepared中断仍需人工核对。Windows继续明确读计划边界。实际系统ACL/应用锁/控制通道断连留待各自平台授权验证。
 6. **建立逐案例执行记录**：固定commit/构建hash、方法、输入/预期/实际、平台、跳过原因、证据类型。CI原生临时测试与用户设备真实软件/流程验收分栏，避免再次由总数推断完成。
 
 未映射清单由下述静态核对维护；未映射通常表示没有足够精确的断言，不表示可删需求：
 
 - 主规范：T04、T05、T06、T09、T12、T14、T23、T25、T28、T31、T32、T33、T39、T40、T42、T50、T53、T65、T67、T79、T85
-- ENV：ENV-T03、ENV-T04、ENV-T06、ENV-T07、ENV-T08、ENV-T11、ENV-T14、ENV-T15、ENV-T18、ENV-T19、ENV-T21、ENV-T22、ENV-T23、ENV-T24、ENV-T29、ENV-T30、ENV-T31、ENV-T32、ENV-T35、ENV-T37、ENV-T38、ENV-T39、ENV-T40、ENV-T41、ENV-T42、ENV-T43、ENV-T44、ENV-T45、ENV-T46、ENV-T48、ENV-T49、ENV-T51、ENV-T52、ENV-T53、ENV-T55、ENV-T56、ENV-T57、ENV-T59、ENV-T62、ENV-T63、ENV-T71、ENV-T76、ENV-T78、ENV-T79、ENV-T84、ENV-T86、ENV-T88、ENV-T91、ENV-T93、ENV-T94、ENV-T104、ENV-T114、ENV-T116、ENV-T120
+- ENV：ENV-T03、ENV-T04、ENV-T06、ENV-T07、ENV-T11、ENV-T14、ENV-T15、ENV-T18、ENV-T19、ENV-T21、ENV-T22、ENV-T23、ENV-T24、ENV-T29、ENV-T30、ENV-T31、ENV-T32、ENV-T35、ENV-T37、ENV-T38、ENV-T39、ENV-T40、ENV-T41、ENV-T42、ENV-T43、ENV-T44、ENV-T48、ENV-T49、ENV-T52、ENV-T53、ENV-T55、ENV-T56、ENV-T57、ENV-T62、ENV-T71、ENV-T76、ENV-T78、ENV-T79、ENV-T84、ENV-T86、ENV-T88、ENV-T91、ENV-T94、ENV-T104、ENV-T114、ENV-T116、ENV-T120
 
 复核方法：从本文件表格首列提取原ID（含范围），与跟踪表218项比较；从测试AST核对文中方法名存在。本静态核对不执行测试，也不生成通过率。后续新增测试应更新相应行的实际断言/限制，再由执行证据决定状态。
 
 ## 后续STUN子证据（不改变原案例完整验收状态）
 
-`tests/test_stun_probe.py`：`test_rfc5769_ipv4_mapping_vector`与IPv6对应向量覆盖映射解码；`test_three_sends_same_transaction_and_deadline`覆盖同事务最多三次发送；`test_correlated_terminal_responses_stop_before_good_packet`与`test_unknown_required_does_not_hide_corruption`覆盖终止错误/完整校验顺序；`test_invalid_clocks_fail_closed`、`test_constant_clock_and_nonblocking_timeout_bounded`、`test_cleanup_rechecks_cancellation_target_clock_and_approval`覆盖无效时钟、循环预算和清理后撤回。`test_ipv4_owned_udp`、`test_ipv6_owned_udp`仅连接测试自建回环响应器。以上补充ENV-04 §20.6，不等于所有ENV-T16/47/50等端到端条件已满足，不修改旧映射143/75的统计含义。
+`tests/test_stun_probe.py`：`test_rfc5769_ipv4_mapping_vector`与IPv6对应向量覆盖映射解码；`test_three_sends_same_transaction_and_deadline`覆盖同事务最多三次发送；`test_correlated_terminal_responses_stop_before_good_packet`与`test_unknown_required_does_not_hide_corruption`覆盖终止错误/完整校验顺序；`test_invalid_clocks_fail_closed`、`test_constant_clock_and_nonblocking_timeout_bounded`、`test_cleanup_rechecks_cancellation_target_clock_and_approval`覆盖无效时钟、循环预算和清理后撤回。`test_ipv4_owned_udp`、`test_ipv6_owned_udp`仅连接测试自建回环响应器。以上补充ENV-04 §20.6，不等于所有ENV-T16/47/50等端到端条件已满足，不据此关闭整案例。
 
 ## 后续历史迁移子证据
 
-`tests/test_interview_migration.py` 的15项合成测试核对真实compact/report旧格式、命名字段和旧问题ID错位、Q-C07/旧Q-C08丢弃、设备历史不归因账号、过期事实/未知时效、新别名与不继承许可、停用提示复核、取消/冲突/凭据拒绝和纯函数不保存。这是T82 / D.11部分工程证据；宿主界面接入、自然语言多字段与接受默认行为仍未由此完成。旧143/75统计为原映射快照，不据新增测试数量推算覆盖率。
+`tests/test_interview_migration.py` 的15项合成测试核对真实compact/report旧格式、命名字段和旧问题ID错位、Q-C07/旧Q-C08丢弃、设备历史不归因账号、过期事实/未知时效、新别名与不继承许可、停用提示复核、取消/冲突/凭据拒绝和纯函数不保存。这是T82 / D.11部分工程证据；宿主界面接入、自然语言多字段与接受默认行为仍未由此完成。不据新增测试数量推算覆盖率。
