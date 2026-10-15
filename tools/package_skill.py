@@ -14,7 +14,8 @@ def main():
     args = parser.parse_args()
     skill = ROOT / 'skills' / 'claude-guardian'
     release_paths = [
-        "SKILL.md", "scripts/guardian.py",
+        "SKILL.md", "scripts/guardian.py", "scripts/interview_flow.py", "scripts/interview_cli.py",
+        "scripts/network_probes.py", "scripts/transactions.py", "scripts/serve_webrtc.py", "assets/webrtc-probe.html",
         "references/intake.md", "references/contact-and-safety.md",
         "references/routes-and-platforms.md", "references/network-and-remedies.md",
         "references/accounts-and-payments.md", "references/incidents-and-integrations.md",

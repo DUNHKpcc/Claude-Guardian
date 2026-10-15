@@ -2,7 +2,7 @@
 
 面向 Codex 的 Claude 使用准备与环境诊断 Skill。许可证：**GPL-3.0-only**。
 
-## 当前版本：0.1.1 诊断预览
+## 当前版本：0.2.0 工作流基础（尚非全设计完成）
 
 首版提供分阶段访谈、明确授权后的限定范围本机元数据采集、离线事实分析与修复计划。它不承诺免封；检查通过也不代表平台认可网络环境。
 
@@ -32,7 +32,7 @@ python3 skills/claude-guardian/scripts/guardian.py interview
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 tools/package_skill.py --output /tmp/claude-guardian-0.1.1.zip
+python3 tools/package_skill.py --output /tmp/claude-guardian-0.2.0.zip
 ```
 
 目录：
@@ -45,7 +45,7 @@ python3 tools/package_skill.py --output /tmp/claude-guardian-0.1.1.zip
 - `docs/decisions.md`：关键取舍、确认状态和后续条件
 - `docs/source-manifest.json`：输入设计版本及哈希
 
-设计基线是主规范 v0.1.10 和环境脚本规范 v0.3。新版本分别记录设计、代码实现、夹具验证与原生实测状态，避免把“有文档”写成“已可用”。历史规格引用的机器契约 ZIP 没有随本次提供，当前契约按正文重新实现，不继承历史测试结论。
+设计基线是主规范 v0.2.00 和环境脚本规范 v0.3。新版本分别记录设计、代码实现、夹具验证与原生实测状态，避免把“有文档”写成“已可用”。历史规格引用的机器契约 ZIP 没有随本次提供，当前契约按正文重新实现，不继承历史测试结论。
 
 ## 发布与隐私
 
@@ -56,3 +56,21 @@ python3 tools/package_skill.py --output /tmp/claude-guardian-0.1.1.zip
 ## 自动检查覆盖
 
 每个 push / PR 在 Linux、macOS、Windows CI 上运行单测、回归和确定性打包检查。Mac/Windows CI 另外运行只读 OS 元数据 smoke；该 smoke 不证明真实用户桌面、Clash、浏览器或故障恢复验收通过。原生采集扩展到产品/构建版本、语言偏好、时区和代理/PAC 启用状态，不读取代理凭据或订阅内容。
+
+## 新增工作流基础
+
+- `scripts/interview_cli.py`：完整95-ID访谈调度、条件分支、单题输出与明确保存/续接；推荐作为完整访谈入口
+- `scripts/network_probes.py`：带端点与路径授权契约的有限 HTTPS 出口探测；当前不由主CLI自动调用
+- `scripts/serve_webrtc.py`：限时、仅127.0.0.1的固定页面服务，不暴露目录或自动联网；打印本地URL后由用户自行打开
+- `assets/webrtc-probe.html`：本地浏览器页，仅在用户确认和点击后尝试单次STUN；无媒体权限请求
+- `scripts/transactions.py`：POSIX临时/测试文件事务基础，精确计划哈希、私有备份、核验和冲突拒绝回滚；不是已验收的系统/Clash适配器，Windows尚未实现
+
+访谈示例：
+
+```sh
+python skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --account-ref account-a
+```
+
+输出下一题和阶段评估，不默认保存。用户明确要求保存时提供 `--output`，后续通过 `--input` 续接。问题回答使用本地JSON文件（question_id、value、state、source），不要通过命令行传入凭据。
+
+源码里的可调用底层API不代表Agent可以绕过授权。尚未开放的完整Clash配置、浏览器策略、系统设置、深度清理、真实路径与故障注入能力继续在验收台账保留，不声称完成。

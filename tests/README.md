@@ -15,3 +15,9 @@ Native `check` only reads OS family, kernel/build version and current UTC offset
 `check --output audit.json` produces a report accepted directly by `analyze --input audit.json --target-ref device-1` and `plan --input audit.json --target-ref device-1`. These follow-up commands still classify supplied evidence as independently unverified. No evidence opens the contact gate.
 
 Only explicitly named local, materialized JSON input files are supported. Do not point the input/output options at cloud placeholder files, network-mounted directories, live application configuration or credential stores. Symlinks and UNC syntax are rejected, but this portable preview cannot conclusively identify all network mounts or enforce kernel-level network isolation. No network client is implemented. Redaction is defense in depth, not a promise that arbitrary pasted secrets can always be recognized; inspect a report before sharing it.
+
+## 原生验收增量（2026-10-15）
+
+提交 57cbbe056ab7b31e77d45ecb1400e3c3532a178a 已在授权的 macOS 15.7.4 / arm64、Python 3.13.3 上运行60项测试全部通过，另行真实采集7项元数据并完成 analyze/plan 回读，接触门禁关闭且无更改。三平台 GitHub CI（run38703019958）通过单测/回归/打包；Mac/Windows 元数据 smoke 通过。仅限上述范围，不是实际Clash/浏览器/故障恢复认证。
+
+后续访谈、网络与事务模块的离线测试不是对上述实机验收的自动扩展。事务基础目前只支持POSIX普通文件，Windows对应测试明确跳过、实现未交付。

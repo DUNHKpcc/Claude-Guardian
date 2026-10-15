@@ -15,7 +15,7 @@ import stat
 import sys
 import time
 
-VERSION = "0.1.1-diagnostic-preview"
+VERSION = "0.2.0-foundations"
 INPUT_SCHEMA = "guardian-offline/0.1"
 STATES = {"observed", "reported", "derived", "unknown", "blocked", "not_applicable", "not_found_in_scope", "conflict", "stale"}
 FACT_IDS = {"H%02d" % n for n in range(1, 8)} | {"S%02d" % n for n in range(1, 17)} | {"P%02d" % n for n in range(1, 25)}
@@ -518,11 +518,11 @@ def native_check(args):
 QUESTIONS = [
     ("subscription_stage", "Q-J01", "这是首次准备订阅、重新订阅，还是已有订阅回访？", ["first_subscription", "returning_subscription", "existing_subscriber", "unknown"]),
     ("current_task", "Q-C11", "这次想续费、升级、检查环境，还是排障？", ["renew", "upgrade", "environment", "troubleshoot"]),
-    ("os", "Q-C01", "目标电脑是 macOS 还是 Windows？", ["macos", "windows", "unknown", "phone_only"]),
-    ("usage", "Q-C02", "主要使用网页、Desktop、Code，还是 IDE 中的 Code？", ["web", "desktop", "code", "ide_code", "mixed", "unknown"]),
+    ("os", "Q-C02", "目标电脑是 macOS 还是 Windows？", ["macos", "windows", "unknown", "phone_only"]),
+    ("usage", "Q-C01", "主要使用网页、Desktop、Code，还是 IDE 中的 Code？", ["web", "desktop", "code", "ide_code", "mixed", "unknown"]),
     ("target_plan", "Q-C08", "想订阅什么套餐？也可以先标记未决定", None),
-    ("account_status", "Q-C03", "当前账号状态是什么？", ["not_registered", "active", "suspended", "unknown"]),
-    ("device_history", "Q-C04", "本次目标电脑是否用过 Claude、是否有过停用经历？", ["new_to_claude", "previous_use_no_reported_suspension", "previous_use_with_reported_suspension", "unknown"]),
+    ("account_status", "Q-C04", "当前账号状态是什么？", ["not_registered", "active", "suspended", "unknown"]),
+    ("device_history", "Q-C03", "本次目标电脑是否用过 Claude、是否有过停用经历？", ["new_to_claude", "previous_use_no_reported_suspension", "previous_use_with_reported_suspension", "unknown"]),
     ("route", "Q-C05", "建议本机，也可选择虚拟机或 VPS；希望采用哪种？", ["local", "vm", "vps", "explain"]),
 ]
 
