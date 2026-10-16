@@ -499,3 +499,18 @@ ENV-01/02、ENV-T111/114、UI-I06：Mac S04补采集进程视图，不确认硬�
 ENV-02/06、ENG/VAL：统一内部CLI提供精确preflight/plan/private diff及受阻塞的execute。已确认对话确认后由可信宿主调用固定脚本的交互；摘要只绑定内容，不提供权限。默认merge-policy保留原已有规则改policy范围；显式rules-prepend支持现有空prepend的有界DOMAIN/DOMAIN-SUFFIX插入，要求显式基础配置、应用plist、索引与UID。声明链拒绝全局/共享扩展及别名，候选拒绝已知保护规则冲突并展示优先级影响。未知规则图、控制路径、实际版本/运行时与归属仍不能由JSON事实提升为已验证。
 
 保留计划0.2绑定全部源路径、父目录及快照，私有复核/提交前/读回后重查，旧计划重建并重新确认。固定生产原生适配门禁保持关闭；合成替换适配器仅测试事务接线。尚缺可信原生上下文、Mac xattr安全事务、GUI写入者排除、真实链/核心验证、应用重载与有效路由/恢复验收，不能关闭实际修复任务。命令、风险和回退范围见agent-repair-flow及rules-extension-plan；组合测试证据见validation。
+
+## 26. 发布基线后的 Mac 原生适配调查
+
+基于2921e4f的独立干净克隆保留旧工作区全部改动。开发工具macos_metadata_probe仅写自有临时文件，新增12项合成边界。不同数据/mode/group/普通xattr/显式ACL备份复制已实测；云端审查发现恢复正例前的反例已复制元数据，故尚不能宣称不同元数据恢复，已修复fixture重置并补2项回归；修正版Mac回调及证据文件状态见第27节；不同owner未获跨用户/提权授权，provenance虽有两份真实不同来源值，但setter返回成功后首个fixture回读不符，实际未形成不同值，保持阻塞。未复位descriptor offset的内容失败保留。生产事务/准入及发行运行时未变。
+
+真实规范可执行路径、隔离参数及root-owned cwd的新子进程完成capture/recheck，但Homebrew/受管Python仍为rejected_writable_or_nonroot、integrity未验证、namespace未知、gate closed；Apple CLT3.9.6不满足最低3.10。Verge2.5.8当前空merge/空rules仍成立，供给元数据校验保留链/核心/写入者阻塞。固定官方源4337bd8显示保存活动扩展可能重载、失败后重启/替换core并同步DNS，普通GUI退出也会保存和清理core；未实际执行。最小候选操作计划和权限边界见macos-native-adaptation，完整命令结果见validation，不关闭原VAL或真实修复任务。
+
+
+## 27. Agent环境驱动修复闭环与13文件组合复核（2026-10-16）
+
+用户明确目标为Agent配合Skill/脚本处理实际环境中的问题，不要求内置通用OS自动修复器全部就绪才继续。新增agent_remediation只读选择器和动作目录，覆盖已有guardian发现/错误与静态inventory公开错误，并为Agent归一化的网络、浏览器、启动方式、时钟、清理等证据提供下一步。缺适配转为实际环境调查、精确差异和所需许可、限定宿主操作、备份恢复及同范围复测；无能力或不可安全执行的具体步骤才交接。选择器本身不执行、不恢复JSON权限、不将发现消失认作成功。
+
+修复权限/PC0/上下文/快照/备份/写后失败先解决前提，不得借Agent分支绕过。merge-policy与rules-prepend使用独立完整模板；同步强制contact-and-safety说明，避免旧preview措辞强制中止合法Agent工作。16项新增回归；与Mac7文件合并共13文件。云端1033项（1025通过/8跳过），Node两组、编译、diff及可复现发行检查通过；发行包SHA-256为5857e5cf5e77072704f2d9ab77aff61bf120e7c86e015484612e1f00b8362127。
+
+修正版Mac任务回调报告14项定向测试通过、两次自有临时文件运行在正例前确立contents/mode/group/普通xattr/ACL差异，之后逐项相等且original_unchanged为真；provenance正例前差异仍为假。此为已读回调摘要，上传握手失败，云端尚未取得或核验该次原始/脱敏JSON证据文件；不得声称已下载核验，不以此关闭完整原生验收。先前完整Mac基线91个失败/错误保留，未有本组合完整Mac重测。无提交/推送/真实设置更改；用户批准本批后仍须核实远端基线及跟踪各平台CI。

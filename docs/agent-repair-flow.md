@@ -189,3 +189,9 @@ and approval of the new scope, not reuse of the old decision.
 The current development tests use private temporary synthetic files only.
 Final CLI invocation details and verified regression evidence are recorded with
 the implementation delivery; no full ENV or VAL acceptance is claimed here.
+
+The later [Mac native adaptation investigation](macos-native-adaptation.md)
+records real temporary-file ACL/xattr experiments, canonical runtime launches,
+and pinned 2.5.8 writer/reload source observations. Different-value provenance
+restoration and actual writer exclusion remain blocked; no production gate was
+opened and no existing transaction metadata restriction was weakened.

@@ -1,10 +1,10 @@
 # Contact phases and execution boundary
 
-中文执行摘要：本版只做访谈、有限本地只读检查和离线计划；不联网探测，不执行修改、清理、付款或回滚。PC0 禁止所有 Claude/Anthropic 接触，包括官方文档、DNS 和版本命令。PC-G1、明确交接、PC-G2 与登录/支付授权相互独立。仅有工作流约束，不宣称全机隔离。
+中文执行摘要：内置CLI的开放能力以各入口为准，不把候选计划当成执行能力。脚本修不了时由Agent继续检查实际环境，按独立、具体授权的最小修复流程执行和复测，详见 agent-remediation.md；不得绕过权限拒绝或内置门禁。PC0 禁止所有 Claude/Anthropic 接触，包括官方文档、DNS 和版本命令。PC-G1、明确交接、PC-G2 与登录/支付授权相互独立。仅有工作流约束，不宣称全机隔离。
 
-## Preview capability boundary
+## Built-in capability and independent Agent action boundary
 
-The released preview supports interview, local read-only metadata where a real adapter exists, and offline plans. `probe`, `apply`, online `verify`, and `rollback` are not released execution capabilities. Explicit authorization alone does not turn an unsupported action into a validated capability. Do not improvise an equivalent command. Refer the user to the precise manual next step or a future validated release.
+The released preview supports interview, local read-only metadata where a real adapter exists, and offline plans. `probe`, `apply`, online `verify`, and `rollback` are not released execution capabilities. Explicit authorization alone does not turn an unsupported built-in action into a validated adapter. When a built-in cannot repair the problem, the Agent continues scoped investigation of the actual environment. A separately reviewed, specifically authorized minimal operation may use available host tools, exact configuration edits, or a reviewed temporary script, with backup, conflict checks, recovery and real re-detection. This is an independent Agent action, not permission to replace authorization callbacks, spoof native acceptance, or bypass a built-in denial. Hand off only concrete steps that require the user or cannot be safely performed with available tools.
 
 These are workflow controls, not a firewall. The preview does not stop unrelated apps, restored browser tabs, or user activity, and cannot erase prior contact. Record known existing contact; do not claim an untouched environment. Strict no-egress requirements remain blocked without a tested technical boundary.
 
@@ -12,7 +12,7 @@ These are workflow controls, not a firewall. The preview does not stop unrelated
 
 - **PC0 / precontact:** interview, existing local metadata, packaged source snapshots, and offline plans. No requests to Claude/Anthropic web/API/auth/download/status/telemetry/documentation, including DNS, search-mediated fetch, HEAD, ping, client version/doctor commands, IDE extensions, or delegated Claude agents. Current external facts remain pending verification. Previously installed client metadata may be inspected without executing the client.
 - **PC-G1:** preparation evidence for the actual target, browser/profile, path, address families, and required controls. List every unavailable or unmeasured requirement. A successful inventory, imported assertion, or synthetic test cannot close this gate. Do not require irrelevant client checks, but do not silently waive a strict user requirement.
-- **PC1:** only after sufficient scoped PC-G1 evidence and explicit first-contact authorization. The handoff names target, action, destinations, configuration revision, evidence, and limits. This preview can explain the handoff, not perform online operations. Installation may trigger background startup and is contact. Current rules and compatibility are rechecked here before account actions.
+- **PC1:** only after sufficient scoped PC-G1 evidence and explicit first-contact authorization. The handoff names target, action, destinations, configuration revision, evidence, and limits. The built-in preview does not execute that handoff. Any independent Agent operation still requires these exact contact conditions and host policy permission. Installation may trigger background startup and is contact. Current rules and compatibility are rechecked here before account actions.
 - **PC-G2:** real client evidence. Separate unauthenticated tests from tests that require login; defer the latter explicitly rather than inventing success or creating a circular login requirement.
 - **PC2:** separately authorized official login/subscription and subsequent client verification. Login is not payment authorization. A real-path failure pauses payment and returns to diagnosis.
 
@@ -24,11 +24,11 @@ Keep question answers, plan acceptance, host permission, OS privilege, first-con
 
 Before an authorized read, bind the target, minimum fields, expected source, timeout, and redaction. Do not scan ports, execute subscription JavaScript, read credential stores, dump `env`, or read all browser profiles. A local API GET can trigger work; the preview does not invent a controller adapter. Permission denied or missing capability is a result, not a reason to elevate automatically.
 
-For future active neutral probes, authorization must identify destination/service, protocol, data exposed (including source IP), request budget, path, and purpose. Neutral is not offline. No redirect or subresource may expand scope. This release leaves these probes blocked.
+For active neutral probes, authorization must identify destination/service, protocol, data exposed (including source IP), request budget, path, and purpose. Neutral is not offline. No redirect or subresource may expand scope. The standalone CLI does not open these probes. Host libraries and any independent Agent probe must satisfy the actual runtime, endpoint, authorization and bounded-data contracts; missing or denied prerequisites remain blocked.
 
 An offline change plan contains target binding, observed revision/time, finding and evidence, proposed difference, protected objects, dependencies, impact, validation criteria, rollback limitations, and exact missing authority/capability. Credentials, payments, destructive cleanup, firewall/routing, and remote-control changes require their own safeguards. Never promise rollback for revocation or deletion.
 
-Report `proposed`, `applied`, and `verified` separately. This preview produces proposed remedies only. User-supplied observations remain reported, not tool-verified. Changed targets/configuration/network/profile/version invalidate affected evidence and handoff scopes. On withdrawal, stop new operations; do not claim already-sent requests were undone.
+Report `proposed`, `applied`, and `verified` separately. Built-in preview outputs are proposals only. Independent Agent actions report their actual operation and verification evidence separately, without upgrading built-in capability or general native acceptance. User-supplied observations remain reported, not tool-verified. Changed targets/configuration/network/profile/version invalidate affected evidence and handoff scopes. On withdrawal, stop new operations; do not claim already-sent requests were undone.
 
 ## Persistence and interruption
 

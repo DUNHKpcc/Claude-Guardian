@@ -317,3 +317,54 @@ Node8项生命周期、合成交互协议、compileall、diff检查及两次打�
 Node合成交互协议、8项WebRTC生命周期、compileall和git diff --check通过；两次新文件名打包逐字节相同，SHA-256为`96c47e39828bd48f93e75411ebcad4de2d1520fc25e6dd227143baf5300ddef3`。打包显式包含rules_extension_plan、repair_cli、repair_execution和clash_verge_258，未加入私有配置/交付证据文件。本节不覆盖此前Mac930套件仍有的56项元数据失败；无新Mac执行、真实设置写入、应用重载或公网探测。原生上下文、元数据完整恢复、GUI写入者排除、有效合并链/核心/路由及真实恢复验收保持开放。当前仅本地组合复核，未提交/推送，远端四任务CI及受影响浏览器CI尚未执行。
 
 回滚范围：撤回本批新增候选/接线与只读诊断代码、测试和说明，或仅撤回rules路由与对应发行清单项；不需恢复任何用户设置。已保留旧计划不得自动迁移或重建授权。实际修复任务仍未完成。
+
+## 2921e4f 后的 Mac 原生适配调查（未推送）
+
+本次使用独立干净克隆，精确基线2921e4f72ba0c0bcd2d37bdfb6d5410248f045e6；旧工作区及14处修改保留。使用已批准的CPython3.12.14任务临时venv、PyYAML6.0.3，无新依赖安装或系统Python变更。
+
+| 检查 | 结果及限制 |
+| --- | --- |
+| 新发布基线完整单元/回归 | 1003项：903通过、25失败、66错误、9跳过 |
+| 新工具后完整单元/回归 | 1015项：915通过、25失败、66错误、9跳过；91个失败/错误测试集合与本机基线完全相同 |
+| 失败分组 | repair_cli12、repair_execution12、rules_repair_cli11、transactions36、recovery_cli20；已有严格临时文件元数据/回执边界阻塞，未改断言、删属性或放宽实现 |
+| 新合成边界 | macos_metadata_probe12/12：双端offset复位、失败反例、ACL资源释放、xattr读取预算/短读、缺失provenance及setter/回读不符不能作为恢复成功；不调用原生API |
+| 真机临时文件 | Darwin ACL API为当前用户创建不同显式ACL；不同内容/mode/group/普通xattr/ACL先成立，fcopyfile(COPYFILE_ALL)备份逐项相等，原对象不变；复位offset恢复之前反例已恢复元数据，仅内容恢复成立，不证明不同元数据恢复 |
+| 真机失败保留 | 初次numeric-name chmod设置ACL失败；改用已核对SDK的当前用户UUID ACL API。未复位offset时API0但内容不等。两份批准运行时有真实不同provenance，但fixture setter后的即时回读为false/true/true，未形成不同值，不能关闭该验收 |
+| 未完成元数据 | 不同owner需跨用户/提权授权，未尝试；压缩/资源fork/flags/timestamps及完整应用恢复未覆盖。生产事务仍拒绝xattr |
+| 严格运行路径 | 正常拼写的symlink仍阻塞；真实规范路径的新隔离子进程完成capture/recheck，但mode screen仍拒绝非root/可写，integrity未知、namespace未知、gate closed；Apple CLT Python3.9.6低于最低版本 |
+| Verge只读取证 | 产品/build仍2.5.8；current及merge/rules关联唯一且读取稳定，merge仅注释/空白，rules三列表空；现有supplied validator保留链/core/上下文/写入者阻塞，不是native admission |
+
+命令：`python -m unittest discover -s tests -v`；`python -m unittest discover -s tests -p test_macos_metadata_probe.py -v`；`python -B tools/macos_metadata_probe.py`（可按已批准范围提供两个runtime metadata source）；Node两组合成、compileall及重复打包字节比较完成。发行包SHA-256仍`96c47e39828bd48f93e75411ebcad4de2d1520fc25e6dd227143baf5300ddef3`，新工具只属开发证据，不进入发行清单，来源快照/manifest未改。
+
+官方Verge tag源精确为4337bd85758d54d7b9044b2da3c9ac1176eae1f3，仅下载/阅读，未构建或运行。具体保存、内存编辑器、定时刷新、重载失败重启/服务替换和GUI退出路径及最小后续授权方案见macos-native-adaptation。未读取订阅payload、脚本正文、控制器凭据或个人配置哈希；未发控制API/网络探测，未暂停/重载GUI或core，未改真实配置/系统网络。原始失败日志保留本地，移交仅项目补丁与脱敏固定结果。回滚仅撤回开发工具、测试与说明，无用户设置需恢复；未推送/PR，未关闭原生修复准入。
+
+
+### 云端整合复核及恢复实验修正（未推送）
+
+导入ZIP的SHA-256核对为`788a7015f2e5d113f74c645c25068f6ab869e53615ecf0c9a72e9931be9a6f99`，7文件补丁可干净应用至2921e4f。云端初始完整套件1015项通过（1007通过、8跳过），Node两组、compileall、diff与复现打包通过，发行包哈希不变。
+
+发现原生实验的负例已先恢复ACL/group/mode/xattrs，使随后正例只比较已相等元数据。工具现于正例前重新建立差异并立即采集`different_before_reset_restore`，独立验证provenance重置回读，另补2项合成回归。历史Mac结果不替代修正后的原生重跑；不同元数据恢复仍待验证。未修改生产事务/准入，没有Mac操作或真实配置变更。
+
+修正后云端完整套件1017项（1009通过、8跳过），14项probe回归通过；新编排测试仅自有临时文件、不调用Darwin元数据API。两组Node合成、compileall、diff检查和两次打包再次通过，发行包SHA-256仍为`96c47e39828bd48f93e75411ebcad4de2d1520fc25e6dd227143baf5300ddef3`。该云端修正时点无提交/推送、Mac修正版尚未运行；后续回调状态见下节。
+
+
+## Agent环境驱动修复与Mac调查组合交付复核（2026-10-16，未提交/推送）
+
+精确基线为2921e4f72ba0c0bcd2d37bdfb6d5410248f045e6。组合13文件：Mac工具/测试/说明7文件，加主Skill、强制安全参考、Agent修复参考、只读选择器、选择器测试与发行清单6文件。Agent继续承担环境限定修复；内置能力缺口不要求等待通用自动写入器。每次实际操作的权限、PC0、目标绑定、影响、备份恢复和真实复测保持独立；选择器没有写入执行或成功修复能力。
+
+- 最终完整云端命令：`python -m unittest discover -s tests -v`，1033项，1025通过、8跳过，18.170秒
+- 选择器16项与Mac probe14项定向回归通过；涵盖实际会话/修复权限与上下文错误、陈旧证据阻塞、两种规则模板、错误输入脱敏、未识别项继续调查、取消优先及恢复fixture重建
+- `node tests/webrtc-lifecycle.cjs`：8项合成场景通过；`node tests/dashboard-interaction-protocol.cjs`通过。没有真实浏览器执行
+- `python -m compileall -q skills/claude-guardian/scripts tools/macos_metadata_probe.py`及`git diff --check`通过
+- 两次`python tools/package_skill.py --output <独立新路径>`逐字节相同，SHA-256为`5857e5cf5e77072704f2d9ab77aff61bf120e7c86e015484612e1f00b8362127`。解包后catalog/select可运行、prepend模式与4个来源参数完整、未知命令/参数不泄露传入值、两份修复/安全参考均存在
+- 发行包包括Agent选择器及参考，不包括Mac开发probe、私有配置或移交证据；来源快照及manifest未变
+
+独立复核修复了：prepend误用默认merge-policy模板、非字符串schema的未处理异常、实际PC0/上下文/权限/快照/恢复错误误归缺适配、CLI错误回显输入以及强制安全参考的旧手工交接措辞冲突。最终未发现阻断性审查问题。这是代码/文档批次复核，不是任何用户环境已修复的证明。
+
+### 修正版Mac回调与证据限制
+
+已读取Mac任务回调：14项定向测试通过；两次临时文件实验的`different_before_reset_restore`在contents/mode/group/普通xattr/ACL上为真，正例复制后对应比较为真，`original_unchanged`为真。provenance即时差异为假，仍不能证明不同值恢复；不同owner、压缩、resource fork、flags、timestamps及完整应用恢复亦未覆盖。
+
+该次上传因握手失败，云端尚未收到/下载/校验修正版结果JSON或完整证据包；上述内容仅标记为任务回调报告。旧ZIP已校验不等于新结果已校验。先前Mac完整基线1003项为903通过/25失败/66错误/9跳过，原工具1015项为915通过/25失败/66错误/9跳过，91个失败/错误集合不变；本次没有组合1033项的完整Mac或Windows实测，不用Linux通过覆盖这些缺口。
+
+风险与回滚：本批改变Agent动作指引及只读选择器，新增开发实验；不改内置生产事务/准入、不执行真实网络或配置动作。撤回本批13文件对应差异即可回退代码，不需恢复用户系统设置。原Mac元数据/运行时/写入者/有效链及应用恢复缺口继续开放。此快照未提交/推送，远端push CI尚未运行；后续直接main交付须取得本批明确授权，核对远端基线，普通非强制提交并逐平台跟踪CI。

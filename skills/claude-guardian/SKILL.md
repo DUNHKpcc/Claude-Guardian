@@ -14,16 +14,16 @@ description: 为 Claude 订阅准备、账号与客户端异常、代理和运�
 3. 本机是默认建议，但要问用户接受本机、选择 VM/VPS，还是先比较。三者是独立方案，不是升级顺序。已明确的目标优先；拥有 VPS 不等于选择远程工作区。
 4. 按需读取 [intake.md](references/intake.md)，使用稳定问题 ID 和 G1/G2/G3。**Q-C07 永久停用**，不得换名称恢复账号归属/控制权问题。首次订阅无实际冲突时跳过旧套餐/旧渠道题。
 5. 每次工具操作前遵守 [contact-and-safety.md](references/contact-and-safety.md)。从 **PC0** 开始：不接触 Claude/Anthropic、不安装或运行客户端、不登录、不查看订阅页。公开文档、DNS、HEAD、`claude --version` 及委派 Claude 工具也不是例外。使用随包历史依据，待核验的现行事实明确标出。
-6. 只在获准目标范围内使用已实现 CLI 检查（先查看 `scripts/guardian.py --help`）。缺依赖不静默安装；未支持的检查记为未知。禁止用临时 shell 命令替代未开放的联网或修改功能。
+6. 只在获准目标范围内使用已实现 CLI 检查（先查看 `scripts/guardian.py --help`）。缺依赖不静默安装；未支持的检查记为未知。内置功能未开放时，Agent继续调查实际环境；不得用临时命令绕过权限拒绝、PC0或既有执行门禁。独立Agent修复须按 [agent-remediation.md](references/agent-remediation.md) 取得具体动作许可并提供最小差异、备份与复测。
 7. 交付具体问题、目标范围、证据、未知项、最小修复建议、保留项及下一步。`pass/fail/unknown/not_applicable/blocked/skipped` 只描述指定检查。盘点完成不等于 PC-G1 通过；离线测试不证明平台支持或网络隔离。
 
 ## 完整访谈入口
 
 完整状态化访谈使用 `scripts/interview_cli.py`：默认仅输出下一题和阶段评估；已确认答案通过本地 answer JSON 传入；用户明确要求保存时才指定 `--output`。保存后用 `--input` 续接。95 个问题 ID 按条件调度，Q-C07 始终停用。`guardian.py interview` 保留为兼容的简化入口，不把它的八字段流程当作完整访谈。
 
-新增探测与事务模块为开发基础接口，尚未接入自动配置工作流；不能自行提供一个返回 True 的授权回调代替用户确认。
+由 Agent 编排检测、解释、选择内置动作、具体确认、执行和复测，详见 [agent-remediation.md](references/agent-remediation.md)。`scripts/agent_remediation.py select --input <本地报告.json> --target-ref <目标别名>` 生成结构化动作清单；只读脚本、候选、宿主库和 Agent 环境修复分开，不执行清单或从JSON恢复权限。当前尚无开放的内置生产配置写入适配器；内置脚本修不了时，由 Agent 继续检查实际环境，使用具体获准的宿主工具或经审阅的限定临时脚本完成独立最小修复、备份恢复和复测。内置门禁仍不能绕过；选择器本身不是已完成修复。不能自行提供一个返回 True 的授权回调代替用户确认。
 
-## Agent内部修复入口（原生执行仍阻塞）
+## Agent内部修复入口（按动作能力分流）
 
 `scripts/repair_cli.py`提供精确文件的`preflight / plan / diff / execute`接口。`plan`显式指定`--plan-file`和`--backup-directory`才写入新的私有计划文件，不修改目标；`--private-review`可在获准的私有Agent会话中非交互展示选定规则及policy前后差异，不输出无关配置。私有差异不得混入公开报告。
 
