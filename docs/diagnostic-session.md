@@ -69,7 +69,8 @@ This is syntax screening only, not a mapped-drive/reparse-point or ACL proof.
 Windows permissions inherit the parent directory ACL; mode 0600 does not establish
 Windows privacy. Choose an already verified private local directory.
 Review before sharing even sanitized machine metadata. A dashboard can show a
-blocked/cancelled session; saving a page does not mean collection succeeded.
+blocked session; saving a page does not mean collection succeeded. A cancelled or
+declined session never creates the requested dashboard file (ENV-T123).
 Exit codes: 0 partial usable metadata (never environment pass), 2 blocked/input/
 save failure, 3 cancellation. Help is JSON and performs no collection.
 
@@ -119,7 +120,9 @@ pairs may be supplied. For each:
 4. Recheck again before retaining a sanitized result; preserve both successful
    and failed samples in the dashboard instead of hiding earlier failures
 
-The context lifetime is 60 seconds across the session. A slow consent cannot
+The context lifetime is 60 seconds across the session. The session also checks
+its original monotonic deadline before and after each strict-context recheck,
+so delayed capture/recheck cannot silently refresh the original budget. A slow consent cannot
 silently refresh the handle or inherit approval for a new context; restart the
 session instead. The DNS operation retains its separate five-second budget and
 existing process cleanup limitations. Callback execution and synchronous native
@@ -129,7 +132,8 @@ implement equivalent expiration and cancellation.
 
 Cancellation, consent timeout, context expiry/change, binding failure, runtime
 failure, probe timeout, or cleanup failure stop further queries. Negative host-verifier verdicts and
-unexpected host-verifier exceptions are latched as stable trust failures, including
+unexpected host-verifier, context-recheck or cancellation-poll exceptions are
+latched as stable trust failures, including
 when the DNS library sanitizes callback errors; later successful rechecks cannot
 restore that session. Previously
 collected metadata becomes historical (`stale`), retained sample context is
@@ -167,3 +171,10 @@ service, system configuration, scheduled work, permission record, or grant is
 created. The integrated package explicitly includes the session and context modules; package tests check their presence. The shared
 Windows output-path regression is additionally covered by four tests in
 `tests/test_save_paths.py`, including retained POSIX no-overwrite/symlink behavior.
+
+2026-10-16 boundary increment: 15 additional synthetic regressions in
+`tests/test_diagnostic_session_boundaries.py` plus the 54 existing session tests
+pass. They cover original-deadline enforcement, transient adapter failure latching,
+historical evidence invalidation, unchanged healthy two-query projection, cancelled
+no-save and explicitly requested blocked-report saves. Baseline-failure and full
+batch results are in `validation.md`; no real host or DNS acceptance is implied.

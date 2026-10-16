@@ -19,6 +19,7 @@ _ALLOWED_BLOCKERS = {'NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED',
                      'NATIVE_ACCEPTANCE_NOT_RUN', 'VERSION_CAPABILITY_UNVERIFIED'}
 _RULE = re.compile(r'(DOMAIN|DOMAIN-SUFFIX),([A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?),([A-Za-z][A-Za-z0-9_-]{0,63})\Z')
 _GROUP = re.compile(r'[A-Za-z][A-Za-z0-9_-]{0,63}\Z')
+_DOMAIN_LABEL = re.compile(r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\Z')
 
 
 class EditPlanError(ValueError):
@@ -35,11 +36,13 @@ def _hash(raw):
 
 class PrivateCandidate:
     """Explicit private access only; not a transaction plan or serializable report."""
-    __slots__ = ('_original', '_candidate', '_count', '_binding')
+    __slots__ = ('_original', '_candidate', '_count', '_binding', '_edits')
 
-    def __init__(self, original, candidate, count, binding):
+    def __init__(self, original, candidate, count, binding, edits=()):
         self._original, self._candidate, self._count = original, candidate, count
         self._binding = binding
+        self._edits = tuple((start, end, original[start:end], replacement)
+                            for start, end, replacement in edits)
 
     def __repr__(self):
         return '<PrivateCandidate: blocked, private content omitted>'
@@ -51,6 +54,7 @@ class PrivateCandidate:
         """Trusted local review only. Never log, export, or persist by default."""
         return {'original_bytes': self._original, 'candidate_bytes': self._candidate,
                 'declared_binding': self._binding,
+                'policy_token_edits': self._edits,
                 'original_sha256': _hash(self._original),
                 'candidate_sha256': _hash(self._candidate)}
 
@@ -129,6 +133,35 @@ def _signature(node):
     return (node.tag, tuple((_signature(key), _signature(value)) for key, value in node.value))
 
 
+def _valid_domain(value):
+    # The editable slice is ASCII DNS labels, not a wildcard/IDNA interpreter.
+    return len(value) <= 253 and all(_DOMAIN_LABEL.fullmatch(label)
+                                     for label in value.split('.'))
+
+
+def _provably_shadowed(rules, index, domain):
+    """Detect only complete coverage by known, earlier, unconditional rules.
+
+    Other rule types, modifiers and provider expansions remain unverified; this
+    is not a first-match proof or native effective-configuration validation.
+    """
+    domain = domain.lower()
+    for earlier in rules[:index]:
+        if (not isinstance(earlier, yaml.nodes.ScalarNode) or
+                earlier.tag != 'tag:yaml.org,2002:str'):
+            continue
+        fields = [field.strip() for field in earlier.value.split(',')]
+        kind = fields[0].upper()
+        if kind == 'MATCH' and len(fields) == 2 and fields[1]:
+            return True
+        if kind != 'DOMAIN-SUFFIX' or len(fields) != 3 or not fields[2]:
+            continue
+        suffix = fields[1].lower().rstrip('.')
+        if _valid_domain(suffix) and (domain == suffix or domain.endswith('.' + suffix)):
+            return True
+    return False
+
+
 def compile_edit_plan(raw, remedy_request, binding):
     """Compile bytes supplied by the caller; never read the user's configuration.
 
@@ -200,7 +233,7 @@ def compile_edit_plan(raw, remedy_request, binding):
                 node.start_mark.line != node.end_mark.line or node.value != item['expected']):
             _fail('UNSUPPORTED_OR_CHANGED_RULE')
         match = _RULE.fullmatch(node.value)
-        if not match:
+        if not match or not _valid_domain(match.group(2)):
             _fail('AMBIGUOUS_OR_UNSUPPORTED_RULE')
         # Conservative comparison only, never broaden the editable grammar.
         # Case, field padding and DNS root-dot variants may denote the same
@@ -214,6 +247,8 @@ def compile_edit_plan(raw, remedy_request, binding):
         if sum(selector(n.value) == selected for n in rules.value
                if isinstance(n, yaml.nodes.ScalarNode)) != 1:
             _fail('AMBIGUOUS_OR_UNSUPPORTED_RULE')
+        if _provably_shadowed(rules.value, index, match.group(2)):
+            _fail('SELECTED_RULE_SHADOWED')
         if match.group(3) == group:
             _fail('NO_CHANGE')
         # PyYAML indexes Unicode characters; splice bytes only after conversion.
@@ -236,4 +271,4 @@ def compile_edit_plan(raw, remedy_request, binding):
     declared_binding = (remedy_request['target_ref'], tuple(remedy_request['scope_refs']),
                         layer, tuple(sorted(remedy_request['revisions'].items())),
                         tuple(sorted(remedy_request['facts']['versions'].items())))
-    return PrivateCandidate(raw, candidate, len(edits), declared_binding)
+    return PrivateCandidate(raw, candidate, len(edits), declared_binding, edits)

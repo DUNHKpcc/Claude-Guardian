@@ -477,3 +477,10 @@ ENG-01 / VAL-08：新增独立Linux Python3.10 CI任务，先断言实际解释�
 官方setup-python固定到ece7cb06caefa5fff74198d8649806c4678c61a1（2026-10-15核对v6引用及该提交action.yml）；仅一次性CI解释器准备，无生产依赖增加。最低版本任务不启用原生上下文smoke，无用户设备或公网探测。Linux结果不能关闭Mac/Windows最低版本、桌面/运行时信任或原VAL场景；原3.10语法证据继续单列。
 
 最低版本实跑回执：8c4adae的[CI38788444583](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38788444583)四任务首次成功。Linux CPython3.10.22完整896项888通过/8跳过，脱离源码发行包9/9、编译及重复打包通过；默认Linux888/8、Mac887/9、Windows775/121通过/跳过。原生smoke仍Mac RUNTIME_PATH_INVALID、Windows CONTEXT_FOREIGN阻塞（各20通过/1跳过），不关闭原VAL或真实设备验收。详见validation和晨间交接。
+
+
+## 23. 配置候选与诊断连续性边界（2026-10-16）
+
+ENV-02/06：私有候选增加可重建原始字节的policy token差异；检查域名标签并拒绝原快照中已能证明的前置MATCH/DOMAIN-SUFFIX覆盖。仍只处理已有keep-existing三字段规则，不解决所有RULE-SET/IP/逻辑规则、GUI合并、实际路由或四模板应用。原生适配/版本/所有权/动作授权阻塞保持，公开预览不泄露差异内容。
+
+ENV-01/04、UI-I06、ENV-T73/123：会话严格上下文复核前后检查最初60秒预算，DNS内部清洗异常后也保留上下文/取消回调失败，后续查询不得继续；取消/拒绝不创建面板输出。公开报告只保留固定错误和历史证据，不恢复权限。合成注入仅验证这些失败出口；可信宿主、真实DNS、Windows会话DNS及完整Codex UI仍未完成。本批完整检查和精确CI分别见validation，不由测试数量关闭原218项案例。

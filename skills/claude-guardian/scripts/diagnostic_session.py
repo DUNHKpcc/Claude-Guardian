@@ -189,6 +189,26 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
     handle = None
     metadata_only = False
     continuity_failure = None
+    cancellation_callback = cancelled
+    def poll_cancelled():
+        # The probe also polls cancellation directly. Preserve a transient
+        # cancellation or adapter exception even when it sanitizes that error.
+        nonlocal continuity_failure
+        if continuity_failure is not None:
+            raise continuity_failure
+        try:
+            stopped = cancellation_callback()
+        except (KeyboardInterrupt, EOFError):
+            continuity_failure = SessionError('CANCELLED')
+            raise continuity_failure from None
+        except Exception:
+            continuity_failure = SessionError('SESSION_FAILED')
+            raise continuity_failure from None
+        if stopped is not False:
+            continuity_failure = SessionError('CANCELLED')
+            raise continuity_failure
+        return False
+
     def checked():
         # The probe sanitizes callback exceptions. Latch continuity rejection so
         # even a transient context flip cannot disappear on a later recheck.
@@ -196,10 +216,18 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
         if continuity_failure is not None:
             raise continuity_failure
         try:
+            remaining_budget()
             _check(handle, cancelled, backend)
+            remaining_budget()
         except (native_context.ContextError, windows_native_context.ContextError, SessionError) as exc:
             continuity_failure = exc
             raise
+        except (KeyboardInterrupt, EOFError):
+            continuity_failure = SessionError('CANCELLED')
+            raise continuity_failure from None
+        except Exception:
+            continuity_failure = SessionError('SESSION_FAILED')
+            raise continuity_failure from None
     def host_check(callback, argument, failure_code):
         # Probe callbacks can have their exceptions converted to OUTPUT_INVALID.
         # Trust loss must survive that sanitization and stop the whole session,
@@ -222,6 +250,7 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
                 or not callable(consent) or not callable(cancelled)
                 or type(queries) not in (tuple, list) or len(queries) > 8):
             raise SessionError('INPUT_INVALID')
+        cancelled = poll_cancelled
         if sys.platform not in ('darwin', 'win32'):
             raise SessionError('UNSUPPORTED_PLATFORM')
         if interview is not None:
@@ -364,7 +393,7 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
             'UNSUPPORTED_PLATFORM', 'CONTEXT_EXPIRED', 'CONTEXT_CHANGED', 'CONTEXT_UNKNOWN',
             'CONTEXT_INACTIVE', 'CONTEXT_FOREIGN', 'TARGET_USER_CONTEXT_MISMATCH',
             'RUNTIME_PATH_INVALID', 'PERMISSION_DENIED', 'PC0_TARGET_FORBIDDEN',
-            'TIMEOUT', 'AUTHORIZATION_MISSING', 'CLEANUP_FAILED',
+            'TIMEOUT', 'AUTHORIZATION_MISSING', 'CLEANUP_FAILED', 'SESSION_FAILED',
             'CONTEXT_INACTIVE_OR_REMOTE', 'WINDOWS_SESSION_DNS_UNAVAILABLE'}
         code = exc.args[0] if exc.args and type(exc.args[0]) is str else ''
         code = code if code in allowed else 'INPUT_INVALID'
@@ -408,7 +437,7 @@ def run(argv=None, *, incoming=None, outgoing=None, prompt=None):
             inventory_cli._path(args.dashboard_output)
         result = execute(args.target_ref, consent=TerminalConsent(incoming, prompt))
         html = result.pop('dashboard_html')
-        if args.dashboard_output:
+        if args.dashboard_output and result['status'] != 'cancelled':
             guardian.save_new(args.dashboard_output, html)
             result['dashboard_saved'] = True
         code = 3 if result['status'] == 'cancelled' else 2 if result['status'] == 'blocked' else 0

@@ -88,6 +88,100 @@ class ConfigEditTests(unittest.TestCase):
             c.compile_edit_plan(RAW, request, binding)
         self.assertEqual((request, binding), before)
 
+    def test_private_diff_reconstructs_candidate_using_original_byte_offsets(self):
+        raw = b'\xef\xbb\xbf' + '# 中文🙂\n'.encode() + RAW.replace(b'\n', b'\r\n')
+        request, binding = inputs(raw)
+        request['intent']['rule_refs'].append('rule-b')
+        binding['rules']['rule-b'] = {'index': 1, 'expected': 'DOMAIN-SUFFIX,example.org,Old'}
+        result = c.compile_edit_plan(raw, request, binding)
+        material = result.private_material()
+        edits = material['policy_token_edits']
+        self.assertIsInstance(edits, tuple)
+        self.assertEqual(len(edits), 2)
+        self.assertEqual(edits, tuple(sorted(edits)))
+        rebuilt = raw
+        for start, end, before, after in reversed(edits):
+            self.assertEqual(raw[start:end], before)
+            self.assertEqual(before, b'Old')
+            self.assertEqual(after, b'approved-group')
+            rebuilt = rebuilt[:start] + after + rebuilt[end:]
+        self.assertEqual(rebuilt, material['candidate_bytes'])
+        material['policy_token_edits'] = ()
+        self.assertEqual(result.private_material()['policy_token_edits'], edits)
+        self.assertNotIn('policy_token_edits', result.preview())
+
+    def test_invalid_selected_domain_labels_are_rejected(self):
+        for domain in ('example..test', 'example.-test', 'example.test-', 'example-.test',
+                       'a' * 64 + '.test', 'a.' * 126 + 'aa'):
+            raw = RAW.replace(b'example.test', domain.encode())
+            request, binding = inputs(raw)
+            binding['rules']['rule-a']['expected'] = 'DOMAIN,' + domain + ',Old'
+            with self.subTest(domain=domain), self.assertRaisesRegex(
+                    c.EditPlanError, '^AMBIGUOUS_OR_UNSUPPORTED_RULE$'):
+                c.compile_edit_plan(raw, request, binding)
+
+    def test_earlier_covering_rules_conflict_with_selected_rule(self):
+        for earlier in ('MATCH,DIRECT', 'DOMAIN-SUFFIX,test,Other',
+                        'DOMAIN-SUFFIX,EXAMPLE.TEST.,Other',
+                        ' DOMAIN-SUFFIX , test. , Other '):
+            raw = RAW.replace(b'rules:\n', b'rules:\n  - "' + earlier.encode() + b'"\n')
+            request, binding = inputs(raw)
+            binding['rules']['rule-a']['index'] = 1
+            with self.subTest(earlier=earlier), self.assertRaisesRegex(
+                    c.EditPlanError, '^SELECTED_RULE_SHADOWED$'):
+                c.compile_edit_plan(raw, request, binding)
+
+    def test_suffix_shadowing_checks_label_boundaries_and_order(self):
+        for earlier in ('DOMAIN-SUFFIX,ample.test,Other',
+                        'DOMAIN,other.test,Other', 'DOMAIN,child.example.test,Other'):
+            raw = RAW.replace(b'rules:\n', b'rules:\n  - ' + earlier.encode() + b'\n')
+            request, binding = inputs(raw)
+            binding['rules']['rule-a']['index'] = 1
+            result = c.compile_edit_plan(raw, request, binding)
+            self.assertFalse(result.preview()['apply_supported'])
+        # A later covering rule does not shadow the selected earlier rule.
+        self.compile(RAW.replace(b'MATCH,DIRECT', b'DOMAIN-SUFFIX,test,Other'))
+
+    def test_unresolved_earlier_rules_do_not_certify_first_match(self):
+        for earlier in ('RULE-SET,external-rules,Other',
+                        'DOMAIN-KEYWORD,example,Other',
+                        'DOMAIN-SUFFIX,test,Other,unsupported-modifier'):
+            raw = RAW.replace(b'rules:\n', b'rules:\n  - ' + earlier.encode() + b'\n')
+            request, binding = inputs(raw)
+            binding['rules']['rule-a']['index'] = 1
+            preview = c.compile_edit_plan(raw, request, binding).preview()
+            self.assertEqual(preview['native_compatibility'], 'unknown')
+            self.assertEqual(preview['native_acceptance'], 'not_run')
+            self.assertFalse(preview['apply_supported'])
+            self.assertIn('NATIVE_ACCEPTANCE_NOT_RUN', preview['blockers'])
+
+    def test_later_edit_rejection_leaves_all_inputs_unchanged(self):
+        raw = RAW.replace(b'  - DOMAIN-SUFFIX,example.org,Old',
+                          b'  - DOMAIN-SUFFIX,org,Other\n  - DOMAIN-SUFFIX,example.org,Old')
+        request, binding = inputs(raw)
+        request['intent']['rule_refs'].append('rule-b')
+        binding['rules']['rule-b'] = {'index': 2, 'expected': 'DOMAIN-SUFFIX,example.org,Old'}
+        original = deepcopy((raw, request, binding))
+        with self.assertRaisesRegex(c.EditPlanError, '^SELECTED_RULE_SHADOWED$'):
+            c.compile_edit_plan(raw, request, binding)
+        self.assertEqual((raw, request, binding), original)
+
+    def test_valid_domain_label_and_name_limits(self):
+        for domain in ('a' * 63 + '.test', '.'.join(['a' * 63] * 3 + ['b' * 61]),
+                       'example-test.test', 'localhost'):
+            raw = RAW.replace(b'example.test', domain.encode())
+            request, binding = inputs(raw)
+            binding['rules']['rule-a']['expected'] = 'DOMAIN,' + domain + ',Old'
+            result = c.compile_edit_plan(raw, request, binding)
+            self.assertEqual(result.preview()['changed_rules'], 1)
+
+    def test_suffix_selection_is_shadowed_by_parent_suffix(self):
+        raw = RAW.replace(b'rules:\n', b'rules:\n  - DOMAIN-SUFFIX,org,Other\n')
+        request, binding = inputs(raw)
+        binding['rules']['rule-a'] = {'index': 2, 'expected': 'DOMAIN-SUFFIX,example.org,Old'}
+        with self.assertRaisesRegex(c.EditPlanError, '^SELECTED_RULE_SHADOWED$'):
+            c.compile_edit_plan(raw, request, binding)
+
     def test_binding_guards(self):
         for field, value in [('target_ref', 'other'), ('scope_refs', ['other']),
                              ('layer_ref', 'unknown'), ('layer_kind', 'generated_config'),

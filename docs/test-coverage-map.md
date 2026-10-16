@@ -212,3 +212,9 @@ T81：`test_multi_fact_turn_is_absorbed_before_scheduling_with_roles_and_provena
 UI-I06（不新增原验收ID）：`af3be41ba287c3b9c2f44775c25d97bb04b8c1be`，[CI38778430369](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38778430369)、artifact11994278104已取回核验。实际Chrome在1440×1000/390×1100下用Input键盘事件核对12个summary焦点及轮廓、Enter/Space原生open状态、全展开无横向溢出；没有页面脚本求值、DOM强制修改或CSP绕过。页面请求只有本地Document，network_isolation_verified=false。不证明用户浏览器、真实诊断、全网络隔离或全部UI流程；218项完整案例仍保留原边界。
 
 首次43d63f6失败、29ab8bd定位Enter事件不完整，af3be41修正协议事件字段后通过；模拟协议测试用于检查驱动器，不替代此实际执行。相同代码三平台CI38778429996成功，892项Linux884/8、Mac883/9、Windows771/121通过/跳过；原生Mac/Windows继续明确阻塞skip，不升级成通过。
+
+## 配置候选与诊断边界增量（2026-10-16）
+
+- ENV-02/06、D-ENV §5.3—5.6 / §20.9：`tests/test_config_edit_plan.py::ConfigEditTests.test_private_diff_reconstructs_candidate_using_original_byte_offsets` 核对BOM/Unicode/CRLF下原始偏移差异重建；`test_invalid_selected_domain_labels_are_rejected`、`test_earlier_covering_rules_conflict_with_selected_rule`、`test_suffix_selection_is_shadowed_by_parent_suffix` 验证有限域名标签和已知覆盖拒绝。后置/不相关规则不误拒绝；不证明所有规则类型或GUI最终配置首次命中，也不提供apply许可。
+- ENV-T73/123、UI-I06：`tests/test_diagnostic_session_boundaries.py::AdapterBoundaryTests.test_capture_uses_original_deadline_not_new_handle_lifetime`、`test_recheck_crossing_deadline_discards_context`、`test_delayed_dns_consent_expires_even_if_context_adapter_accepts` 核对最初会话预算；`test_unexpected_recheck_failure_inside_probe_cannot_recover`、`test_unexpected_cancellation_adapter_failure_inside_probe_is_latched`、`test_later_adapter_failure_invalidates_earlier_evidence` 核对异常锁定与历史证据失效；`test_cli_cancel_does_not_create_requested_dashboard` 核对取消无新文件，明确请求的阻塞报告保存仍保留。
+- 所有新证据均为合成配置或注入上下文/解析器，禁止真实socket解析和进程启动；没有用户设备、真实DNS或完整交互验收。原218项案例整体状态不变。

@@ -74,3 +74,9 @@ python skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --a
 输出下一题和阶段评估，不默认保存。用户明确要求保存时提供 `--output`，后续通过 `--input` 续接。问题回答使用本地JSON文件（question_id、value、state、source），不要通过命令行传入凭据。
 
 源码里的可调用底层API不代表Agent可以绕过授权。尚未开放的完整Clash配置、浏览器策略、系统设置、深度清理、真实路径与故障注入能力继续在验收台账保留，不声称完成。
+
+## 配置候选与诊断会话的当前边界
+
+- `config_edit_plan.py` 只在内存中生成已有规则的私有字节差异，拒绝无效域名标签及可证明的前置规则覆盖；没有配置写入入口，也不证明完整分流或GUI合并结果
+- `diagnostic_session.py` 提供明确授权后的有限元数据流程，保持原60秒上下文期限与失败锁定；取消不保存面板。CLI没有DNS开关，真实查询仍缺独立可信宿主接入与逐次授权
+- 这些是ENV-02/06与ENV-01/04的部分实现；合成回归、CI和用户设备验收分别记录，详见[配置候选](docs/config-edit-plan.md)、[诊断会话](docs/diagnostic-session.md)与[验证记录](docs/validation.md)

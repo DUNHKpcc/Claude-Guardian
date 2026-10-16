@@ -17,7 +17,8 @@ acceptance criteria.
   blockers except the three mandatory adapter/version/native-acceptance blockers
 - Existing, unique, plain single-line `DOMAIN` or `DOMAIN-SUFFIX` rules with exactly
   three comma-separated fields; only the last policy token can change
-- ASCII domain tokens and ASCII policy names matching the implementation's bounded
+- ASCII domain tokens with nonempty labels of at most 63 characters and no
+  leading/trailing label hyphens, and ASCII policy names matching the implementation's bounded
   patterns; no rule creation, removal, reordering, modifiers, arbitrary keys, DNS,
   mode, TUN, subscription source or generated runtime configuration edits
 - The selected group must appear uniquely in the same snapshot's `proxy-groups`;
@@ -29,6 +30,9 @@ multiple documents, anchors/aliases, explicit tags, merge keys, duplicate keys a
 any nesting depth, ambiguous selected rules and duplicate group names are refused. Duplicate-selector
 checks conservatively fold case, strip comma-field whitespace and ignore trailing
 DNS root dots across all scalar rules, without broadening the editable grammar.
+An earlier MATCH or covering DOMAIN-SUFFIX rule is rejected as a provable
+first-match conflict. This conservative local check is not a full rule graph,
+RULE-SET/IP/logical-rule analysis or verification of the final merged ordering.
 Unknown unrelated fields are preserved. Input is bounded at 4 MiB, 20,000 parser
 events and 48 container levels. PyYAML is optional, already pinned in the existing
 development dependencies; missing parser returns a fixed error and never installs
@@ -60,7 +64,10 @@ alongside pending action authorization; `apply_supported` is always false.
 
 `private_material()` deliberately exposes the original and candidate bytes, their
 SHA-256 hashes, and immutable declared target/scope/layer/revision/version bindings
-for an explicitly private local review. Never log or serialize this material into
+for an explicitly private local review. It also exposes immutable
+`policy_token_edits` tuples, each containing an original-byte start/end offset
+and the before/after bytes, in ascending offset order. Apply these spans in
+reverse order to reconstruct the candidate; they are not executable write plans. Never log or serialize this material into
 public reports. Serialization guards prevent accidental default export, not access
 by a caller already holding the configuration. This module is not an isolation or
 authentication boundary against such a caller.
@@ -100,3 +107,9 @@ injection, stale bindings, cancellation, versions, missing parser, bounds and no
 No real configuration, account, network, controller or native device was accessed.
 This library-only increment can be rolled back by removing the module, its tests
 and this document; it creates no user configuration changes to undo.
+
+2026-10-16 increment: 23 focused synthetic tests pass, including private span
+reconstruction, domain-label bounds, known earlier coverage, later/noncovering
+rules, unknown rule types remaining unverified, and rejection after an earlier
+in-memory edit without modifying any input. The full batch evidence and remaining
+native/CI limits are recorded in `validation.md`.
