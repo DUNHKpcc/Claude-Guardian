@@ -4,9 +4,10 @@ import argparse
 from datetime import datetime, timezone
 from html import escape
 import json
+import re
 import sys
 
-from guardian import GuardianError, load_json, save_new
+from guardian import GuardianError, PROXY_SUMMARY, load_json, save_new
 from probe_evidence import project_samples, sample_text, STATUS_LABELS
 
 STATES = {
@@ -86,9 +87,19 @@ def safe_facts(facts):
         if field == "S01" and isinstance(value, str) and value in {"macos", "windows"}:
             details.append("系统：" + {"macos": "macOS", "windows": "Windows"}[value])
         elif field == "S04" and isinstance(value, str) and value in {"arm64", "aarch64", "x86_64", "amd64", "x64", "x86"}:
-            details.append("架构：" + value)
+            label = "采集进程架构：" if fact.get('coverage') == 'current_process_os' else "架构声明："
+            details.append(label + value)
         elif field == "P06" and isinstance(value, dict) and type(value.get("enabled")) is bool:
             details.append("系统代理声明：" + ("开启" if value["enabled"] else "关闭") + "（不代表实际路径）")
+        elif (field == 'P06' and type(value) is str and value.startswith('http=')
+              and re.fullmatch(PROXY_SUMMARY, value)):
+            flags = dict(item.split('=') for item in value.split(';'))
+            labels = {'enabled': '开启', 'disabled': '关闭', 'unknown': '未知'}
+            details.append('系统代理默认开关：' + ' / '.join(
+                name + ' ' + labels[flags[key]] for key, name in
+                (('http', 'HTTP'), ('https', 'HTTPS'), ('socks', 'SOCKS'), ('pac', 'PAC'), ('wpad', 'WPAD')))
+                + '（不代表实际路径）')
+            details.append('作用域代理：' + ('存在，详情未采集' if flags['scoped'] == 'present' else '未报告，详情未采集'))
         elif field == "P12" and type(value) is bool:
             details.append("TUN 声明：" + ("开启" if value else "关闭") + "（不代表接管已验证）")
         elif field == "P11" and isinstance(value, str) and value in {"rule", "global", "direct"}:

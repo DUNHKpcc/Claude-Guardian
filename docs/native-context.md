@@ -96,6 +96,23 @@ symlink is one possible rejected condition, not an established cause. That run's
 blocked smoke remains blocked; synthetic partial-metadata tests do not replace
 native validation of this new API.
 
+Strict path errors now retain `RUNTIME_PATH_INVALID` as their sole exception
+argument and add only allowlisted `path_field` / `path_reason` attributes.
+`path_diagnostic(error)` revalidates these enums before export. Fields identify
+executable/cwd/prefix/base_prefix; reasons distinguish invalid syntax, excessive
+depth, symlink, non-directory and non-regular executable nodes. Unknown values
+become `unknown`, never exception text, path components, targets or file IDs.
+The partial metadata API exports this under `runtime_path_diagnostic`; CI smoke
+can report the same fixed enums while retaining its blocked result. No symlink
+resolution or additional filesystem enumeration was introduced.
+
+The 2026-10-16 scoped user-Mac execution observed partial metadata with active
+same-user console identity and strict `RUNTIME_PATH_INVALID`; the first path
+failure was executable/symlink. This is evidence for that local observation,
+not the earlier hosted CI's cause or full native acceptance. The command sandbox
+returned `CONTEXT_INACTIVE` instead; neither result substitutes for the other.
+Runtime integrity, namespaces and all operation approvals remain unverified.
+
 ## Runtime path screening is deliberately incomplete
 
 Symlinks, non-normalized paths, non-regular executable nodes, non-directory
@@ -130,8 +147,11 @@ background watcher.
 synthetic native function fixtures and synthetic file metadata only. Tests cover
 ABI setup, resource release, typed CF values, unsupported platforms, inactive/
 foreign/changed sessions, stale handles, cancellation, privacy and path-screen
-limits. No real native desktop/session APIs or user-device reads were run.
-Native macOS compatibility remains `not_run`; the separate Windows observer also has synthetic-only evidence.
+limits. That synthetic test command does not establish user-device acceptance;
+the separately authorized narrow Mac observation is recorded above.
+Full native macOS acceptance remains incomplete; the narrow partial-metadata
+observation above is recorded separately. The separate Windows observer has no
+new user-device evidence in this increment.
 This increment does not close any full ENV or VAL acceptance scenario.
 
 Rollback: remove this standalone module, its test and this document; it has no

@@ -14,6 +14,23 @@ from dataclasses import dataclass, field
 
 class ContextError(Exception):
     """Only stable, non-sensitive error codes cross this boundary."""
+    def __init__(self, code, *, path_field='unknown', path_reason='unknown'):
+        super().__init__(code)
+        self.path_field = path_field if type(path_field) is str and path_field in PATH_FIELDS else 'unknown'
+        self.path_reason = path_reason if type(path_reason) is str and path_reason in PATH_REASONS else 'unknown'
+
+
+PATH_FIELDS = frozenset({'unknown', 'executable', 'cwd', 'prefix', 'base_prefix'})
+PATH_REASONS = frozenset({'unknown', 'invalid_syntax', 'too_deep', 'symlink',
+                          'not_directory', 'not_regular_file'})
+
+
+def path_diagnostic(error):
+    """Fixed enums only, including when called with a foreign exception object."""
+    field = getattr(error, 'path_field', 'unknown')
+    reason = getattr(error, 'path_reason', 'unknown')
+    return {'path_field': field if type(field) is str and field in PATH_FIELDS else 'unknown',
+            'path_reason': reason if type(reason) is str and reason in PATH_REASONS else 'unknown'}
 
 
 @dataclass(frozen=True, repr=False)
@@ -180,10 +197,10 @@ def _path_identity(path, directory):
     """Conservative lstat screening, never an ACL/signature/integrity verdict."""
     if (type(path) is not str or not path.startswith('/') or len(path) > 4096
             or path.startswith('//') or '\0' in path or os.path.normpath(path) != path):
-        raise ContextError('RUNTIME_PATH_INVALID')
+        raise ContextError('RUNTIME_PATH_INVALID', path_reason='invalid_syntax')
     parts = path.split('/')[1:]
     if len(parts) > 64:
-        raise ContextError('RUNTIME_PATH_INVALID')
+        raise ContextError('RUNTIME_PATH_INVALID', path_reason='too_deep')
     paths = ['/'] + ['/' + '/'.join(parts[:i]) for i in range(1, len(parts) + 1)]
     if path == '/':
         paths = ['/']
@@ -193,7 +210,9 @@ def _path_identity(path, directory):
         final = index == len(paths) - 1
         required = stat.S_ISDIR if not final or directory else stat.S_ISREG
         if not required(item.st_mode):
-            raise ContextError('RUNTIME_PATH_INVALID')
+            reason = ('symlink' if stat.S_ISLNK(item.st_mode) else
+                      'not_directory' if not final or directory else 'not_regular_file')
+            raise ContextError('RUNTIME_PATH_INVALID', path_reason=reason)
         screened &= item.st_uid == 0 and not item.st_mode & 0o022
         result.append((selected, item.st_dev, item.st_ino, item.st_mode,
                        item.st_uid, item.st_gid, item.st_size,
@@ -204,8 +223,15 @@ def _path_identity(path, directory):
 def _runtime():
     paths = (sys.executable, os.getcwd(), sys.prefix, sys.base_prefix)
     identities, screened = [], True
-    for path, directory in zip(paths, (False, True, True, True)):
-        rows, acceptable = _path_identity(path, directory)
+    for field, path, directory in zip(('executable', 'cwd', 'prefix', 'base_prefix'),
+                                       paths, (False, True, True, True)):
+        try:
+            rows, acceptable = _path_identity(path, directory)
+        except ContextError as error:
+            if str(error) != 'RUNTIME_PATH_INVALID':
+                raise
+            raise ContextError('RUNTIME_PATH_INVALID', path_field=field,
+                               path_reason=path_diagnostic(error)['path_reason']) from None
         identities.append(rows)
         screened &= acceptable
     return _Runtime(*paths, tuple(identities),
@@ -321,6 +347,7 @@ def observe_context_metadata(*, max_seconds=5.0, cancelled=lambda: False):
         _validate_identity(first)
         _guard(cancelled, deadline)
         runtime_error = None
+        diagnostic = None
         try:
             screen = _runtime().screen
         except ContextError as error:
@@ -330,6 +357,7 @@ def observe_context_metadata(*, max_seconds=5.0, cancelled=lambda: False):
                 raise
             screen = 'blocked_path_invalid'
             runtime_error = 'RUNTIME_PATH_INVALID'
+            diagnostic = path_diagnostic(error)
         _guard(cancelled, deadline)
         second = api.read()
         _validate_identity(second)
@@ -343,6 +371,8 @@ def observe_context_metadata(*, max_seconds=5.0, cancelled=lambda: False):
                       runtime_path_error=runtime_error,
                       runtime_path_continuity='not_established',
                       observation_kind='metadata_only_no_handle')
+        if diagnostic is not None:
+            result['runtime_path_diagnostic'] = diagnostic
         return result
     except ContextError:
         raise

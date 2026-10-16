@@ -153,6 +153,38 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('关闭', view['cards'][1]['details'][0])
         self.assertEqual(view['cards'][1]['state'], 'unknown')
 
+    def test_native_mac_flag_summary_is_visible_without_becoming_verified(self):
+        from guardian import proxy_summary
+        obj = report()
+        obj['facts'][1]['value'] = proxy_summary('''<dictionary> {
+  HTTPEnable : 1
+  HTTPSEnable : 0
+  HTTPProxy : PRIVATE-ENDPOINT
+  ProxyAutoConfigURLString : https://PRIVATE-TOKEN.invalid/
+  __SCOPED__ : <dictionary> {
+    PRIVATE-INTERFACE : <dictionary> {
+      SOCKSEnable : 1
+    }
+  }
+}''')
+        view = dashboard.project(obj, NOW)
+        text = ' '.join(view['cards'][1]['details'])
+        for expected in ('HTTP 开启', 'HTTPS 关闭', 'SOCKS 未知', 'PAC 未知', 'WPAD 未知', '存在，详情未采集', '不代表实际路径'):
+            self.assertIn(expected, text)
+        self.assertNotIn('PRIVATE', dashboard.render(obj, NOW))
+        self.assertEqual(view['cards'][1]['state'], 'unknown')
+        obj['snapshot']['observed_at'] = (NOW-timedelta(days=2)).isoformat()
+        self.assertEqual(dashboard.project(obj, NOW)['cards'][1]['details'], [])
+
+    def test_mac_proxy_projection_rejects_arbitrary_summary_values(self):
+        for value in ('http=PRIVATE', 'http=enabled;PRIVATE',
+                      'http=enabled;https=disabled;socks=disabled;pac=disabled;wpad=unknown;scoped=not_reported;PRIVATE'):
+            self.assertEqual(dashboard.safe_facts([{'id': 'P06', 'value': value}]), [])
+
+    def test_native_process_architecture_is_labeled_as_process_only(self):
+        text = dashboard.safe_facts([{'id': 'S04', 'value': 'x86_64', 'coverage': 'current_process_os'}])
+        self.assertEqual(text, ['采集进程架构：x86_64'])
+
     def test_conflict_and_authorization_are_distinct(self):
         obj = report(); obj['findings'] = [
             {'module_id': 'ENV-02', 'code': 'PROXY_PORT_ASSOCIATION_CONFLICT'},

@@ -23,6 +23,20 @@ description: 为 Claude 订阅准备、账号与客户端异常、代理和运�
 
 新增探测与事务模块为开发基础接口，尚未接入自动配置工作流；不能自行提供一个返回 True 的授权回调代替用户确认。
 
+## Agent内部修复入口（原生执行仍阻塞）
+
+`scripts/repair_cli.py`提供精确文件的`preflight / plan / diff / execute`接口。`plan`显式指定`--plan-file`和`--backup-directory`才写入新的私有计划文件，不修改目标；`--private-review`可在获准的私有Agent会话中非交互展示选定规则及policy前后差异，不输出无关配置。私有差异不得混入公开报告。
+
+已确认交互是Agent展示具体改动、目标、影响、备份及恢复路径，用户在对话确认后，由可信宿主核对该次授权并调用固定内部脚本；不要求第二次终端确认码。宿主将确切`retained_plan_digest`、目标与备份范围绑定到本次操作；摘要只是完整性检查，不是授权。不能用JSON布尔值、任意回调、临时shell改写或终端模拟绕过权限。
+
+`scripts/repair_execution.py`保留计划有效期、请求摘要、原文件身份和内容、候选一致性复核、事务备份及读回链路；生产原生适配门禁目前始终返回`NATIVE_REPAIR_ADAPTER_UNAVAILABLE`，不得宣称实际修复完成。必须先完成实际产品/版本、活动配置/自有扩展归属、合并语义及写入者排除适配与验证。Linux临时夹具中替换适配器的测试不开放用户Mac/Windows能力。恢复仍遵循独立`recovery_cli.py`契约，不自动覆盖后续改动。
+
+`scripts/clash_verge_258.py`只校验调用方提供的2.5.8应用plist、配置索引和扩展字节之间的声明一致性：current→活动profile→显式option.merge或option.rules→唯一同类型扩展及basename。拒绝跨profile共享扩展、全局默认UID及路径/文件别名歧义。该库不读取真实文件，不证明实际安装/运行归属；输出始终为supplied_metadata_only。merge的rules数组替换基础数组，不能将rules扩展的prepend/append/delete混当此格式；脚本/后续链、内核版本、真实写入者排除和验收仍阻塞，不能以该结果开启execute。
+
+`--candidate-kind rules-prepend`提供独立的rules扩展候选：必须显式给出`--base-path`、`--app-info`、`--profile-index`及`--extension-uid`，经安全读取核对所提供的2.5.8声明链和当前基础profile路径。只向现有空`prepend: []`插入用户明确排序的DOMAIN/DOMAIN-SUFFIX规则；`delete`必须为空，`append`与其他字节保持不变。拒绝已知受保护规则冲突，不把调用方声明的控制路径或优先级当作验证。私有差异包含已知优先级影响；未知链和原生执行继续阻塞。
+
+保留计划格式为`guardian-retained-repair/0.2`，绑定候选类型、UID和基础配置/plist/索引的精确路径、父目录及文件快照。执行参数必须一致，提交前与读回后复核；旧0.1计划必须重建并重新展示确认。完整输入格式及命令见仓库`docs/rules-extension-plan.md`。不得用此入口初始化空merge、替换完整rules数组或绕过xattr限制。
+
 ## 限定静态盘点入口
 
 `scripts/inventory_cli.py capabilities` 查看实际开放范围；`workflow-status` 仅显示新建且关闭的门禁。`static-audit` 只读取用户明确列出的本地配置，要求新的精确范围终端确认，拒绝保存的授权字段；目标身份/本地文件性质仍需可信宿主核实，终端输入不能代替宿主或操作系统权限。缺少可选PyYAML时停止，不自动安装。静态声明不代表运行时路由。Windows安全静态读取、控制器原生绑定、系统改写与自动恢复未开放。
@@ -95,7 +109,9 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 
 在已独立确认可信的目标 Mac 或 Windows 主机，`scripts/diagnostic_session.py --target-ref <目标别名>` 提供终端元数据流程：显示精确范围，30秒内输入新随机 nonce 确认；无 `--yes`、导入授权、DNS选项、自动浏览器或默认保存。可选 `--dashboard-output <明确批准的新本地文件>` 仅保存新文件，须先核实目录本地/已水合；不覆盖旧文件；取消或拒绝会话不创建报告文件。
 
-Mac严格上下文仅因 `RUNTIME_PATH_INVALID` 阻塞时，会话可在原剩余期限内返回无句柄的部分元数据；路径错误保持可见，不继续DNS、宿主核验或查询授权。独立元数据API不产生可恢复权限，原生新路径尚待实测。
+Mac严格上下文仅因 `RUNTIME_PATH_INVALID` 阻塞时，会话可在原剩余期限内返回无句柄的部分元数据；路径错误保持可见，不继续DNS、宿主核验或查询授权。独立元数据API不产生可恢复权限；完整严格上下文与可信宿主集成仍未验收。
+
+路径失败的 `runtime_path_diagnostic` 只含固定 `path_field/path_reason` 枚举，可区分executable/cwd/prefix/base_prefix与symlink/类型/语法等原因；不含路径、不跟随链接，严格capture仍阻塞。`check` 的Mac S04仅表示采集进程视图，不确认硬件或Rosetta。面板可展示已有Mac默认代理开关摘要，scoped详情与真实路径仍未知。这些观察不能代替可信宿主或操作授权；测试与原生证据须分开看。
 
 可调用 DNS 会话必须额外提供真正的宿主绑定、运行时与中性端点核验实现，并为每个 A/AAAA 查询重新取得具体授权；独立CLI尚未实现这些前提，因此保持元数据范围。核验异常或否定、上下文复核和取消回调异常在会话内不可由后来成功重查解除；严格复核前后检查原60秒会话期限，不因延迟重新计时。后端按实际平台选择；Windows元数据仍保留控制台账户关系未知/绑定阻塞，Windows DNS会话未接入。Windows输出拒绝ADS/设备名等危险语法，但权限继承父目录ACL，0600不证明Windows隐私。所有结果保持PC0关闭；未经真实设备验收，不把测试成功等同于可安全执行探测。
 

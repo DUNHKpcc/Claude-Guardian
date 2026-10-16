@@ -4,6 +4,7 @@ import importlib.util
 import json
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch, Mock
 
@@ -38,14 +39,44 @@ class InventoryTests(unittest.TestCase):
 
     def test_mac_all_synthetic_fields(self):
         values = {'mac-version': '15.2.1', 'mac-build': '24C101', 'mac-locale': 'zh_CN', 'mac-languages': '(\n "zh-Hans-CN",\n en-US\n)', 'mac-proxy': MAC_PROXY}
-        with patch.object(g.os, 'readlink', return_value='/var/db/timezone/zoneinfo/Asia/Shanghai'):
+        with patch.object(g.os, 'readlink', return_value='/var/db/timezone/zoneinfo/Asia/Shanghai'), \
+                patch.object(g.os, 'uname', return_value=SimpleNamespace(machine='arm64'), create=True):
             facts, errors = g.extended_inventory('macos', values.__getitem__)
         self.assertEqual(errors, [])
         data = {f: v for f, v, _ in facts}
         self.assertEqual(data['S02'], 'macOS-product-15.2.1;build-24C101')
         self.assertEqual(data['S08'], 'IANA:Asia:Shanghai')
         self.assertEqual(data['S06'], 'zh-Hans-CN,en-US')
-        self.assertEqual(len(data), 5)
+        self.assertEqual(data['S04'], 'arm64')
+        self.assertEqual(len(data), 6)
+
+    def test_process_architecture_is_not_hardware_or_rosetta_verdict(self):
+        args = argparse.Namespace(target_ref='device-1', confirm_target=True, authorize_audit=True,
+            target_os='macos', target_kind='local', namespace='desktop',
+            execution_location='native_local', user_context='same')
+        for machine in ('arm64', 'x86_64'):
+            with patch.object(g.sys, 'platform', 'darwin'), \
+                    patch.object(g.os, 'uname', return_value=SimpleNamespace(machine=machine, release='fixture'), create=True), \
+                    patch.object(g, 'run_fixed') as command:
+                extra, errors = g.extended_inventory('macos', lambda _: '')
+                fact = next(row for row in extra if row[0] == 'S04')
+                with patch.object(g, 'extended_inventory', return_value=([fact], [])):
+                    result = g.native_check(args)
+                command.assert_not_called()
+            observed = next(f for f in result['facts'] if f['id'] == 'S04')
+            self.assertEqual(observed['value'], machine)
+            self.assertEqual(observed['coverage'], 'current_process_os')
+            self.assertEqual(observed['reason_code'], 'PROCESS_VIEW_NOT_HARDWARE_ARCHITECTURE')
+            self.assertTrue(any('hardware architecture and translation not verified' in x for x in result['missing_fields']))
+            self.assertEqual(result['contact_control']['gate_state'], 'closed')
+
+    def test_unavailable_or_unexpected_architecture_stays_unknown(self):
+        for value in ('PRIVATE-path', '', 'arm64;hardware=trusted'):
+            with patch.object(g.os, 'uname', return_value=SimpleNamespace(machine=value), create=True):
+                facts, errors = g.extended_inventory('macos', lambda _: '')
+            self.assertFalse(any(f == 'S04' for f, _, _ in facts))
+            self.assertIn(('S04', 'PROCESS_ARCHITECTURE_UNAVAILABLE'), errors)
+            self.assertNotIn('PRIVATE', str((facts, errors)))
 
     def test_windows_all_synthetic_fields(self):
         values = {'windows-system': json.dumps({'version':'10.0.26100', 'build':'26100', 'sku':100, 'ui':'zh-CN', 'timezone':'China Standard Time'}), 'windows-proxy': json.dumps({'enabled': 1, 'pac': True, 'ignored_secret':'secret-marker'})}
@@ -77,9 +108,10 @@ class InventoryTests(unittest.TestCase):
             with self.assertRaises(g.GuardianError):
                 g.proxy_summary(raw)
         values = {'mac-version':'SECRET', 'mac-build':'SECRET', 'mac-locale':'secret@example.com', 'mac-languages':'(secret@example.com)', 'mac-proxy':MAC_PROXY}
-        with patch.object(g.os, 'readlink', return_value='/home/private/secret'):
+        with patch.object(g.os, 'readlink', return_value='/home/private/secret'), \
+                patch.object(g.os, 'uname', return_value=SimpleNamespace(machine='arm64'), create=True):
             facts, errors = g.extended_inventory('macos', values.__getitem__)
-        self.assertEqual([f for f,_,_ in facts], ['P06'])
+        self.assertEqual([f for f,_,_ in facts], ['S04', 'P06'])
         self.assertEqual(len(errors), 5)
         self.assertNotIn('secret@example.com', str(errors))
 

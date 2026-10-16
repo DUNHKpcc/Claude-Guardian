@@ -30,6 +30,8 @@ python3 skills/claude-guardian/scripts/guardian.py interview
 
 ## 开发与迭代
 
+新增内部修复入口 `repair_cli.py`：Agent可读取精确目标、展示限定规则差异，并按显式请求保留私有计划。已确认交互为“对话确认后，由Agent调用内部脚本”，不要求用户再到终端输入确认码。当前实际Clash版本/扩展归属适配尚未开放，`execute`仍明确阻塞；合成事务测试不代表已能修复用户设备。授权边界、命令和恢复限制见 [Agent修复流程](docs/agent-repair-flow.md)。 显式`rules-prepend`路线已接入同一CLI，可为2.5.8空rules扩展生成有界候选、核对所提供的归属链并保留全部输入快照；实际写入仍阻塞，详见 [规则扩展候选](docs/rules-extension-plan.md)。
+
 ```sh
 python3 -m unittest discover -s tests -v
 python3 tools/package_skill.py --output /tmp/claude-guardian-0.2.0.zip
@@ -55,7 +57,7 @@ python3 tools/package_skill.py --output /tmp/claude-guardian-0.2.0.zip
 
 ## 自动检查覆盖
 
-每个 push / PR 在 Linux、macOS、Windows CI 上运行单测、回归和确定性打包检查。Mac/Windows CI 另外运行只读 OS 元数据 smoke；该 smoke 不证明真实用户桌面、Clash、浏览器或故障恢复验收通过。原生采集扩展到产品/构建版本、语言偏好、时区和代理/PAC 启用状态，不读取代理凭据或订阅内容。
+每个 push / PR 在 Linux、macOS、Windows CI 上运行单测、回归和确定性打包检查。Mac/Windows CI 另外运行只读 OS 元数据 smoke；该 smoke 不证明真实用户桌面、Clash、浏览器或故障恢复验收通过。原生采集扩展到产品/构建版本、语言偏好、时区和代理/PAC 启用状态；Mac另记录采集进程架构，硬件与翻译状态仍未知。不读取代理凭据或订阅内容。Mac严格上下文路径失败可返回固定字段/原因枚举，不输出路径或放宽筛查；面板可显示白名单默认代理开关，不能据此推断实际路径。
 
 ## 新增工作流基础
 

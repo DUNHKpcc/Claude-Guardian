@@ -34,6 +34,9 @@ DIAGNOSTIC_STAGES = frozenset({'unknown', 'dll_initialization', 'thread_token',
 DIAGNOSTIC_REASONS = frozenset({'unknown', 'api_call_failed', 'return_size_mismatch',
     'sid_pointer_bounds', 'sid_header_invalid', 'sid_size_bounds', 'unexpected_exception'})
 MODULES = {'darwin': 'native_context', 'win32': 'windows_native_context'}
+PATH_FIELDS = frozenset({'unknown', 'executable', 'cwd', 'prefix', 'base_prefix'})
+PATH_REASONS = frozenset({'unknown', 'invalid_syntax', 'too_deep', 'symlink',
+                          'not_directory', 'not_regular_file'})
 
 
 def enabled():
@@ -69,7 +72,12 @@ def observe(module):
     except module.ContextError as error:
         code = str(error)
         if code in BLOCKED:
-            return {'state': 'blocked', 'code': code, 'phase': phase}
+            result = {'state': 'blocked', 'code': code, 'phase': phase}
+            if sys.platform == 'darwin' and code == 'RUNTIME_PATH_INVALID' and hasattr(error, 'path_field'):
+                for field, allowed in (('path_field', PATH_FIELDS), ('path_reason', PATH_REASONS)):
+                    value = getattr(error, field, 'unknown')
+                    result[field] = value if type(value) is str and value in allowed else 'unknown'
+            return result
         result = {'state': 'failed', 'code': code if code in NATIVE_FAILURES else 'NATIVE_ERROR', 'phase': phase}
         if sys.platform == 'win32':
             for field, allowed in (('stage', DIAGNOSTIC_STAGES), ('reason', DIAGNOSTIC_REASONS)):
@@ -177,11 +185,16 @@ def decode_result(returncode, output):
     except (ValueError, UnicodeError):
         raise AssertionError('Native smoke invalid envelope; exit=' + status) from None
     if (type(report) is not dict or set(report) not in (
-            {'state', 'code', 'phase'}, {'state', 'code', 'phase', 'stage', 'reason'})
+            {'state', 'code', 'phase'}, {'state', 'code', 'phase', 'stage', 'reason'},
+            {'state', 'code', 'phase', 'path_field', 'path_reason'})
             or any(type(value) is not str for value in report.values())
             or report['phase'] not in ('capture', 'recheck')):
         raise AssertionError('Native smoke invalid envelope; exit=' + status)
     diagnostic = ''
+    if 'path_field' in report:
+        if (report['state'] != 'blocked' or report['code'] != 'RUNTIME_PATH_INVALID'
+                or report['path_field'] not in PATH_FIELDS or report['path_reason'] not in PATH_REASONS):
+            raise AssertionError('Native smoke invalid envelope; exit=' + status)
     if 'stage' in report:
         if (report['state'] != 'failed' or report['code'] not in NATIVE_FAILURES | {'NATIVE_ERROR'}
                 or report['stage'] not in DIAGNOSTIC_STAGES
@@ -210,7 +223,10 @@ class NativeContextSmokeTests(unittest.TestCase):
             self.skipTest('native context CI smoke explicitly disabled')
         report = run_child()
         if report['state'] == 'blocked':
+            diagnostic = ('; path_field=' + report['path_field'] + '; path_reason=' + report['path_reason']
+                          if 'path_field' in report else '')
             self.skipTest('CI native context blocked during ' + report['phase'] + ': ' + report['code']
+                          + diagnostic
                           + '; remaining ABI paths unverified; no desktop acceptance')
         print('CI native context: continuity observed; gate closed; no desktop acceptance', flush=True)
 
@@ -270,6 +286,25 @@ class SmokeBoundaryTests(unittest.TestCase):
             result = observe(module)
             self.assertEqual(result['state'], 'failed')
             self.assertNotIn('PRIVATE', json.dumps(result))
+
+    def test_mac_path_diagnostic_is_allowlisted_and_stays_blocked(self):
+        with mock.patch.object(sys, 'platform', 'darwin'):
+            module = self.module()
+            for field, reason in (('executable', 'symlink'), ('cwd', 'not_directory'),
+                                  ('PRIVATE-PATH', 'PRIVATE-TOKEN'), ([], {})):
+                error = module.ContextError('RUNTIME_PATH_INVALID')
+                error.path_field, error.path_reason = field, reason
+                module.capture_current_context.side_effect = error
+                result = observe(module)
+                self.assertEqual(result['state'], 'blocked')
+                self.assertEqual(result['code'], 'RUNTIME_PATH_INVALID')
+                self.assertEqual(decode_result(0, json.dumps(result).encode()), result)
+                self.assertNotIn('PRIVATE', json.dumps(result))
+            result.update(path_field='executable', path_reason='symlink')
+            for altered in (dict(result, path_field='PRIVATE'), dict(result, path_reason='PRIVATE'),
+                            dict(result, code='CONTEXT_INACTIVE'), dict(result, state='observed')):
+                with self.assertRaises(AssertionError):
+                    decode_result(0, json.dumps(altered).encode())
 
     def test_envelope_rejects_leaks_and_invalid_states(self):
         for value in (b'PRIVATE', b'"PRIVATE"', b'{}', b'x' * (LIMIT + 1),

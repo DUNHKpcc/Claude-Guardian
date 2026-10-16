@@ -484,3 +484,18 @@ ENG-01 / VAL-08：新增独立Linux Python3.10 CI任务，先断言实际解释�
 ENV-02/06：私有候选增加可重建原始字节的policy token差异；检查域名标签并拒绝原快照中已能证明的前置MATCH/DOMAIN-SUFFIX覆盖。仍只处理已有keep-existing三字段规则，不解决所有RULE-SET/IP/逻辑规则、GUI合并、实际路由或四模板应用。原生适配/版本/所有权/动作授权阻塞保持，公开预览不泄露差异内容。
 
 ENV-01/04、UI-I06、ENV-T73/123：会话严格上下文复核前后检查最初60秒预算，DNS内部清洗异常后也保留上下文/取消回调失败，后续查询不得继续；取消/拒绝不创建面板输出。公开报告只保留固定错误和历史证据，不恢复权限。合成注入仅验证这些失败出口；可信宿主、真实DNS、Windows会话DNS及完整Codex UI仍未完成。本批完整检查和精确CI分别见validation，不由测试数量关闭原218项案例。
+
+## 24. Mac 只读检测与路径失败定位（2026-10-16）
+
+ENV-01/02、ENV-T111/114、UI-I06：Mac S04补采集进程视图，不确认硬件或Rosetta；面板接纳已有固定格式默认代理开关，保留scoped详情/实际路径未知。严格capture路径错误增加脱敏固定字段/原因，metadata和CI可保留同一阻塞，无链接跟随、信任提升或新增操作权限。
+
+本次授权用户Mac仅完成限定元数据采集与部分上下文观察；严格capture仍因executable/symlink阻塞，不能推定此前hosted CI根因。完整930项810通过/39失败/45错误/36跳过，失败测试集合与919项基线一致：缺可选解析器和自有临时文件自动xattr导致事务拒绝；没有删除属性、改断言或安装依赖。11项新增回归、Node合成、编译/可复现打包与证据边界见validation。真实配置修复、可信运行时/命名空间、GUI扩展/写入者、DNS/HTTPS/STUN/浏览器及恢复均未验收；原ENV/VAL完整场景保持开放。
+
+同日明确授权后的补证：受管Python3.12.14任务临时venv安装官方PyYAML6.0.3后，930项为865通过/20失败/36错误/9跳过，56项事务/恢复仍因xattr阻塞。限定当前profile关联读取确认需支持注释空merge及空prepend/append/delete rules模板；完整mapping假设不适用，不据此初始化或写入。临时fcopyfile实验在复位descriptor offset后保持可见xattr/数据/mode等相等；未复位的失败保留。不同来源provenance、显式ACL、GUI持久合并/安全暂停和真实配置恢复未验收，生产事务限制未放宽。授权与精确证据见validation后续节。
+
+
+## 25. Agent修复入口与空rules扩展候选（2026-10-16）
+
+ENV-02/06、ENG/VAL：统一内部CLI提供精确preflight/plan/private diff及受阻塞的execute。已确认对话确认后由可信宿主调用固定脚本的交互；摘要只绑定内容，不提供权限。默认merge-policy保留原已有规则改policy范围；显式rules-prepend支持现有空prepend的有界DOMAIN/DOMAIN-SUFFIX插入，要求显式基础配置、应用plist、索引与UID。声明链拒绝全局/共享扩展及别名，候选拒绝已知保护规则冲突并展示优先级影响。未知规则图、控制路径、实际版本/运行时与归属仍不能由JSON事实提升为已验证。
+
+保留计划0.2绑定全部源路径、父目录及快照，私有复核/提交前/读回后重查，旧计划重建并重新确认。固定生产原生适配门禁保持关闭；合成替换适配器仅测试事务接线。尚缺可信原生上下文、Mac xattr安全事务、GUI写入者排除、真实链/核心验证、应用重载与有效路由/恢复验收，不能关闭实际修复任务。命令、风险和回退范围见agent-repair-flow及rules-extension-plan；组合测试证据见validation。

@@ -495,6 +495,11 @@ def extended_inventory(actual, runner=run_fixed):
         except (ValueError, TypeError, KeyError, OSError):
             errors.append((field, 'INPUT_OR_RESPONSE_INVALID'))
     if actual == 'macos':
+        try:
+            machine = checked_text(os.uname().machine, r'arm64|x86_64')
+            results.append(('S04', machine, 'mac-process-architecture'))
+        except (GuardianError, OSError, AttributeError):
+            errors.append(('S04', 'PROCESS_ARCHITECTURE_UNAVAILABLE'))
         collect('S02', 'mac-version', lambda x: 'macOS-product-' + checked_text(x, r'\d{1,3}(?:\.\d{1,3}){1,2}'))
         collect('S02-build', 'mac-build', lambda x: checked_text(x, r'[0-9]{1,3}[A-Z][0-9]{1,6}[a-z]?'))
         collect('S07', 'mac-locale', lambda x: checked_text(x, r'[a-zA-Z]{2,8}(?:[_-][A-Za-z0-9]{2,16})*(?:@calendar=[a-z]+)?'))
@@ -571,10 +576,13 @@ def native_check(args):
     for field, value, source in extra:
         report["facts"] = [f for f in report["facts"] if f["id"] != field]
         report["facts"].append({"id": field, "value": value, "state": "observed", "source_refs": [source, "mac-build"] if field == "S02" and actual == "macos" and ";build-" in value else [source], "context_ref": args.target_ref, "observed_at": now(), "reason_code": ("PREFERRED_LANGUAGES_NOT_EFFECTIVE_UI" if actual == "macos" else "PROCESS_UI_CULTURE") if field == "S06" else "READ_ONLY_LIMITED_METADATA", "layer": "os_query", "coverage": "default_flags_only" if field == "P06" else "target_os_metadata"})
+        if source == 'mac-process-architecture':
+            report['facts'][-1].update(coverage='current_process_os',
+                                      reason_code='PROCESS_VIEW_NOT_HARDWARE_ARCHITECTURE')
     for field, error in errors:
         finding(report, error)
         report["missing_fields"].append(field + ": " + error)
-    report["missing_fields"] += ["S04: hardware versus process architecture", "S10: automatic time and timezone", "S13: approved installation inventory", "S14: related running processes", "P06: endpoints, bypass rules, scoped details and WinHTTP not collected", "P01-P24: other proxy and runtime inventory not implemented"]
+    report["missing_fields"] += ["S04: hardware architecture and translation not verified" if actual == 'macos' else "S04: hardware versus process architecture", "S10: automatic time and timezone", "S13: approved installation inventory", "S14: related running processes", "P06: endpoints, bypass rules, scoped details and WinHTTP not collected", "P01-P24: other proxy and runtime inventory not implemented"]
     if actual == "macos":
         report["missing_fields"].append("S03: not applicable on macOS")
     elif not any(f["id"] == "S03" for f in report["facts"]):

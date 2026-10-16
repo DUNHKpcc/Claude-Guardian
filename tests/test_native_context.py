@@ -143,6 +143,18 @@ class ContextTests(unittest.TestCase):
 
 class MetadataTests(unittest.TestCase):
     setUp = ContextTests.setUp
+    def test_path_failure_diagnostic_preserved_without_handle_or_path(self):
+        error = m.ContextError('RUNTIME_PATH_INVALID', path_field='executable', path_reason='symlink')
+        with patch.object(m, '_runtime', side_effect=error):
+            result = m.observe_context_metadata()
+            with self.assertRaisesRegex(m.ContextError, '^RUNTIME_PATH_INVALID$'):
+                m.capture_current_context()
+        self.assertEqual(result['runtime_path_diagnostic'],
+                         {'path_field': 'executable', 'path_reason': 'symlink'})
+        self.assertEqual(result['runtime_path_continuity'], 'not_established')
+        self.assertEqual(result['gate_state'], 'closed')
+        self.assertEqual(result['runtime_integrity'], 'not_verified')
+
     def test_invalid_runtime_retains_only_metadata(self):
         with patch.object(m, '_runtime', side_effect=m.ContextError('RUNTIME_PATH_INVALID')):
             report = m.observe_context_metadata()
@@ -253,6 +265,64 @@ class PathTests(unittest.TestCase):
         for path in ('relative', '/x/../python', '/x//python', '/x/./python', '//x/python', '/x\0python', True):
             with self.assertRaisesRegex(m.ContextError, 'RUNTIME_PATH_INVALID'):
                 m._path_identity(path, False)
+
+    def test_symlink_diagnosed_without_following_or_reading_target(self):
+        visited = []
+        def lookup(path):
+            visited.append(path)
+            row = self.fake_stat(path)
+            if path == '/trusted':
+                row.st_mode = stat.S_IFLNK | 0o777
+            return row
+        with patch.object(m.os, 'lstat', side_effect=lookup), \
+                patch.object(m.os, 'readlink', side_effect=AssertionError('must not follow')):
+            with self.assertRaises(m.ContextError) as caught:
+                m._path_identity('/trusted/PRIVATE-python', False)
+        self.assertEqual(visited, ['/', '/trusted'])
+        self.assertEqual(m.path_diagnostic(caught.exception), {'path_field': 'unknown', 'path_reason': 'symlink'})
+        self.assertEqual(str(caught.exception), 'RUNTIME_PATH_INVALID')
+        self.assertNotIn('PRIVATE', repr(caught.exception))
+
+    def test_runtime_failure_names_only_fixed_field(self):
+        for selected in ('executable', 'cwd', 'prefix', 'base_prefix'):
+            paths = dict(executable='/fixture/python', cwd='/fixture/cwd',
+                         prefix='/fixture/prefix', base_prefix='/fixture/base')
+            def lookup(path, directory):
+                if path == paths[selected]:
+                    raise m.ContextError('RUNTIME_PATH_INVALID', path_reason='symlink')
+                return (), True
+            with patch.object(m.sys, 'executable', paths['executable']), \
+                    patch.object(m.sys, 'prefix', paths['prefix']), \
+                    patch.object(m.sys, 'base_prefix', paths['base_prefix']), \
+                    patch.object(m.os, 'getcwd', return_value=paths['cwd']), \
+                    patch.object(m, '_path_identity', side_effect=lookup):
+                with self.assertRaises(m.ContextError) as caught:
+                    m._runtime()
+            self.assertEqual(m.path_diagnostic(caught.exception), {'path_field': selected, 'path_reason': 'symlink'})
+            self.assertEqual(caught.exception.args, ('RUNTIME_PATH_INVALID',))
+
+    def test_diagnostic_fields_never_echo_unknown_values(self):
+        for value in ('PRIVATE-path', [], {}, 501, None, True):
+            error = m.ContextError('RUNTIME_PATH_INVALID', path_field=value, path_reason=value)
+            self.assertEqual(m.path_diagnostic(error), {'path_field': 'unknown', 'path_reason': 'unknown'})
+            error.path_field = error.path_reason = value
+            self.assertEqual(m.path_diagnostic(error), {'path_field': 'unknown', 'path_reason': 'unknown'})
+
+    def test_path_failure_reasons_are_specific(self):
+        cases = [('/x/../python', False, None, 'invalid_syntax'),
+                 ('/' + '/'.join(['x'] * 65), True, None, 'too_deep'),
+                 ('/trusted/python', False, stat.S_IFDIR | 0o755, 'not_regular_file'),
+                 ('/trusted', True, stat.S_IFREG | 0o755, 'not_directory')]
+        for path, directory, mode, reason in cases:
+            def lookup(node):
+                row = self.fake_stat(node)
+                if node == path:
+                    row.st_mode = mode
+                return row
+            with patch.object(m.os, 'lstat', side_effect=lookup):
+                with self.assertRaises(m.ContextError) as caught:
+                    m._path_identity(path, directory)
+            self.assertEqual(m.path_diagnostic(caught.exception)['path_reason'], reason)
 
 
 class MacAPITests(unittest.TestCase):
