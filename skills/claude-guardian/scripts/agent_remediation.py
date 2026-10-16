@@ -247,7 +247,7 @@ def main(argv=None):
             if not args.input or not args.target_ref:
                 raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
             result = select(guardian.load_json(args.input), args.target_ref)
-        print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+        print(json.dumps(result, ensure_ascii=True, sort_keys=True))
         return 0
     except guardian.GuardianError as exc:
         print(json.dumps(dict(status='blocked', code=exc.code, changes=[], authority='none')))

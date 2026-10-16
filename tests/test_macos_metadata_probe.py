@@ -106,15 +106,14 @@ class MetadataProbeTests(unittest.TestCase):
     def test_reset_restore_reestablishes_every_supported_difference(self):
         api = Mock()
         api.attribute.return_value = b'donor'
-        with patch.object(m.os, 'pwrite', return_value=17) as write, \
-                patch.object(m.os, 'ftruncate') as truncate, \
-                patch.object(m.os, 'fchmod') as chmod, \
-                patch.object(m.os, 'fchown') as chown:
+        fake_os = Mock(spec=['pwrite', 'ftruncate', 'fchmod', 'fchown'])
+        fake_os.pwrite.return_value = 17
+        with patch.object(m, 'os', fake_os):
             self.assertTrue(m.reset_restore_fixture(api, 19, 21, b'donor'))
-        write.assert_called_once_with(19, b'different fixture', 0)
-        truncate.assert_called_once_with(19, 17)
-        chmod.assert_called_once_with(19, 0o600)
-        chown.assert_called_once_with(19, -1, 21)
+        fake_os.pwrite.assert_called_once_with(19, b'different fixture', 0)
+        fake_os.ftruncate.assert_called_once_with(19, 17)
+        fake_os.fchmod.assert_called_once_with(19, 0o600)
+        fake_os.fchown.assert_called_once_with(19, -1, 21)
         api.fixture_acl.assert_called_once_with(19, writable=True)
         self.assertEqual(api.set_attribute.call_args_list,
             [call(19, m.MARKER, b'different-marker'), call(19, m.PROVENANCE, b'donor')])
@@ -132,10 +131,15 @@ class MetadataProbeTests(unittest.TestCase):
             return value
         def copy(*args, reset_offsets):
             events.append('copy-reset' if reset_offsets else 'copy-negative')
+        fake_os = Mock(spec=['geteuid', 'getuid', 'getegid', 'getgroups',
+                             'open', 'close', 'fchown', 'O_RDWR', 'O_NOFOLLOW'])
+        fake_os.geteuid.return_value = fake_os.getuid.return_value = 1000
+        fake_os.getegid.return_value = 20
+        fake_os.getgroups.return_value = [20, 21]
+        fake_os.open.side_effect = [17, 18, 19]
+        fake_os.O_RDWR, fake_os.O_NOFOLLOW = 2, 0
         with patch.object(m.sys, 'platform', 'darwin'), \
-                patch.object(m.os, 'geteuid', return_value=1000), \
-                patch.object(m.os, 'getuid', return_value=1000), \
-                patch.object(m.os, 'fchown'), \
+                patch.object(m, 'os', fake_os), \
                 patch.object(m, 'DarwinMetadata'), \
                 patch.object(m, 'snapshot', side_effect=snapshot), \
                 patch.object(m, 'copy_fixture', side_effect=copy), \
@@ -144,6 +148,7 @@ class MetadataProbeTests(unittest.TestCase):
         self.assertEqual(events, ['snapshot-equal', 'snapshot-divergent',
             'copy-reset', 'snapshot-equal', 'copy-negative', 'snapshot-equal',
             'reseed', 'snapshot-divergent', 'copy-reset', 'snapshot-equal', 'snapshot-equal'])
+        self.assertEqual(fake_os.close.call_args_list, [call(17), call(18), call(19)])
         self.assertTrue(result['different_before_reset_restore']['acl'])
         self.assertEqual(result['different_provenance_restore'], 'not_run_no_runtime_sources')
 

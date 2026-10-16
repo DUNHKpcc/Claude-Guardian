@@ -514,3 +514,12 @@ ENV-02/06、ENG/VAL：统一内部CLI提供精确preflight/plan/private diff及�
 修复权限/PC0/上下文/快照/备份/写后失败先解决前提，不得借Agent分支绕过。merge-policy与rules-prepend使用独立完整模板；同步强制contact-and-safety说明，避免旧preview措辞强制中止合法Agent工作。16项新增回归；与Mac7文件合并共13文件。云端1033项（1025通过/8跳过），Node两组、编译、diff及可复现发行检查通过；发行包SHA-256为5857e5cf5e77072704f2d9ab77aff61bf120e7c86e015484612e1f00b8362127。
 
 修正版Mac任务回调报告14项定向测试通过、两次自有临时文件运行在正例前确立contents/mode/group/普通xattr/ACL差异，之后逐项相等且original_unchanged为真；provenance正例前差异仍为假。此为已读回调摘要，上传握手失败，云端尚未取得或核验该次原始/脱敏JSON证据文件；不得声称已下载核验，不以此关闭完整原生验收。先前完整Mac基线91个失败/错误保留，未有本组合完整Mac重测。无提交/推送/真实设置更改；用户批准本批后仍须核实远端基线及跟踪各平台CI。
+
+
+## 28. 已发布组合CI、Windows修正及原生证据补齐（2026-10-16）
+
+13文件组合已获用户明确批准，以普通非强制提交9caa42f7366f1d319265dc771449dcf7feeaa088直接交付main，父提交2921e4f；远端与本地冻结tree一致。准确push CI：Ubuntu1033项/8跳过通过、Mac1033项/9跳过通过、Python3.10 Linux1033项/8跳过通过，合成浏览器工作流通过；Windows1033项为869通过/1失败/3错误/160跳过。失败来自新选择器中文stdout的cp1252编码、测试读取UTF-8源码时使用默认编码、两项Mac合成测试mock宿主没有的POSIX函数。不是已有Mac元数据失败，也不能把总体CI说成通过。
+
+当前窄修正：选择器JSON作ASCII转义，测试源码显式UTF-8；Mac测试改模块局部OS替身而不增加跳过，保留所有语义断言并检查关闭descriptor。新增强制cp1252回归能在原9caa42f脚本复现失败，修正通过。云端1034项（1026通过/8跳过），Node、编译和复现打包通过；本次修正尚未提交/推送，需要单独批次授权及新WindowsCI。
+
+证据补齐：重传的修正版Mac仅证据ZIP SHA-256为6511463d741d4fdb5463917462b4080f1670cafa59e3cc5110a11a760e0f102d，已下载并核对manifest中的两份JSON大小/哈希。两次正例前contents/mode/group/xattrs/ACL差异为真，之后各项相等且original_unchanged为真；owner/provenance前差异为假。第27节回调-only限制已由本次文件核验取代，不代表重新执行实验、不同provenance恢复或完整应用验收。用户Mac原完整套件91失败/错误与hosted Mac干净CI结果分别保留。

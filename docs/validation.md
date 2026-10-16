@@ -368,3 +368,28 @@ Node合成交互协议、8项WebRTC生命周期、compileall和git diff --check�
 该次上传因握手失败，云端尚未收到/下载/校验修正版结果JSON或完整证据包；上述内容仅标记为任务回调报告。旧ZIP已校验不等于新结果已校验。先前Mac完整基线1003项为903通过/25失败/66错误/9跳过，原工具1015项为915通过/25失败/66错误/9跳过，91个失败/错误集合不变；本次没有组合1033项的完整Mac或Windows实测，不用Linux通过覆盖这些缺口。
 
 风险与回滚：本批改变Agent动作指引及只读选择器，新增开发实验；不改内置生产事务/准入、不执行真实网络或配置动作。撤回本批13文件对应差异即可回退代码，不需恢复用户系统设置。原Mac元数据/运行时/写入者/有效链及应用恢复缺口继续开放。此快照未提交/推送，远端push CI尚未运行；后续直接main交付须取得本批明确授权，核对远端基线，普通非强制提交并逐平台跟踪CI。
+
+
+## 9caa42f推送CI与Windows窄修正（2026-10-16）
+
+用户明确批准上述13文件后，以expected-SHA=2921e4f、非强制更新发布9caa42f7366f1d319265dc771449dcf7feeaa088；远端tree e5375a33d89f5f759274daa0e43b19a5bd3aab4d与冻结本地tree完全相同。本地仅同步index/ref，没有覆盖或删除工作文件。
+
+[单元工作流38894445411](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38894445411)已终止为failure：
+
+- Ubuntu：1033项，1025通过、8跳过；native context smoke22项/1跳过通过
+- macOS：1033项，1024通过、9跳过；native context smoke22项/1跳过通过
+- Python3.10 Linux：1033项，1025通过、8跳过；独立发行包运行时9项通过
+- Windows：1033项，869通过、1失败、3错误、160跳过。四个问题均定位到新批次：选择器JSON中文stdout的cp1252编码错误、测试源码默认编码读取错误、两项Mac合成测试mock不存在的geteuid/pwrite。后续always PowerShell诊断1项通过，不替代失败的主套件
+- [合成浏览器工作流38894445231](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38894445231)成功，包括Chrome截图、键盘/布局检查与合成产物上传；不代表用户真实浏览器环境验收
+
+窄修正仅将选择器JSON改为ASCII转义（json解析值保持不变）、测试源码显式UTF-8、两项probe测试使用模块局部OS替身，不改产品平台支持、不删除测试或新增Windows跳过。新强制PYTHONIOENCODING=cp1252/PYTHONUTF8=0的回归在原9caa42f脚本上重现UnicodeEncodeError/exit1，修正后通过；原有重置、复制顺序和结果断言保留，增加descriptor关闭检查。
+
+修正本地验证：17项选择器测试与14项probe测试通过；完整1034项，1026通过、8跳过，17.603秒；两组Node合成、compileall、diff检查通过。两份新包逐字节相同，SHA-256为`6c589234b1293fb3ab6263fb8b3700b760ce75a5751a7b9f9cb8c1aae307d3ab`。独立审查未发现阻断性问题。仅此本地验证不能称修正后的WindowsCI通过；该窄修正未提交/推送。
+
+### 修正版Mac证据文件补齐（无新增实验）
+
+上传重试后收到仅证据ZIP，SHA-256为`6511463d741d4fdb5463917462b4080f1670cafa59e3cc5110a11a760e0f102d`。已下载并校验manifest所列两份JSON的大小/哈希，取代上节的callback-only限制；不冒认重传过程执行了新的原生实验。
+
+两份结果均记录正例前contents/mode/group/xattrs/ACL差异为真，reset-offset恢复全部7维比较相等，original_unchanged为真；nonreset反例仅contents比较失败。owner/provenance正例前差异为假，provenance回读问题未消失，不证明不同值恢复。14项Mac定向测试通过来源仍为任务报告，JSON不是完整测试日志。用户Mac原91个失败/错误保留；本次hosted Mac1033通过不能替代用户设备重测。生产原生准入、运行时信任、写入者排除、不同owner/其他元数据与完整应用恢复仍未验收。
+
+本修正回滚仅撤回对应代码/测试/记录差异，不需恢复用户设置；没有新增真实设备操作或权限。

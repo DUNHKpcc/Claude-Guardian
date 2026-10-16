@@ -1,6 +1,7 @@
 """Offline selector regressions; no native capability or operation permission."""
 import ast
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -21,7 +22,7 @@ def report(*codes):
 
 class SelectionTests(unittest.TestCase):
     def test_implemented_guardian_findings_and_errors_are_mapped(self):
-        tree = ast.parse((SCRIPTS / 'guardian.py').read_text())
+        tree = ast.parse((SCRIPTS / 'guardian.py').read_text(encoding='utf-8'))
         codes = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
@@ -126,6 +127,15 @@ class SelectionTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 2)
             self.assertNotIn('SECRET', proc.stdout + proc.stderr)
             self.assertEqual(json.loads(proc.stdout)['code'], 'INPUT_OR_RESPONSE_INVALID')
+
+    def test_cli_non_ascii_catalog_under_legacy_stdout_encoding(self):
+        env = dict(os.environ, PYTHONIOENCODING='cp1252', PYTHONUTF8='0')
+        proc = subprocess.run([sys.executable, str(SCRIPTS / 'agent_remediation.py'), 'catalog'],
+                              capture_output=True, env=env)
+        self.assertEqual(proc.returncode, 0, proc.stderr.decode('ascii', errors='replace'))
+        result = json.loads(proc.stdout.decode('ascii'))
+        self.assertEqual(result['actions']['proxy-port']['summary'], ar.CATALOG['proxy-port']['summary'])
+        self.assertEqual(result['authority'], 'none')
 
     def test_cli_only_reads_local_input(self):
         with tempfile.TemporaryDirectory() as tmp:

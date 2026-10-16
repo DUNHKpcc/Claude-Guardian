@@ -47,7 +47,7 @@ documented current-user UUID ACL API; that failure is retained in the handoff.
 No production transaction, recovery reader or native-admission gate was changed.
 The earlier equal-value setter experiment cannot establish the missing case.
 
-## Cloud review correction (native evidence transfer pending)
+## Cloud review correction (corrected evidence transferred)
 
 Review of the exported result found that the negative copy had already restored
 mode/group/xattrs/ACL before the positive recovery. The corrected probe reseeds
@@ -151,14 +151,25 @@ No terminal confirmation code or serialized `native_pass` is introduced. The
 existing conversational review/host-approval design remains in force.
 
 
-## Corrected native callback (evidence file not transferred)
+## Corrected native evidence received and verified
 
-The Mac task callback reports 14 targeted tests passed and two corrected runs
-with immediate differences for contents, mode, group, ordinary xattrs and ACL,
-matching values after positive recovery, and an unchanged original. Provenance
-still lacked an immediate difference. The upload handshake failed: the cloud
-review has read the callback only and has not downloaded or independently
-verified the corrected result JSON. This does not close the remaining metadata,
-runtime, writer-exclusion or application recovery acceptance. The earlier 91
-full-suite Mac failures/errors remain recorded; no combined full Mac suite is
-claimed. See validation.md for the final cloud batch and evidence distinction.
+The earlier callback-only limitation is superseded by the evidence-only archive
+received after the upload retry. Archive SHA-256 is
+`6511463d741d4fdb5463917462b4080f1670cafa59e3cc5110a11a760e0f102d`.
+The cloud review verified its manifest sizes and hashes for both corrected JSON
+results. This was a transfer retry, not a new native experiment.
+
+Both results show immediate differences for contents, mode, group, ACL and
+xattrs before the reset-offset recovery, followed by equality for every compared
+dimension and `original_unchanged: true`. The nonreset counterexample still fails
+contents. The ordinary synthetic xattr/ACL experiment is limited to owned
+fixtures. Provenance and owner did not differ immediately before recovery;
+preserving their already equal values is not evidence of different-value
+restoration. The provenance assignment mismatch remains explicit.
+
+The task reported 14 targeted tests passed; these JSON files are metadata
+experiment evidence, not a full unit-test log. The earlier 91 full-suite Mac
+failures/errors on the user's machine remain recorded. Hosted Mac CI for
+9caa42f passed 1033 tests with 9 skips, which is a separate clean-runner result,
+not proof that those user-machine failures have disappeared. Runtime trust,
+writer exclusion and application recovery admission remain open.
