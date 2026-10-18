@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: twenty-fourth rebuild, 2026-10-18
+## Current checkpoint: twenty-fifth rebuild, 2026-10-18
 
-The current ledger records 26 freshly accepted original cases and 192 pending:
-T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 28 freshly accepted original cases and 190 pending:
+T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
@@ -141,3 +141,9 @@ The twenty-fourth fixes remediation-selector discovery of the separately selecte
 C5 host-bound implementation. Fixed metadata and installed links grant no action
 authority. Native discovery, ownership/inactivity adapters and permanent purge
 remain unsupported; the original acceptance count stays 26/218.
+
+The twenty-fifth revalidates VPS execution versus mobile billing separation and
+first-subscription Apple/Google checks under their original L+C clauses. Supplied
+host facts and deterministic replays do not establish payment eligibility or
+actual device/account state. Adjacent T36/T38 remain pending actual host-response
+evidence; their negative prerequisite facts are not erased into unknown.

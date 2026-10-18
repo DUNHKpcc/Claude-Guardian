@@ -1321,3 +1321,37 @@ succeeded across all four jobs: Python 3.10/Ubuntu each 1,752 passed/eight skipp
 macOS 1,748/12, and Windows 1,368/392, from 1,760 total tests per job.
 The unchanged prior package was reproduced. These results concern the preceding
 case batch; the C5 handoff change above has its separate publication and CI.
+
+## Twenty-fifth reconstruction: mobile billing versus execution route
+
+Original T49/T83 were independently reviewed under their complete L+C clauses.
+Six regression tests and complete four-path normalized-host replays retain the
+chosen execution route while
+checking Apple/Google device, store, intended account, target plan and actual App
+entry at the applicable stage. Historical billing questions appear only for an
+explicit relevant conflict. No web-card path is forced by selecting VPS.
+Supplied synthetic setup is not extracted from an arbitrary short utterance;
+proposed model dialogue exercises remain unrun. T36/T38 remain pending actual
+host-response evidence, and coverage G2 is not an account-eligibility evaluator.
+
+The first parent aggregate command used the workspace root and failed test
+discovery; no tests ran in that invocation. The corrected repository-root command
+ran 1,773 tests in 42.884 seconds: 1,765 passed and eight skipped. Independent
+verification ran the same inventory in 42.536 seconds with identical outcomes.
+Detached release tests passed 9/9, both Node suites and compilation passed,
+forced cp1252 passed all six new tests, and full UTF-8 replays match. Repeated
+packages remain byte-identical at
+3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a.
+Only T49/T83 are promoted: 28/218 accepted and 190 pending. Original conditions,
+layers and scheduling are unchanged; runtime and installed guidance are unchanged.
+
+The preceding C5 handoff batch published as
+`95368b3332db4b22060e3bed49df0c22589c9c4a`, tree
+`57fa626200f67052acf7acc4c05c459d91f10f8d`.
+[Push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39115315171)
+and [synthetic preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39115315151)
+both succeeded. All four test jobs ran 1,767 tests: Python 3.10/Ubuntu each
+1,759 passed/eight skipped, macOS 1,755/12, Windows 1,375/392. The new package hash
+3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a was reproduced.
+These results establish the preceding bridge CI, not user-device cleanup or the
+forthcoming twenty-fifth publication result.

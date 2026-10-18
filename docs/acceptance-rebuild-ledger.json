@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Twenty-six original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T31/T47/T82/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 192 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
+    "Twenty-eight original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T31/T47/T82/T49/T83/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 190 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
   ],
   "cases": [
     {
@@ -666,9 +666,19 @@
       "requirement": "运行环境与付款设备分开，读取对应分支，不强制网页银行卡",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核指导语义、负向事实/拒答和付款设备分支，重跑关联回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer native payment eligibility or unseen host responses.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-mobile-route.md",
+        "sha256": "87b0e305bcbb5bd4c5820137f74d751392eaaf56847df5d80702d2f44dff3f3e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
+      }
     },
     {
       "id": "T50",
@@ -1052,9 +1062,19 @@
       "requirement": "保留设备/商店/目标账户对应/入口检查；不在 A6/P02/G04 中重新问旧订阅",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer native payment eligibility or unseen host responses.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-mobile-route.md",
+        "sha256": "87b0e305bcbb5bd4c5820137f74d751392eaaf56847df5d80702d2f44dff3f3e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
+      }
     },
     {
       "id": "T84",
