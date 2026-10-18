@@ -932,3 +932,44 @@ and [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/391071539
 Linux/Python 3.10: 1,535 passed/eight skipped; macOS: 1,532/11;
 Windows: 1,290/253. The release hash was identical across all four jobs.
 No skipped or hosted test is promoted to actual user-device acceptance.
+
+
+## Seventeenth publication verification
+
+Published `9c5e8c9cdf906395d71942d2ff4a3740377c3ac9`, parent
+`fe30684801b39d49a7e7789e5437f7a68f574b04`; exact seven-file delta and all 200
+source blobs/modes verified. [Push tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39107494531)
+completed successfully: Linux/Python 3.10 1,553 passed/eight skipped;
+macOS 1,550/11; Windows 1,290/271. The 18 new POSIX controlled-file tests skip
+on Windows rather than claiming Windows restoration. The release package is
+unchanged across jobs. No preview workflow was triggered by this test/docs scope.
+
+## Eighteenth C5 callable cleanup and device-history integration
+
+This product extension adds selected-device restriction history and an explicit
+full application-data cleanup goal, plus real bounded POSIX quarantine,
+restart reconciliation and separately approved restore. It removes selected
+verified roots from active locations while retaining private quarantine and
+journals; required independent backups are established separately by the host. It does not establish native root discovery, process
+inactivity, credential/browser deletion, uninstall or permanent purge.
+
+Independent review exercised malformed manifests, protected-path aliases,
+interruption before/after renames, large recovery envelopes, cancellation and
+isolated installation. The installed package actually moves and restores its own
+synthetic history/configuration/extension files. No user-device data was touched.
+The flow review covers 4,456 adversarial assertions and 2,000 timestamp/category
+cases. It found a generated-hex reference that occasionally resembled sensitive
+numeric data; exact dot-separated digest chunks fix that representation without
+loosening the general sensitive-data filter. Deterministic regressions retain
+both original failures.
+
+The final aggregate ran 1,680 tests in 33.250 seconds: 1,672 passed and eight
+skipped. Both Node suites, compilation and diff checks passed. Two independently
+built release archives were byte-identical, SHA-256
+`c563a758390910f407e7f896a7a379cc1b287c17f2409b9661a34b0c43c6307e`.
+Reviewed affected evidence pins were refreshed after original-case replay;
+acceptance remains 16/218 with 202 pending. The explanatory ledger note now
+matches those existing rows. No original scenario, condition, layer or
+acceptance status was changed by this batch. Future CLI/native integration
+requires separate evidence; these callable APIs are not a claim of complete
+end-to-end user-device cleanup.

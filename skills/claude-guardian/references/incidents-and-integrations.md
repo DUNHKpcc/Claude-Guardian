@@ -1,6 +1,6 @@
 # M07/M10–M13: clients, incidents, integrations, and preservation
 
-中文执行摘要：先区分网络、认证、权限、额度、支付、核验与明确停用，不凭错误码认定封号。SDK、网关、MCP 按实际认证和运行位置分开。清理先审计和规划；保护 CLI、项目、历史、配置与 Codex。旧设备不等于黑名单，不改设备身份，不承诺清理可解封。
+中文执行摘要：先区分网络、认证、权限、额度、支付、核验与明确停用，不凭错误码认定封号。SDK、网关、MCP 按实际认证和运行位置分开。清理先审计和规划；默认保护 CLI、历史与配置，明确 C5 可另行选择已核实的 Claude 专属数据；源码、Codex 与其他应用保持保护。旧设备不等于黑名单，不改设备身份，不承诺清理可解封。
 
 ## Client and integration inventory (M07/M10/M11)
 
@@ -23,19 +23,19 @@ A credential exposure can require revocation through the official service, but d
 
 ## Cleanup, migration, and recovery (M13 / ENV-09)
 
-The preview inventories and proposes; it never deletes, logs out, resets, repairs, migrates, revokes, or restores. A “cleanup” request initially means a plan until exact scope, authority, capability, and recovery are established. Old use with a suspended account triggers read-only review, not automatic cleanup.
+Interview/CLI preview remains non-mutating. An explicitly selected C5 goal can be handed to the callable `cleanup_transactions` core after independently authorized scope discovery and host verification. `plan` inventories/hashes only the exact selected roots; `quarantine` moves them into private recoverable storage; `restore` requires separate current approval and refuses to overwrite changed originals. These are callable file operations, not an automatic native Claude cleanup adapter. Report planning, quarantine, partial completion and restore separately.
 
 Separate: sign-out/session repair; narrow browser site data; Desktop uninstall while retaining Code; exact app-state removal; migration; credential-specific actions. Windows Repair/Reset/uninstall are different and may have different data consequences. An application's existence does not imply Repair is supported. macOS paths and keychain entries are not portable Windows instructions.
 
 Protect by default: project code and uncommitted changes; CLI and its configuration; histories; skills/hooks/plugins; custom settings; relevant Desktop local tasks; Codex and other applications. Resolve actual roots without broad recursive secret searches. Ambiguous ownership, symlinks, nested/shared directories, or changing paths block destructive planning. No wildcard Claude-name deletion, whole keychain purge, broad process killing, device ID/UUID rotation, fixed Taipei timezone, or “fingerprint reset” promise.
 
-A future backup must be content-verified, stored privately, tested for restore, and account for live files, overlapping paths, partial failure and user changes since planning. A copied directory or zero exit code alone is inadequate. Each future action needs a manifest, exact restore procedure, postconditions, and irreversible effects. Never overwrite later user changes during rollback. An independent recovery path is required if an action could break the agent/SSH channel.
+Before a real mutation, establish the required private, content-verified backup and independent recovery procedure. The core's quarantine is a recoverable move, not an independent backup copy and not a claim that all Desktop or CLI data was discovered. Keep private manifests/journals and mappings out of public reports. Multi-root changes are not atomic; interruption may leave a partial result. Reconcile actual locations and validate content before recovery, never overwrite later user changes. No action in the active Claude Code session may remove its own live data/authentication or the Codex/recovery channel.
 
 The requested upstream cleanup reference is S09 at commit `423473db6b618c7e040f1a5a6879bc83e69e8b3b`: https://github.com/suyuan2022/suyuan-skill/blob/423473db6b618c7e040f1a5a6879bc83e69e8b3b/claude-cleanup/SKILL.md . This is an inherited review pointer, not bundled executable code or a validated adapter. Its macOS-specific behavior, licensing, protected paths, backup verification, and failure recovery require independent review before reuse; do not fetch or run it as part of ordinary preview checks. Upstream confirmations may not be bypassed by wrapping it.
 
 ## Final incident/cleanup deliverable
 
-State the concrete symptom, known versus unknown cause, evidence source/time/scope, protected objects, proposed minimal action, recovery limitations, and exact blocker. Explicitly mark no action taken. Local repair cannot reverse remote suspension or guarantee data export, refunds, or future account availability.
+State the concrete symptom, known versus unknown cause, evidence source/time/scope, protected objects, proposed minimal action, recovery limitations, and exact blocker. State the actual result: no action taken / planned / quarantined / partial / restored, with exact scope and remaining native limitations; a zero exit code alone is not complete cleanup proof. Local repair cannot reverse remote suspension or guarantee data export, refunds, or future account availability.
 
 ## 人工执行卡的共同边界
 
@@ -195,3 +195,16 @@ State the concrete symptom, known versus unknown cause, evidence source/time/sco
 - [S03 PDF 第 3–5 页](../sources/S03-claude-experience.pdf)、[S04 FAQ](../sources/S04-claude-guide.md)、[S05 子进程防护](../sources/S05-local-protection.md)、[S06 保留 CLI 的清理](../sources/S06-macos-cleanup-sanitized.md) 是带归属的经验/阅读材料；与当前官方政策和目标设备实测分层。S09 是上文指定的外部固定提交阅读指针，未随本仓库 S01–S07 来源包提供，未验证为可用适配器；只供另行审阅，不能作为已验收脚本直接执行
 
 本次文档编写没有访问 Claude 服务、安装/启动客户端、读取用户秘密或执行系统变更。后续更新应按官方变更、具体客户端版本、用户明确目标修订相应卡片，保持原始来源不变，不把新增文字当历史来源原话。
+
+
+## Explicit C5 Agent execution sequence
+
+1. Read typed intent and independently confirm the actual selected device/user/namespace, application/version, inactive state, ownership, selected roots and protection list. Native discovery unsupported or ownership unknown means stop at the plan explanation. Do not expand scope by path-name guessing.
+2. Obtain authorized read/hash scope, exact category selection, required verified backup and private same-filesystem quarantine location. C5 goal `C5-full-claude-data-reset` maps to core mode `C5-full-local-data` only here, not to a shell command.
+3. Call `cleanup_transactions.plan(roots, protected_paths, quarantine_directory, target_ref, mode='C5-full-local-data', host_check=fresh_scope_check)`. Roots are exact canonical absolute objects `{root_ref, path, data_kind}`; kind is `cli_app_data` or `desktop_app_data`. No arbitrary transcript text becomes a path.
+4. Show the exact private plan/impact/exclusions/recovery to the user in the appropriate private channel. Obtain the current operation approval bound to `plan.digest()` and target. A digest summary alone is insufficient to explain affected data.
+5. Only with actual exclusive access held and fresh host checks call `quarantine(plan, authorize=current_operation_approval, host_check=fresh_scope_check, exclusive_access=True)`. This boolean declares a prerequisite; it does not acquire OS isolation. Callback strings are host assertions, not proof of user permission or application ownership.
+6. Preserve private receipt/journal and verify protected data. Report receipt.preview(), including partial results and `native_acceptance='not_run'`. Do not export private paths, file contents or credentials.
+7. For recovery, independently approve `restore_cleanup` against `receipt.digest()` and the same verified target, then call `restore(receipt, authorize=current_restore_approval, host_check=fresh_scope_check, exclusive_access=True)`. A prior quarantine approval never approves restore. On faults use the core's documented reconcile/recovery path; do not fabricate completion or manually delete journals.
+
+The callback contracts are `host_check(target_ref, scope_digest) -> 'verified_inactive_claude_data'` after actual verification, and `authorize(operation, digest, target_ref) -> True` only for that operation's current approval. No permanent purge, network, subprocess, application launch, credential, browser or uninstall adapter is provided. POSIX temporary-fixture success does not certify macOS application ownership, Windows behavior, or native user-device results.

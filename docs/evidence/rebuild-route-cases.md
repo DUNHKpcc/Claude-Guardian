@@ -254,10 +254,10 @@ VPS 完整实际提示，与手写预期逐字相同：
 
 | 文件 | SHA-256 |
 |---|---|
-| `skills/claude-guardian/SKILL.md` | `9fcf19d0b58f5f2d09c6c7251dea1601315763883c544a0c36ac82f99f86466e` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `f1779626ef5fca0fae9a16ab0d7c64781ebe696f7b63d92aba260238584b9b42` |
+| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `0eb24c5fc9b356f145b35b792a13444392f23ea634f618df6886b16aa91beaac` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
-| `skills/claude-guardian/references/intake.md` | `f736f42bf9f962ee1a945452ccf9c3497a849aaa08097ab261b8cdad4bc1e4a7` |
+| `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
@@ -328,3 +328,13 @@ Complete objects are therefore not claimed byte-identical to the fifteenth
 batch. Shared policy, migration-consumer compatibility, static rendering and
 package dependencies were independently reviewed before these pins were updated.
 No native enforcement or new original-case acceptance is inferred.
+
+### Eighteenth scoped cleanup preservation review
+
+Independent review reran the original case's affected logic/guidance and package
+paths before refreshing these dependency pins. Existing route, intake and
+task-scope replay objects remain byte-identical to the seventeenth batch. New
+selected-device history and explicit C5 intent do not infer the current account's
+status or grant action permission. Callable quarantine/recovery is separately
+scoped and reviewed; default interview/CLI and existing contact/authorization
+safeguards remain. No new original cleanup/native case is accepted here.

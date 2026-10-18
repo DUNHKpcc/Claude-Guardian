@@ -158,7 +158,7 @@ Reviewed file SHA-256 values:
 | `skills/claude-guardian/scripts/source_evidence.py` | `a1754f0445012e717dddfb9ed28245d94cb760f9d421fb47b0027a90e6f0feaf` |
 | `skills/claude-guardian/references/evidence-policy.md` | `8afb262a1d85050a897c6c9a89f54afbc96a653874b7308472dbeec4c3ea1838` |
 | `tests/test_source_evidence.py` | `cd9804d062f0226dcd25f7efc204c2fb4d43005be828b79dbeeb6df0ded8b86d` |
-| `tools/package_skill.py` | `6b81dc67f23f5e5df5061bc1fc5b898c628b268e045c62ed6bf4fe679381f119` |
+| `tools/package_skill.py` | `2615393af2204330a8d1227245084c176912f6ee6c14a26009be43097e2962ec` |
 
 Disposition: the exact original two-identical-tutorial scenario now has executable
 L evidence and a full active-guidance C review, ready for independent integration
@@ -221,3 +221,13 @@ Complete objects are therefore not claimed byte-identical to the fifteenth
 batch. Shared policy, migration-consumer compatibility, static rendering and
 package dependencies were independently reviewed before these pins were updated.
 No native enforcement or new original-case acceptance is inferred.
+
+### Eighteenth scoped cleanup preservation review
+
+Independent review reran the original case's affected logic/guidance and package
+paths before refreshing these dependency pins. Existing route, intake and
+task-scope replay objects remain byte-identical to the seventeenth batch. New
+selected-device history and explicit C5 intent do not infer the current account's
+status or grant action permission. Callable quarantine/recovery is separately
+scoped and reviewed; default interview/CLI and existing contact/authorization
+safeguards remain. No new original cleanup/native case is accepted here.

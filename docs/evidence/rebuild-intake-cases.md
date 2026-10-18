@@ -151,15 +151,15 @@ python -B tests/test_acceptance_intake_rebuild.py --replay > /tmp/guardian-intak
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `f1779626ef5fca0fae9a16ab0d7c64781ebe696f7b63d92aba260238584b9b42` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `0eb24c5fc9b356f145b35b792a13444392f23ea634f618df6886b16aa91beaac` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
 | `tests/test_acceptance_intake_rebuild.py` | `e26a26ee3b3d0ba93270787f8dbd8022ed11adb2fbbb0f1229df8f1aef57245a` |
-| `tests/test_interview_flow.py` | `2e9fa3e886262c62c1a11bbcb0ebda4f02356d03be595de6f9bac804d31b1d4a` |
+| `tests/test_interview_flow.py` | `58a5054bb0091397fd87ab3775c4b19cb6c08ecd083de03b2ca6616110175a8d` |
 | `tests/test_interview_cli.py` | `a3cbd2c8332d50e6c49fee61ced2bb9c10295b7a3393b39b6de2e89a9a37be4d` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_interview_migration.py` | `6c4e6bf32875b83ea179ffc836f140141f161240b478b359b62b304767063618` |
-| `skills/claude-guardian/SKILL.md` | `9fcf19d0b58f5f2d09c6c7251dea1601315763883c544a0c36ac82f99f86466e` |
-| `skills/claude-guardian/references/intake.md` | `f736f42bf9f962ee1a945452ccf9c3497a849aaa08097ab261b8cdad4bc1e4a7` |
+| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
+| `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
@@ -194,3 +194,13 @@ Complete objects are therefore not claimed byte-identical to the fifteenth
 batch. Shared policy, migration-consumer compatibility, static rendering and
 package dependencies were independently reviewed before these pins were updated.
 No native enforcement or new original-case acceptance is inferred.
+
+### Eighteenth scoped cleanup preservation review
+
+Independent review reran the original case's affected logic/guidance and package
+paths before refreshing these dependency pins. Existing route, intake and
+task-scope replay objects remain byte-identical to the seventeenth batch. New
+selected-device history and explicit C5 intent do not infer the current account's
+status or grant action permission. Callable quarantine/recovery is separately
+scoped and reviewed; default interview/CLI and existing contact/authorization
+safeguards remain. No new original cleanup/native case is accepted here.

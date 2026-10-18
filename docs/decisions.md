@@ -47,3 +47,10 @@ PD-03：用户已确认采用可替换的 ipify 与 Cloudflare STUN 作为首批
 - **操作边界**：本批只落实固定策略、纯规划与诚实报告，不提供原生强制执行适配。Agent 仍须给出具体最小差异、保留对象、备份／独立恢复和同范围复测方案，取得当次修改及探测许可；PC0 和原有接触门禁不变。G2 规划就绪、规则编辑成功或导入 JSON 声称 verified 都不构成 IPv4-only 合规或环境通过
 
 代价是 IPv4 路径不可用时该 Claude 工作流可能无法连接，限定范围能力也依赖实际平台／客户端版本。不能用扩大到系统全局、删除原有规则或跳过验收来隐藏这个代价。已有安全的独立任务可继续；无需把 IPv4／IPv6 偏好重新作为访谈必答题。
+
+
+## ADR-008: selected-device history and explicit C5 data cleanup (2026-10-18)
+
+PRODUCT-DEVICE-CLEANUP-20261018
+
+The owner requested asking whether the selected local device previously used a banned account and a real complete Claude application-data cleanup option, rather than assessment alone. Add selected-target typed Q-D01 and independent explicit Q-D02 C5 intent. C5 permits separately selected verified Claude-owned local history/configuration/extensions and Desktop data; unrelated source/Codex/shared or unknown objects remain protected. Recoverable quarantine is the default; irreversible purge, credential/browser/native uninstall operations remain separate. Original D-SPEC §9/M13 and D-ENV §10 safeguards, PC0, action consent, backups and recovery remain in force. This is a supplemental product decision, not a rewrite of original source text, acceptance layers, or a claim that any original native case passed. No unban/fingerprint-reset promise.

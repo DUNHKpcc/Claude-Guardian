@@ -299,7 +299,7 @@ updating hashes alone does not renew acceptance.
 | `skills/claude-guardian/scripts/remedy_plans.py` | `ea75fe579b20b8e8077fbe1e4bef2fd7fb1064321146f6b23e5b2c8323db4991` |
 | `skills/claude-guardian/scripts/workflow_guard.py` | `68aa99db78a70d0387a3901d4f3ba25a9c4dcee19fa2ff3a584706419ccfeed0` |
 | `skills/claude-guardian/scripts/inventory_cli.py` | `e0c5fc46800e5838e9d40bc8271c8ca1e1da093c85055ed85256ddd57a1cb3b1` |
-| `skills/claude-guardian/SKILL.md` | `9fcf19d0b58f5f2d09c6c7251dea1601315763883c544a0c36ac82f99f86466e` |
+| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
@@ -351,3 +351,13 @@ Complete objects are therefore not claimed byte-identical to the fifteenth
 batch. Shared policy, migration-consumer compatibility, static rendering and
 package dependencies were independently reviewed before these pins were updated.
 No native enforcement or new original-case acceptance is inferred.
+
+### Eighteenth scoped cleanup preservation review
+
+Independent review reran the original case's affected logic/guidance and package
+paths before refreshing these dependency pins. Existing route, intake and
+task-scope replay objects remain byte-identical to the seventeenth batch. New
+selected-device history and explicit C5 intent do not infer the current account's
+status or grant action permission. Callable quarantine/recovery is separately
+scoped and reviewed; default interview/CLI and existing contact/authorization
+safeguards remain. No new original cleanup/native case is accepted here.

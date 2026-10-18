@@ -182,7 +182,7 @@ class InterviewTests(unittest.TestCase):
                 self.assertEqual(json.dumps(original, sort_keys=True), before)
 
     def test_complete_registry(self):
-        self.assertEqual(len(f.QUESTION_PROMPTS), 95)
+        self.assertEqual(len(f.QUESTION_PROMPTS), 97)
         self.assertIn("Q-C07", f.QUESTION_PROMPTS)
         self.assertNotIn("Q-C07", ids(state()))
         with self.assertRaises(f.InterviewError):
@@ -449,7 +449,7 @@ class InterviewTests(unittest.TestCase):
             question = f.next_question(s)
             if question is None:
                 break
-            value = {"Q-C02": "macos", "Q-C04": "unregistered"}.get(question["id"], "sanitized answer")
+            value = {"Q-C02": "macos", "Q-C04": "unregistered", "Q-D01": "other_device_only"}.get(question["id"], "sanitized answer")
             s = f.record_fact(s, question["id"], value, source="user:answer")
         self.assertEqual(f.assessment(s)["G2"]["status"], "pass")
         s = f.invalidate_facts(s, ["Q-H01"], reason="Historical object needs reconfirmation")

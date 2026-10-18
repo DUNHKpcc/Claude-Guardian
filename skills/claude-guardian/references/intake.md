@@ -6,7 +6,7 @@
 
 Read existing task facts first. Ask one decision per turn; at most a few related short facts together. Absorb all useful facts in a reply, skip known/not-applicable items, clarify an ambiguous answer once, then allow unknown, decline, pause, or a limited plan. Never display this entire registry as a form. Structured UI is optional and must obey the actual host's tool contract. Do not change host modes or approval settings to enable UI.
 
-Normal order: Q-J01 → OS/purpose/target plan → account history and route → relevant network/payment prerequisites → route resources/protection → short summary. An urgent compromise, data-loss issue, suspension, identity check, or duplicate charge takes priority. Technical skill changes explanation depth only.
+Normal subscription-preparation order: Q-J01 → OS/purpose/target plan → account history and route → relevant network/payment prerequisites → route resources/protection → short summary. An urgent compromise, data-loss issue, suspension, identity check, or duplicate charge takes priority. Technical skill changes explanation depth only.
 
 `subscription_journey` is `first_subscription`, `returning_subscription`, `existing_subscriber`, or `unknown`. Explicit first/returning answers establish only reported absence of a current subscription; they do not verify billing. Current subscribers get Q-C11 only if their task is missing. First-time users are not asked whether they want a subscription. Q-C08 means the desired plan, never legacy entitlement. Q-P02/Q-A06 activate only for relevant existing-billing tasks or an actual contradiction. Pure technical diagnosis does not activate a payment survey.
 
@@ -161,3 +161,18 @@ The following are short prompts/field meanings, not a mandatory sequence. Preser
 | Q-Z03 | Specific proposed changes and administrator requirements |
 | Q-Z04 | Backup/rollback/rescue prerequisites |
 | Q-Z05 | Permission for private sanitized persistence/export |
+
+
+## Selected-device history and explicit cleanup task
+
+| ID | Meaning and trigger | Binding and effect |
+| --- | --- | --- |
+| Q-D01 | Selected device's explicitly restricted-account use: current_restriction_on_target / past_restriction_on_target / ordinary_error_only / other_device_only / none_reported; unknown/declined are null-valued fact states. Automatically ask when Q-C03 past_suspension is reported and this device fact is absent; explicit reset does not depend on it. | Selected target alias, never inferred from account history or first subscription. A current device event requires bounded incident clarification; it does not mark the selected account suspended. |
+| Q-D02 | audit_only / full_claude_data_reset / other_scope / no_cleanup. Record an already explicit request without asking again. | Selected target and current task only. Fresh task/route/target checks and resume review apply. Goal selection grants no filesystem or operation permission. |
+
+A cleanup-only task asks only relevant target/client/OS, goal, preservation and check/change/recovery scope. It does not require payment or subscription answers. `no_cleanup` ends cleanup questions. Unknown/refusal/defer remains bounded; urgent incidents retain priority. Current selected-account status stays separate from the identity of an account previously used on the device.
+
+
+### Device-only triage resolution
+
+When D01 truthfully says this device used another account that is currently restricted, retain that category and the selected account's independent C04 status. After bounded clarification, the host may explicitly report `set_context(state, device_incident_resolved=True)`. This closes only device-episode triage; it is bound to the current D01 fact's target/provenance/time/category, and grants no action permission. New device/route/namespace or actual episode evidence invalidates it. A task-only change retains informational resolution for the unchanged bound episode, clears obsolete cleanup intent and suppresses re-offering that same episode; fresh history or an explicit cleanup request can reactivate planning. Account suspension, credential exposure and data-risk incidents remain governed by their separate existing resolution state. Exact old-evidence replay cannot reopen the episode; a fresh report can. Do not tell the user to falsify D01 as past merely to proceed.

@@ -3,7 +3,7 @@
 Public API: new_state, record_fact, record_facts, set_context, next_question, assessment,
 mark_asked, defer_branch, resume_branch, complete_purchase, dumps_state,
 loads_state, validate_state, resume_interview, record_resume_review,
-resume_review_prompt, resume_scope_keys. All updates return copies. Persisting returned JSON
+resume_review_prompt, resume_scope_keys, cleanup_assessment. All updates return copies. Persisting returned JSON
 is exclusively the host's responsibility and requires explicit opt-in per scope.
 
 Example::
@@ -21,6 +21,7 @@ G3 is deliberately always closed here: use the separate action/contact gates.
 from copy import deepcopy
 from datetime import datetime, timezone
 import json
+import hashlib
 import re
 
 try:
@@ -142,6 +143,15 @@ QUESTION_PROMPTS = {'Q-J01': '这次是第一次准备订阅（包括只用过�
  'Q-Z04': '有没有备份、回滚或独立救援条件？',
  'Q-Z05': '是否保存/导出不含秘密的本次进度，还是仅留在当前对话？',
  'Q-C07': 'retired；从展示集、调度、画像必填和就绪要求中删除，不复用编号'}
+DEVICE_CLEANUP_VALUES = {
+    'Q-D01': frozenset({'current_restriction_on_target', 'past_restriction_on_target',
+                       'ordinary_error_only', 'other_device_only', 'none_reported'}),
+    'Q-D02': frozenset({'audit_only', 'full_claude_data_reset', 'other_scope', 'no_cleanup'}),
+}
+QUESTION_PROMPTS.update({
+    'Q-D01': '本次选定设备 {target_alias} 曾用过被明确停用/封禁的 Claude 账号吗？请区分当前限制、过去限制、普通报错、仅其他设备、没有这类经历或不确定；无需账号名。',
+    'Q-D02': '对 {target_alias} 的 Claude 本地数据，这次要只看清单、规划完整重置、暂不清理，还是其他范围？完整重置可另选已核实属于 Claude 的历史、配置与扩展；实际操作前另行确认保护清单、备份和影响。',
+})
 QUESTION_PROMPTS[RETIRED] = "Retired; never collect account ownership"
 EXPOSURE_PROMPTS = {
     'Q-H01': '可能泄露的是哪类凭据、涉及哪个服务或客户端？只说类别和对象，不要发送密码、令牌或密钥内容。',
@@ -155,7 +165,7 @@ EXPOSURE_PROMPTS = {
 # from expertise, equipment ownership, IP geolocation or a default proposal.
 CONTEXT_DEFAULTS = {
     "task": "subscription_preparation", "incident": "none", "incident_resolved": False,
-    "incident_origin": "host", "account_incident_resolved": False,
+    "incident_origin": "host", "account_incident_resolved": False, "device_incident_resolved": False, "device_incident_resolution_ref": None, "cleanup_offer_dismissed_ref": None,
     "ambiguous_experience": False, "subscription_conflict": False,
     "billing_channel": "unselected", "route": "local",
     "route_selection_basis": "default_proposal", "contact_phase": "PC0",
@@ -170,9 +180,10 @@ CONTEXT_DEFAULTS = {
 }
 # Optional additive fields preserve the published schema-1 input contract.
 INCIDENT_CONTEXT_FIELDS = {"incident_origin", "account_incident_resolved"}
+DEVICE_CONTEXT_FIELDS = {"device_incident_resolved", "device_incident_resolution_ref", "cleanup_offer_dismissed_ref"}
 ENUM_CONTEXT = {
     "task": {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue",
-             "environment", "network", "incident", "api", "enterprise", "compare"},
+             "environment", "network", "incident", "api", "enterprise", "compare", "cleanup"},
     "incident": {"none", "credential_exposure", "data_risk", "suspension", "identity_review",
                  "duplicate_charge", "unknown_error"},
     "incident_origin": {"host", "legacy_unverified"},
@@ -183,7 +194,7 @@ ENUM_CONTEXT = {
     "os_issue": {"none", "display_language", "input_method", "locale", "browser_language", "app_language", "timezone"},
 }
 ACCOUNT_QUESTIONS = {"Q-J01", "Q-J02", "Q-C03", "Q-C04", "Q-C06", "Q-C08"} | {qid for qid in QUESTION_PROMPTS if qid.startswith(("Q-P", "Q-A", "Q-G", "Q-W", "Q-I", "Q-E"))}
-SENSITIVE_QUESTIONS = {"Q-J01", "Q-J02", "Q-C03", "Q-C09", "Q-P04", "Q-W02", "Q-I02", "Q-Z01", "Q-Z03", "Q-Z05"}
+SENSITIVE_QUESTIONS = {"Q-D01", "Q-D02", "Q-J01", "Q-J02", "Q-C03", "Q-C09", "Q-P04", "Q-W02", "Q-I02", "Q-Z01", "Q-Z03", "Q-Z05"}
 POSTCONTACT = {"Q-A04", "Q-A05", "Q-A08", "Q-G03", "Q-G04", "Q-W04"}
 RESOLVED = {"reported", "observed", "not_applicable"}
 BILLING_TASKS = {"renew", "upgrade", "change_channel", "billing_issue"}
@@ -238,7 +249,8 @@ def new_state(target_alias, account_alias, *, task_id="task-1"):
     state = {
         "schema_version": SCHEMA_VERSION, "task_id": task_id,
         "target_alias": target_alias, "account_alias": account_alias,
-        "facts": {}, "context": deepcopy(CONTEXT_DEFAULTS),
+        "facts": {}, "context": {key: deepcopy(value) for key, value in CONTEXT_DEFAULTS.items()
+                                   if key not in DEVICE_CONTEXT_FIELDS},
         "asked_question_ids": [], "deferred_branches": [],
         "current_subscription": {"status": "unknown", "source": None, "observed_at": None},
         "payment_intent": "unresolved", "purchase_intent": "subscription_preparation",
@@ -257,7 +269,7 @@ def _sync_task_intent(state):
         if context['task'] in PURCHASE_TASKS:
             state['payment_intent'] = (context['task'] if context['task'] in {'renew','upgrade','change_channel'}
                 else {'first_subscription':'new_subscription','returning_subscription':'resubscribe'}.get(journey(state),'unresolved'))
-    if context['task'] in {'environment', 'network', 'incident'} or state['purchase_intent'] == 'completed':
+    if context['task'] in {'environment', 'network', 'incident', 'cleanup'} or state['purchase_intent'] == 'completed':
         state['payment_intent'] = 'none'
 
 
@@ -287,7 +299,7 @@ def validate_state(state):
             raise InterviewError("Use short non-identifying aliases")
     ctx = state["context"]
     if (not isinstance(ctx, dict) or set(ctx) - set(CONTEXT_DEFAULTS)
-            or set(CONTEXT_DEFAULTS) - set(ctx) - INCIDENT_CONTEXT_FIELDS):
+            or set(CONTEXT_DEFAULTS) - set(ctx) - INCIDENT_CONTEXT_FIELDS - DEVICE_CONTEXT_FIELDS):
         raise InterviewError("Invalid routing context")
     for name, default in CONTEXT_DEFAULTS.items():
         if name not in ctx:
@@ -328,15 +340,31 @@ def validate_state(state):
             if fact[field] is not None and not isinstance(fact[field], str):
                 raise InterviewError("Fact metadata must be text or null")
         _validate_date(fact["observed_at"])
+        if qid in DEVICE_CLEANUP_VALUES and fact['value'] is not None:
+            if type(fact['value']) is not str or fact['value'] not in DEVICE_CLEANUP_VALUES[qid]:
+                raise InterviewError('Invalid device cleanup category')
+        if qid in DEVICE_CLEANUP_VALUES and fact['state'] in RESOLVED and fact['value'] is None:
+            raise InterviewError('Device cleanup category required')
         if qid in {"Q-J01", "Q-J02"} and fact["state"] in RESOLVED and (not isinstance(fact["value"], str) or fact["value"] not in JOURNEYS):
             raise InterviewError("Invalid subscription journey")
+    for reference_key in ('cleanup_offer_dismissed_ref', 'device_incident_resolution_ref'):
+        reference = ctx.get(reference_key)
+        if reference is not None and (type(reference) is not str or
+                not re.fullmatch(r'[0-9a-f]{8}(?:\.[0-9a-f]{8}){7}', reference)):
+            raise InterviewError('Invalid device episode reference')
+    if ctx.get('device_incident_resolved', False):
+        if (_value(state, 'Q-D01') != 'current_restriction_on_target' or
+                ctx.get('device_incident_resolution_ref') != _device_episode_ref(state)):
+            raise InterviewError('Device incident resolution requires current bound history')
+    elif ctx.get('device_incident_resolution_ref') is not None:
+        raise InterviewError('Device incident resolution reference without resolution')
     for field in ("asked_question_ids", "deferred_branches"):
         if not isinstance(state[field], list) or len(state[field]) != len(set(state[field])):
             raise InterviewError("Progress lists must be unique")
     for qid in state["asked_question_ids"]:
         if canonical(qid) != qid:
             raise InterviewError("Progress must use canonical IDs")
-    if any(branch not in {"incident", "core", "os", "network", "payment", "local", "vm", "vps", "protection"} for branch in state["deferred_branches"]):
+    if any(branch not in {"incident", "core", "os", "network", "payment", "local", "vm", "vps", "protection", "cleanup"} for branch in state["deferred_branches"]):
         raise InterviewError("Invalid deferred branch")
     consent = state["persistence_consent"]
     if not isinstance(consent, dict) or set(consent) != {"private_save", "export", "public_export"} or any(type(v) is not bool for v in consent.values()):
@@ -408,7 +436,12 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
             "sensitivity": "low", "clarification_count": count, "blocker_reason": blocker_reason}
     prior_facts = result["facts"].copy()
     result["facts"][qid] = fact
-    if (qid in ACCOUNT_INCIDENT_VALUES or qid.startswith("Q-H")) and state_name in {"reported", "observed"}:
+    if qid == 'Q-D01' and result['context'].get('device_incident_resolved', False):
+        if _device_episode_ref(result) != _device_episode_ref(state):
+            result['context'].update(device_incident_resolved=False, device_incident_resolution_ref=None)
+    if qid in DEVICE_CLEANUP_VALUES:
+        validate_state(result)
+    if (qid in ACCOUNT_INCIDENT_VALUES or qid in DEVICE_CLEANUP_VALUES or qid.startswith("Q-H")) and state_name in {"reported", "observed"}:
         # Validate the full candidate before a replay can return early; malformed
         # provenance, targets and metadata must not hide behind idempotency.
         validate_state(result)
@@ -417,6 +450,9 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
         if replay is not None:
             result["facts"][qid] = deepcopy(replay)
             result["facts"][qid]["value"] = deepcopy(value)
+            if qid == 'Q-D01' and state['context'].get('device_incident_resolved', False):
+                result['context'].update(device_incident_resolved=True,
+                    device_incident_resolution_ref=state['context']['device_incident_resolution_ref'])
             validate_state(result)
             return result
     if qid in {"Q-J01", "Q-J02"}:
@@ -442,6 +478,8 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
             raise InterviewError("No current local default proposal to accept")
         context["route_selection_basis"] = "accepted_default"
     if qid == "Q-C11" and state_name in {"reported", "observed"} and value in ENUM_CONTEXT["task"]:
+        if value != result['context']['task']:
+            _clear_cleanup_goal(result)
         result["context"]["task"] = value
         result["payment_intent"] = value if value in {"renew", "upgrade", "change_channel"} else "none"
     if qid == "Q-P06" and state_name in {"reported", "observed"} and value in ENUM_CONTEXT["billing_channel"]:
@@ -460,6 +498,15 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
                 or _account_incident_resolved(state)):
             _refresh_incident_answers(result)
         result["context"]["account_incident_resolved"] = False
+    if qid in DEVICE_CLEANUP_VALUES and state_name in {'reported', 'observed'}:
+        result['context'].pop('cleanup_offer_dismissed_ref', None)
+    if (qid == 'Q-D01' and state_name in {'reported', 'observed'}
+            and value == 'current_restriction_on_target'
+            and not _device_triage(state)):
+        _refresh_incident_answers(result)
+        result['context'].update(device_incident_resolved=False, device_incident_resolution_ref=None)
+    if result['context']['route'] != state['context']['route']:
+        _invalidate_device_cleanup(result)
     review = result.get('resume_review')
     if review is not None and qid in review['retained_keys']:
         # Only explicit fresh reports retire retained evidence. Re-rendering,
@@ -541,8 +588,13 @@ def record_facts(state, answers, *, source=None):
         seen.add(identity)
     result = deepcopy(state)
     observed_at = _now()
-    ordered = sorted(answers, key=lambda item: 0 if item["question_id"] in {"Q-J01", "Q-J02"}
-                     else 1 if item["question_id"] in ACCOUNT_INCIDENT_VALUES else 2)
+    # Routing and task changes precede fresh facts from the same atomic reply.
+    # Device episode precedes its explicit same-reply incident clarification.
+    ordered = sorted(answers, key=lambda item: (
+        0 if item['question_id'] in {'Q-J01', 'Q-J02'} else
+        1 if item['question_id'] in {'Q-C05', 'Q-C11'} else
+        2 if item['question_id'] == 'Q-D01' else
+        3 if item['question_id'] in ACCOUNT_INCIDENT_VALUES else 4, item['question_id']))
     for item in ordered:
         if (item["question_id"] == "Q-C11" and item.get("state", "reported") in {"reported", "observed"}
                 and journey(result) in {"first_subscription", "returning_subscription"}):
@@ -568,7 +620,16 @@ def set_context(state, **changes):
     _normalize_incident_context(result)
     if state["context"]["paused"] and changes.get("paused") is False:
         raise InterviewError("Use resume_interview for an interrupted session")
+    if 'task' in changes and changes['task'] != state['context']['task']:
+        _clear_cleanup_goal(result)
+    if {'device_incident_resolution_ref', 'cleanup_offer_dismissed_ref'} & set(changes):
+        raise InterviewError('Device episode reference is derived from current history')
     result["context"].update(changes)
+    if 'device_incident_resolved' in changes:
+        result['context']['device_incident_resolution_ref'] = (_device_episode_ref(result)
+            if changes['device_incident_resolved'] is True else None)
+    if result['context']['route'] != state['context']['route']:
+        _invalidate_device_cleanup(result)
     _refresh_resume_binding(result)
     if "incident" in changes:
         result["context"]["incident_origin"] = "host"
@@ -666,6 +727,74 @@ def _ids(prefix, start, end):
     return ["Q-%s%02d" % (prefix, i) for i in range(start, end + 1)]
 
 
+def _device_episode_ref(state):
+    fact = state['facts'].get('Q-D01')
+    digest = hashlib.sha256(json.dumps(fact, sort_keys=True, ensure_ascii=True).encode()).hexdigest()
+    # Fixed dots interrupt digit runs without exempting any field from _safe.
+    # Preserve every digest bit; hyphens/spaces would still resemble card data.
+    return '.'.join(digest[index:index + 8] for index in range(0, 64, 8))
+
+
+def _cleanup_offer_dismissed(state):
+    return state['context'].get('cleanup_offer_dismissed_ref') == _device_episode_ref(state)
+
+
+def _clear_cleanup_goal(state):
+    if 'Q-D01' in state['facts']:
+        state['context']['cleanup_offer_dismissed_ref'] = _device_episode_ref(state)
+    state['facts'].pop('Q-D02', None)
+    state['asked_question_ids'] = [q for q in state['asked_question_ids'] if q != 'Q-D02']
+
+
+def _device_triage(state):
+    return (_value(state, 'Q-D01') == 'current_restriction_on_target'
+            and not state['context'].get('device_incident_resolved', False))
+
+
+def _invalidate_device_cleanup(state):
+    """A route change cannot silently reuse a device association or reset goal."""
+    if 'device_incident_resolved' in state['context']:
+        state['context'].update(device_incident_resolved=False, device_incident_resolution_ref=None)
+    for qid in DEVICE_CLEANUP_VALUES:
+        if qid in state['facts']:
+            state['facts'][qid].update(state='stale', blocker_reason='target_route_changed', clarification_count=0)
+        if qid in state['asked_question_ids']:
+            state['asked_question_ids'].remove(qid)
+
+
+def _cleanup_mode(state):
+    return (state['context']['task'] == 'cleanup' or
+            _value(state, 'Q-D02') in {'audit_only', 'full_claude_data_reset', 'other_scope'})
+
+
+def cleanup_assessment(state):
+    """Pure selected-device goal projection; no inventory, apply or consent."""
+    validate_state(state)
+    if not (_cleanup_mode(state) or any(q in state['facts'] for q in DEVICE_CLEANUP_VALUES)):
+        return None
+    history = _value(state, 'Q-D01')
+    intent = _value(state, 'Q-D02')
+    trigger = ('explicit_full_reset' if intent == 'full_claude_data_reset' else
+               'explicit_audit' if intent == 'audit_only' else
+               'confirmed_target_history' if history == 'past_restriction_on_target' and intent != 'no_cleanup' and not _cleanup_offer_dismissed(state) else 'none')
+    level = {'full_claude_data_reset': 'C5-full-claude-data-reset', 'audit_only': 'C0-audit'}.get(intent, 'unselected')
+    step = ('scope_inventory' if level != 'unselected' else
+            'select_cleanup_goal' if trigger == 'confirmed_target_history' or state['context']['task'] == 'cleanup' and intent is None else 'none')
+    if _urgent_incident(state) or _legacy_incident_review(state) or _device_triage(state):
+        step = 'incident_triage'
+    elif intent == 'no_cleanup':
+        step = 'none'
+    elif state.get('resume_review', {}).get('status') in {'pending', 'unresolved'}:
+        step = 'resume_review'
+    elif state['context']['paused'] or state['context']['blocked_reason'] or 'cleanup' in state['deferred_branches']:
+        step = 'deferred'
+    return {'selected_target': state['target_alias'],
+            'device_history': history or state['facts'].get('Q-D01', {}).get('state', 'unknown'),
+            'trigger': trigger, 'requested_level': level, 'next_step': step,
+            'plan_only': True, 'action_authorized': False, 'execution_status': 'not_run',
+            'restriction_removal_claim': False}
+
+
 def applicable_questions(state):
     """Return ordered branch requirements for the host, never a user-facing form."""
     validate_state(state)
@@ -685,6 +814,29 @@ def applicable_questions(state):
     if _legacy_incident_review(state):
         add("incident", "I0", ["Q-C03"])
         return requirements
+    if _device_triage(state):
+        add('incident', 'I0', ['Q-H01', 'Q-C04'])
+        return requirements
+    if _cleanup_mode(state):
+        if _value(state, 'Q-D02') == 'no_cleanup':
+            return requirements
+        add('cleanup', 'I2', ['Q-D02', 'Q-C02', 'Q-C01'])
+        if _value(state, 'Q-C02') == 'macos':
+            add('cleanup', 'I2', ['Q-OS03'])
+        elif _value(state, 'Q-C02') == 'windows':
+            add('cleanup', 'I2', ['Q-OS02'])
+        if c['route_selection_basis'] == 'default_proposal':
+            add('cleanup', 'I3', ['Q-C05'])
+        add('cleanup', 'I5', ['Q-C12', 'Q-Z01'])
+        if _value(state, 'Q-D02') in {'full_claude_data_reset', 'other_scope'}:
+            add('cleanup', 'I5', ['Q-Z03', 'Q-Z04'])
+        return requirements
+    if _value(state, 'Q-C03') == 'past_suspension' and 'Q-D01' not in state['facts']:
+        add('cleanup', 'I3', ['Q-D01'])
+    if _value(state, 'Q-D01') == 'past_restriction_on_target' and not _cleanup_offer_dismissed(state):
+        add('cleanup', 'I3', ['Q-D02'])
+    if 'Q-D01' in state['facts'] and state['facts']['Q-D01']['state'] in {'unasked', 'stale', 'conflict'}:
+        add('cleanup', 'I3', ['Q-D01'])
     add("core", "I1", ["Q-J02" if (c["ambiguous_experience"] and journey(state) == "unknown") or _value(state, "Q-J02") in JOURNEYS - {"unknown"} else "Q-J01"])
     j = journey(state)
     if j == "existing_subscriber" and c["task"] == "subscription_preparation":
@@ -794,7 +946,7 @@ def next_question(state):
     if state["context"]["paused"] or state["context"]["blocked_reason"]:
         return None
     if (state.get("resume_review", {}).get("status") == "pending"
-            and not _urgent_incident(state) and not _legacy_incident_review(state)):
+            and not _urgent_incident(state) and not _legacy_incident_review(state) and not _device_triage(state)):
         return None
     for item in applicable_questions(state):
         if item["branch"] in state["deferred_branches"]:
@@ -812,6 +964,8 @@ def next_question(state):
         if item["id"] in state["asked_question_ids"] and not clarification:
             continue
         prompt = '你已经选好套餐；具体是哪一个套餐？' if unnamed_plan else QUESTION_PROMPTS[item['id']]
+        if item['id'] in DEVICE_CLEANUP_VALUES:
+            prompt = prompt.format(target_alias=state['target_alias'])
         if (item['id'] in EXPOSURE_PROMPTS and state['context']['incident'] == 'credential_exposure'
                 and not state['context']['incident_resolved']):
             prompt = EXPOSURE_PROMPTS[item['id']]
@@ -874,9 +1028,9 @@ def assessment(state):
         if reason:
             unresolved.append({"id": item["id"], "reason": reason})
     c = state["context"]
-    if c["route_selection_basis"] == "default_proposal" and not any(x["id"] == "Q-C05" for x in unresolved):
+    if c["route_selection_basis"] == "default_proposal" and not (_cleanup_mode(state) and _value(state, "Q-D02") == "no_cleanup") and not any(x["id"] == "Q-C05" for x in unresolved):
         unresolved.append({"id": "Q-C05", "reason": "route_unconfirmed"})
-    if journey(state) == "unknown" and not any(x["id"] in {"Q-J01", "Q-J02"} for x in unresolved):
+    if not _cleanup_mode(state) and journey(state) == "unknown" and not any(x["id"] in {"Q-J01", "Q-J02"} for x in unresolved):
         unresolved.append({"id": "Q-J01", "reason": "journey_unknown"})
     urgent = _urgent_incident(state)
     outcome = "complete" if not unresolved else "partial"
@@ -898,6 +1052,11 @@ def assessment(state):
             "deferred_branches": list(state["deferred_branches"]),
             "route_confirmation": "unconfirmed" if c["route_selection_basis"] == "default_proposal" else "confirmed",
             "current_subscription": deepcopy(state["current_subscription"])}
+    cleanup = cleanup_assessment(state)
+    if cleanup is not None:
+        result['cleanup'] = cleanup
+        if cleanup['next_step'] == 'incident_triage':
+            result['G2'].update(status='blocked', conditional_plan_only=True, reason='device_cleanup_incident_triage_required')
     if urgent:
         # Projection only: distinguish emergency postponement from explicit user
         # deferral. Never resolve the real incident or change retained facts.
@@ -1003,7 +1162,7 @@ def loads_state(serialized):
 # Resume review is a planning obligation, never an operation/identity permission.
 # An explicit event boundary is separate from ordinary JSON deserialization.
 RESUME_FIELD_KEYS = frozenset(
-    {'Q-C02', 'Q-C04', 'Q-C06', 'Q-C09', 'Q-Z04', 'Q-J01', 'Q-J02'} |
+    {'Q-D01', 'Q-D02', 'Q-C02', 'Q-C04', 'Q-C06', 'Q-C09', 'Q-Z04', 'Q-J01', 'Q-J02'} |
     {f'Q-OS{i:02d}' for i in range(2, 13)} |
     {f'Q-N{i:02d}' for i in range(1, 7)} |
     {f'Q-L{i:02d}' for i in range(1, 5)} |
@@ -1168,8 +1327,10 @@ def resume_review_prompt(state):
     """One scoped host prompt, separate from the stable Q registry; no action."""
     validate_state(state)
     review = state.get('resume_review')
+    if state['context']['task'] == 'cleanup' and _value(state, 'Q-D02') == 'no_cleanup':
+        return None
     if (review is None or review['status'] != 'pending' or state['context']['paused']
-            or state['context']['blocked_reason'] or _urgent_incident(state) or _legacy_incident_review(state)):
+            or state['context']['blocked_reason'] or _urgent_incident(state) or _legacy_incident_review(state) or _device_triage(state)):
         return None
     route = {'local': '本机', 'vm': '虚拟机', 'vps': 'VPS', 'compare': '方案比较'}[state['context']['route']]
     if state['context']['route_selection_basis'] == 'default_proposal':
@@ -1190,6 +1351,8 @@ def resume_review_prompt(state):
         topics.append('账号登录情况')
     if 'Q-C09' in keys:
         topics.append('使用地区/跨地区安排（无需详细地址）')
+    if keys & {'Q-D01', 'Q-D02'}:
+        topics.append('选定设备的限制历史和本次清理目标（不是操作授权）')
     if 'Q-Z04' in keys:
         topics.append('备份/救援条件')
     if keys & {'Q-J01', 'Q-J02'}:
@@ -1233,6 +1396,8 @@ def invalidate_facts(state, question_ids, *, reason):
             result["facts"][qid].update(state="stale", blocker_reason=reason, clarification_count=0)
         if qid in result["asked_question_ids"]:
             result["asked_question_ids"].remove(qid)
+    if 'Q-D01' in question_ids and 'device_incident_resolved' in result['context']:
+        result['context'].update(device_incident_resolved=False, device_incident_resolution_ref=None)
     if any(qid in {"Q-J01", "Q-J02"} for qid in question_ids) and journey(result) == "unknown":
         result["current_subscription"] = {"status": "unknown", "source": None, "observed_at": None}
         result["payment_intent"] = "unresolved"
@@ -1273,7 +1438,8 @@ def begin_task(state, *, task_id, task, target_alias=None, account_alias=None):
         for fact in result["facts"].values():
             if fact["subject_ref"] == old_task:
                 fact["subject_ref"] = task_id
-        reset_ids = {"Q-C01", "Q-C11", "Q-Z01", "Q-Z03", "Q-Z04", "Q-Z05"}
+        _clear_cleanup_goal(result)
+        reset_ids = {"Q-D02", "Q-C01", "Q-C11", "Q-Z01", "Q-Z03", "Q-Z04", "Q-Z05"}
         if task in PURCHASE_TASKS:
             reset_ids |= {"Q-C08", "Q-P05", "Q-P06", "Q-P07"} | POSTCONTACT
         for qid in reset_ids:
@@ -1308,7 +1474,7 @@ STATE_SCHEMA["properties"]["facts"] = {
 }
 STATE_SCHEMA["properties"]["context"] = {
     "type": "object", "additionalProperties": False,
-    "required": [key for key in CONTEXT_DEFAULTS if key not in INCIDENT_CONTEXT_FIELDS],
+    "required": [key for key in CONTEXT_DEFAULTS if key not in INCIDENT_CONTEXT_FIELDS | DEVICE_CONTEXT_FIELDS],
     "properties": {key: {"enum": sorted(ENUM_CONTEXT[key])} if key in ENUM_CONTEXT else
                    {"type": "boolean"} if type(value) is bool else {"type": ["string", "null"]}
                    for key, value in CONTEXT_DEFAULTS.items()},
@@ -1337,3 +1503,13 @@ STATE_SCHEMA["properties"]["resume_review"] = {
         "reported_at": {"type": ["string", "null"]},
     },
 }
+
+# Device facts are categorical even through the published schema interface.
+for _device_qid, _device_values in DEVICE_CLEANUP_VALUES.items():
+    STATE_SCHEMA['properties']['facts']['properties'][_device_qid] = {
+        **FACT_SCHEMA, 'properties': {**FACT_SCHEMA['properties'],
+                                     'value': {'enum': [None] + sorted(_device_values)}}}
+
+for _episode_ref_key in ('device_incident_resolution_ref', 'cleanup_offer_dismissed_ref'):
+    STATE_SCHEMA['properties']['context']['properties'][_episode_ref_key] = {
+        'type': ['string', 'null'], 'pattern': r'^[0-9a-f]{8}(?:\.[0-9a-f]{8}){7}$'}

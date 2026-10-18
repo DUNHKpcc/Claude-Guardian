@@ -1,6 +1,6 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: seventeenth rebuild, 2026-10-18
+## Current checkpoint: eighteenth rebuild, 2026-10-18
 
 The current ledger records 16 freshly accepted original cases and 202 pending:
 T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
@@ -19,6 +19,11 @@ its scope.
 The seventeenth completes the original ENV-T40 L + R clause with independent
 bounded conversion and real temporary-artifact restoration evidence. Actual
 engine deployment and enclosing-configuration behavior remain unverified.
+The eighteenth adds a separately selected C5 callable POSIX local-data quarantine
+and recovery core plus selected-device history and explicit cleanup intent. Real
+synthetic directory/file moves are tested; application-root discovery, inactivity,
+credentials/browser adapters, uninstall, purge and user-device acceptance are not
+established. Existing original-case acceptance does not grow from these new tests.
 This is not full-project or user-device acceptance.
 
 ## Basis

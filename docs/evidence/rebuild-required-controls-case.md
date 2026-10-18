@@ -224,7 +224,7 @@ prior accepted ENV-T79/90 workflow pins after independent re-review of this delt
 | `tests/test_workflow_guard.py` | `635b39b747724477efc782eeea129c818bbfb11639d2ad0a83aa4438e8ce2587` |
 | `tests/test_workflow_contact_epoch.py` | `bbb4010d7d7e74b6ba2f080eae4c853ed0b239f8bf522bea365114c17dfc97fd` |
 | `tests/test_acceptance_boundary_rebuild.py` | `b5604c118e9c11fea9d03c19e75efdae4acb53f7bb0df3bd2ac4db38842621fd` |
-| `skills/claude-guardian/SKILL.md` | `9fcf19d0b58f5f2d09c6c7251dea1601315763883c544a0c36ac82f99f86466e` |
+| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
@@ -265,3 +265,13 @@ Complete objects are therefore not claimed byte-identical to the fifteenth
 batch. Shared policy, migration-consumer compatibility, static rendering and
 package dependencies were independently reviewed before these pins were updated.
 No native enforcement or new original-case acceptance is inferred.
+
+### Eighteenth scoped cleanup preservation review
+
+Independent review reran the original case's affected logic/guidance and package
+paths before refreshing these dependency pins. Existing route, intake and
+task-scope replay objects remain byte-identical to the seventeenth batch. New
+selected-device history and explicit C5 intent do not infer the current account's
+status or grant action permission. Callable quarantine/recovery is separately
+scoped and reviewed; default interview/CLI and existing contact/authorization
+safeguards remain. No new original cleanup/native case is accepted here.
