@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: twenty-eighth rebuild, 2026-10-18
+## Current checkpoint: twenty-ninth rebuild, 2026-10-18
 
-The current ledger records 34 freshly accepted original cases and 184 pending:
-T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 36 freshly accepted original cases and 182 pending:
+T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
@@ -162,3 +162,13 @@ replays for T11/T12. Independent review covers the original L+C clauses in those
 observed exercises. This does not establish universal redaction, repository
 publication enforcement, or unseen host behavior. The generic redaction helper
 is not a general raw-log sanitizer; typed boundaries reject the exercised inputs.
+
+The twenty-ninth repairs relevant old-order handling after expiry and adds the
+explicit current-plan compatibility exception. Twenty-seven existing cases
+were independently revalidated before 41 source pins were refreshed; T16 has
+five additive completion-receipt objects with all prior replay fields preserved.
+T76/T84 now have independent full original L+C evidence. Populated optional
+schema-1 additions need upgraded readers; do not strip freshness obligations.
+The SKILL overview still has the historical 97-question count; the registry now
+contains 98 including retired C07. Its separate documentation correction remains
+open so historical source records are not silently rewritten.

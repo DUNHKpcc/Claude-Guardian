@@ -10,6 +10,12 @@ PC0 may collect reported registration/login state, actual region of use, desired
 
 A prior suspension triggers factual incident triage, not re-registration, hardware-identity changes, or a new payment route. Identity checks use authentic material through official channels; no documents in the interview. Current SDK/API rules belong to the actual product/use case, never a blanket historical claim.
 
+## Relevant old bills after expiry
+
+An expired returning subscriber's explicit pending refund/restoration is `billing_issue`; a relevant old-channel migration is `change_channel`. Preserve the reported absence of an effective subscription and any selected future Q-C08 plan. No contradiction or current entitlement is implied. Ask only missing old-order facts, with actual past channel separate from the proposed future payment channel. A complete reported Q-P02 old-channel/status/pending-issue answer covers Q-A06; do not ask it twice, manufacture facts, or repeat the question after unknown/refusal/defer. See [intake's normalization contract](intake.md#已到期用户的相关旧账单t76).
+
+A refund explanation does not require a new iPhone, App Store region, gift card, renewal plan, checkout or deployment survey. The channel prerequisite trees below apply to actual purchase preparation, not as prerequisites to handling a legacy bill. On returning to resubscription preparation in the same task, reuse the selected target and explicit expired status. Account access, current refund policy checks and actual refund submission remain separately scoped; no refund or entitlement is promised. Source: [D-SPEC §5.5, §6.8–6.9, D.5–D.6](../sources/design/D-SPEC-v0.1.10.md).
+
 ## Channel prerequisite trees
 
 **Apple / Q-A01–Q-A10**

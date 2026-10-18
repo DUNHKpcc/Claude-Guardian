@@ -77,17 +77,26 @@ The corrected migration document is pinned at its candidate bytes; all runtime a
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `0eb24c5fc9b356f145b35b792a13444392f23ea634f618df6886b16aa91beaac` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
 | `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 | `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
-| `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
+| `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/scripts/interview_migration.py` | `a52e4b7530fd99650579d418aac387231fd2e632ba8f3b407f5b94cfe1da86fd` |
 | `skills/claude-guardian/scripts/guardian.py` | `f15f01a1a26406ff30c523577569d599f662f18f6ad4b1fab0a99d7b2afaddfa` |
 | `docs/interview-migration.md` | `9c70baad590bfc6ccdf99c1c5d93c4f32b1062e840d3098599143197675087ea` |
 | `tests/test_interview_migration.py` | `6c4e6bf32875b83ea179ffc836f140141f161240b478b359b62b304767063618` |
-| `tests/test_interview_flow.py` | `58a5054bb0091397fd87ab3775c4b19cb6c08ecd083de03b2ca6616110175a8d` |
+| `tests/test_interview_flow.py` | `7140e70b88e4cd3099d2fa725b3b20269de511be90d4dd020154d2db3e5e0965` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_acceptance_legacy_retirement.py` | `22e4a208acc0c768af0469e6cd864fdf927586531899a0703ec5d874b12192a8` |
 
 Prior migration-document SHA-256 (only the optional-member statement changes): `1cb55357db07e7ce3ceaaec462cfe5ae6b23a79ad5bdffe0de81e67c753a119f`.
+
+
+### Twentyninth subscription-repair preservation review (2026-10-18)
+
+The earlier statement that runtime dependencies were unchanged describes the prior T82 migration-document-only batch. In this later repair, interview runtime/intake/supporting-test bytes change; the legacy migration implementation and original specification remain byte-identical. An independent reviewer re-read original T82, D-SPEC §6.4, §6.11, §7.4 and D.11, and the changed current-plan/receipt guidance for ownership or authority leakage.
+
+All nine original tests pass on fresh published baseline and candidate, with zero skips. Full paired tombstone/omission, wrapper, stale-envelope, 20-question refresh, rejection and resume traces remain byte-identical across both trees and both runs: SHA-256 `3e55aa2a1e193fa7775447118a620933c3780e4cf0590cd0392b8a75df1a3e90` (277948 bytes), matching the historical replay. Independent tests confirm that retired Q-C07/account_ownership/account_control/old Q-C08 neither create Q-C13 or a completion receipt nor become missing readiness requirements. Explicitly named target_plan remains a separate stale target; imported subscription remains unknown. New current-plan and receipt account aliases are bounded association metadata, not a renamed ownership/control questionnaire or recovered permission.
+
+The full original T82 L+C conclusion is preserved under the same explicitly supported compact/report migration contract and strict rejection of unsupported shapes. This remains semantic retirement, not a universal legacy-format importer. No generated response, native import, live account verification or new action authority is added. Historical generated-response packet provenance is untouched. Refresh only the reviewed current dependency table pins and the final page hash in its ledger entry after retaining this review.

@@ -227,7 +227,7 @@ prior accepted ENV-T79/90 workflow pins after independent re-review of this delt
 | `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
-| `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
+| `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `docs/implementation-tracker.md` | `8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50` |
@@ -275,3 +275,12 @@ selected-device history and explicit C5 intent do not infer the current account'
 status or grant action permission. Callable quarantine/recovery is separately
 scoped and reviewed; default interview/CLI and existing contact/authorization
 safeguards remain. No new original cleanup/native case is accepted here.
+
+
+### Twenty-ninth subscription-repair preservation review (2026-10-18 UTC)
+
+ENV-T81's complete original L+C condition was re-read against D-ENV §17.5 and §18.5–18.8 and D-SPEC §6.13. All 23 unchanged required-control tests pass on both the published twenty-eighth tree and integrated frozen twenty-ninth candidate. Two complete --replay invocations per tree have identical stdout bytes and parsed objects, SHA-256 097e5442157d2942152f0a2c99035af7f9ead6b800967696d1165818f9a6840b. Missing mandatory evidence and a declared real direct-path conflict still block client/login/subscription/gift-card handoffs without an approval callback. Invalidated previous grants remain revoked with contact history retained; a current mandatory requirement cannot be relabeled optional. The 43 workflow and 24 contact-epoch supporting tests also pass, with no skips.
+
+The sole changed pinned dependency is accounts-and-payments.md. Its expired old-bill explanation waives irrelevant purchase-device/checkout/deployment questions only for that explanatory task. It does not waive PC-G1 controls, actual-path checks, a known conflict, host permission or separate first-contact/login/payment authority. Current refund-policy checks, account access and submission remain separately scoped; the unchanged A1/A2, B2/B3/B5/B7 and PC0 stopping clauses still prohibit buying a card or logging in to resolve missing readiness. No actual login, refund, purchase, device observation or OS isolation was performed. Only that reviewed guidance pin is refreshed.
+
+This is preservation of the unchanged original requirements/layers, not acceptance of any additional case. Normalized synthetic host facts and current active guidance were reviewed; no model dialogue, native device, live service contact, payment, deployment, OS isolation or actual cleanup is established. The trusted host remains responsible for truthful task/target/applicability, current replies and genuine separate authorization.

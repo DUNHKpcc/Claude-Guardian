@@ -302,7 +302,7 @@ updating hashes alone does not renew acceptance.
 | `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
-| `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
+| `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
 | `skills/claude-guardian/references/agent-remediation.md` | `0590a83c4d80b878a649b4d8ab13edcd73bdf8852980b8e01b816b092772718b` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
@@ -361,3 +361,12 @@ selected-device history and explicit C5 intent do not infer the current account'
 status or grant action permission. Callable quarantine/recovery is separately
 scoped and reviewed; default interview/CLI and existing contact/authorization
 safeguards remain. No new original cleanup/native case is accepted here.
+
+
+### Twenty-ninth subscription-repair preservation review (2026-10-18 UTC)
+
+The unchanged ENV-T79 L and ENV-T90 L+C clauses were reviewed in full against D-ENV §18.5–18.8 and the reachable current instructions. Eight boundary tests pass on the published twenty-eighth tree and on the integrated frozen twenty-ninth candidate. Two complete --replay invocations per tree produce identical stdout bytes and parsed objects, SHA-256 b014fc2e16015a9ecd07b2f95460ab5fead21b625fd882eb01d8031042325581. Literal target-domain syntax/intersections remain offline, actual-hit evidence stays a later scoped check, and public workflow results retain enforcement_level=workflow_guard and executes=false with uncovered browser/search/MCP paths explicitly described.
+
+Only accounts-and-payments.md changed among this page's pinned dependencies. Its new old-bill paragraphs distinguish a reported expired entitlement and actual past channel from a future purchase; conditional refund explanation does not require an unrelated purchase questionnaire. They expressly keep account access, current policy checks and refund submission separately scoped. Read together with the unchanged PC0 operational preamble, contact policy and workflow contract, they provide no search/MCP/browser/OS isolation claim and authorize no target contact. The corresponding accounts-and-payments.md pin is refreshed after this semantic review; workflow/converter/compiler runtimes and all exact boundary assertions remain byte-identical to the published baseline.
+
+This is preservation of the unchanged original requirements/layers, not acceptance of any additional case. Normalized synthetic host facts and current active guidance were reviewed; no model dialogue, native device, live service contact, payment, deployment, OS isolation or actual cleanup is established. The trusted host remains responsible for truthful task/target/applicability, current replies and genuine separate authorization.

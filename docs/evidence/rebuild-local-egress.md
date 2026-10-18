@@ -41,11 +41,20 @@ The candidate adds only this page and one test file. Review receipts, queue, log
 | Path | SHA-256 |
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `0eb24c5fc9b356f145b35b792a13444392f23ea634f618df6886b16aa91beaac` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
 | `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
-| `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
+| `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `tests/test_acceptance_local_egress.py` | `f191e857eec5c8b6221ba2a2f8a9c97bf8b632a3f2e09a018d8f7d08655c3959` |
 
 Minimum-Python CI found that TestCase.enterContext requires Python 3.11. The equivalent ExitStack plus addCleanup(close) supports 3.10 while preserving the same patch lifetime and assertions.
+
+
+### Twenty-ninth subscription-repair preservation review (2026-10-18 UTC)
+
+T23's original complete L+C requirement was re-read against D-SPEC §3.3, §5.5–5.7 and §7.4 and the active route/intake/contact guidance. Four unchanged local-egress tests pass on both the published twenty-eighth tree and integrated frozen twenty-ninth candidate. Each tree ran the unittest-based --replay twice with successful exit status and separately retained stdout/stderr. The full state/question/assessment/applicable-question JSON is byte-identical across all four stdout streams, SHA-256 f04fe6dbd78f9283f95e550262a07d25b68c094fb442dab2ccc098cfa574fa62.
+
+Client runtime, VPS proxy exit and remote-workspace intent remain distinct. Explicit local Code retains local questions, records Q-N01/N02's reported provenance and never activates VM/VPS installation. The new explicit current-plan condition can add only account-bound Q-C13; it creates no payment or remote-workspace branch. An independent composed local-Code/exit-only/current-plan replay confirms that changed exit facts alone become stale while local choice, current-plan fact and all authority boundaries remain intact. Resume preserves the chosen route, G3 remains blocked, contact is PC0, payment intent is none and save consent is false. The changed legacy-bill guidance is limited to an actual billing task and does not reclassify VPS assets as workspace choice. Only the reviewed interview_flow.py and intake.md source pins are refreshed.
+
+This is preservation of the unchanged original requirements/layers, not acceptance of any additional case. Normalized synthetic host facts and current active guidance were reviewed; no model dialogue, native device, live service contact, payment, deployment, OS isolation or actual cleanup is established. The trusted host remains responsible for truthful task/target/applicability, current replies and genuine separate authorization.

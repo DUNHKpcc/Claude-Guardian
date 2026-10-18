@@ -154,19 +154,19 @@ python -B tests/test_acceptance_task_scope_rebuild.py --replay > /tmp/guardian-t
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `0eb24c5fc9b356f145b35b792a13444392f23ea634f618df6886b16aa91beaac` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
 | `tests/test_acceptance_task_scope_rebuild.py` | `e5585ba5cd68dc3bf35ca217453f6e2be7835558588fb47006c8d8be7b4f964e` |
 | `tests/test_acceptance_intake_rebuild.py` | `e26a26ee3b3d0ba93270787f8dbd8022ed11adb2fbbb0f1229df8f1aef57245a` |
-| `tests/test_interview_flow.py` | `58a5054bb0091397fd87ab3775c4b19cb6c08ecd083de03b2ca6616110175a8d` |
+| `tests/test_interview_flow.py` | `7140e70b88e4cd3099d2fa725b3b20269de511be90d4dd020154d2db3e5e0965` |
 | `tests/test_interview_cli.py` | `a3cbd2c8332d50e6c49fee61ced2bb9c10295b7a3393b39b6de2e89a9a37be4d` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_interview_migration.py` | `6c4e6bf32875b83ea179ffc836f140141f161240b478b359b62b304767063618` |
 | `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
-| `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
+| `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
-| `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
+| `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
 | `skills/claude-guardian/references/incidents-and-integrations.md` | `37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2` |
 | `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 
@@ -198,3 +198,14 @@ selected-device history and explicit C5 intent do not infer the current account'
 status or grant action permission. Callable quarantine/recovery is separately
 scoped and reviewed; default interview/CLI and existing contact/authorization
 safeguards remain. No new original cleanup/native case is accepted here.
+
+
+### Twentyninth subscription-repair preservation review (2026-10-18)
+
+The earlier twelfth-batch statement “没有新保存schema、字段或问题ID” describes that earlier correction, not this later subscription repair. Twentyninth adds optional `plan_compatibility_needed`, derived current-plan Q-C13, optional `purchase_completion` and its explicit lifecycle handling while retaining old schema-1 inputs. Strict older readers may reject records containing these additions; they must be upgraded rather than dropping unresolved facts to manufacture readiness. Q-C13 is an implementation ID, not an alteration of the original specification IDs or Q-C08 target-plan semantics.
+
+An independent reviewer read unchanged original T34/T43/T48/T78 and D-SPEC §5.5, §6.4–6.6, §6.11–6.14 and §7.3, all changed runtime sections, and the complete changed intake/accounts/resume guidance. All 15 original tests pass on fresh published baseline and candidate, zero skips. The complete current replay, including all 24 T43 opening permutations and full question/state/assessment trajectories, is byte-identical across both trees and both runs: SHA-256 `99c11ee14d12e3f07e67b7e35c9b98338594dabd81b7cac71f5db5f261c35360` (1314975 bytes). The earlier twelfth hash `71fe994782fdd58d77470b54c315f9291b41e4033a1ce4bc5dd5e27f9f795ac1` remains historical, reflecting the prior evidence stage; it is not the current replay digest.
+
+T34 retains an unconfirmed route for unanswered/shown/skipped/unknown/declined/deferred/comparison inputs. A complete billing explanation can omit an unrelated route prerequisite without confirming that route; returning to environment/network/cleanup/subscription preparation exposes the original missing route and conditional plan again. T43 remains purchase_intent=none/payment_intent=none with no target-plan/payment questions in ordinary environment work; explicit relevant Q-C13 adds current-plan information only, separately account-bound and never copied from Q-C08 or claimed as established feature compatibility. T48 still preempts old-billing/current-plan branches with immediate minimal incident triage, explicit ordinary-theme postponement, bounded unknown/refusal/defer and explicit resolution; neither seven-question completion nor an emergency flag grants authority. T78 still records unknown subscription and asks the short Q-J02 when only experience is supplied; plan/compatibility flags, target choice and expertise cannot establish paid status or inferred entitlement.
+
+Independent preservation checks cover these new branch intersections and closed G3/contact/save boundaries. All four original L+C conclusions remain within the existing normalized-host/guidance contract. No arbitrary-language parser, native incident detection, actual credential action, real feature compatibility or new original-case acceptance is claimed. Current source table pins reflect only the reviewed exact bytes; original historical narrative and artifacts are preserved.

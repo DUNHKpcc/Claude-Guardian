@@ -57,14 +57,14 @@ The following files are hashed against the reviewed current nineteenth bytes. Ca
 | --- | --- |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `0eb24c5fc9b356f145b35b792a13444392f23ea634f618df6886b16aa91beaac` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
 | `skills/claude-guardian/scripts/cleanup_transactions.py` | `42b1586eae6d67dbdfa59ffb398a445bd717d3da304bc19c3cd64a6b34ea797e` |
 | `skills/claude-guardian/scripts/transactions.py` | `53c1fa7a3f2e2fff2737ba3dbe96d0dbe748bfdbbed73b2a7d15f05c723190cd` |
 | `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
-| `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
-| `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
+| `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
+| `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
 | `skills/claude-guardian/references/incidents-and-integrations.md` | `37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2` |
-| `docs/interview-resume.md` | `2261f306dcbd357544bcf3261c98e4544be3bc0d3324364936501db89e7e7cfd` |
+| `docs/interview-resume.md` | `0c8325daad9e5d56093819068001617024c226cd934aca8fd195f2c280210691` |
 | `tests/fixtures/acceptance-routes-rebuild.json` | `073ad74ba195fd1c72bcab61887f24f1ce5cbeaef6ff6036d9ff76a713154a80` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_cleanup_transactions.py` | `6519b87995b16bdc439a1bbad8e0398c315d79e7d5666558b821bf841c65ce06` |
@@ -74,3 +74,14 @@ The following files are hashed against the reviewed current nineteenth bytes. Ca
 The integration review found a locale-dependent fixture read. It now requests UTF-8 explicitly; no replay assertion or acceptance condition changed.
 
 Minimum-Python CI found that TestCase.enterContext requires Python 3.11. The equivalent ExitStack plus addCleanup(close) supports 3.10 while preserving the same patch lifetime and assertions.
+
+
+### Twentyninth subscription-repair preservation review (2026-10-18)
+
+The earlier nineteenth-tree description, four-test result and original construction/rollback statements above describe that historical evidence batch. The twentyninth runtime now includes an optional account-bound `purchase_completion` lifecycle record; the historical statement that that earlier batch added no runtime feature must not be read as a description of this later repair.
+
+An independent reviewer read unchanged D-SPEC §6.11, §6.14, §7.4 and original T16, D-ENV §10/D12, the changed intake/accounts/resume guidance and the actual runtime diff. Fresh baseline and candidate runs each passed all four T16 tests, with zero skips. Each full JSON replay was executed twice from its actual checkout. Baseline replay SHA-256 is `1b645facc060f874fd074fa9b1cd739a641665f275345c9d1a53f23b93780e51` (106789 bytes); current replay is `fda7c117962b94894bc5ee779edaf9392efa3c08e83320bf722bd61bb2dcf1d0` (107884 bytes). Both are repeat-stable. Full current states are not byte-identical to baseline: the only five structural additions are `purchase_resume.{saved,resumed,changed,refreshed,reloaded}.state.purchase_completion`, each exactly `{account_alias: resume-account, source: synthetic:reported-completion, observed_at: 2026-10-18T04:00:00Z, observed: false}`. All pre-existing fields, questions, assessments and the observed cleanup trace remain unchanged. Unittest stderr was retained separately; its elapsed-time text is nondeterministic and is not a JSON replay digest.
+
+The record is limited non-secret lifecycle metadata, not a transaction ID, verified billing, entitlement, identity or operation permission. Independent checks establish exact completion replay after later tasks, same-account device changes, explicit later subscription/plan reports and private save/load, plus rejection of older/same-time conflicting receipts and noninheritance on a different account. Dormant retained Q-C13 is included in interruption review; unresolved review cannot be discarded by a new task/device to revive it. Different or later historical imports cannot discharge staleness or renew a spent clarification; a genuinely current host-classified answer retains its real observation time. Completion still cannot discharge unresolved environmental/target review. G3/contact/save permission remain closed. The original partial-cleanup replay still observes one quarantine rename and one separately approved restore, no second deletion, exact protected/backup bytes, and native acceptance not_run. No provider-side idempotency or real-device cleanup claim is added.
+
+This preserves the complete original T16 L+C conclusion within its trusted-host and controlled synthetic POSIX boundaries. Relevant support reruns passed 207 interview, 92 cleanup, 2 portability, 43 workflow-guard and 24 contact-epoch tests; nine independent preservation checks also passed twice with identical complete trace. These totals supplement the clause review and do not accept any additional original case. The current dependency table is bound to the reviewed twentyninth bytes; full commands, both stdout/stderr streams, structural differences and the before/after pin map are retained with the delivery review receipt.

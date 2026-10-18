@@ -85,13 +85,22 @@ These are the original specs, exercised runtime, operative guidance and supporti
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `0eb24c5fc9b356f145b35b792a13444392f23ea634f618df6886b16aa91beaac` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
 | `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 | `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
-| `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
+| `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/incidents-and-integrations.md` | `37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
-| `tests/test_interview_flow.py` | `58a5054bb0091397fd87ab3775c4b19cb6c08ecd083de03b2ca6616110175a8d` |
+| `tests/test_interview_flow.py` | `7140e70b88e4cd3099d2fa725b3b20269de511be90d4dd020154d2db3e5e0965` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_acceptance_history_pause.py` | `6448142f9b43f7851ce81297322a3652d0e37f68d3ed2bf8621f238df4cfaa76` |
+
+
+### Twentyninth subscription-repair preservation review (2026-10-18)
+
+An independent reviewer re-read the unchanged original T31/T47 clauses and D-SPEC §5.5, §6.4, §6.6–6.7, §6.13 and §7.3–7.4, then reviewed the changed runtime and complete active intake/accounts/resume context. All six original regressions pass on freshly executed published baseline and candidate, with zero skips. Both full JSON replay runs from each checkout are byte-identical, SHA-256 `9270bdbb58accb9706e8f9f9f5f3f31fe6fd88cf2122d8bd95b0d417c4d3f7c9` (424778 bytes), matching the previously retained replay.
+
+The old-billing-only exception suppresses unrelated historical-device cleanup prerequisites only for an actual billing issue. Current account restriction, credential/data/duplicate-charge incidents, explicit cleanup and selected-device incident triage still precede it. Independent checks preserve separate current/history envelopes and selected VM route while a later genuine account restriction immediately enters incident questions. The optional current-plan branch does not derive subscription from experience or activate a purchase questionnaire. Pause continues to emit no next question and blocks G1/G2/G3 appropriately across billing, current-plan and completed-purchase states; save/load retains pause and resets save/export permissions. The internal applicable-question registry is still not a user-facing questionnaire, and ordinary load is not permission to resume.
+
+All original T31/T47 L+C conclusions remain within the documented normalized-host boundary. No generated dialogue, native/account verification, action authority or additional original-case acceptance follows. The earlier twentieth/twentyfirst author/reviewer counts and immutable review-receipt hash remain historical evidence. Current table pins below/above are refreshed only after this semantic review and actual replay; complete review logs and hashes are retained with the delivery receipt.

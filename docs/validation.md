@@ -1436,3 +1436,40 @@ Independent integrated checks ran 1,793 tests in 47.194 seconds: 1,785 passed
 and eight skipped. Detached release9/9, portability2/2, ledger3/3, forced cp1252
 7/7, both Node synthetic suites, compilation and duplicate package builds passed.
 Current-batch CI is pending.
+
+## 2026-10-18 twenty-ninth: expired bills and conditional current-plan facts
+
+The final local suite exited 0: 1,842 tests in 51.913 seconds, with 1,834 passed
+and eight skipped. Its log SHA-256 is
+51809da8cf567ac5f36520c37af0d660b261106c69e21b2965cebfae43dd7e2f.
+The independent terminal run exited 0: 1,842 tests in 52.389 seconds, also
+1,834 passed and eight skipped; log SHA-256 is
+b09807e65184085497b38e974fc908a531358b9eddae42d51f69312b56da1a85.
+A premature independent progress count/duration was withdrawn before acceptance;
+only the terminal logs above support these results. An earlier local aggregate
+overlapped the final evidence-table pin conversion from 12 to 13 and failed that
+single integrity assertion. The consistent final tree was rerun in full; no
+behavioral assertion was relaxed and no new skip introduced.
+
+Before pin updates, the integrated 1,828-test run had exactly 41 stale source-pin
+failures and no functional failures. Three independent clause/replay reviews then
+preserved all 27 affected accepted cases. Thirteen pages received dated appendices
+and exactly 41 reviewed pin replacements. T16's full replay adds five optional
+completion receipts; all pre-existing members are unchanged. Historical generated
+response packets remain byte-identical. The two new original T76/T84 cases have
+14 independent tests, 385 repeatable full snapshots, and 13 offline CLI commands
+with 12 saved-state inspections. These are normalized-host L+C evidence, not
+actual entitlement, commercial compatibility, generated dialogue or native action.
+
+The 35 repair tests pass forced cp1252/C-locale execution. Independent detached
+release 9/9, portability 2/2, both Node synthetic suites, compilation and diff checks
+pass. Duplicate package builds match
+2aeec7ac5d051dadefaf88ad0ae6f85a0192e9239e424ca94135268795cb4640.
+Actual Python 3.10 is unavailable locally; grammar/API checks do not replace its
+hosted runtime job. The historical SKILL question count is a separately tracked
+documentation correction; the current derived registry has 98 entries.
+
+Prior commit 12603a4ecade3d5ee54d24436ba6821d5415acb5 passed CI 39117151076 on all
+four hosted platforms. Current-batch CI is pending. Hosted macOS/Windows jobs
+are not native acceptance on the user's devices. All original 218 conditions and
+layers are preserved; current candidate acceptance is 36, with 182 pending.

@@ -255,9 +255,9 @@ VPS 完整实际提示，与手写预期逐字相同：
 | 文件 | SHA-256 |
 |---|---|
 | `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `0eb24c5fc9b356f145b35b792a13444392f23ea634f618df6886b16aa91beaac` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
-| `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
+| `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
@@ -267,7 +267,7 @@ VPS 完整实际提示，与手写预期逐字相同：
 | `tests/fixtures/acceptance-routes-rebuild.json` | `073ad74ba195fd1c72bcab61887f24f1ce5cbeaef6ff6036d9ff76a713154a80` |
 | `tests/test_acceptance_routes_rebuild.py` | `893329472b97152d69d41d3b352c90e9bddc8dd93d812d334edc1efbebc5428b` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
-| `docs/interview-resume.md` | `2261f306dcbd357544bcf3261c98e4544be3bc0d3324364936501db89e7e7cfd` |
+| `docs/interview-resume.md` | `0c8325daad9e5d56093819068001617024c226cd934aca8fd195f2c280210691` |
 | `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 
 本批修改 interview_flow/CLI、SKILL 一句、intake/contact 指导、原 route 回放测试、本页及三个既有验收行的 evidence hash；新增 focused resume 测试和 API/兼容说明。原 fixture、来源原文、原验收条件均未改。代码与指导须一起回滚，并同步恢复准确证据 pins/hash；旧 reader 不认识可选 resume_review，不能通过删掉未解决状态绕过核实，详见 docs/interview-resume.md。完整套件、Node、编译与打包另附集成记录，本页不以定向结果代替它们。
@@ -338,3 +338,16 @@ selected-device history and explicit C5 intent do not infer the current account'
 status or grant action permission. Callable quarantine/recovery is separately
 scoped and reviewed; default interview/CLI and existing contact/authorization
 safeguards remain. No new original cleanup/native case is accepted here.
+
+
+### Twenty-ninth subscription-repair preservation review (2026-10-18 UTC)
+
+The published twenty-eighth tree and frozen six-file repair integrated into the twenty-ninth tree were compared by file bytes, not local Git HEAD. T19/T20/T21/T24 retain their unchanged original L+C requirements. All six existing route tests pass on both trees; each full --replay projection ran twice per tree and all four stdout byte streams and parsed complete objects are equal, SHA-256 dd128334df685184abf60fa6c27f24bfed166aca2917ccaea3885768f4bc552f. This compares the fresh published baseline with the repair; the earlier 8e2a95d3 digest remains a dated pre-traffic-policy observation and is not relabeled as the current output.
+
+The changed intake/resume instructions were read against D-SPEC §3.1/3.3, §5.0–5.7, §6.13–6.14 and §7.4, and D-ENV §18.4–18.10. Ordinary absent/shown/unknown route answers remain default_proposal/unconfirmed with G2 blocked. The narrow billing_issue explanation can omit an unrelated deployment questionnaire without confirming a route; returning to an environment/network/purchase task restores that route requirement. Explicit VM/VPS choices, novice depth, existing/new server facts and independent V1–V3/P1–P5 guidance are preserved.
+
+The current resume contract has two additions to the historical C table: retained Q-C13 is an account-bound current-plan fact, separately reviewed even while its explicit plan-dependency condition is dormant; supplied observed_at is a historical import by default, with strict current_reply=True reserved for a genuinely current host-normalized answer at its real time. That declaration is neither verified freshness nor authority. Changed/unknown/declined/deferred/target-change review still blocks the dependent plan; no route/default reset occurs. Unresolved Q-C13 cannot become fresh through a new task/device, historical import or account change. Optional purchase_completion metadata deduplicates a reported completion, is not a payment or entitlement grant, and an exact retry preserves subsequent task/route/plan/contact history. Old strict readers may reject these optional schema-1 additions and must be upgraded rather than stripping obligations.
+
+The integrated 207 interview tests, 43 workflow tests, 24 contact-epoch tests and two portability tests pass with no skips. Six additional independently authored interaction methods, including VM/VPS/default-route and local-egress compositions, pass twice under fail-fast I/O sentinels; their full-state replay is deterministic, SHA-256 b999541701067f90029b3a00ca72acd761b013f27d7915e24697b53d0d56d3cc. G3 remains blocked, save/export permission is not restored, and reviewed same-task PC2 history is retained. Only the three reviewed changed source pins in this page are refreshed.
+
+This is preservation of the unchanged original requirements/layers, not acceptance of any additional case. Normalized synthetic host facts and current active guidance were reviewed; no model dialogue, native device, live service contact, payment, deployment, OS isolation or actual cleanup is established. The trusted host remains responsible for truthful task/target/applicability, current replies and genuine separate authorization.
