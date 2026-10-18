@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: twenty-second rebuild, 2026-10-18
+## Current checkpoint: twenty-third rebuild, 2026-10-18
 
-The current ledger records 23 freshly accepted original cases and 195 pending:
-T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 26 freshly accepted original cases and 192 pending:
+T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
@@ -131,3 +131,8 @@ imports. No model/UI/native/deployment or permission proof is inferred.
 The twenty-second adds independently reviewed actual guided-response records for
 T03 and T05. Integrity checks preserve reviewed artifacts and guide bytes; they
 do not generate new responses or establish real VPS or account observations.
+
+The twenty-third revalidates current-versus-historical restriction, pause without
+authorization advancement, and retired ownership-field migration through the
+supported compact/report contract. Arbitrary historical formats and native import
+are not claimed. A narrow migration-guide field listing is corrected.

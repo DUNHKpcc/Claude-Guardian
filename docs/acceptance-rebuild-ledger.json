@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Twenty-three original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 195 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
+    "Twenty-six original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T31/T47/T82/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 192 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
   ],
   "cases": [
     {
@@ -439,9 +439,19 @@
       "requirement": "当前状态和历史经历分开记录，历史事实不自动改变方案",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导、状态契约或相关入口变化后，重审链接中的逐条件回应与API轨迹",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review full original clause and exact guide/runtime pins when relevant bytes change; no native or unspecified historical format claim.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-history-and-pause.md",
+        "sha256": "cc05e9885b883a87eeaaa64367547abbad67e97762508d4eebbe020a548904e9",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete deterministic synthetic state replays and independently reviewed active guidance; normalized host facts and supported compact/report migration contract only; no generated dialogue or native action claim."
+      }
     },
     {
       "id": "T32",
@@ -617,9 +627,19 @@
       "requirement": "停止推进或改为缺口摘要；不继续完整题单，不默默通过 G2/G3",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "回放“用户说“问题太多/先暂停””，逐项核对：停止推进或改为缺口摘要；不继续完整题单，不默默通过 G2/G3。本机 Codex 真取消/暂停呈现另验，逻辑回放不依赖平台",
-      "dependencies": "A、U"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review full original clause and exact guide/runtime pins when relevant bytes change; no native or unspecified historical format claim.",
+      "dependencies": "A、U",
+      "evidence": {
+        "path": "docs/evidence/rebuild-history-and-pause.md",
+        "sha256": "cc05e9885b883a87eeaaa64367547abbad67e97762508d4eebbe020a548904e9",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete deterministic synthetic state replays and independently reviewed active guidance; normalized host facts and supported compact/report migration contract only; no generated dialogue or native action claim."
+      }
     },
     {
       "id": "T48",
@@ -1012,9 +1032,19 @@
       "requirement": "已停用问项不加载、不改名询问，不把缺少该字段当作就绪阻断",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "回放“续接旧画像含 Q-C07 或账号归属字段”，逐项核对：已停用问项不加载、不改名询问，不把缺少该字段当作就绪阻断。Mac/Windows 宿主真实旧进度导入/呈现另验，迁移算法可云端验证",
-      "dependencies": "A、U"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review full original clause and exact guide/runtime pins when relevant bytes change; no native or unspecified historical format claim.",
+      "dependencies": "A、U",
+      "evidence": {
+        "path": "docs/evidence/rebuild-legacy-retirement.md",
+        "sha256": "e571a99e747198e530464c636ad3019cc9071362cfe604c00b3f55da33e34b2a",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete deterministic synthetic state replays and independently reviewed active guidance; normalized host facts and supported compact/report migration contract only; no generated dialogue or native action claim."
+      }
     },
     {
       "id": "T83",

@@ -1,9 +1,16 @@
 # 版本记录
 
+## 2026-10-18 重建第二十三批
+
+- 按原 L+C 条件核验 T31 当前状态与既往受限分离、T47 暂停阻断后续提问与门禁、T82 退役字段迁移
+- 补充精确证据依赖，修正迁移文档允许的固定 traffic_policy 字段说明；不增加任意历史格式兼容承诺
+- 累计26/218，192项待验收；运行时不变
+
 ## 2026-10-18 编码模拟器最低版本调用约定修复
 
 - 直接包装Path.open，保留io.open，避免Python3.10旧pathlib accessor把替换函数绑定为方法
 - 保留原证据、断言和运行时；如实记录前一CI的模拟器失败
+
 
 ## 2026-10-18 验收测试编码与可移植性回归
 
@@ -11,7 +18,7 @@
 - 增加验收辅助测试静态编码/已知最低版本API检查和独立cp1252默认编码子进程回归
 - 如实记录第二十二批Windows CI失败，运行时与23项验收结论不变
 
-## Twenty-second reconstruction, 2026-10-18
+## Twenty-second reconstruction, 2026-10-18 (3430901)
 
 - Revalidate original T03/T05 using retained actual two-turn guided responses and independent sentence-level review
 - Preserve uncertainty for 403 origin/authentication/permission and prohibit inferred ban rates from a reported VPS observation period

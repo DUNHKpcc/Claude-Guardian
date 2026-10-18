@@ -9,7 +9,9 @@ contact services, obtain permissions, or save the returned candidate.
 Supported formats are the explicit `guardian-interview/0.1` compact object with
 `answers` and optional boolean `cancelled`, and the `guardian-report/0.1` interview
 wrapper emitted by `guardian.py`. The wrapper's exact required fields and nested
-key sets are checked; only its optional `question` field is allowed additionally.
+key sets are checked; optional `question` and `traffic_policy` members are allowed
+additionally. When present, `traffic_policy` must match the current fixed policy
+exactly in keys, value types and values; it is not imported as evidence or consent.
 The current repository fixture is `tests/fixtures/interview-first.json`. The
 initial producer at commit `60e7461` used the same named answer vocabulary but
 misassigned some question IDs. Migration therefore uses named answer fields,

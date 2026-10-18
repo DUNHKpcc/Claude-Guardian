@@ -1179,6 +1179,24 @@ macOS 1,725/12; Windows 1,345/392. All release hashes matched. This closes the
 specific enterContext test compatibility defect; the earlier failed run remains
 recorded, and hosted results do not replace actual user-device acceptance.
 
+## Twenty-third reconstruction: history, pause and retired fields
+
+Original T31/T47/T82 retain full L+C clauses. Deterministic replays and active
+content review distinguish current reported usability from prior restrictions;
+pause stops questions and blocks planning/execution gates without erasing contact
+history; supported compact/report migration discards retired ownership fields
+without replacing the question or making omission block readiness. Old arbitrary
+wire formats remain unsupported. Fresh target binding, stale-fact review and
+actual operation approval remain necessary.
+
+Fifteen new tests and repeated traces accompany 26 exact dependency pins.
+Proposed model dialogue exercises are explicitly unrun; these records establish
+state transitions and reviewed guidance, not generated model response behavior.
+The narrow migration-doc correction lists the already-supported optional fixed
+traffic_policy member; runtime is unchanged. The aggregate ran 1,758 tests in
+37.897 seconds: 1,750 passed, eight skipped. Acceptance is 26/218 with 192 pending;
+original IDs, conditions, layers and scheduling are preserved.
+
 ## Twenty-second publication and explicit-encoding regression
 
 Published `3430901cf84f0034b4151170235cbb8030b21c67`, exact 240-source tree
@@ -1209,6 +1227,12 @@ eight skipped. Thirteen isolated AST mutation cases check both rejected implicit
 text/API usage and accepted binary/explicit-encoding forms. Both Node suites,
 compilation and reproducible package remain successful at the unchanged release
 hash `9ce77248c44c36e1d6f79bfc80ac59cec70ae126f43813c377e0d5f3138256b7`.
+
+After the frozen explicit-encoding hotfix transplant, the twenty-third aggregate
+ran 1,760 tests in 38.700 seconds locally and 38.787 seconds independently:
+1,752 passed, eight skipped in each. New portability guards and all 163 table
+pins passed; package bytes are unchanged. These runs do not replace the new
+actual Windows/minimum-Python CI result recorded below.
 
 ## Encoding-guard publication and Python 3.10 accessor correction
 
@@ -1241,3 +1265,20 @@ with the explicit-UTF-8 source. Fifteen API checks cover the pinned Python
 binary operations and patch restoration. Both Node suites, compilation,
 ledger integrity and repeated release builds pass; the package SHA-256 remains
 9ce77248c44c36e1d6f79bfc80ac59cec70ae126f43813c377e0d5f3138256b7.
+
+With the corrected Path.open guard transplanted, the independent twenty-third
+aggregate ran 1,760 tests in 38.080 seconds: 1,752 passed and eight skipped.
+Both Node suites, compilation, portability checks, all 163 table dependency pins
+and repeated unchanged release builds passed. The original case count remains
+26 accepted and 192 pending.
+
+The corrected emulator was published as
+`8e0010a5d68db0800535e82f90a5aabfe6899674`, exact tree
+`8970831f62d40c4622d1f6a9f192ffb4197e0c5d`.
+[Actual push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39114631211)
+completed successfully: Python 3.10 and Ubuntu each passed 1,737 with eight
+skipped; macOS passed 1,733 with 12 skipped; Windows passed 1,353 with 392 skipped.
+All jobs ran the same 1,745-test inventory. The skipped native-dependent cases
+remain unverified on user devices. The unchanged package hash was reproduced.
+This closes the preceding test-helper compatibility failures without rewriting
+their recorded outcomes. Twenty-third publication remains a separate commit.
