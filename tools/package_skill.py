@@ -19,7 +19,7 @@ def main():
         "scripts/windows_listener_binding.py", "scripts/windows_transactions.py", "scripts/workflow_guard.py", "scripts/remedy_plans.py", "scripts/config_edit_plan.py", "scripts/rules_extension_plan.py", "scripts/rule_source_import.py", "scripts/rule_format_conversion.py", "scripts/rule_policy_conversion.py",
         "scripts/recovery_cli.py", "scripts/repair_cli.py", "scripts/repair_execution.py", "scripts/clash_verge_258.py", "scripts/stun_probe.py", "scripts/network_probes.py", "scripts/transactions.py", "scripts/serve_webrtc.py", "assets/webrtc-probe.html",
         "references/agent-remediation.md", "references/intake.md", "references/contact-and-safety.md",
-        "references/routes-and-platforms.md", "references/network-and-remedies.md",
+        "references/routes-and-platforms.md", "references/network-and-remedies.md", "references/macos-dns-case-lessons.md",
         "references/accounts-and-payments.md", "references/incidents-and-integrations.md",
         "references/evidence-policy.md", "references/source-library.md", "sources/manifest.json",
     ]

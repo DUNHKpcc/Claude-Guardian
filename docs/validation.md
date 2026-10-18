@@ -830,3 +830,30 @@ Linux and Python 3.10 Linux: 1,474 passed/8 skipped; macOS: 1,471/11;
 Windows: 1,229/253. Preview 27/27 and detached runtime 9/9 passed.
 Remote seven-file scope, parent, hashes and modes were verified. CI does not
 substitute for user-device acceptance.
+
+## Fifteenth rebuild batch: sanitized network case reference
+
+A derived macOS DNS/IPv6/Tailscale experience reference was integrated byte for
+byte from the independently reviewed public artifact. Only the derived prose is
+distributed; the private original, provenance records and environment identifiers
+are not included. Source IDs, historical manifests and original design rows are
+unchanged. The active guide now distinguishes existing guarded host libraries
+from a general active-network CLI and uncompleted native end-to-end acceptance.
+This batch changes no runtime capability or IPv4/IPv6 policy default.
+
+Six new documentation/package checks and three source-bundle checks passed.
+Independent preservation review ran 182 relevant offline checks and 145 interview
+checks, with zero skips, and compared five complete original-case replays.
+Affected pins in all six accepted-evidence pages were refreshed after explicit
+review; original acceptance remains 15/218. The aggregate ran 1,514 tests in
+29.763 seconds: 1,506 passed, eight skipped. Both Node synthetic suites,
+compilation and diff checks passed. Two packages are byte-identical, SHA-256
+`2f3cecf66d60a48c468c29c9c67cd847596914cb2f189681280e68e8e0dd9649`.
+The derived reference preserves unverified WebRTC/UDP and application-exit
+lifecycle limits, configuration drift and the distinction between an empty AAAA
+answer and system-wide IPv6 blocking. No original-case native result is added.
+
+The preceding fourteenth batch was published as
+`230101be81d28149b9c27c99a7047c274bb5cec4`, with verified parent
+`8b0b2a8a877e6403d6c5ef163f52215c3d1a707f` and exact ten-file scope.
+Its terminal push CI result is recorded separately when available.

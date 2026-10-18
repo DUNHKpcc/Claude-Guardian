@@ -1,8 +1,10 @@
 # M04/M05/M10: network evidence and offline remedies
 
-中文执行摘要：按程序、路径、协议、地址族和时间解释证据。系统代理/TUN 与 rule/global/direct 分开；配置存在不代表生效。DNS、IPv6、UDP/WebRTC 超时不是阻断证明。先定位问题，再给最小修改计划，保留内网、隧道与 Codex 通道；本版所有主动网络测试均未开放。
+中文执行摘要：按程序、路径、协议、地址族和时间解释证据。系统代理/TUN 与 rule/global/direct 分开；配置存在不代表生效。DNS、IPv6、UDP/WebRTC 超时不是阻断证明。先定位问题，再给最小修改计划，保留内网、隧道与 Codex 通道；已有须经可信宿主核验与逐次授权的有限 HTTPS/STUN/DNS 探测库；尚无通用主动网络 CLI，也未完成端到端原生验收。
 
-Read only for relevant network/client tasks. Every method below is a diagnostic interpretation or future validation requirement, not permission to run a probe or apply settings. The preview is offline except explicitly authorized local metadata reads; neutral network probes remain unavailable.
+Read only for relevant network/client tasks. Every method below is a diagnostic interpretation or future validation requirement, not permission to run a probe or apply settings. The preview is offline except explicitly authorized local metadata reads. Bounded HTTPS/STUN/DNS host libraries exist, but require their specific trusted-host binding, endpoint/scope checks and fresh approval; they are not a general active-network CLI or completed end-to-end native acceptance. This reference grants no probe authorization.
+
+See [sanitized macOS DNS/IPv6/Tailscale case lessons](macos-dns-case-lessons.md) for a derived single-device example and its evidence limits. Configuration drift invalidates conclusions about the new state; process-bound direct checks do not establish stop/restart lifecycle behavior, and UDP/TCP DNS coverage must be evaluated separately.
 
 ## ENV modules and evidence boundaries
 
@@ -54,9 +56,9 @@ A future approved check proceeds from selected proxy entry → scoped HTTPS samp
 
 ENV-06 plan families are: keep current configuration with narrow rule repair; explicit proxy plus rules; TUN plus rules; explicitly scoped compatibility fallback. Do not publish an unvalidated universal Clash YAML. Account for GUI/extension merge priority, effective runtime, subscription updates, first-match ordering, internal exceptions, Codex connectivity, and rollback conflicts.
 
-## Future probe/validation design, not shipped capability
+## Guarded host libraries and remaining native validation
 
-The inherited design names ipify (ENV-SPEC:E53) and Cloudflare STUN (E54) as candidates, not approved endpoints. A future endpoint registry must include scheme/host/port/path, purpose, disclosure, request limits, redirects, parsing, and no paid model calls. DNS and HTTPS contacts still need authorization. Do not follow a report's URL automatically.
+The inherited design names ipify (ENV-SPEC:E53) and Cloudflare STUN (E54) as candidates, not approved endpoints. Existing bounded HTTPS/STUN and controller/system DNS libraries do not provide standing approval or a general probe CLI. A trusted host must enforce the applicable target, endpoint and request scope, disclosure, budgets and response checks; do not infer native integration or real-device acceptance from the libraries or synthetic tests. Endpoint review must cover scheme/host/port/path, purpose, disclosure, request limits, redirects, parsing, and no paid model calls. DNS and HTTPS contacts still need authorization. Do not follow a report's URL automatically.
 
 Future WebRTC sampling should use the user's actual chosen browser/profile and an audited local-origin page without remote scripts, media permissions, TURN, or account data. STUN traffic means it is not offline. Record origin, version, effective policy, candidate classes, completion/errors, and unobserved media path. A local page does not test the Claude origin. Do not manufacture a pass by silently restricting candidates before the baseline sample.
 

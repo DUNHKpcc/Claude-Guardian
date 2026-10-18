@@ -224,9 +224,9 @@ prior accepted ENV-T79/90 workflow pins after independent re-review of this delt
 | `tests/test_workflow_guard.py` | `635b39b747724477efc782eeea129c818bbfb11639d2ad0a83aa4438e8ce2587` |
 | `tests/test_workflow_contact_epoch.py` | `bbb4010d7d7e74b6ba2f080eae4c853ed0b239f8bf522bea365114c17dfc97fd` |
 | `tests/test_acceptance_boundary_rebuild.py` | `b5604c118e9c11fea9d03c19e75efdae4acb53f7bb0df3bd2ac4db38842621fd` |
-| `skills/claude-guardian/SKILL.md` | `958c27324e41d46dc2977d60db285b26994bcd5aa6691ae61263be7469765d6e` |
+| `skills/claude-guardian/SKILL.md` | `8cdec703516570679f497c3b5f417dfcbc60ca8bcf14fbbde093afc506694490` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
-| `skills/claude-guardian/references/network-and-remedies.md` | `fd65f7c88263a1ba83496f915d28623a93ef826ef1f1cebee55c43b83cd60b4c` |
+| `skills/claude-guardian/references/network-and-remedies.md` | `3b2eb1ea88b16656558e9327f42470dd371114401995d688994783f686085120` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
@@ -245,3 +245,14 @@ it performs no user-system recovery. The prior erroneous current-gate behavior
 would return, so preserve the regression evidence when reviewing any rollback.
 The parent owns acceptance-ledger integration and publication; this page changes
 neither original case definitions nor unrelated accepted rows.
+
+
+### Fifteenth derived-reference preservation review
+
+On 2026-10-18 the sanitized case reference and its two active links were
+independently reviewed against this page's full original conditions. Existing
+case replays remain unchanged. The host-library/CLI clarification grants no new
+capability or authorization; historical single-device observations do not become
+current native evidence. Only reviewed affected file pins above were refreshed.
+The review reran 182 relevant offline tests and 145 interview tests with no skips,
+and compared five complete case replay outputs and both release archives.

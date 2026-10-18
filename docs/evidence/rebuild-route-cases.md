@@ -254,7 +254,7 @@ VPS 完整实际提示，与手写预期逐字相同：
 
 | 文件 | SHA-256 |
 |---|---|
-| `skills/claude-guardian/SKILL.md` | `958c27324e41d46dc2977d60db285b26994bcd5aa6691ae61263be7469765d6e` |
+| `skills/claude-guardian/SKILL.md` | `8cdec703516570679f497c3b5f417dfcbc60ca8bcf14fbbde093afc506694490` |
 | `skills/claude-guardian/scripts/interview_flow.py` | `53b69a72d86e7d6c4d1f569e26c70b3dbb73677a34f8cec57f0f5212a1936d1c` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
 | `skills/claude-guardian/references/intake.md` | `f736f42bf9f962ee1a945452ccf9c3497a849aaa08097ab261b8cdad4bc1e4a7` |
@@ -308,3 +308,14 @@ intake replay remains `67406ca1` (prefix); complete hashes remain in their origi
 evidence sections. The 181 focused checks passed. New emergency postponement is
 a derived projection, not user deferral or action authorization. Only these two
 reviewed file pins are refreshed here; no native or model-integration proof is added.
+
+
+### Fifteenth derived-reference preservation review
+
+On 2026-10-18 the sanitized case reference and its two active links were
+independently reviewed against this page's full original conditions. Existing
+case replays remain unchanged. The host-library/CLI clarification grants no new
+capability or authorization; historical single-device observations do not become
+current native evidence. Only reviewed affected file pins above were refreshed.
+The review reran 182 relevant offline tests and 145 interview tests with no skips,
+and compared five complete case replay outputs and both release archives.

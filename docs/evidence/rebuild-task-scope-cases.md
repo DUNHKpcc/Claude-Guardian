@@ -162,9 +162,20 @@ python -B tests/test_acceptance_task_scope_rebuild.py --replay > /tmp/guardian-t
 | `tests/test_interview_cli.py` | `a3cbd2c8332d50e6c49fee61ced2bb9c10295b7a3393b39b6de2e89a9a37be4d` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_interview_migration.py` | `75c016cfc9e1129a948bca8b21e963a16bc62b96ad200cb0a43cb142d29a1b18` |
-| `skills/claude-guardian/SKILL.md` | `958c27324e41d46dc2977d60db285b26994bcd5aa6691ae61263be7469765d6e` |
+| `skills/claude-guardian/SKILL.md` | `8cdec703516570679f497c3b5f417dfcbc60ca8bcf14fbbde093afc506694490` |
 | `skills/claude-guardian/references/intake.md` | `f736f42bf9f962ee1a945452ccf9c3497a849aaa08097ab261b8cdad4bc1e4a7` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
 | `skills/claude-guardian/references/incidents-and-integrations.md` | `da41c24cb830298ea7e859a9f147048ef8523a43dcb34758426df12e0391fd21` |
+
+
+### Fifteenth derived-reference preservation review
+
+On 2026-10-18 the sanitized case reference and its two active links were
+independently reviewed against this page's full original conditions. Existing
+case replays remain unchanged. The host-library/CLI clarification grants no new
+capability or authorization; historical single-device observations do not become
+current native evidence. Only reviewed affected file pins above were refreshed.
+The review reran 182 relevant offline tests and 145 interview tests with no skips,
+and compared five complete case replay outputs and both release archives.

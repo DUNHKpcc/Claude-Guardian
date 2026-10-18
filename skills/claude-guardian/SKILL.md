@@ -71,6 +71,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 
 - [routes-and-platforms.md](references/routes-and-platforms.md)：M01/M06–M09；本机、VM、VPS、WSL/容器边界及生命周期计划
 - [network-and-remedies.md](references/network-and-remedies.md)：M04/M05/M10、ENV-01–ENV-10；代理、DNS、IPv6、UDP/WebRTC 的证据解释与最小修复
+- [macos-dns-case-lessons.md](references/macos-dns-case-lessons.md)：脱敏的 macOS DNS、IPv6、Tailscale 经验与证据限制；不新增探测授权或原生验收
 - [accounts-and-payments.md](references/accounts-and-payments.md)：M02/M03；准入、目标套餐、Apple/Google/银行卡前提及支付交接
 - [incidents-and-integrations.md](references/incidents-and-integrations.md)：M07/M10–M13；异常、清理保留、申诉、SDK/MCP 与认证边界
 - [evidence-policy.md](references/evidence-policy.md)：M14；稳定来源 ID、历史证据限制和发布规则

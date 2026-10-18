@@ -158,7 +158,7 @@ Reviewed file SHA-256 values:
 | `skills/claude-guardian/scripts/source_evidence.py` | `a1754f0445012e717dddfb9ed28245d94cb760f9d421fb47b0027a90e6f0feaf` |
 | `skills/claude-guardian/references/evidence-policy.md` | `8afb262a1d85050a897c6c9a89f54afbc96a653874b7308472dbeec4c3ea1838` |
 | `tests/test_source_evidence.py` | `cd9804d062f0226dcd25f7efc204c2fb4d43005be828b79dbeeb6df0ded8b86d` |
-| `tools/package_skill.py` | `627e8be657eb72852751555f57ab5efb14431fe0a8aa9fa7c91d4573ca5ab102` |
+| `tools/package_skill.py` | `7458d47b612006451dd1f16218fda109f955eaaf9935934df1f1519750da9a8d` |
 
 Disposition: the exact original two-identical-tutorial scenario now has executable
 L evidence and a full active-guidance C review, ready for independent integration
@@ -202,3 +202,14 @@ source evidence code and fixtures are unchanged; the ENV-T79/90 replay remains
 `b014fc2e16015a9ecd07b2f95460ab5fead21b625fd882eb01d8031042325581`.
 Only the reviewed file pin is refreshed; no native or automatic execution claim
 is introduced, and full ENV-T40 remains pending.
+
+
+### Fifteenth derived-reference preservation review
+
+On 2026-10-18 the sanitized case reference and its two active links were
+independently reviewed against this page's full original conditions. Existing
+case replays remain unchanged. The host-library/CLI clarification grants no new
+capability or authorization; historical single-device observations do not become
+current native evidence. Only reviewed affected file pins above were refreshed.
+The review reran 182 relevant offline tests and 145 interview tests with no skips,
+and compared five complete case replay outputs and both release archives.

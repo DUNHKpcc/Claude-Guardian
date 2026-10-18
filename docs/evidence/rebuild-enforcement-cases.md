@@ -299,9 +299,9 @@ updating hashes alone does not renew acceptance.
 | `skills/claude-guardian/scripts/remedy_plans.py` | `d9f1faa146681adb74c47a549b7efec1734d5c78d266a7a4c4285c7973712b09` |
 | `skills/claude-guardian/scripts/workflow_guard.py` | `68aa99db78a70d0387a3901d4f3ba25a9c4dcee19fa2ff3a584706419ccfeed0` |
 | `skills/claude-guardian/scripts/inventory_cli.py` | `e0c5fc46800e5838e9d40bc8271c8ca1e1da093c85055ed85256ddd57a1cb3b1` |
-| `skills/claude-guardian/SKILL.md` | `958c27324e41d46dc2977d60db285b26994bcd5aa6691ae61263be7469765d6e` |
+| `skills/claude-guardian/SKILL.md` | `8cdec703516570679f497c3b5f417dfcbc60ca8bcf14fbbde093afc506694490` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
-| `skills/claude-guardian/references/network-and-remedies.md` | `fd65f7c88263a1ba83496f915d28623a93ef826ef1f1cebee55c43b83cd60b4c` |
+| `skills/claude-guardian/references/network-and-remedies.md` | `3b2eb1ea88b16656558e9327f42470dd371114401995d688994783f686085120` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
 | `skills/claude-guardian/references/agent-remediation.md` | `363fdee6fa226545f0b03ebd14e6c311ac7582211800e78f94ffd6f3ad173fb1` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
@@ -331,3 +331,14 @@ source evidence code and fixtures are unchanged; the ENV-T79/90 replay remains
 `b014fc2e16015a9ecd07b2f95460ab5fead21b625fd882eb01d8031042325581`.
 Only the reviewed file pin is refreshed; no native or automatic execution claim
 is introduced, and full ENV-T40 remains pending.
+
+
+### Fifteenth derived-reference preservation review
+
+On 2026-10-18 the sanitized case reference and its two active links were
+independently reviewed against this page's full original conditions. Existing
+case replays remain unchanged. The host-library/CLI clarification grants no new
+capability or authorization; historical single-device observations do not become
+current native evidence. Only reviewed affected file pins above were refreshed.
+The review reran 182 relevant offline tests and 145 interview tests with no skips,
+and compared five complete case replay outputs and both release archives.
