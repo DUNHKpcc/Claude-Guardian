@@ -33,17 +33,22 @@ class AcceptancePortabilityTests(unittest.TestCase):
 
     def test_relevant_acceptance_helpers_under_cp1252_default(self):
         code = r'''
-import builtins, io, sys, unittest
+import builtins, sys, unittest
+from pathlib import Path
 from unittest.mock import patch
-real_io_open, real_open = io.open, builtins.open
+real_path_open, real_open = Path.open, builtins.open
 def wrap(original):
     def opened(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None):
         if 'b' not in mode and encoding in (None, 'locale'):
             encoding = 'cp1252'
         return original(file, mode, buffering, encoding, errors, newline, closefd, opener)
     return opened
+def path_open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
+    if 'b' not in mode and encoding in (None, 'locale'):
+        encoding = 'cp1252'
+    return real_path_open(self, mode, buffering, encoding, errors, newline)
 sys.path.insert(0, sys.argv[1])
-with patch.object(io, 'open', wrap(real_io_open)), patch.object(builtins, 'open', wrap(real_open)):
+with patch.object(Path, 'open', path_open), patch.object(builtins, 'open', wrap(real_open)):
     suite = unittest.defaultTestLoader.loadTestsFromNames([
         'test_acceptance_diagnostic_evidence',
         'test_acceptance_resume_completion',

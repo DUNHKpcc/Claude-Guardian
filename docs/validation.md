@@ -1209,3 +1209,35 @@ eight skipped. Thirteen isolated AST mutation cases check both rejected implicit
 text/API usage and accepted binary/explicit-encoding forms. Both Node suites,
 compilation and reproducible package remain successful at the unchanged release
 hash `9ce77248c44c36e1d6f79bfc80ac59cec70ae126f43813c377e0d5f3138256b7`.
+
+## Encoding-guard publication and Python 3.10 accessor correction
+
+Published `090b2344b546007c2d6f2b91b935d056b1303ab8`. The
+[push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39114025321)
+confirms Windows evidence decoding now passes, but the new subprocess emulator
+fails on Python 3.10: replacing io.open before pathlib's lazy import allows its
+legacy accessor class to bind a Python function as a method. The extra accessor
+argument shifts the expected file/mode arguments. This is a guard implementation
+failure, not a passing minimum-version result.
+
+The minimal repair imports pathlib before patching and wraps Path.open directly,
+leaving io.open intact. It preserves the documented Path.open method signature
+and builtin open behavior, forcing cp1252 only for implicit/default-locale text
+reads. Binary and explicit-encoding reads retain their original behavior. Exact
+retained responses, assertions and shipped runtime/package remain unchanged.
+Only Python 3.12/3.13 are already installed locally; no additional interpreter
+was installed. Local API-contract and legacy-accessor-model checks remain
+separate from the upcoming actual Python 3.10 push result.
+
+The local corrected-emulator aggregate ran 1,745 tests in 35.854 seconds:
+1,737 passed and eight skipped. The new guard does not modify the test bodies
+or any shipped runtime code.
+
+Independent verification ran the same 1,745 tests in 36.786 seconds: 1,737
+passed and eight skipped. The original unencoded source still produces four
+UnicodeDecodeErrors under the corrected emulator; all 14 relevant tests pass
+with the explicit-UTF-8 source. Fifteen API checks cover the pinned Python
+3.10.22 Path.open signature, legacy accessor binding, explicit encoding,
+binary operations and patch restoration. Both Node suites, compilation,
+ledger integrity and repeated release builds pass; the package SHA-256 remains
+9ce77248c44c36e1d6f79bfc80ac59cec70ae126f43813c377e0d5f3138256b7.
