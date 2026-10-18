@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: twentieth rebuild, 2026-10-18
+## Current checkpoint: twenty-first rebuild, 2026-10-18
 
-The current ledger records 19 freshly accepted original cases and 199 pending:
-T01, T02, T18, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 21 freshly accepted original cases and 197 pending:
+T01, T02, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
@@ -33,6 +33,10 @@ handling. A reviewed in-process host must supply actual ownership, inactivity,
 backup and authority; ordinary CLI invocation remains blocked for root actions.
 Two separate interpreters exercise controlled-fixture recovery, without claiming
 a native Claude adapter or complete user-device cleanup.
+The twenty-first adds complete original T16 resume/retry and T23 local-runtime
+with VPS-egress cases under their explicit host contracts. No provider-side
+duplicate-charge guarantee, arbitrary prose classification, real exit verification
+or native cleanup evidence is inferred. Runtime remains unchanged.
 This is not full-project or user-device acceptance.
 
 ## Basis

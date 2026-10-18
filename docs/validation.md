@@ -1079,3 +1079,42 @@ passed: Linux/Python 3.10 1,693 passed/eight skipped; macOS 1,689/12;
 Windows 1,337/364. All four release hashes matched. No preview workflow was
 triggered by that test/evidence-only scope, and no hosted result is promoted to
 actual user-device acceptance.
+
+## Twenty-first reconstruction: T16 resume and T23 local runtime with VPS exit
+
+Original T16 and T23 retain their full original conditions and L+C layers.
+T16 combines actual save/load/resume with selective environment invalidation,
+cleared permissions, no repeated completed purchase intent, and an actual
+synthetic two-root cleanup interrupted after one move. Reload/reconcile does not
+repeat the move; original retry and stale restore are rejected, and a fresh
+approved restore touches only the moved fixture root. This does not prove
+provider-side payment idempotency or native device cleanup.
+
+T23 records local execution separately from a user-reported VPS network exit.
+It stays on the local route, asks for unknown local-install facts, and never
+creates a remote installation action from an exit alias. Exit changes invalidate
+only relevant network answers. The host must normalize actual execution location
+and clarify uncertainty; no natural-language inference or actual exit probe is
+claimed. Both complete clauses have independent reviews and repeatable traces.
+
+The aggregate ran 1,737 tests in 35.771 seconds: 1,729 passed and eight skipped.
+An independent review found a locale-dependent T16 fixture import; the narrow
+explicit UTF-8 fix preserves assertions and is covered by a retained cp1252
+failure/repair reproduction. Its final aggregate rerun
+ran 1,737 tests: 1,729 passed and eight skipped, in 35.351 seconds.
+Both Node synthetic suites, compilation, diff checks and two identical release
+builds passed. Release SHA-256 remains
+`9ce77248c44c36e1d6f79bfc80ac59cec70ae126f43813c377e0d5f3138256b7`.
+Original acceptance is 21/218, with 197 pending. User-device acceptance remains
+unperformed; conditional scheduling does not add an unrequested native layer.
+
+## Twentieth publication verification
+
+Published `76e799f94ce08db1470fdc8b9749b7f1acd6d6f5`, parent
+`cfdd270cc495299fd8bfb035b2e8c555148a093d`; exact 13-file delta and complete
+224-source Git tree verified. [Push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39111983373)
+passed: Linux/Python 3.10 1,721 passed/eight skipped; macOS 1,717/12;
+Windows 1,338/391. All four release hashes matched; the
+[synthetic browser preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39111983458)
+also passed. Hosted fixtures do not establish native Claude ownership, exclusive
+writer exclusion or actual user-device cleanup authorization.

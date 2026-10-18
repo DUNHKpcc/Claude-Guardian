@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Nineteen original cases T01/T02/T18/T09/T19/T20/T21/T24/T34/T43/T48/T53/T74/T78/T81/ENV-T79/ENV-T81/ENV-T90/ENV-T40 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 199 cases are pending_revalidation. T18 records an observed guided-response exercise, not deterministic generation. Evidence must be re-reviewed after relevant changes."
+    "Twenty-one original cases T01/T02/T09/T16/T18/T19/T20/T21/T23/T24/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 197 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
   ],
   "cases": [
     {
@@ -199,9 +199,19 @@
       "requirement": "恢复不含秘密的进度，检查环境变化，不重复付款或删除",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "回放“中断后继续”，逐项核对：恢复不含秘密的进度，检查环境变化，不重复付款或删除。Mac/Windows 的真实暂停/保存/环境变化续接另验；先云端状态回放",
-      "dependencies": "A、P、U"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关运行时或活动指导变化后复核完整原条件及固定重放；保留宿主契约与实际动作授权边界",
+      "dependencies": "A、P、U",
+      "evidence": {
+        "path": "docs/evidence/rebuild-resume-completion.md",
+        "sha256": "a1c8ebcf6d4ef2895e0bdcb4ca4ca4821208f4a4ac227e51e95214480e3dc428",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Observed composed non-secret resume, environment review, completed-payment state and controlled partial cleanup retry/recovery; explicit trusted-host contract, no provider-side duplicate-charge or native-device claim."
+      }
     },
     {
       "id": "T17",
@@ -309,9 +319,19 @@
       "requirement": "主流程仍为本机；记录网络出口，不能自动安装远端工作区",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "回放“本机 Code 使用 VPS 代理出口”，逐项核对：主流程仍为本机；记录网络出口，不能自动安装远端工作区。本机 Code 的实际网络路径须 PC1 后在 Mac/Windows 另验；路线规则可云端断言",
-      "dependencies": "A、B、N、L"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关运行时或活动指导变化后复核完整原条件及固定重放；保留宿主契约与实际动作授权边界",
+      "dependencies": "A、B、N、L",
+      "evidence": {
+        "path": "docs/evidence/rebuild-local-egress.md",
+        "sha256": "478025646a8b3b2912b5f90e86818e8fd4e31946c39b0dd9baca7ee44b6ea768",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Normalized local-runtime and VPS-egress full state replay plus active-guidance content review; host must establish truthful runtime/intent, no arbitrary-prose classifier or actual egress/native claim."
+      }
     },
     {
       "id": "T24",
