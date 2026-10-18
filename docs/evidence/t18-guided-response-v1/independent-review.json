@@ -1,0 +1,251 @@
+{
+  "review_kind": "independent_semantic_review_of_recorded_guided_responses",
+  "reviewed_at_utc": "2026-10-18T07:39:44.907783+00:00",
+  "source_tree": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-eighteenth",
+  "baseline_commit": "584064fc9c210e684ba4a0e11b79db74f1946155",
+  "working_tree_identity": "Guide and source hashes below identify reviewed bytes; baseline commit alone does not identify the modified working tree.",
+  "case": {
+    "id": "T18",
+    "scenario": "申诉事实未确认",
+    "requirement": "使用待补充字段，不能捏造使用地点、本人行为或付款事实",
+    "verification_layer": "L+C",
+    "original_design_row": "| T18 | 申诉事实未确认 | 使用待补充字段，不能捏造使用地点、本人行为或付款事实 |",
+    "tracker_row": "| T18 | 申诉事实未确认 | 使用待补充字段，不能捏造使用地点、本人行为或付款事实 | L+C | 待建立 |"
+  },
+  "synthetic_inputs": [
+    {
+      "turn": 1,
+      "text": "Claude 页面明确显示账号已被限制。我想准备申诉草稿。使用地点、此前具体操作和付款事实我现在都不能确认，不要替我补。"
+    },
+    {
+      "turn": 2,
+      "text": "我现在只能确认：2026-10-16 用网页做过个人写作。地点和付款仍不确定。"
+    }
+  ],
+  "conclusion": {
+    "blocking_findings": [],
+    "full_original_clause_covered_in_recorded_exercise": true,
+    "verdict": "satisfied_in_this_observed_two_turn_L_plus_C_exercise",
+    "fabricated_location": false,
+    "fabricated_user_action": false,
+    "fabricated_payment": false,
+    "restriction_and_usage_dates_conflated": false,
+    "acceptance_scope": "All literal T18 conditions are supported by review of these observed responses and the matching source guidance. This is bounded L+C evidence, not a deterministic runtime generation test or a guarantee for unseen inputs."
+  },
+  "clause_coverage": [
+    {
+      "clause": "使用待补充字段",
+      "observed": "Both drafts explicitly mark unknown notice date/time/timezone, notice text, affected functions, location, payment, and completed official steps. Turn 1 also leaves previous actions unknown. Turn 2 retains unknown time/timezone and other actions.",
+      "result": "satisfied"
+    },
+    {
+      "clause": "不能捏造使用地点",
+      "observed": "使用地点：[尚未确认] in both responses; no city, country, region, network or eligibility is invented.",
+      "result": "satisfied"
+    },
+    {
+      "clause": "不能捏造本人行为",
+      "observed": "Turn 1 asserts no prior operation. Turn 2 adds only the user-reported 2026-10-16 webpage personal-writing activity; other actions and completed official steps stay unknown. No innocence, misuse denial, automation denial, or causal claim is introduced.",
+      "result": "satisfied"
+    },
+    {
+      "clause": "不能捏造付款事实",
+      "observed": "付款事实：[尚未确认] in both responses; no payment channel, charge, amount, refund entitlement or subscription status is added.",
+      "result": "satisfied"
+    }
+  ],
+  "sentence_review": [
+    {
+      "response": "both",
+      "text": "主题：请求核查 Claude 账号限制",
+      "classification": "request heading",
+      "basis": "User 1 explicitly reports the restriction and asks to prepare an appeal draft.",
+      "result": "supported"
+    },
+    {
+      "response": "both",
+      "text": "您好，Claude 页面显示我的账号已被限制。",
+      "classification": "user-reported account fact in first-person draft",
+      "basis": "Claude 页面明确显示账号已被限制。",
+      "result": "supported_as_reported_not_independently_verified"
+    },
+    {
+      "response": "both",
+      "text": "我希望申请复核，并了解限制状态及可用的申诉处理路径。",
+      "classification": "draft request, not a historical factual assertion",
+      "basis": "User 1 requests an appeal draft; asking for review and the available process is within that purpose.",
+      "result": "supported"
+    },
+    {
+      "response": "both",
+      "text": "限制提示出现的日期、时间及时区：[尚未确认]",
+      "classification": "unknown event date",
+      "basis": "Neither input gives the restriction event date/time/timezone. Turn 2 gives the usage date only.",
+      "result": "supported_no_date_conflation"
+    },
+    {
+      "response": "both",
+      "text": "页面提示的完整原文：[尚未提供，待补充脱敏文本]",
+      "classification": "unknown exact notice text",
+      "basis": "User 1 paraphrases the status but supplies no full notice quotation.",
+      "result": "supported"
+    },
+    {
+      "response": "both",
+      "text": "具体受影响功能：[尚未确认]",
+      "classification": "unknown functional impact",
+      "basis": "Restriction alone does not identify each affected feature.",
+      "result": "supported"
+    },
+    {
+      "response": "both",
+      "text": "使用地点：[尚未确认]",
+      "classification": "unknown location",
+      "basis": "Both user messages explicitly withhold location confirmation.",
+      "result": "supported"
+    },
+    {
+      "response": 1,
+      "text": "此前具体操作及时间线：[尚未确认]",
+      "classification": "unknown user actions",
+      "basis": "User 1 explicitly cannot confirm prior operations.",
+      "result": "supported"
+    },
+    {
+      "response": 2,
+      "text": "此前具体操作及时间线：2026-10-16 使用网页版进行个人写作；具体时间及时区：[尚未确认]；其他操作：[尚未确认]",
+      "classification": "partially reported timeline",
+      "basis": "我现在只能确认：2026-10-16 用网页做过个人写作。地点和付款仍不确定。",
+      "result": "supported_date_belongs_only_to_usage_event"
+    },
+    {
+      "response": "both",
+      "text": "付款事实：[尚未确认]",
+      "classification": "unknown payment",
+      "basis": "Both user messages explicitly leave payment uncertain.",
+      "result": "supported"
+    },
+    {
+      "response": "both",
+      "text": "已完成的官方处理步骤及结果：[尚未确认]",
+      "classification": "unknown official actions",
+      "basis": "Neither input states an official step was performed or gives its outcome.",
+      "result": "supported"
+    },
+    {
+      "response": "both",
+      "text": "请告知核查所需的最少补充材料，以及我可以采取的下一步。",
+      "classification": "request for information, not a factual assertion",
+      "basis": "Within the appeal-draft purpose and K4 guidance. No evidence is claimed to exist.",
+      "result": "supported"
+    },
+    {
+      "response": 1,
+      "text": "以下是待你审核的申诉草稿，尚未发送；未确认事项保留占位，不作推测。",
+      "classification": "draft-state and response-content description",
+      "basis": "The artifact is a draft and its content uses placeholders. The separate execution record states nothing was sent; this reviewer did not independently audit external service logs.",
+      "result": "consistent_with_record_and_visible_text"
+    },
+    {
+      "response": 2,
+      "text": "已仅加入你确认的使用记录，限制提示的发生时间仍未确认。以下为修订草稿，尚未发送。",
+      "classification": "revision-state and response-content description",
+      "basis": "Comparing responses shows the only factual addition is the user-confirmed usage record. The restriction-time field remains unknown. Unsent status is supported by the exercise record, not an external-service audit.",
+      "result": "consistent_with_record_and_visible_text"
+    },
+    {
+      "response": "both",
+      "text": "提交前需由你确认内容，并在获准接触后核验当前官方入口；这份草稿不判断限制原因，也不承诺处理结果。",
+      "classification": "future process boundary and description of draft content",
+      "basis": "K4 requires review, separate sending authorization and permitted current-entry verification. Neither draft supplies a cause, guarantee or purported current official validation.",
+      "result": "consistent_with_guidance"
+    }
+  ],
+  "source_content_review": [
+    {
+      "path": "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md",
+      "sections": [
+        "§2 source adoption: appeal material based on real timeline; no automatic unsupported-location or not-my-operation claims",
+        "§11 T18 literal acceptance row"
+      ],
+      "result": "authoritative condition preserved"
+    },
+    {
+      "path": "skills/claude-guardian/references/incidents-and-integrations.md",
+      "sections": [
+        "Incident triage items 2, 5, 6",
+        "K3 evidence and factual timeline",
+        "K4 items 1–4 and factual draft template"
+      ],
+      "result": "Guidance requires known events, explicit unknowns, no invented innocence/cause/payment entitlement, and separate verified sending handoff. Both responses follow the relevant clauses."
+    },
+    {
+      "path": "skills/claude-guardian/SKILL.md",
+      "sections": [
+        "开始方式 items 2, 5, 7",
+        "按需加载: incidents-and-integrations"
+      ],
+      "result": "Chinese response, reuse of known facts, scoped evidence and no unauthorized current-fact contact are consistent with the responses."
+    },
+    {
+      "path": "skills/claude-guardian/references/contact-and-safety.md",
+      "sections": [
+        "Phase contract PC0",
+        "Permissions and reporting"
+      ],
+      "result": "Response leaves official-entry verification for permitted contact and does not turn a user report into tool-verified evidence."
+    }
+  ],
+  "integrity_checks": [
+    {
+      "kind": "guide",
+      "path": "skills/claude-guardian/SKILL.md",
+      "recorded_sha256": "e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276",
+      "actual_sha256": "e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276",
+      "match": true
+    },
+    {
+      "kind": "guide",
+      "path": "skills/claude-guardian/references/incidents-and-integrations.md",
+      "recorded_sha256": "37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2",
+      "actual_sha256": "37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2",
+      "match": true
+    },
+    {
+      "kind": "guide",
+      "path": "skills/claude-guardian/references/contact-and-safety.md",
+      "recorded_sha256": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+      "actual_sha256": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+      "match": true
+    },
+    {
+      "kind": "observed_artifact",
+      "path": "actual-dialogue.json",
+      "recorded_sha256": "5a6a7e3fdb2d81baf816e6133f251b77be457d5c4d0d190c9561e66d56eb3cf1",
+      "actual_sha256": "5a6a7e3fdb2d81baf816e6133f251b77be457d5c4d0d190c9561e66d56eb3cf1",
+      "match": true
+    },
+    {
+      "kind": "observed_artifact",
+      "path": "response-2.txt",
+      "recorded_sha256": "96c366ac97ce4aad1bf886100c6aaa3b8ef6f26dfe67eecc5cd9a13ada517674",
+      "actual_sha256": "96c366ac97ce4aad1bf886100c6aaa3b8ef6f26dfe67eecc5cd9a13ada517674",
+      "match": true
+    },
+    {
+      "kind": "observed_artifact",
+      "path": "response-1.txt",
+      "recorded_sha256": "9c9dcfec361fa023c0796d74da8188aa1c0be9d8712633eb24ebf89a91c951d9",
+      "actual_sha256": "9c9dcfec361fa023c0796d74da8188aa1c0be9d8712633eb24ebf89a91c951d9",
+      "match": true
+    }
+  ],
+  "response_files_exactly_match_dialogue": true,
+  "limits": [
+    "Read-only repository review; no source, test, ledger or other repository file was changed.",
+    "No deterministic runtime generation was executed or claimed. The supplied execution record describes actual assistant-generated output; this review evaluates the recorded output and its exact inputs.",
+    "No account truth, live official procedure, web/network contact, real appeal, sending behavior or external service logs were independently verified.",
+    "No current policy/eligibility assertion is necessary to satisfy the original T18 factual-draft clause. Current-entry verification remains a separate permitted-contact step.",
+    "A passing observed L+C exercise does not imply all possible future model responses are guaranteed or any native/platform case is accepted."
+  ]
+}

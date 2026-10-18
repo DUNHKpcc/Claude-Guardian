@@ -9,6 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Explicit cases and original layer spellings; scheduling does not imply acceptance.
 ACCEPTED = {
+    **{case: ('docs/evidence/rebuild-intake-basics.md', 'L+C', ['L', 'C'])
+       for case in ('T01', 'T02')},
+    'T18': ('docs/evidence/rebuild-t18-appeal-facts.md', 'L+C', ['L', 'C']),
     'T09': ('docs/evidence/rebuild-source-dedup.md', 'L+C', ['L', 'C']),
     **{case: ('docs/evidence/rebuild-route-cases.md', 'L+C', ['L', 'C'])
        for case in ('T19', 'T20', 'T21', 'T24')},
@@ -40,6 +43,8 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
     def test_accepted_evidence_underlying_pins_are_current(self):
         # Hashes are invalidation signals, not substitutes for L+C review.
         expected_counts = {
+            # T18 retained artifact and guide hashes have their own evidence suite.
+            'docs/evidence/rebuild-intake-basics.md': 18,
             'docs/evidence/rebuild-env40-composition.md': 17,
             'docs/evidence/rebuild-route-cases.md': 15,
             'docs/evidence/rebuild-source-dedup.md': 4,

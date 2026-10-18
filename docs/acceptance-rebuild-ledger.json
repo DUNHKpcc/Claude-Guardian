@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Sixteen original cases T09/T19/T20/T21/T24/T34/T43/T48/T53/T74/T78/T81/ENV-T79/ENV-T81/ENV-T90/ENV-T40 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 202 cases are pending_revalidation. Evidence must be re-reviewed after relevant changes."
+    "Nineteen original cases T01/T02/T18/T09/T19/T20/T21/T24/T34/T43/T48/T53/T74/T78/T81/ENV-T79/ENV-T81/ENV-T90/ENV-T40 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 199 cases are pending_revalidation. T18 records an observed guided-response exercise, not deterministic generation. Evidence must be re-reviewed after relevant changes."
   ],
   "cases": [
     {
@@ -19,9 +19,19 @@
       "requirement": "先分首次/重订/已有订阅；问目标套餐和相关前提，本机默认建议；不询问账号归属，不推荐无关 VPS/企业开户/脚本",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导或代码变化后重新审阅原完整条件与固定证据；不外推真机或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-intake-basics.md",
+        "sha256": "701192ab3e31464e4c831d99113b32a4c77ce21e4fcb3e30d1f92f0c9413ae6d",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete deterministic interview replays and sentence-level active-guidance review under original L+C; no native or actual action authorization claim."
+      }
     },
     {
       "id": "T02",
@@ -29,9 +39,19 @@
       "requirement": "复用信息，不反复问基础问题；仍保留必要授权",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、宿主交接及调度器边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导或代码变化后重新审阅原完整条件与固定证据；不外推真机或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-intake-basics.md",
+        "sha256": "701192ab3e31464e4c831d99113b32a4c77ce21e4fcb3e30d1f92f0c9413ae6d",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete deterministic interview replays and sentence-level active-guidance review under original L+C; no native or actual action authorization claim."
+      }
     },
     {
       "id": "T03",
@@ -199,9 +219,19 @@
       "requirement": "使用待补充字段，不能捏造使用地点、本人行为或付款事实",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "变更时复核原条件、指导/来源路径及专页工作实例，重跑支持回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导或代码变化后重新审阅原完整条件与固定证据；不外推真机或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-t18-appeal-facts.md",
+        "sha256": "54bb6b7c0eca1119115b6b8569ebc6058e35643bb5cf066b5824d9a7d589adbb",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Observed two-turn synthetic guided response and independent sentence-level content review; integrity tests do not regenerate responses. No native, live-account or sending claim."
+      }
     },
     {
       "id": "T19",

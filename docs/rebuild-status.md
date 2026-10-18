@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: eighteenth rebuild, 2026-10-18
+## Current checkpoint: nineteenth rebuild, 2026-10-18
 
-The current ledger records 16 freshly accepted original cases and 202 pending:
-T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 19 freshly accepted original cases and 199 pending:
+T01, T02, T18, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
@@ -24,6 +24,10 @@ and recovery core plus selected-device history and explicit cleanup intent. Real
 synthetic directory/file moves are tested; application-root discovery, inactivity,
 credentials/browser adapters, uninstall, purge and user-device acceptance are not
 established. Existing original-case acceptance does not grow from these new tests.
+The nineteenth adds original T01/T02 complete intake replay and guidance review,
+and T18 observed two-turn synthetic appeal drafting with independent factual
+review. Retained-evidence tests do not regenerate model output or prove unseen
+inputs. No runtime changes are included.
 This is not full-project or user-device acceptance.
 
 ## Basis

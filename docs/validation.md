@@ -1001,3 +1001,40 @@ compilation, diff checks and reproducible packaging passed with the unchanged
 release SHA `c563a758390910f407e7f896a7a379cc1b287c17f2409b9661a34b0c43c6307e`.
 Path-limit emulation is not macOS execution; the corrected push CI is tracked
 separately. Original-case acceptance remains 16/218.
+
+## Nineteenth original-case intake and appeal evidence
+
+Original T01/T02 L+C clauses were reviewed sentence by sentence against active
+guidance and complete executable interview traces, including first/returning/
+upgrade paths, complete expert input reuse, subsequent gaps and unchanged
+independent authorization. Thirteen new focused tests and 151 combined checks
+passed; independent replay matched the retained output exactly. A further 100
+input-order permutations and generic-approval negative probes passed.
+
+Original T18 L+C is supported by a retained actual two-turn synthetic guided
+response and independent sentence-level factual review. The second response adds
+only the stated webpage personal-writing event; location/payment/restriction
+time remain unconfirmed. Eight integrity tests bind the exact responses,
+original condition, guides and review. They do not regenerate model output or
+establish performance on unseen inputs, real-account facts or external sending.
+
+The initial integrated aggregate ran 1,701 tests in 34.621 seconds: 1,693 passed
+and eight skipped; independent rerun 34.291 seconds matched. After carrying
+forward the exact reviewed macOS fixture correction, the aggregate again passed
+1,693 with eight skipped in 34.609 seconds; independent rerun 34.300 seconds matched. Both Node suites, compilation,
+diff checks and two byte-identical release builds passed. Runtime and package
+remain unchanged, SHA-256
+`c563a758390910f407e7f896a7a379cc1b287c17f2409b9661a34b0c43c6307e`.
+Only T01/T02/T18 become accepted under their unchanged L+C layers: 19/218
+accepted, 199 pending. Original scenario/condition/layer bytes and scheduling
+remain unchanged. These counts are original-case decisions, not the number of
+unit tests or native-platform completion claims.
+
+
+The preceding test-only macOS fixture correction was published as
+`486aaf1c01dcaac394d3c40bf3b2a65581aadc47`. Its
+[push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39110979717)
+completed successfully: Linux/Python 3.10 1,672 passed/eight skipped; macOS
+1,668/12; Windows 1,316/364. All four jobs built the same release hash shown
+above. The exact four-file delta and complete 205-source Git tree were verified.
+These hosted tests do not establish native user-device cleanup acceptance.
