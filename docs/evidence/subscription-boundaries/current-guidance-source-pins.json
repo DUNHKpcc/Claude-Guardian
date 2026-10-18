@@ -1,0 +1,62 @@
+{
+  "candidate_root_context_only": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtysecond",
+  "scope": "Every v2 consumed repository guidance source compared by exact bytes, plus unchanged helper and original design controls; no whole-tree or changed-evidence-page equivalence claimed.",
+  "pins": [
+    {
+      "relative_path": "AGENTS.md",
+      "consumed_sha256": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+      "current_sha256": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+      "equal": true
+    },
+    {
+      "relative_path": "skills/claude-guardian/SKILL.md",
+      "consumed_sha256": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+      "current_sha256": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+      "equal": true
+    },
+    {
+      "relative_path": "skills/claude-guardian/references/accounts-and-payments.md",
+      "consumed_sha256": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+      "current_sha256": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+      "equal": true
+    },
+    {
+      "relative_path": "skills/claude-guardian/references/contact-and-safety.md",
+      "consumed_sha256": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+      "current_sha256": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+      "equal": true
+    },
+    {
+      "relative_path": "skills/claude-guardian/references/intake.md",
+      "consumed_sha256": "541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71",
+      "current_sha256": "541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71",
+      "equal": true
+    },
+    {
+      "relative_path": "skills/claude-guardian/scripts/interview_flow.py",
+      "original_control_or_spec_sha256": "304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e",
+      "current_sha256": "304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e",
+      "equal": true
+    },
+    {
+      "relative_path": "skills/claude-guardian/scripts/traffic_policy.py",
+      "original_control_or_spec_sha256": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+      "current_sha256": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+      "equal": true
+    },
+    {
+      "relative_path": "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md",
+      "original_control_or_spec_sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+      "current_sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+      "equal": true
+    },
+    {
+      "relative_path": "skills/claude-guardian/sources/design/D-ENV-v0.3.md",
+      "original_control_or_spec_sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+      "current_sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+      "equal": true
+    }
+  ],
+  "retained_original_intake_sha256": "1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba",
+  "current_intake_sha256": "541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71"
+}

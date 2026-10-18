@@ -61,7 +61,7 @@ The following files are hashed against the reviewed current nineteenth bytes. Ca
 | `skills/claude-guardian/scripts/cleanup_transactions.py` | `42b1586eae6d67dbdfa59ffb398a445bd717d3da304bc19c3cd64a6b34ea797e` |
 | `skills/claude-guardian/scripts/transactions.py` | `53c1fa7a3f2e2fff2737ba3dbe96d0dbe748bfdbbed73b2a7d15f05c723190cd` |
 | `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
-| `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
+| `skills/claude-guardian/references/intake.md` | `541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
 | `skills/claude-guardian/references/incidents-and-integrations.md` | `37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2` |
 | `docs/interview-resume.md` | `0c8325daad9e5d56093819068001617024c226cd934aca8fd195f2c280210691` |
@@ -90,3 +90,14 @@ This preserves the complete original T16 L+C conclusion within its trusted-host 
 ## Registry-count wording preservation review (2026-10-18)
 
 The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.
+
+
+## Reported-negative gate clarification preservation review (2026-10-18 UTC)
+
+An independent read-only review compared the frozen thirty-first baseline and thirty-second candidate. The sole active-source change is the explanatory paragraph after G1/G2/G3 in intake.md; runtime, fixtures and original requirements remain byte-identical. T16 still restores only approved non-secret progress, reviews relevant environmental changes, preserves reported purchase completion and does not restart payment preparation. The controlled temporary POSIX partial-cleanup replay still reconciles before separately approved recovery and does not repeat deletion. A reported answer, saved completion record or synthetic PC2 label never restores permission or clears unresolved environmental review; no provider-side payment idempotency or native cleanup guarantee is added.
+
+All 4 unchanged original tests on this page passed on both trees, with zero skips. Each complete --replay stdout was freshly produced twice per tree; all four byte streams are identical: SHA-256 `fda7c117962b94894bc5ee779edaf9392efa3c08e83320bf722bd61bb2dcf1d0` (107884 bytes). Across the twelve affected pages, 105 original tests and 207 supporting interview regressions passed on each tree. These executed comparisons supplement the full original-clause and active-guidance review, not replace it.
+
+The unchanged helper can report G1 complete and G2 pass/conditional_plan_only=false for an answered negative Apple-login fact; that value remains reported and negative. An independent synthetic control reproduced this on both trees while retaining blocked G3, absent persistence authority, separate PC0 contact gaps, and blocking unknown/refused/deferred, pause and unresolved-resume controls. Its identical complete-output SHA-256 is `239fc78643aa3282342393330fc65ed1fc846e0f7bb89748dd9c6e7a1502f932`. This is an interpretation boundary, not a new eligibility engine, runtime fix, purchase-execution defect or counterfactual eligibility inference.
+
+Only this reviewed current intake dependency pin and this page's corresponding ledger evidence hashes may change. The 218 original clauses and layers, all historical source/response packets and their existing pins, and native/contact/action boundaries remain unchanged. This preservation review adds no accepted case, generated response, actual device/store/account result or action permission; future source drift requires a new scoped review.

@@ -1,0 +1,14 @@
+{
+  "source": "Parent collaboration notification 2026-10-18T11:37:30Z; external upload/download verification was performed by parent, not this reviewer.",
+  "v2_corpus": {
+    "library_file_id": "libfile_ba4573fa214c81918e39fcdcd290307e",
+    "archive_sha256": "e82696a0a59430f7392555231e2bac518eb481c791c36aadbb1c0e6a756b7e2d",
+    "parent_reported_readback": "Fresh download CRC and all 8 payload hashes verified"
+  },
+  "separate_existing_case_preservation": {
+    "library_file_id": "libfile_004034988c7c8191a27b06754830c21e",
+    "archive_sha256": "bdddddbc6ea65ff07244b962516585690ad48cf6121892ed2d760957c20acbd8",
+    "approved_map_sha256": "c282bad34a64ef66a38e76e107164dce9df47fe5a1a3a614bc08779d660dcb2b",
+    "scope": "Parent reports exact 12 pages and 26 ledger hashes applied; separate reviewer owns this audit. Not independently certified by this packet."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "account_alias": "t54-account",
+  "case_id": "T54",
+  "phase": "PC0",
+  "prior_messages": [],
+  "synthetic": true,
+  "synthetic_context_time": "2026-10-18T10:00:00Z",
+  "target_alias": "t54-mac",
+  "task_alias": "t54-offline-dialogue"
+}

@@ -1,0 +1,11 @@
+--- frozen-original/intake.md
++++ clarified-candidate/intake.md
+@@ -45,6 +45,8 @@
+ - **G1 interview coverage:** every applicable branch handled; unknowns visible. Complete, partial, paused, blocked, or emergency-deferred are distinct outcomes
+ - **G2 personalized plan:** enough current target, task, route, network/resource/payment/protection facts to plan; otherwise issue a conditional plan
+ - **G3 action:** exact proposed change or purchase, current prerequisites, scope/price, specific authorization, supported capability, and necessary recovery. Preview operations cannot satisfy execution capability simply by receiving approval
++
++解释现有访谈辅助器的汇总时，分别说明字段覆盖、具体路线可行性与动作权限。`reported` 的明确否定仍是已回答事实；例如 Apple 登录/验证不可用可与 G1=`complete`、G2=`pass`、`conditional_plan_only=false` 同时出现，这不自相矛盾，也不验证 Apple 路线可行。保留原返回值和否定事实，说明缺失前提只阻断依赖它的购买步骤；不要改成 unknown、把 G2 重写为 blocked，或据此诊断自动购买/执行缺陷。G3、接触阶段及具体动作授权仍须分别满足；独立合成报告的 PC2 标签不能替代当前会话状态或真实交接。
+ 
+ These gates do not replace PC-G1/PC-G2. When a purchase is later completed, update the current state and stop treating the user as still awaiting purchase. Old Q-C08 answers must not silently become new target-plan answers.
+ 

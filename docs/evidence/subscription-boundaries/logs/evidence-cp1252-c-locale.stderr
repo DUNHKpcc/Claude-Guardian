@@ -1,0 +1,25 @@
+test_actual_response_manifest_and_verbatim_records (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_actual_response_manifest_and_verbatim_records) ... ok
+test_every_retained_response_line_and_sentence_reviewed (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_every_retained_response_line_and_sentence_reviewed) ... ok
+test_frozen_manifest_and_every_payload (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_frozen_manifest_and_every_payload) ... ok
+test_host_events_keep_negative_unknown_and_declined_distinct (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_host_events_keep_negative_unknown_and_declined_distinct) ... ok
+test_no_fabricated_respondent_helper_calls_or_live_fixture_import (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_no_fabricated_respondent_helper_calls_or_live_fixture_import) ... ok
+test_no_io_guard_fails_fast_on_representative_entrypoints (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_no_io_guard_fails_fast_on_representative_entrypoints) ... ok
+test_original_rows_layers_and_current_pin_comparison (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_original_rows_layers_and_current_pin_comparison) ... ok
+test_python310_syntax_and_explicit_utf8_artifacts (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_python310_syntax_and_explicit_utf8_artifacts) ... ok
+test_semantic_failure_is_retained_not_promoted (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_semantic_failure_is_retained_not_promoted) ... ok
+test_separate_fresh_controls_preserve_exact_results_and_gates (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_separate_fresh_controls_preserve_exact_results_and_gates) ... ok
+test_staged_inputs_and_retained_prior_responses (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_staged_inputs_and_retained_prior_responses) ... ERROR
+
+======================================================================
+ERROR: test_staged_inputs_and_retained_prior_responses (test_subscription_boundaries_evidence.RetainedSubscriptionBoundaryEvidence.test_staged_inputs_and_retained_prior_responses)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/guardian-subscription-boundaries-independent/tests/test_subscription_boundaries_evidence.py", line 84, in test_staged_inputs_and_retained_prior_responses
+    self.assertEqual(rec["received_transcript"][-1]["content"], current["content"])
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^
+KeyError: -1
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.127s
+
+FAILED (errors=1)

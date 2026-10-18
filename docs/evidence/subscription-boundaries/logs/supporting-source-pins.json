@@ -1,0 +1,19 @@
+{
+  "scope": "Supporting suite modules and relevant static/runtime dependencies in frozen thirtyfirst tree; byte hashes verified after successful runs. Logs identify exact source root. Not whole-tree publication identity.",
+  "files": {
+    "tests/test_acceptance_mobile_route.py": "c0d6e44a5f5b1427c92459d49528e73eec40d36385dee2fffa4598e42548b769",
+    "tests/test_acceptance_experience_status.py": "f04873668963011820bb20f3ce0f45ce35d5b75cde1d26456dc2e47dfc7b4dc4",
+    "tests/test_acceptance_intake_basics.py": "6645ba02aa87dca93c9dfa2a3e97c35eae3fb63e75aa3374990cb51d4092a15d",
+    "tests/test_acceptance_intake_rebuild.py": "e26a26ee3b3d0ba93270787f8dbd8022ed11adb2fbbb0f1229df8f1aef57245a",
+    "tests/test_interview_flow.py": "7140e70b88e4cd3099d2fa725b3b20269de511be90d4dd020154d2db3e5e0965",
+    "tests/test_acceptance_subscription_original.py": "adc62f1ed88c122f1c1805c1703297affc1a161f996e57f22f4cf1ff57ac6cf0",
+    "skills/claude-guardian/scripts/interview_flow.py": "304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e",
+    "skills/claude-guardian/scripts/traffic_policy.py": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+    "skills/claude-guardian/scripts/workflow_guard.py": "68aa99db78a70d0387a3901d4f3ba25a9c4dcee19fa2ff3a584706419ccfeed0",
+    "skills/claude-guardian/references/intake.md": "1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba",
+    "skills/claude-guardian/references/routes-and-platforms.md": "dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "docs/implementation-tracker.md": "8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50",
+    "tests/fixtures/acceptance-routes-rebuild.json": "073ad74ba195fd1c72bcab61887f24f1ce5cbeaef6ff6036d9ff76a713154a80"
+  }
+}

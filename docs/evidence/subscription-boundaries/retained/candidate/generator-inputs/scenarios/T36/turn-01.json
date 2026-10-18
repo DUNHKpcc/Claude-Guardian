@@ -1,0 +1,8 @@
+{
+  "case_id": "T36",
+  "content": "有 Apple",
+  "role": "user",
+  "synthetic": true,
+  "synthetic_observed_at": "2026-10-18T10:01:00Z",
+  "turn_id": "T36-01"
+}

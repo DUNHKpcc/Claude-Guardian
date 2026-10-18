@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "case_id": "T36",
+      "initial_context": "scenarios/T36/initial-context.json",
+      "turn_files": [
+        "scenarios/T36/turn-01.json",
+        "scenarios/T36/turn-02.json"
+      ]
+    },
+    {
+      "case_id": "T38",
+      "initial_context": "scenarios/T38/initial-context.json",
+      "turn_files": [
+        "scenarios/T38/turn-01.json",
+        "scenarios/T38/turn-02.json",
+        "scenarios/T38/turn-03.json"
+      ]
+    },
+    {
+      "case_id": "T46",
+      "initial_context": "scenarios/T46/initial-context.json",
+      "turn_files": [
+        "scenarios/T46/turn-01.json",
+        "scenarios/T46/turn-02.json",
+        "scenarios/T46/turn-03.json"
+      ]
+    },
+    {
+      "case_id": "T54",
+      "initial_context": "scenarios/T54/initial-context.json",
+      "turn_files": [
+        "scenarios/T54/turn-01.json",
+        "scenarios/T54/turn-02.json"
+      ]
+    }
+  ],
+  "delivery": "Only the controller reads this complete sequence. Deliver one current turn after retaining the preceding actual response. Do not expose future turns, review-only material, previous response artifacts or prior-plan text to the responding Agent.",
+  "version": "1.0"
+}

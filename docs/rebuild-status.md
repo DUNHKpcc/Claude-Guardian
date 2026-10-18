@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: thirty-first rebuild, 2026-10-18
+## Current checkpoint: thirty-second rebuild, 2026-10-18
 
-The current ledger records 41 freshly accepted original cases and 177 pending:
-ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58, T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 45 freshly accepted original cases and 173 pending:
+T36, T38, T46, T54, ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58, T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113

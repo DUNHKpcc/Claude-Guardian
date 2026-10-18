@@ -1,0 +1,15 @@
+{
+  "account_alias": "t46-account",
+  "case_id": "T46",
+  "phase": "PC0",
+  "prior_messages": [
+    {
+      "content": "我是第一次准备 Claude 订阅，目标套餐选 Pro，准备用 Mac 本机上的 Claude Code，不考虑 VM/VPS。先了解 Apple 这条付款候选；今天只谈方案。现有项目、配置和 Codex 通道都保留。",
+      "role": "user"
+    }
+  ],
+  "synthetic": true,
+  "synthetic_context_time": "2026-10-18T10:00:00Z",
+  "target_alias": "t46-mac",
+  "task_alias": "t46-offline-dialogue"
+}

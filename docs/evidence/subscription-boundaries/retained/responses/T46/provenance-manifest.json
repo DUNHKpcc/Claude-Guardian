@@ -1,0 +1,110 @@
+{
+  "case_id": "T46",
+  "kind": "case_local_provenance_manifest",
+  "created_at_utc": "2026-10-18T11:21:04.446638+00:00",
+  "turn_sequence": [
+    "T46-01",
+    "T46-02",
+    "T46-03"
+  ],
+  "source_inputs_consumed": [
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/exercise-scope.json",
+      "sha256": "5e441ffb07066ff9847502ceb32f64e20a756fa1dd35b5d07d628195a9bc163f"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/response-record-format.json",
+      "sha256": "6522ba470749119fb43fa1f14956c9c1107d8f664506fa202e689e674f641cce"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/guidance/AGENTS.md",
+      "sha256": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/guidance/SKILL.md",
+      "sha256": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/references/intake.md",
+      "sha256": "1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/references/accounts-and-payments.md",
+      "sha256": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/references/contact-and-safety.md",
+      "sha256": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/scenarios/T46/initial-context.json",
+      "sha256": "58e488ff054626a546b89ffcaa4291c5fc15d0a59b88026f39a205e703d0623b"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/scenarios/T46/turn-01.json",
+      "sha256": "b2a90a1cd8b58b62b735b5aa9021b0163a0f9e5976815e29d049b54c76ceb121"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/scenarios/T46/turn-02.json",
+      "sha256": "f5ff29800f4238f50b71becce8767caa6b4bd72514dc6f9dedd2728c84313ac4"
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-candidate/generator-inputs/scenarios/T46/turn-03.json",
+      "sha256": "4b6234e8b030f43bc0d618ecb495d9c73a3229743ca75e043440ca9993a4762b"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/tmp/guardian-subscription-boundaries-responses/T46/response-01.md",
+      "sha256": "24d6d128a4d96a41356a60a691d0284ead6542078af4b0a3120f875590aee287",
+      "bytes": 2278
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-responses/T46/evidence-01.json",
+      "sha256": "a87f002fc08345fb7c3b6229b4631b390431a00c465561317d4982f01066a0d2",
+      "bytes": 14101
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-responses/T46/response-02.md",
+      "sha256": "fea3ace704784c30f6ea690fa4bc84254134e5a3824a5d5ec800d32e4d18d2fc",
+      "bytes": 605
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-responses/T46/evidence-02.json",
+      "sha256": "b0e52ddafa921343734b5d98e536bab51ac0f0825dd6add53bedbd1065a08257",
+      "bytes": 9368
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-responses/T46/response-03.md",
+      "sha256": "05e115e04d129ee099f61be1a4e36f30e3b1b864ea1f5d65c11a0c414895d66a",
+      "bytes": 1405
+    },
+    {
+      "path": "/tmp/guardian-subscription-boundaries-responses/T46/evidence-03.json",
+      "sha256": "67c56fcb00e77b81fd024bd84bc653c37e7c799e6524946c25cdf25852dae69b",
+      "bytes": 11099
+    }
+  ],
+  "generation_method": "Hand-authored Chinese agent responses generated sequentially after explicit controller handoffs; no canned answer function. Python was used only for reading authorized local files, hashing, and writing evidence.",
+  "helper_call_log": [],
+  "helper_summary": "No runtime helper imported or called.",
+  "response_preservation": "Earlier response/evidence files were created with exclusive creation and never replaced. Each later evidence record contains the actual prior conversational responses.",
+  "boundary_activity_log": {
+    "local_files_read": [
+      "/tmp/guardian-subscription-boundaries-responses/T46/response-01.md",
+      "/tmp/guardian-subscription-boundaries-responses/T46/evidence-01.json",
+      "/tmp/guardian-subscription-boundaries-responses/T46/response-02.md",
+      "/tmp/guardian-subscription-boundaries-responses/T46/evidence-02.json",
+      "/tmp/guardian-subscription-boundaries-responses/T46/response-03.md",
+      "/tmp/guardian-subscription-boundaries-responses/T46/evidence-03.json"
+    ],
+    "local_output_files_written": [
+      "/tmp/guardian-subscription-boundaries-responses/T46/provenance-manifest.json"
+    ],
+    "helper_operations_actually_run": [],
+    "any_attempted_external_or_mutating_operation": "None; authorized case-local evidence writes only.",
+    "future_turn_access": "Each turn file was first read only after explicit parent handoff. No additional turn or review/design/controller content read."
+  },
+  "source_hash_provenance": "Hashes are those observed on the original allowed input reads. No source files were modified.",
+  "recording_scope": "Synthetic exercise controller authorizes these response/evidence files; this does not claim fictional participant authorization for real-world profile persistence."
+}

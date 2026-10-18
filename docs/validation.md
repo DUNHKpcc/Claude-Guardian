@@ -1550,3 +1550,17 @@ Node synthetic suites, compilation and repeat packages passed. All 63 installed
 members match the tested source, with only the two active references changed
 from the previous package. Current-batch hosted CI is pending. Hosted OS
 jobs do not replace user-device acceptance or prove unseen Agent conversations.
+
+## 重建第三十二批：否定前提与覆盖度解释、四项原对话验收
+
+2026-10-18，基于第三十一批 `ce94ca82c4b31b73203c68601ba23e1aecc49aaa`。仅安装包内的 `references/intake.md` 增加一段解释：已回答的否定事实可以与 G1 complete/G2 pass 并存；保留原值，分别解释具体路线前提、G3、接触状态及动作权限。运行时不变。
+
+原 T36/T46/T54 使用逐句独立审阅的原始多轮输出并经过当前指导语义保全；T38 原始第三轮把上述共存误称为矛盾，失败记录原样保留。新一轮使用相同冻结输入、更新的正常指导，逐轮交付并固定前序回复后生成，再由独立审阅者核验完整原条件与报告解释。当前四项按原 L+C 验收；累计45/218，173项待验收。实际回复不是测试生成的模板，独立辅助器重放与回复生成记录分开；记录不冒充独立操作遥测或未观察输出保证。
+
+另对受 intake 影响的12份既有证据、26个已验收原条件独立保全：每树105项原测试与207项访谈回归通过，12组完整重放各两次且字节一致；仅审阅通过的当前依赖与对应页哈希更新，历史包/回复哈希不变。所有218原条款、层级和75/113/30调度分类保持不变。
+
+父执行器最终完整套件1883项，1875通过、8跳过，51.485秒，退出0；原始日志 SHA-256 `d832eb1f9e19b04b544fecff1676b8e2ec6de40d703cb9c867742a82b73e66ef`。新增安装布局20项与台账3项均通过。两项仓库 Node 合成测试、编译、tracked diff检查与重复打包通过。一次调用了不存在的 Node 测试文件名而失败，记录已保留；随后按仓库实际两个测试路径执行成功，没有改变测试。
+
+重复包 SHA-256 `7a1ab5561a58880136a0715698e0bbf50cc436c9af61515db80718461462e74c`，63项清单不变，仅 intake 内容改变；证据与测试不进入安装包。新证据测试已在 UTF-8、C-locale/cp1252、Python3.13运行；本地无3.10，最低版本执行以该提交后CI为准。Mac/Windows用户设备、真实账户/购买资格、网络隔离、凭据及实际操作均未验收。
+
+独立最终执行同为1883项，1875通过、8跳过，51.929秒，退出0；日志 SHA-256 `906c2d0845aed0819e587d196085d5a39031a66e42c27ef250497af225c16046`。强制缺省文件编码 cp1252/C-locale 并禁止较新 unittest 上下文API的337项兼容性检查全部通过；Python3.13安装布局20项通过。静态审计首次把明确受 no-I/O 阻断的故障注入 open 哨兵误作普通文本读取，另一次把未纳入172项正文manifest的自身哈希旁文件误作漏文件；原失败审计保留，只修正审阅工具的精确分类与manifest定义，没有改候选测试或历史证据。

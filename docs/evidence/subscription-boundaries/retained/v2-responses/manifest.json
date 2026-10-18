@@ -1,0 +1,15 @@
+{
+  "frozen_at_utc": "2026-10-18T11:34:00Z",
+  "kind": "actual sequential blinded T38 v2 responses; agent-authored provenance, not independent telemetry",
+  "guidance_manifest_sha256": "577becfcc185e7eaa1588365a504b1146d820695783d421d8dc86232a94f8cfd",
+  "files": {
+    "controller-delivery.json": "ef87d40330c712121455f454612b9f56e185b48572a869713a44a04ee00ab0c8",
+    "T38/case-provenance-manifest.json": "510053e09feee12a133282c29ef9d7f75375b7d0be489f11ee0d20cb3e10857e",
+    "T38/response-03.record.json": "63a44756c590296b005e23e84b01f10cd1ace75093946638919bb117ba8163d2",
+    "T38/response-03.md": "0069349723b0ba8d850afb18fb19794142ca85cb28ef6bec8dd150c1800d470d",
+    "T38/response-02.record.json": "0d3c5e1cdec1d4d4ead848935a0719c68c59971cafa1b35c254dcb39606ea97e",
+    "T38/response-02.md": "c986d8174fbf74ba5192452d291eb05a6c29470ebb8cff756aae0bec185478b6",
+    "T38/response-01.record.json": "7cc4e08b5082a58f32954a65bd66c84cdc8532ef8b4b4f6aba8470603fbe932a",
+    "T38/response-01.md": "679243b82cf5776844bb6ce7feacd8de59afe4978adb94d4c27104d49efa2755"
+  }
+}

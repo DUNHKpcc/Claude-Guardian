@@ -1,0 +1,1484 @@
+{
+  "T38_negative_report": {
+    "fixture_clock": "2026-10-18T09:10:00Z",
+    "kwargs": {
+      "blocker_reason": "Apple sign-in and verification unavailable",
+      "source": "synthetic:negative-apple-login"
+    },
+    "question_id": "Q-A02",
+    "state": {
+      "account_alias": "mobile-account",
+      "asked_question_ids": [
+        "Q-P07",
+        "Q-A01",
+        "Q-A02",
+        "Q-A03",
+        "Q-A10",
+        "Q-L01",
+        "Q-L04",
+        "Q-C12",
+        "Q-Z01",
+        "Q-C10",
+        "Q-A04",
+        "Q-A05"
+      ],
+      "context": {
+        "account_incident_resolved": false,
+        "ambiguous_experience": false,
+        "billing_channel": "apple",
+        "billing_product_ambiguous": false,
+        "blocked_reason": null,
+        "budget_needed": false,
+        "buying_gift_card": false,
+        "change_planned": false,
+        "changing_store_region": false,
+        "compatibility_needed": false,
+        "contact_phase": "PC2",
+        "existing_test": false,
+        "gift_card": false,
+        "incident": "none",
+        "incident_origin": "host",
+        "incident_resolved": false,
+        "integration_used": false,
+        "language_change_needed": false,
+        "organization_task": false,
+        "os_issue": "none",
+        "paused": false,
+        "persistence_requested": false,
+        "purchase_completed": false,
+        "route": "local",
+        "route_selection_basis": "explicit_choice",
+        "subscription_conflict": false,
+        "task": "subscription_preparation",
+        "timezone_issue": false,
+        "windows10": false
+      },
+      "current_subscription": {
+        "observed_at": "2026-10-18T09:10:00Z",
+        "source": "synthetic:mobile-route-current-report",
+        "status": "none_reported"
+      },
+      "deferred_branches": [],
+      "facts": {
+        "Q-A01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "availability": "reported",
+            "device_alias": "phone-a",
+            "type": "iphone"
+          }
+        },
+        "Q-A02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "credentials_collected": false,
+            "sign_in_and_verification": "reported_available"
+          }
+        },
+        "Q-A03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "source_kind": "user_store_settings_report",
+            "storefront": "synthetic_reported_storefront"
+          }
+        },
+        "Q-A04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "desired_plan_entry": "reported_visible",
+            "official_app_entry": "reported_visible"
+          }
+        },
+        "Q-A05": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "correspondence": "reported_match",
+            "service_account_alias": "mobile-account"
+          }
+        },
+        "Q-A10": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "changing_store_region": false,
+            "renewal": "requested_explanation"
+          }
+        },
+        "Q-C01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "code_environment_and_first_subscription_plan"
+        },
+        "Q-C02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "macos"
+        },
+        "Q-C03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "no_suspension_reported"
+        },
+        "Q-C04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "registered_reported"
+        },
+        "Q-C05": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "local"
+        },
+        "Q-C06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "official_login_category_reported"
+        },
+        "Q-C08": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "synthetic_selected_plan_not_current_catalog_verification"
+        },
+        "Q-C09": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "region_reported_not_verified"
+        },
+        "Q-C10": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "concise_checklist"
+        },
+        "Q-C12": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "preserve_projects_configuration_and_control_channel"
+        },
+        "Q-J01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "first_subscription"
+        },
+        "Q-L01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "existing_local_code_metadata_reported_not_executed"
+        },
+        "Q-L04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "preserve_local_projects"
+        },
+        "Q-N01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "existing_proxy_reported_not_tested"
+        },
+        "Q-N02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": {
+            "code_runtime": "controller-a",
+            "controller": "controller-a",
+            "payment_device": "phone-a"
+          }
+        },
+        "Q-N03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "stable_network_intended"
+        },
+        "Q-N04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "payment_phone_separate_from_code_workspace"
+        },
+        "Q-N06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "no_management_restrictions_reported"
+        },
+        "Q-OS03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "synthetic_controller_version_reported"
+        },
+        "Q-P06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "apple"
+        },
+        "Q-P07": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "same_channel_management_guidance_requested_no_renewal_action"
+        },
+        "Q-Z01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "plan_only"
+        }
+      },
+      "payment_intent": "new_subscription",
+      "persistence_consent": {
+        "export": false,
+        "private_save": false,
+        "public_export": false
+      },
+      "purchase_intent": "subscription_preparation",
+      "schema_version": "1.0.0",
+      "target_alias": "selected-runtime",
+      "task_id": "mobile-task"
+    },
+    "value": {
+      "credentials_collected": false,
+      "sign_in_and_verification": "reported_unavailable"
+    }
+  },
+  "T46_region_refusal": {
+    "fixture_clock": "2026-10-18T09:10:00Z",
+    "kwargs": {
+      "blocker_reason": "Region eligibility not established",
+      "source": "synthetic:region-refusal",
+      "state_name": "declined"
+    },
+    "question_id": "Q-C09",
+    "state": {
+      "account_alias": "mobile-account",
+      "asked_question_ids": [
+        "Q-P07",
+        "Q-A01",
+        "Q-A02",
+        "Q-A03",
+        "Q-A10",
+        "Q-L01",
+        "Q-L04",
+        "Q-C12",
+        "Q-Z01",
+        "Q-C10"
+      ],
+      "context": {
+        "account_incident_resolved": false,
+        "ambiguous_experience": false,
+        "billing_channel": "apple",
+        "billing_product_ambiguous": false,
+        "blocked_reason": null,
+        "budget_needed": false,
+        "buying_gift_card": false,
+        "change_planned": false,
+        "changing_store_region": false,
+        "compatibility_needed": false,
+        "contact_phase": "PC0",
+        "existing_test": false,
+        "gift_card": false,
+        "incident": "none",
+        "incident_origin": "host",
+        "incident_resolved": false,
+        "integration_used": false,
+        "language_change_needed": false,
+        "organization_task": false,
+        "os_issue": "none",
+        "paused": false,
+        "persistence_requested": false,
+        "purchase_completed": false,
+        "route": "local",
+        "route_selection_basis": "explicit_choice",
+        "subscription_conflict": false,
+        "task": "subscription_preparation",
+        "timezone_issue": false,
+        "windows10": false
+      },
+      "current_subscription": {
+        "observed_at": "2026-10-18T09:10:00Z",
+        "source": "synthetic:mobile-route-current-report",
+        "status": "none_reported"
+      },
+      "deferred_branches": [],
+      "facts": {
+        "Q-A01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "availability": "reported",
+            "device_alias": "phone-a",
+            "type": "iphone"
+          }
+        },
+        "Q-A02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "credentials_collected": false,
+            "sign_in_and_verification": "reported_available"
+          }
+        },
+        "Q-A03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "source_kind": "user_store_settings_report",
+            "storefront": "synthetic_reported_storefront"
+          }
+        },
+        "Q-A10": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "changing_store_region": false,
+            "renewal": "requested_explanation"
+          }
+        },
+        "Q-C01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "code_environment_and_first_subscription_plan"
+        },
+        "Q-C02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "macos"
+        },
+        "Q-C03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "no_suspension_reported"
+        },
+        "Q-C04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "registered_reported"
+        },
+        "Q-C05": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "local"
+        },
+        "Q-C06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "official_login_category_reported"
+        },
+        "Q-C08": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "synthetic_selected_plan_not_current_catalog_verification"
+        },
+        "Q-C09": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "region_reported_not_verified"
+        },
+        "Q-C10": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "concise_checklist"
+        },
+        "Q-C12": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "preserve_projects_configuration_and_control_channel"
+        },
+        "Q-J01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "first_subscription"
+        },
+        "Q-L01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "existing_local_code_metadata_reported_not_executed"
+        },
+        "Q-L04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "preserve_local_projects"
+        },
+        "Q-N01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "existing_proxy_reported_not_tested"
+        },
+        "Q-N02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": {
+            "code_runtime": "controller-a",
+            "controller": "controller-a",
+            "payment_device": "phone-a"
+          }
+        },
+        "Q-N03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "stable_network_intended"
+        },
+        "Q-N04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "payment_phone_separate_from_code_workspace"
+        },
+        "Q-N06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "no_management_restrictions_reported"
+        },
+        "Q-OS03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "synthetic_controller_version_reported"
+        },
+        "Q-P06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "apple"
+        },
+        "Q-P07": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "same_channel_management_guidance_requested_no_renewal_action"
+        },
+        "Q-Z01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "plan_only"
+        }
+      },
+      "payment_intent": "new_subscription",
+      "persistence_consent": {
+        "export": false,
+        "private_save": false,
+        "public_export": false
+      },
+      "purchase_intent": "subscription_preparation",
+      "schema_version": "1.0.0",
+      "target_alias": "selected-runtime",
+      "task_id": "mobile-task"
+    },
+    "value": null
+  },
+  "T54_unknown_storefront_draft": {
+    "fixture_clock": "2026-10-18T09:10:00Z",
+    "kwargs": {
+      "source": "synthetic:storefront-unknown",
+      "state_name": "unknown"
+    },
+    "question_id": "Q-A03",
+    "state": {
+      "account_alias": "mobile-account",
+      "asked_question_ids": [
+        "Q-P07",
+        "Q-A01",
+        "Q-A02",
+        "Q-A03",
+        "Q-A10",
+        "Q-L01",
+        "Q-L04",
+        "Q-C12",
+        "Q-Z01",
+        "Q-C10"
+      ],
+      "context": {
+        "account_incident_resolved": false,
+        "ambiguous_experience": false,
+        "billing_channel": "apple",
+        "billing_product_ambiguous": false,
+        "blocked_reason": null,
+        "budget_needed": false,
+        "buying_gift_card": false,
+        "change_planned": false,
+        "changing_store_region": false,
+        "compatibility_needed": false,
+        "contact_phase": "PC0",
+        "existing_test": false,
+        "gift_card": false,
+        "incident": "none",
+        "incident_origin": "host",
+        "incident_resolved": false,
+        "integration_used": false,
+        "language_change_needed": false,
+        "organization_task": false,
+        "os_issue": "none",
+        "paused": false,
+        "persistence_requested": false,
+        "purchase_completed": false,
+        "route": "local",
+        "route_selection_basis": "explicit_choice",
+        "subscription_conflict": false,
+        "task": "subscription_preparation",
+        "timezone_issue": false,
+        "windows10": false
+      },
+      "current_subscription": {
+        "observed_at": "2026-10-18T09:10:00Z",
+        "source": "synthetic:mobile-route-current-report",
+        "status": "none_reported"
+      },
+      "deferred_branches": [],
+      "facts": {
+        "Q-A01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "availability": "reported",
+            "device_alias": "phone-a",
+            "type": "iphone"
+          }
+        },
+        "Q-A02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "credentials_collected": false,
+            "sign_in_and_verification": "reported_available"
+          }
+        },
+        "Q-A03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "source_kind": "user_store_settings_report",
+            "storefront": "synthetic_reported_storefront"
+          }
+        },
+        "Q-A10": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": {
+            "changing_store_region": false,
+            "renewal": "requested_explanation"
+          }
+        },
+        "Q-C01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "code_environment_and_first_subscription_plan"
+        },
+        "Q-C02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "macos"
+        },
+        "Q-C03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "no_suspension_reported"
+        },
+        "Q-C04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "registered_reported"
+        },
+        "Q-C05": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "local"
+        },
+        "Q-C06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "official_login_category_reported"
+        },
+        "Q-C08": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "synthetic_selected_plan_not_current_catalog_verification"
+        },
+        "Q-C09": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "region_reported_not_verified"
+        },
+        "Q-C10": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "concise_checklist"
+        },
+        "Q-C12": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "preserve_projects_configuration_and_control_channel"
+        },
+        "Q-J01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "first_subscription"
+        },
+        "Q-L01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "existing_local_code_metadata_reported_not_executed"
+        },
+        "Q-L04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "preserve_local_projects"
+        },
+        "Q-N01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "existing_proxy_reported_not_tested"
+        },
+        "Q-N02": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": {
+            "code_runtime": "controller-a",
+            "controller": "controller-a",
+            "payment_device": "phone-a"
+          }
+        },
+        "Q-N03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "stable_network_intended"
+        },
+        "Q-N04": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "payment_phone_separate_from_code_workspace"
+        },
+        "Q-N06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "no_management_restrictions_reported"
+        },
+        "Q-OS03": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "synthetic_controller_version_reported"
+        },
+        "Q-P06": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "apple"
+        },
+        "Q-P07": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "mobile-account",
+          "value": "same_channel_management_guidance_requested_no_renewal_action"
+        },
+        "Q-Z01": {
+          "applies_when": "current task and target",
+          "blocker_reason": null,
+          "clarification_count": 0,
+          "observed_at": "2026-10-18T09:10:00Z",
+          "required_for": [
+            "intake",
+            "plan"
+          ],
+          "sensitivity": "low",
+          "source": "synthetic:mobile-route-current-report",
+          "state": "reported",
+          "subject_ref": "selected-runtime",
+          "value": "plan_only"
+        }
+      },
+      "payment_intent": "new_subscription",
+      "persistence_consent": {
+        "export": false,
+        "private_save": false,
+        "public_export": false
+      },
+      "purchase_intent": "subscription_preparation",
+      "schema_version": "1.0.0",
+      "target_alias": "selected-runtime",
+      "task_id": "mobile-task"
+    },
+    "value": null
+  }
+}

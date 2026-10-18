@@ -1,0 +1,40 @@
+{
+  "schema": "guardian-subscription-boundaries-observed/1",
+  "frozen_at_utc": "2026-10-18T11:21:24Z",
+  "files": {
+    "controller-delivery.json": "bbd87503ac71dde503aa49c984d7de922c3589f673bffe3e55ebbff51938335d",
+    "T54/provenance-manifest.json": "f1350c398fb41952b461b3c28c3572e18bf09409a8202b1446e374862706da78",
+    "T54/evidence-02.json": "6ba20a045f96a2b2ef919c923897b3a175b314dbbe7ab46621ef0eff1ced1c5e",
+    "T54/response-02.md": "4f28f1eb60bef0a4d311fe6074d70461fe5390284723bfc364bd71ca2be59c6a",
+    "T54/evidence-01.json": "c4134a47a0cae9649836e0119a3dd321ddb878a6709607f2c667682f41079938",
+    "T54/response-01.md": "45315e7f675d1f86b579bd74eb537bb2335e4bb8a43b84f1aef10c24086158ed",
+    "T46/provenance-manifest.json": "93dd37e52993c7f7bba88e17067722bed54b1deeae3bd407fff556b40f582198",
+    "T46/evidence-03.json": "67c56fcb00e77b81fd024bd84bc653c37e7c799e6524946c25cdf25852dae69b",
+    "T46/response-03.md": "05e115e04d129ee099f61be1a4e36f30e3b1b864ea1f5d65c11a0c414895d66a",
+    "T46/evidence-02.json": "b0e52ddafa921343734b5d98e536bab51ac0f0825dd6add53bedbd1065a08257",
+    "T46/response-02.md": "fea3ace704784c30f6ea690fa4bc84254134e5a3824a5d5ec800d32e4d18d2fc",
+    "T46/evidence-01.json": "a87f002fc08345fb7c3b6229b4631b390431a00c465561317d4982f01066a0d2",
+    "T46/response-01.md": "24d6d128a4d96a41356a60a691d0284ead6542078af4b0a3120f875590aee287",
+    "T38/provenance-manifest.json": "eb87b6f5775272103f939883e3ee41e534d3993186d6f96566e9f113fe8b7cc0",
+    "T38/response-03.record.json": "173f1aa22639d835b4cd1a74a75cdc8ece0018e715e63ac5cdfd7479c778d4bd",
+    "T38/response-03.md": "52434b6ddb31fc30b136860aa53d1979252b6df47b90face0f30946026abf7a3",
+    "T38/response-02.record.json": "399c8c582e91cfc62336bc14f1a3d043fff924810ec4665bf81b4e828b67a0ab",
+    "T38/response-02.md": "3a32bbadbc27be8fd96aeb1e9fd942a55570dd33b4085782e7eb4fad38d233f3",
+    "T38/response-01.record.json": "158e02b9a9fcfc6093363b3d3e605cd8eb8ef9a9ba97e4ab0cd38ff536321ce4",
+    "T38/response-01.md": "af6a05386559ed7b2f9a31e440f794d650b4c9cbf8606079b4006f02f3fd8c4b",
+    "T36/provenance-manifest.json": "ae1a6f6ecc1a1967c404b10eba664dd85a85fecdb7b36625f3eb097e204a1852",
+    "T36/record-02.json": "69bdf1cef737b10d2262a8e798bc4a66cd28578986a585eb93d1bd67c4957e55",
+    "T36/response-02.md": "b3a5f8c1f9d8db58944aac5910d24667f53e41fb4ae375310fb9b7709706798f",
+    "T36/record-01.json": "eecd1a92feba3ad1c872aa01590c3454052e1aca83d64e34982e60afb549a0e2",
+    "T36/response-01.md": "cff99b745ef848df5b2f426b0fe7f82f01456f5f3de62dc3088d4e3fb19e6dac"
+  },
+  "case_ids": [
+    "T36",
+    "T38",
+    "T46",
+    "T54"
+  ],
+  "response_count": 10,
+  "generation": "Four fresh responding agents, ten sequentially delivered frozen turns, prior responses retained before later delivery; no helper calls by respondents. Supplied prior T38 report remains separate fixture, not newly executed conversation state.",
+  "acceptance": "not_reviewed"
+}

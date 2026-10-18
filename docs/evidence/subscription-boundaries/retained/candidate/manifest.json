@@ -1,0 +1,360 @@
+{
+  "acceptance_promoted": false,
+  "case_ids": [
+    "T36",
+    "T38",
+    "T46",
+    "T54"
+  ],
+  "fixed_user_turn_count": 10,
+  "freeze_id": "subscription-boundaries-T36-T38-T46-T54-20261018T111428Z",
+  "frozen_at_utc": "2026-10-18T11:14:28Z",
+  "limited_equivalence_file": "review-only/SOURCE-EQUIVALENCE.json",
+  "original_layers": {
+    "T36": "L+C",
+    "T38": "L+C",
+    "T46": "L+C",
+    "T54": "L+C"
+  },
+  "payloads": [
+    {
+      "path": "README.md",
+      "sha256": "1104b9a56caca58cbd089ea4e6890de2557592c990544a98272eb174ff85c65a",
+      "size_bytes": 1907
+    },
+    {
+      "path": "generator-inputs/GENERATOR-HANDOFF.md",
+      "sha256": "65b01b6762854daaaf1d669d9d04762edb6f68f1f1e0c2fb283e9950a6b8fee4",
+      "size_bytes": 4014
+    },
+    {
+      "path": "generator-inputs/attachments/T38-turn-03-provenance.json",
+      "sha256": "404a100d6eda0ac6e2d4df0b9732ed20c973115b20477dbc4e41f4c80198f17a",
+      "size_bytes": 1663
+    },
+    {
+      "path": "generator-inputs/attachments/T38-turn-03-supplied-report.json",
+      "sha256": "5f458edc8eefd59e1cf92562727678cf591783171d62600992f3874f9fbaf5a2",
+      "size_bytes": 17089
+    },
+    {
+      "path": "generator-inputs/controller-sequence.json",
+      "sha256": "6d520f1dc8b8468d83bcb47458efb9710bc3bd5194599feecb5b8a3c24bcaf18",
+      "size_bytes": 1197
+    },
+    {
+      "path": "generator-inputs/exercise-scope.json",
+      "sha256": "5e441ffb07066ff9847502ceb32f64e20a756fa1dd35b5d07d628195a9bc163f",
+      "size_bytes": 1045
+    },
+    {
+      "path": "generator-inputs/guidance/AGENTS.md",
+      "sha256": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+      "size_bytes": 4791
+    },
+    {
+      "path": "generator-inputs/guidance/SKILL.md",
+      "sha256": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+      "size_bytes": 22690
+    },
+    {
+      "path": "generator-inputs/helper-inputs/prior-pure-api-inputs.json",
+      "sha256": "0946ee440ec1bfd6c253f1b010acba72247378d0244d0bc7e1e837ab9cf35268",
+      "size_bytes": 48409
+    },
+    {
+      "path": "generator-inputs/references/accounts-and-payments.md",
+      "sha256": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+      "size_bytes": 22223
+    },
+    {
+      "path": "generator-inputs/references/contact-and-safety.md",
+      "sha256": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+      "size_bytes": 7902
+    },
+    {
+      "path": "generator-inputs/references/intake.md",
+      "sha256": "1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba",
+      "size_bytes": 25652
+    },
+    {
+      "path": "generator-inputs/response-record-format.json",
+      "sha256": "6522ba470749119fb43fa1f14956c9c1107d8f664506fa202e689e674f641cce",
+      "size_bytes": 1450
+    },
+    {
+      "path": "generator-inputs/runtime/interview_flow.py",
+      "sha256": "304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e",
+      "size_bytes": 100708
+    },
+    {
+      "path": "generator-inputs/runtime/traffic_policy.py",
+      "sha256": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+      "size_bytes": 11277
+    },
+    {
+      "path": "generator-inputs/scenarios/T36/initial-context.json",
+      "sha256": "9fc295930fd65a5607eb36368426489d2f68b713acdea4277773d01101012b5b",
+      "size_bytes": 651
+    },
+    {
+      "path": "generator-inputs/scenarios/T36/turn-01.json",
+      "sha256": "bac041f497c4dd8add3a7b5125c571f52c01b409d950881efbb4dbaab53ee113",
+      "size_bytes": 162
+    },
+    {
+      "path": "generator-inputs/scenarios/T36/turn-02.json",
+      "sha256": "f10b5fbb2ff4a5cbc5504b876997932bdc6eba96f2aa0bae8d7570472a9fb524",
+      "size_bytes": 304
+    },
+    {
+      "path": "generator-inputs/scenarios/T38/initial-context.json",
+      "sha256": "d9c65f934ce0ded17843d2fb25dcb7e8893bbdc94caae38fd04672080f988cf2",
+      "size_bytes": 525
+    },
+    {
+      "path": "generator-inputs/scenarios/T38/turn-01.json",
+      "sha256": "d172abe8d7b4f2890c9a0c8397dc942498677b8aa34795d138d6a2359e36f2a0",
+      "size_bytes": 268
+    },
+    {
+      "path": "generator-inputs/scenarios/T38/turn-02.json",
+      "sha256": "0b2fa2d4a2fdee5553d1ff939b8bd8f32c6fc6a6348781f876ee9cb2c1174146",
+      "size_bytes": 254
+    },
+    {
+      "path": "generator-inputs/scenarios/T38/turn-03.json",
+      "sha256": "4cafb025d343c63772e22e32ae786b81375e066537b3032b655dbc408a8c13c5",
+      "size_bytes": 371
+    },
+    {
+      "path": "generator-inputs/scenarios/T46/initial-context.json",
+      "sha256": "58e488ff054626a546b89ffcaa4291c5fc15d0a59b88026f39a205e703d0623b",
+      "size_bytes": 525
+    },
+    {
+      "path": "generator-inputs/scenarios/T46/turn-01.json",
+      "sha256": "b2a90a1cd8b58b62b735b5aa9021b0163a0f9e5976815e29d049b54c76ceb121",
+      "size_bytes": 326
+    },
+    {
+      "path": "generator-inputs/scenarios/T46/turn-02.json",
+      "sha256": "f5ff29800f4238f50b71becce8767caa6b4bd72514dc6f9dedd2728c84313ac4",
+      "size_bytes": 261
+    },
+    {
+      "path": "generator-inputs/scenarios/T46/turn-03.json",
+      "sha256": "4b6234e8b030f43bc0d618ecb495d9c73a3229743ca75e043440ca9993a4762b",
+      "size_bytes": 257
+    },
+    {
+      "path": "generator-inputs/scenarios/T54/initial-context.json",
+      "sha256": "65a9f8e8d7e33db1cc34d22305180a8686d80306f52fc5b4c0079706d4735936",
+      "size_bytes": 241
+    },
+    {
+      "path": "generator-inputs/scenarios/T54/turn-01.json",
+      "sha256": "dde61d775e630e7f514c54c63111452249bd3768ce2c2a67c6b69d44ad9015c5",
+      "size_bytes": 523
+    },
+    {
+      "path": "generator-inputs/scenarios/T54/turn-02.json",
+      "sha256": "fe79fd89761fe134b898892d8f12c6645ba2e865d165a07050b0053bc888caad",
+      "size_bytes": 279
+    },
+    {
+      "path": "review-only/HELPER-SEMANTICS-AND-LIMITS.md",
+      "sha256": "659b9089a90b1e6284cffbcc9c1e0eb60651441525c4c1b47601fba7db263574",
+      "size_bytes": 3765
+    },
+    {
+      "path": "review-only/INDEPENDENT-REVIEW-RUBRIC.md",
+      "sha256": "f289e56ab6429933c7955328fd43009a9b4b9771047ff8fc475680c03d6ebd16",
+      "size_bytes": 11785
+    },
+    {
+      "path": "review-only/SOURCE-EQUIVALENCE.json",
+      "sha256": "d9891ae81e033ada730d32824e7635456fa4fecabf1d01e38d796071594bb729",
+      "size_bytes": 4609
+    },
+    {
+      "path": "review-only/original-clauses.json",
+      "sha256": "e81b76edcfa61397d44f33f5ccfef80188b5452eed2b84e635dd3bb85f2590b9",
+      "size_bytes": 4122
+    },
+    {
+      "path": "review-only/prior-observations/original-replay.py",
+      "sha256": "653d1aedd58df20b0fba343584878a04428edcac397cf675fb888e86a29edaf3",
+      "size_bytes": 3857
+    },
+    {
+      "path": "review-only/prior-observations/outputs.json",
+      "sha256": "32e952d7e886b425b0ecc17cc7e9dabd88a64bb5a9df9dd751dc21917d948d9e",
+      "size_bytes": 52668
+    },
+    {
+      "path": "review-only/prior-plan.md",
+      "sha256": "bbf8204996dd5d6b7898fe0be4e3fd534cc40fe0c02ea30d5024380f384b1d9a",
+      "size_bytes": 15655
+    },
+    {
+      "path": "review-only/sources/D-ENV-v0.3.md",
+      "sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+      "size_bytes": 235085
+    },
+    {
+      "path": "review-only/sources/D-SPEC-v0.1.10.md",
+      "sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+      "size_bytes": 169766
+    },
+    {
+      "path": "review-only/sources/acceptance-rebuild-ledger.json",
+      "sha256": "1426933dfd6ab9c1f9a669fb63297d56bc7e76b7007281dacef79c7d5461c2d5",
+      "size_bytes": 140827
+    },
+    {
+      "path": "review-only/sources/implementation-tracker.md",
+      "sha256": "8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50",
+      "size_bytes": 83055
+    },
+    {
+      "path": "review-only/sources/rebuild-experience-and-subscription.md",
+      "sha256": "7cf6b97d370732445fee1b0557c53eb7f894325119bce2c441f82261d9255eba",
+      "size_bytes": 18873
+    },
+    {
+      "path": "review-only/sources/test_acceptance_mobile_route.py",
+      "sha256": "c0d6e44a5f5b1427c92459d49528e73eec40d36385dee2fffa4598e42548b769",
+      "size_bytes": 16442
+    },
+    {
+      "path": "source-copy-map.json",
+      "sha256": "1500182378051132cf59b15dadae16cb610dc0591df41f860990b4259f03c7d2",
+      "size_bytes": 1250
+    }
+  ],
+  "phase": "pre_generation",
+  "planned_generator_tree": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+  "prior_trace_pins": {
+    "inputs.json": "0946ee440ec1bfd6c253f1b010acba72247378d0244d0bc7e1e837ab9cf35268",
+    "manifest.json": "793a5152209d7da1746ae40ba9c78959149af52234d99ec1d7776c5a2d06a686",
+    "outputs.json": "32e952d7e886b425b0ecc17cc7e9dabd88a64bb5a9df9dd751dc21917d948d9e",
+    "runner": "653d1aedd58df20b0fba343584878a04428edcac397cf675fb888e86a29edaf3"
+  },
+  "responses_generated": false,
+  "schema": "guardian-offline-response-freeze/1.0",
+  "scope": "Offline synthetic preparation only. No model responses, runtime changes, new runtime execution, repository edits, ledger changes, native checks, network/contact, accounts, credentials, payments or settings changes.",
+  "separation": {
+    "controller_only_sequence": "generator-inputs/controller-sequence.json",
+    "generation_outputs": "New separate directory chosen by controller; do not modify frozen bundle",
+    "helper_input_not_dialogue_answer_key": "generator-inputs/helper-inputs/prior-pure-api-inputs.json",
+    "respondent_allowlist": "generator-inputs/GENERATOR-HANDOFF.md plus its staged allowlist",
+    "review_only": "review-only/"
+  },
+  "source_git_head_context_only": "584064fc9c210e684ba4a0e11b79db74f1946155",
+  "source_git_note": "Working tree is not represented by this HEAD. Copied individual bytes, not Git HEAD or whole-tree provenance, bind this exercise.",
+  "source_pins": [
+    {
+      "frozen_path": "generator-inputs/guidance/AGENTS.md",
+      "sha256": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+      "size_bytes": 4791,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/AGENTS.md",
+      "source_relative_path": "AGENTS.md"
+    },
+    {
+      "frozen_path": "review-only/sources/acceptance-rebuild-ledger.json",
+      "sha256": "1426933dfd6ab9c1f9a669fb63297d56bc7e76b7007281dacef79c7d5461c2d5",
+      "size_bytes": 140827,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/docs/acceptance-rebuild-ledger.json",
+      "source_relative_path": "docs/acceptance-rebuild-ledger.json"
+    },
+    {
+      "frozen_path": "review-only/sources/rebuild-experience-and-subscription.md",
+      "sha256": "7cf6b97d370732445fee1b0557c53eb7f894325119bce2c441f82261d9255eba",
+      "size_bytes": 18873,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/docs/evidence/rebuild-experience-and-subscription.md",
+      "source_relative_path": "docs/evidence/rebuild-experience-and-subscription.md"
+    },
+    {
+      "frozen_path": "review-only/sources/implementation-tracker.md",
+      "sha256": "8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50",
+      "size_bytes": 83055,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/docs/implementation-tracker.md",
+      "source_relative_path": "docs/implementation-tracker.md"
+    },
+    {
+      "frozen_path": "generator-inputs/guidance/SKILL.md",
+      "sha256": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+      "size_bytes": 22690,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/skills/claude-guardian/SKILL.md",
+      "source_relative_path": "skills/claude-guardian/SKILL.md"
+    },
+    {
+      "frozen_path": "generator-inputs/references/accounts-and-payments.md",
+      "sha256": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+      "size_bytes": 22223,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/skills/claude-guardian/references/accounts-and-payments.md",
+      "source_relative_path": "skills/claude-guardian/references/accounts-and-payments.md"
+    },
+    {
+      "frozen_path": "generator-inputs/references/contact-and-safety.md",
+      "sha256": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+      "size_bytes": 7902,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/skills/claude-guardian/references/contact-and-safety.md",
+      "source_relative_path": "skills/claude-guardian/references/contact-and-safety.md"
+    },
+    {
+      "frozen_path": "generator-inputs/references/intake.md",
+      "sha256": "1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba",
+      "size_bytes": 25652,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/skills/claude-guardian/references/intake.md",
+      "source_relative_path": "skills/claude-guardian/references/intake.md"
+    },
+    {
+      "frozen_path": "generator-inputs/runtime/interview_flow.py",
+      "sha256": "304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e",
+      "size_bytes": 100708,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/skills/claude-guardian/scripts/interview_flow.py",
+      "source_relative_path": "skills/claude-guardian/scripts/interview_flow.py"
+    },
+    {
+      "frozen_path": "generator-inputs/runtime/traffic_policy.py",
+      "sha256": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+      "size_bytes": 11277,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/skills/claude-guardian/scripts/traffic_policy.py",
+      "source_relative_path": "skills/claude-guardian/scripts/traffic_policy.py"
+    },
+    {
+      "frozen_path": "review-only/sources/D-ENV-v0.3.md",
+      "sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+      "size_bytes": 235085,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/skills/claude-guardian/sources/design/D-ENV-v0.3.md",
+      "source_relative_path": "skills/claude-guardian/sources/design/D-ENV-v0.3.md"
+    },
+    {
+      "frozen_path": "review-only/sources/D-SPEC-v0.1.10.md",
+      "sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+      "size_bytes": 169766,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md",
+      "source_relative_path": "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md"
+    },
+    {
+      "frozen_path": "review-only/sources/test_acceptance_mobile_route.py",
+      "sha256": "c0d6e44a5f5b1427c92459d49528e73eec40d36385dee2fffa4598e42548b769",
+      "size_bytes": 16442,
+      "source_path": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth/tests/test_acceptance_mobile_route.py",
+      "source_relative_path": "tests/test_acceptance_mobile_route.py"
+    }
+  ],
+  "source_tree_supplied_by_parent_as_published_bytes": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtieth",
+  "timestamp_source": "clock.curr_time immediately before freeze finalization; synthetic dialogue clocks are separate input metadata",
+  "upstream_plan_sha256": "bbf8204996dd5d6b7898fe0be4e3fd534cc40fe0c02ea30d5024380f384b1d9a",
+  "validation": {
+    "all_copied_source_bytes_exact": true,
+    "all_json_parse": true,
+    "old_trace_bytes_exact": true,
+    "source_equivalence": "Seven of eight prior-trace pins match thirtyfirst; ledger differs; additional exact guidance/runtime pins are documented.",
+    "t38_report_values_exact": true,
+    "ten_staged_turns_resolve": true
+  }
+}

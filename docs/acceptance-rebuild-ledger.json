@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Forty-one original cases have freshly reviewed, pinned evidence under unchanged original layers; remaining 177 cases are pending_revalidation. The five latest ENV-T38/39/41/42/58 cases use independently reviewed observed dialogue and offline helper evidence. Observed examples do not guarantee unseen model outputs; relevant byte changes require review."
+    "Forty-five original cases have freshly reviewed, pinned evidence under unchanged original layers; remaining 173 cases are pending_revalidation. Latest T36/T38/T46/T54 use independently reviewed actual multi-turn outputs; T38 v1 failure remains immutable and v2 is separately frozen. Relevant source changes require scoped review; no unseen-output or native guarantee."
   ],
   "cases": [
     {
@@ -24,7 +24,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
-        "sha256": "f5b564be63320ee9234efb134a171d9bcc46ffcace386fad95d43540d6fbbf6b",
+        "sha256": "b248887830a458433d0c9a70debadfbf0ec90e812b342a2cb4034a8df0ac4421",
         "layers": [
           "L",
           "C"
@@ -44,7 +44,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
-        "sha256": "f5b564be63320ee9234efb134a171d9bcc46ffcace386fad95d43540d6fbbf6b",
+        "sha256": "b248887830a458433d0c9a70debadfbf0ec90e812b342a2cb4034a8df0ac4421",
         "layers": [
           "L",
           "C"
@@ -244,7 +244,7 @@
       "dependencies": "A、P、U",
       "evidence": {
         "path": "docs/evidence/rebuild-resume-completion.md",
-        "sha256": "234a405af53c985e4212a50b4797f2243bdd53dcc90ec0292bca9477e48c3e46",
+        "sha256": "d204c5bb76251230225dd2c1f871b67ac19dae5ec2bc43505b54eda29c786f06",
         "layers": [
           "L",
           "C"
@@ -294,7 +294,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "66995f86f84eacb51046e90c70ea983d57131af3be01767367984db5865d6d55",
+        "sha256": "33ed46b93af0a13f769943ce0a59bd20403db2b29858d166be7850bea993ece4",
         "layers": [
           "L",
           "C"
@@ -314,7 +314,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "66995f86f84eacb51046e90c70ea983d57131af3be01767367984db5865d6d55",
+        "sha256": "33ed46b93af0a13f769943ce0a59bd20403db2b29858d166be7850bea993ece4",
         "layers": [
           "L",
           "C"
@@ -334,7 +334,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "66995f86f84eacb51046e90c70ea983d57131af3be01767367984db5865d6d55",
+        "sha256": "33ed46b93af0a13f769943ce0a59bd20403db2b29858d166be7850bea993ece4",
         "layers": [
           "L",
           "C"
@@ -364,7 +364,7 @@
       "dependencies": "A、B、N、L",
       "evidence": {
         "path": "docs/evidence/rebuild-local-egress.md",
-        "sha256": "5c484eb6d48ac2ae0820bac2dd9278d43af238791788a10b654edcf74cb78e8e",
+        "sha256": "84ea80e820b8f1f254de4ca78f1481d41aed18c6dccc00a1609e007a844ed5e1",
         "layers": [
           "L",
           "C"
@@ -384,7 +384,7 @@
       "dependencies": "A、V、U",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "66995f86f84eacb51046e90c70ea983d57131af3be01767367984db5865d6d55",
+        "sha256": "33ed46b93af0a13f769943ce0a59bd20403db2b29858d166be7850bea993ece4",
         "layers": [
           "L",
           "C"
@@ -444,7 +444,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
-        "sha256": "8ff93c4f12abd4b4d3de1859e65b54f05d814665e9a8c02fffd037b36c7c25de",
+        "sha256": "bde1cd87714f10fc386f284e1528498425034cee783840cac534d773ef3f5cf1",
         "layers": [
           "L",
           "C"
@@ -474,7 +474,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
-        "sha256": "5c4bdb8637947b303c7c261f60f68616aba1689b71f7bb6d044610bdeb5d2c33",
+        "sha256": "1159de8c789b1bac21bc1c322f4db005f0e26898b7a19e28deb0afd9486c3c95",
         "layers": [
           "L",
           "C"
@@ -514,7 +514,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "a366eff10aacbe12df91a7a4ad85e21635ca2bec57a3922800cf46c73b4ef0e7",
+        "sha256": "7b47fbedfebcae330b0ee8b76ab38977bdbc5f74784362700504edf31bcd57b6",
         "layers": [
           "L",
           "C"
@@ -538,9 +538,18 @@
       "requirement": "区分设备、Apple 账户和商店地区，不直接通过礼品卡前提",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核指导语义、负向事实/拒答和付款设备分支，重跑关联回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导变化后重审完整原条件与逐代固定回复；不外推账号、设备或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
+        "sha256": "8f3801b4d6b402779a7d9fb488fc895255c5142220622f8d90afd9c85f4701aa",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
+      }
     },
     {
       "id": "T37",
@@ -558,9 +567,18 @@
       "requirement": "记录付款前提缺失，不把设备存在当作内购就绪，不重新调查账号归属",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核指导语义、负向事实/拒答和付款设备分支，重跑关联回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导变化后重审完整原条件与逐代固定回复；不外推账号、设备或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
+        "sha256": "8f3801b4d6b402779a7d9fb488fc895255c5142220622f8d90afd9c85f4701aa",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
+      }
     },
     {
       "id": "T39",
@@ -613,7 +631,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "a366eff10aacbe12df91a7a4ad85e21635ca2bec57a3922800cf46c73b4ef0e7",
+        "sha256": "7b47fbedfebcae330b0ee8b76ab38977bdbc5f74784362700504edf31bcd57b6",
         "layers": [
           "L",
           "C"
@@ -647,9 +665,18 @@
       "requirement": "记录拒绝与阻断范围，可给一般解释，不猜测其资格或强迫回答",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核指导语义、负向事实/拒答和付款设备分支，重跑关联回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导变化后重审完整原条件与逐代固定回复；不外推账号、设备或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
+        "sha256": "8f3801b4d6b402779a7d9fb488fc895255c5142220622f8d90afd9c85f4701aa",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
+      }
     },
     {
       "id": "T47",
@@ -662,7 +689,7 @@
       "dependencies": "A、U",
       "evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
-        "sha256": "5c4bdb8637947b303c7c261f60f68616aba1689b71f7bb6d044610bdeb5d2c33",
+        "sha256": "1159de8c789b1bac21bc1c322f4db005f0e26898b7a19e28deb0afd9486c3c95",
         "layers": [
           "L",
           "C"
@@ -682,7 +709,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "a366eff10aacbe12df91a7a4ad85e21635ca2bec57a3922800cf46c73b4ef0e7",
+        "sha256": "7b47fbedfebcae330b0ee8b76ab38977bdbc5f74784362700504edf31bcd57b6",
         "layers": [
           "L",
           "C"
@@ -701,7 +728,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
-        "sha256": "9d1e8f12de9b53189f9fdf9e8c1a7bb5878e8579097c5ea82d052e85b1899afa",
+        "sha256": "7663b20ac196dcf0ecf0b504b0cb8045821c34c9155777e6e635ce01099e8da8",
         "layers": [
           "L",
           "C"
@@ -751,7 +778,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "e5dadcc92f7968b3cdf1e0303b17131f27c6c89fb16b956d7af02b65cd3382ae",
+        "sha256": "99526206988b6cecba027e34b771225a320c58bea27b8c24eff13ef661f86728",
         "layers": [
           "L",
           "C"
@@ -765,9 +792,18 @@
       "requirement": "标为条件式/部分草案并列缺口，不给具体购买或高影响执行指令",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导变化后重审完整原条件与逐代固定回复；不外推账号、设备或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
+        "sha256": "8f3801b4d6b402779a7d9fb488fc895255c5142220622f8d90afd9c85f4701aa",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
+      }
     },
     {
       "id": "T55",
@@ -800,7 +836,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
-        "sha256": "8ff93c4f12abd4b4d3de1859e65b54f05d814665e9a8c02fffd037b36c7c25de",
+        "sha256": "bde1cd87714f10fc386f284e1528498425034cee783840cac534d773ef3f5cf1",
         "layers": [
           "L",
           "C"
@@ -980,7 +1016,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "e5dadcc92f7968b3cdf1e0303b17131f27c6c89fb16b956d7af02b65cd3382ae",
+        "sha256": "99526206988b6cecba027e34b771225a320c58bea27b8c24eff13ef661f86728",
         "layers": [
           "L",
           "C"
@@ -999,7 +1035,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
-        "sha256": "7cf6b97d370732445fee1b0557c53eb7f894325119bce2c441f82261d9255eba",
+        "sha256": "ef8d3043b8219a29dd89999a8ceb546711f316a431d69308b1039bae09b8b665",
         "layers": [
           "L",
           "C"
@@ -1019,7 +1055,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
-        "sha256": "2ca244d4651388d136ce82ccffabae797cf85ac4361c1449e08364ad5fc28bdb",
+        "sha256": "0c3c0689572236660c18f634b6393edde52824b303477656bcdc8206f8c83f4a",
         "layers": [
           "L",
           "C"
@@ -1049,7 +1085,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "a366eff10aacbe12df91a7a4ad85e21635ca2bec57a3922800cf46c73b4ef0e7",
+        "sha256": "7b47fbedfebcae330b0ee8b76ab38977bdbc5f74784362700504edf31bcd57b6",
         "layers": [
           "L",
           "C"
@@ -1068,7 +1104,7 @@
       "dependencies": "A、P",
       "evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
-        "sha256": "7cf6b97d370732445fee1b0557c53eb7f894325119bce2c441f82261d9255eba",
+        "sha256": "ef8d3043b8219a29dd89999a8ceb546711f316a431d69308b1039bae09b8b665",
         "layers": [
           "L",
           "C"
@@ -1098,7 +1134,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "e5dadcc92f7968b3cdf1e0303b17131f27c6c89fb16b956d7af02b65cd3382ae",
+        "sha256": "99526206988b6cecba027e34b771225a320c58bea27b8c24eff13ef661f86728",
         "layers": [
           "L",
           "C"
@@ -1117,7 +1153,7 @@
       "dependencies": "A、U",
       "evidence": {
         "path": "docs/evidence/rebuild-legacy-retirement.md",
-        "sha256": "0a6d4b4126a6d26731bd67f9bf833f9ee75f0073d0f7d159486f0d653484e01d",
+        "sha256": "f90a9d3aa8c1f6f99db85248917ef27831dcd422eb639f99faa400b359a2e949",
         "layers": [
           "L",
           "C"
@@ -1137,7 +1173,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
-        "sha256": "9d1e8f12de9b53189f9fdf9e8c1a7bb5878e8579097c5ea82d052e85b1899afa",
+        "sha256": "7663b20ac196dcf0ecf0b504b0cb8045821c34c9155777e6e635ce01099e8da8",
         "layers": [
           "L",
           "C"
@@ -1157,7 +1193,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
-        "sha256": "2ca244d4651388d136ce82ccffabae797cf85ac4361c1449e08364ad5fc28bdb",
+        "sha256": "0c3c0689572236660c18f634b6393edde52824b303477656bcdc8206f8c83f4a",
         "layers": [
           "L",
           "C"

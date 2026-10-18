@@ -1,0 +1,563 @@
+{
+  "records": [
+    {
+      "name": "evidence-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 1,
+      "started_at_executor_clock": "2026-10-18T11:30:57.081378+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:30:57.277246+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "evidence-utf8.stdout",
+      "stderr_file": "evidence-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "692098ed708e3a71765365ee5233596b1398901fbd2ff9d1ba871050a6cae416",
+      "test_source_sha256": "20a907cff69790ee418b570f47a5268be7030b69c2f9e9cb67e8f86b317cf8d1"
+    },
+    {
+      "name": "evidence-cp1252-c-locale",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 1,
+      "started_at_executor_clock": "2026-10-18T11:30:57.277492+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:30:57.475944+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "evidence-cp1252-c-locale.stdout",
+      "stderr_file": "evidence-cp1252-c-locale.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "de5d1a1bcf5e7f6a072352084e1a75847b0569e0ed7e8d88a5ee2b66025133ae",
+      "test_source_sha256": "20a907cff69790ee418b570f47a5268be7030b69c2f9e9cb67e8f86b317cf8d1"
+    },
+    {
+      "name": "evidence-python313",
+      "command": [
+        "/usr/bin/python3.13",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 1,
+      "started_at_executor_clock": "2026-10-18T11:30:57.476145+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:30:57.668046+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "evidence-python313.stdout",
+      "stderr_file": "evidence-python313.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "07bb3e84420c23002ad733d8d37422847d6c7815ea87b250fbb5eeb22594075e",
+      "test_source_sha256": "20a907cff69790ee418b570f47a5268be7030b69c2f9e9cb67e8f86b317cf8d1"
+    },
+    {
+      "name": "test_acceptance_mobile_route-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_mobile_route.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:30:57.668250+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:01.917669+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_mobile_route-utf8.stdout",
+      "stderr_file": "test_acceptance_mobile_route-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b2aa9eb77c61f3fe117165ab15619d62388508eb7f0f8ae685ce5b8c65ce9f6f"
+    },
+    {
+      "name": "test_acceptance_mobile_route-cp1252",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_mobile_route.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:01.917882+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:06.203815+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_mobile_route-cp1252.stdout",
+      "stderr_file": "test_acceptance_mobile_route-cp1252.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9b9b01905dbaae82425d8e53828688ebcd6b7155bf4b743710322173de82600b"
+    },
+    {
+      "name": "test_acceptance_experience_status-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_experience_status.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:06.204094+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:08.459521+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_experience_status-utf8.stdout",
+      "stderr_file": "test_acceptance_experience_status-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "681b3a5c4f0dd7d3c39dcf18cd85408241d0870103d2586150671d8603c5608b"
+    },
+    {
+      "name": "test_acceptance_experience_status-cp1252",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_experience_status.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:08.459872+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:10.792794+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_experience_status-cp1252.stdout",
+      "stderr_file": "test_acceptance_experience_status-cp1252.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ef3c0e7fa6de69c644008cd5d8edf94a52734804241cf2aec2799fb79740956c"
+    },
+    {
+      "name": "test_acceptance_intake_basics-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_intake_basics.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:10.793023+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:11.934395+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_intake_basics-utf8.stdout",
+      "stderr_file": "test_acceptance_intake_basics-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8ecd390ea17996e295b069761bdd29b93c196addf7748af0e3931b551b656e64"
+    },
+    {
+      "name": "test_acceptance_intake_basics-cp1252",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_intake_basics.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:11.934607+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:13.147805+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_intake_basics-cp1252.stdout",
+      "stderr_file": "test_acceptance_intake_basics-cp1252.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e85eff97104e9c32936f6ef8254dd35437ef29d19e2579542998b5712a732777"
+    },
+    {
+      "name": "test_acceptance_intake_rebuild-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_intake_rebuild.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:13.148014+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:15.087056+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_intake_rebuild-utf8.stdout",
+      "stderr_file": "test_acceptance_intake_rebuild-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5d791f4ca0892b9fda621c0153bc49436867aace545169a921d8a6b4968a4eb3"
+    },
+    {
+      "name": "test_acceptance_intake_rebuild-cp1252",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_intake_rebuild.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:15.087449+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:17.014578+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_intake_rebuild-cp1252.stdout",
+      "stderr_file": "test_acceptance_intake_rebuild-cp1252.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "952c9e6ff5dcfda38c09b72a26e6552187d590a6d1b1b5fc9afdebb7d7116820"
+    },
+    {
+      "name": "test_interview_flow-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_interview_flow.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:17.014791+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:17.748206+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_interview_flow-utf8.stdout",
+      "stderr_file": "test_interview_flow-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d8a397cac3ce909fe45446badeeb71195b3673e17284ec850de28f88e173bf5f"
+    },
+    {
+      "name": "test_interview_flow-cp1252",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_interview_flow.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:17.748469+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:18.467713+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_interview_flow-cp1252.stdout",
+      "stderr_file": "test_interview_flow-cp1252.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "69e0863881e0ec89ccc68aab03f9ea6e153450ea37f0d054b44681c4b1ff7279"
+    },
+    {
+      "name": "test_acceptance_subscription_original-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_subscription_original.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:18.467924+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:22.131883+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_subscription_original-utf8.stdout",
+      "stderr_file": "test_acceptance_subscription_original-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d26b0021d98fd478244c1adeb4018532ee848fb93469237988a7e0bda5339e10"
+    },
+    {
+      "name": "test_acceptance_subscription_original-cp1252",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_acceptance_subscription_original.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:31:22.132198+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:31:25.666446+00:00",
+      "clock_note": "Executor wall clock is retained as recorded and differs from task UTC reminders; synthetic fixture clocks are separate.",
+      "stdout_file": "test_acceptance_subscription_original-cp1252.stdout",
+      "stderr_file": "test_acceptance_subscription_original-cp1252.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4ba6f621fdf9c370fe492a2cc8732633c32e9046e0c5aca240b51554bfff1ac5"
+    },
+    {
+      "name": "evidence-utf8-rerun",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:32:05.429147+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:32:05.640971+00:00",
+      "test_source_sha256": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+      "stdout_file": "evidence-utf8-rerun.stdout",
+      "stderr_file": "evidence-utf8-rerun.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0cb5fabd6abc5e0bb5ad534d3261e4213b879ece83c504ae5d14e5960dd9864d"
+    },
+    {
+      "name": "evidence-cp1252-c-locale-rerun",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:32:05.641157+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:32:05.836485+00:00",
+      "test_source_sha256": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+      "stdout_file": "evidence-cp1252-c-locale-rerun.stdout",
+      "stderr_file": "evidence-cp1252-c-locale-rerun.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "1d5fb66ae783be324167756e54f526a15937d2acdbf27b5019c9f22eb1a3b03a"
+    },
+    {
+      "name": "evidence-python313-rerun",
+      "command": [
+        "/usr/bin/python3.13",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:32:05.836672+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:32:06.040676+00:00",
+      "test_source_sha256": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+      "stdout_file": "evidence-python313-rerun.stdout",
+      "stderr_file": "evidence-python313-rerun.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9317b943fa1fcc317021af83d014549cb39f20d017b5786412e4ecd301aa45b6"
+    },
+    {
+      "name": "reviewer-control-cli",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "reviewer-controls/replay.py",
+        "--output",
+        "reviewer-controls/second-control-report.json"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:33:06.109765+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:33:06.290191+00:00",
+      "stdout_file": "reviewer-control-cli.stdout",
+      "stderr_file": "reviewer-control-cli.stderr",
+      "stdout_sha256": "b630bec0d68dca5f144bf92c9e3342cd3c40707a57dee18fa6cd6b908a9fea62",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "actual_python310_execution": false,
+  "python310_note": "No Python 3.10 executable available; feature_version=(3,10) syntax validation plus compatible APIs, with actual Python 3.12 and 3.13 runs.",
+  "no_failed_test_hidden": true,
+  "reviewer_test_repair": {
+    "cause": "Initial reviewer test assumed all received_transcript containers were lists. Actual frozen T38-01 uses initial_context/current_turn mapping.",
+    "fix": "Validate exact mapping keys plus complete original initial-context and current-turn objects, then flatten only for common continuity assertions. No assertions on source/prose/gates removed; no frozen corpus changed.",
+    "initial_source_sha256": "20a907cff69790ee418b570f47a5268be7030b69c2f9e9cb67e8f86b317cf8d1",
+    "final_source_sha256": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+    "initial_failures_retained": true
+  }
+}

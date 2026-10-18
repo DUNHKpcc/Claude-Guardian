@@ -1,0 +1,101 @@
+{
+  "records": [
+    {
+      "name": "current-evidence-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:37:47.860301+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:37:48.075497+00:00",
+      "clock_note": "Executor wall clock, not synthetic fixture or controller UTC clock.",
+      "test_source_hashes": {
+        "test_subscription_boundaries_current.py": "952ada5d82f2f4c27e3f08c770c47da0137a4db9521b2ff05c9eb27a46a60a58",
+        "test_subscription_boundaries_evidence.py": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b"
+      },
+      "stdout_file": "current-evidence-utf8.stdout",
+      "stderr_file": "current-evidence-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "63e123d5297815cdcbd94cee05067d20ea656bcc583857d4b339e62b4069e9b6"
+    },
+    {
+      "name": "current-evidence-cp1252-c-locale",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:37:48.075994+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:37:48.281332+00:00",
+      "clock_note": "Executor wall clock, not synthetic fixture or controller UTC clock.",
+      "test_source_hashes": {
+        "test_subscription_boundaries_current.py": "952ada5d82f2f4c27e3f08c770c47da0137a4db9521b2ff05c9eb27a46a60a58",
+        "test_subscription_boundaries_evidence.py": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b"
+      },
+      "stdout_file": "current-evidence-cp1252-c-locale.stdout",
+      "stderr_file": "current-evidence-cp1252-c-locale.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2e83cec9a22dfb902f3a389d538a731d528d29a9090737162308f21744e87ceb"
+    },
+    {
+      "name": "current-evidence-python313",
+      "command": [
+        "/usr/bin/python3.13",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:37:48.281622+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:37:48.474037+00:00",
+      "clock_note": "Executor wall clock, not synthetic fixture or controller UTC clock.",
+      "test_source_hashes": {
+        "test_subscription_boundaries_current.py": "952ada5d82f2f4c27e3f08c770c47da0137a4db9521b2ff05c9eb27a46a60a58",
+        "test_subscription_boundaries_evidence.py": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b"
+      },
+      "stdout_file": "current-evidence-python313.stdout",
+      "stderr_file": "current-evidence-python313.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d225738444d7f3edb6f7778d139139394dfbc158aa684a1527a27288568b1009"
+    }
+  ],
+  "native_python310_run": false,
+  "original_runs_retained_unchanged": "terminal-runs.json",
+  "scope": "17 integrity, provenance, retained-semantic-review, and separate helper-control tests. These do not regenerate or automatically judge model prose."
+}

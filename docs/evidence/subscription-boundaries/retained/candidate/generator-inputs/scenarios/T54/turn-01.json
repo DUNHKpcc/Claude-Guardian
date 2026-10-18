@@ -1,0 +1,8 @@
+{
+  "case_id": "T54",
+  "content": "先给我一份短方案草案，不要继续问卷。我是第一次订阅，已经选了 Pro，Mac 本机跑 Code，不考虑 VM/VPS；付款候选先看 Apple。我有 iPhone，但没有能登录并完成验证的 Apple ID，商店地区还不知道；实际使用地区不提供。我今天只授权你写草案，现有项目、配置和 Codex 通道都要保留。",
+  "role": "user",
+  "synthetic": true,
+  "synthetic_observed_at": "2026-10-18T10:01:00Z",
+  "turn_id": "T54-01"
+}

@@ -1,0 +1,172 @@
+{
+  "records": [
+    {
+      "name": "current-final-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:41:14.957247+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:41:15.163948+00:00",
+      "clock_note": "Executor wall clock is recorded verbatim, separate from synthetic fixture/control metadata.",
+      "stdout_file": "current-final-utf8.stdout",
+      "stderr_file": "current-final-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "fecf78ca270e4dbd5acbe1b66a788c8337b89767af73521155d3d94115507036",
+      "test_source_hashes": {
+        "tests/test_subscription_boundaries_current.py": "fa1f039f7c2a2f34ec51e10a81e8f52c3b29dde56b1dd7b216ae877cb9674d74",
+        "tests/test_subscription_boundaries_evidence.py": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+        "integration/test_acceptance_subscription_boundaries.py": "e9f5c9a7cac2c2f621b7da3196431eb0cb37658a9d08b80b12a871b174ddee65"
+      }
+    },
+    {
+      "name": "current-final-cp1252-c-locale",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:41:15.164595+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:41:15.393195+00:00",
+      "clock_note": "Executor wall clock is recorded verbatim, separate from synthetic fixture/control metadata.",
+      "stdout_file": "current-final-cp1252-c-locale.stdout",
+      "stderr_file": "current-final-cp1252-c-locale.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "422f9645f905a9e29e8d4cc2d380a9c458006b9e9d85acf547bcff5c575f783f",
+      "test_source_hashes": {
+        "tests/test_subscription_boundaries_current.py": "fa1f039f7c2a2f34ec51e10a81e8f52c3b29dde56b1dd7b216ae877cb9674d74",
+        "tests/test_subscription_boundaries_evidence.py": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+        "integration/test_acceptance_subscription_boundaries.py": "e9f5c9a7cac2c2f621b7da3196431eb0cb37658a9d08b80b12a871b174ddee65"
+      }
+    },
+    {
+      "name": "current-final-python313",
+      "command": [
+        "/usr/bin/python3.13",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-boundaries-independent",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:41:15.393620+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:41:15.611530+00:00",
+      "clock_note": "Executor wall clock is recorded verbatim, separate from synthetic fixture/control metadata.",
+      "stdout_file": "current-final-python313.stdout",
+      "stderr_file": "current-final-python313.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "35eb5eb75fcd711ae1c3f574a93944e7496ea797fc8a97515739be4fd36ed9e3",
+      "test_source_hashes": {
+        "tests/test_subscription_boundaries_current.py": "fa1f039f7c2a2f34ec51e10a81e8f52c3b29dde56b1dd7b216ae877cb9674d74",
+        "tests/test_subscription_boundaries_evidence.py": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+        "integration/test_acceptance_subscription_boundaries.py": "e9f5c9a7cac2c2f621b7da3196431eb0cb37658a9d08b80b12a871b174ddee65"
+      }
+    },
+    {
+      "name": "installed-shim-utf8",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-integration-smoke",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:41:15.612005+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:41:15.858205+00:00",
+      "clock_note": "Executor wall clock is recorded verbatim, separate from synthetic fixture/control metadata.",
+      "stdout_file": "installed-shim-utf8.stdout",
+      "stderr_file": "installed-shim-utf8.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8365b2f415b41066a34194da29713ac54b7ee1bba0d5440d3c836197a2810ae3",
+      "test_source_hashes": {
+        "tests/test_subscription_boundaries_current.py": "fa1f039f7c2a2f34ec51e10a81e8f52c3b29dde56b1dd7b216ae877cb9674d74",
+        "tests/test_subscription_boundaries_evidence.py": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+        "integration/test_acceptance_subscription_boundaries.py": "e9f5c9a7cac2c2f621b7da3196431eb0cb37658a9d08b80b12a871b174ddee65"
+      }
+    },
+    {
+      "name": "installed-shim-cp1252-c-locale",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/guardian-subscription-integration-smoke",
+      "environment_overrides": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PYTHONUTF8": "0",
+        "PYTHONCOERCECLOCALE": "0",
+        "PYTHONIOENCODING": "cp1252"
+      },
+      "exit_code": 0,
+      "started_at_executor_clock": "2026-10-18T11:41:15.858585+00:00",
+      "ended_at_executor_clock": "2026-10-18T11:41:16.072471+00:00",
+      "clock_note": "Executor wall clock is recorded verbatim, separate from synthetic fixture/control metadata.",
+      "stdout_file": "installed-shim-cp1252-c-locale.stdout",
+      "stderr_file": "installed-shim-cp1252-c-locale.stderr",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8365b2f415b41066a34194da29713ac54b7ee1bba0d5440d3c836197a2810ae3",
+      "test_source_hashes": {
+        "tests/test_subscription_boundaries_current.py": "fa1f039f7c2a2f34ec51e10a81e8f52c3b29dde56b1dd7b216ae877cb9674d74",
+        "tests/test_subscription_boundaries_evidence.py": "ea75d76574e2f6d2f641f27de8706b7ef25991eb5f9615421f2d4e8fdaa6aa5b",
+        "integration/test_acceptance_subscription_boundaries.py": "e9f5c9a7cac2c2f621b7da3196431eb0cb37658a9d08b80b12a871b174ddee65"
+      }
+    }
+  ],
+  "packet_test_count": 18,
+  "installed_shim_test_count": 20,
+  "native_python310_run": false,
+  "prior_logs_unchanged": true,
+  "integration_smoke_scope": "Temporary staging tree only. Copied exact live dependency files, original ledger and proposed packet/test layout. No shared repository edits or installed package mutation."
+}

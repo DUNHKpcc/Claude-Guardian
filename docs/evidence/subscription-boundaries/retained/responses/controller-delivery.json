@@ -1,0 +1,66 @@
+{
+  "recorded_at_utc": "2026-10-18T11:17:23Z",
+  "note": "Parent delivered each later turn only after prior response file/hash readback. Initial task times and later handoffs are recorded from the task transcript; not source-file generation timestamps.",
+  "deliveries": [
+    {
+      "case": "T36",
+      "turn": 1,
+      "delivered_at_utc": "2026-10-18T11:15:46Z"
+    },
+    {
+      "case": "T38",
+      "turn": 1,
+      "delivered_at_utc": "2026-10-18T11:15:57Z"
+    },
+    {
+      "case": "T36",
+      "turn": 2,
+      "delivered_at_utc": "2026-10-18T11:17:13Z",
+      "previous_response_sha256": "cff99b745ef848df5b2f426b0fe7f82f01456f5f3de62dc3088d4e3fb19e6dac"
+    },
+    {
+      "case": "T38",
+      "turn": 2,
+      "delivered_at_utc": "2026-10-18T11:17:23Z",
+      "previous_response_sha256": "af6a05386559ed7b2f9a31e440f794d650b4c9cbf8606079b4006f02f3fd8c4b"
+    },
+    {
+      "case": "T46",
+      "turn": 1,
+      "delivered_at_utc": "2026-10-18T11:17:52Z"
+    },
+    {
+      "case": "T54",
+      "turn": 1,
+      "delivered_at_utc": "2026-10-18T11:18:02Z"
+    },
+    {
+      "case": "T38",
+      "turn": 3,
+      "delivered_at_utc": "2026-10-18T11:18:36Z",
+      "previous_response_sha256": "3a32bbadbc27be8fd96aeb1e9fd942a55570dd33b4085782e7eb4fad38d233f3",
+      "attachments": [
+        "T38-turn-03-supplied-report.json",
+        "T38-turn-03-provenance.json"
+      ]
+    },
+    {
+      "case": "T46",
+      "turn": 2,
+      "delivered_at_utc": "2026-10-18T11:19:22Z",
+      "previous_response_sha256": "24d6d128a4d96a41356a60a691d0284ead6542078af4b0a3120f875590aee287"
+    },
+    {
+      "case": "T54",
+      "turn": 2,
+      "delivered_at_utc": "2026-10-18T11:19:36Z",
+      "previous_response_sha256": "45315e7f675d1f86b579bd74eb537bb2335e4bb8a43b84f1aef10c24086158ed"
+    },
+    {
+      "case": "T46",
+      "turn": 3,
+      "delivered_at_utc": "2026-10-18T11:20:13Z",
+      "previous_response_sha256": "fea3ace704784c30f6ea690fa4bc84254134e5a3824a5d5ec800d32e4d18d2fc"
+    }
+  ]
+}

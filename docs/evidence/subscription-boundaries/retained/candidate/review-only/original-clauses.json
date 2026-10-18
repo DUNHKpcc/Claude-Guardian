@@ -1,0 +1,74 @@
+{
+  "case_namespace": "Original subscription T IDs, not ENV-T IDs",
+  "cases": [
+    {
+      "case_id": "T36",
+      "design_line_number": 1095,
+      "design_line_verbatim": "| T36 | 用户仅回答“有 Apple” | 区分设备、Apple 账户和商店地区，不直接通过礼品卡前提 |",
+      "ledger_row_verbatim_object": {
+        "dependencies": "A",
+        "id": "T36",
+        "next_steps": "复核指导语义、负向事实/拒答和付款设备分支，重跑关联回归",
+        "rebuild_acceptance": "pending_revalidation",
+        "requirement": "区分设备、Apple 账户和商店地区，不直接通过礼品卡前提",
+        "scenario": "用户仅回答“有 Apple”",
+        "scheduling": "cloud_only",
+        "verification_layer": "L+C"
+      },
+      "tracker_line_number": 160,
+      "tracker_line_verbatim": "| T36 | 用户仅回答“有 Apple” | 区分设备、Apple 账户和商店地区，不直接通过礼品卡前提 | L+C | 待建立 |"
+    },
+    {
+      "case_id": "T38",
+      "design_line_number": 1097,
+      "design_line_verbatim": "| T38 | 有 iPhone 但没有可登录验证的 Apple ID | 记录付款前提缺失，不把设备存在当作内购就绪，不重新调查账号归属 |",
+      "ledger_row_verbatim_object": {
+        "dependencies": "A",
+        "id": "T38",
+        "next_steps": "复核指导语义、负向事实/拒答和付款设备分支，重跑关联回归",
+        "rebuild_acceptance": "pending_revalidation",
+        "requirement": "记录付款前提缺失，不把设备存在当作内购就绪，不重新调查账号归属",
+        "scenario": "有 iPhone 但没有可登录验证的 Apple ID",
+        "scheduling": "cloud_only",
+        "verification_layer": "L+C"
+      },
+      "tracker_line_number": 162,
+      "tracker_line_verbatim": "| T38 | 有 iPhone 但没有可登录验证的 Apple ID | 记录付款前提缺失，不把设备存在当作内购就绪，不重新调查账号归属 | L+C | 待建立 |"
+    },
+    {
+      "case_id": "T46",
+      "design_line_number": 1105,
+      "design_line_verbatim": "| T46 | 用户拒绝提供资格所需地区或其他关键字段 | 记录拒绝与阻断范围，可给一般解释，不猜测其资格或强迫回答 |",
+      "ledger_row_verbatim_object": {
+        "dependencies": "A",
+        "id": "T46",
+        "next_steps": "复核指导语义、负向事实/拒答和付款设备分支，重跑关联回归",
+        "rebuild_acceptance": "pending_revalidation",
+        "requirement": "记录拒绝与阻断范围，可给一般解释，不猜测其资格或强迫回答",
+        "scenario": "用户拒绝提供资格所需地区或其他关键字段",
+        "scheduling": "cloud_only",
+        "verification_layer": "L+C"
+      },
+      "tracker_line_number": 170,
+      "tracker_line_verbatim": "| T46 | 用户拒绝提供资格所需地区或其他关键字段 | 记录拒绝与阻断范围，可给一般解释，不猜测其资格或强迫回答 | L+C | 待建立 |"
+    },
+    {
+      "case_id": "T54",
+      "design_line_number": 1113,
+      "design_line_verbatim": "| T54 | 用户只要方案草案但仍有关键未知 | 标为条件式/部分草案并列缺口，不给具体购买或高影响执行指令 |",
+      "ledger_row_verbatim_object": {
+        "dependencies": "A",
+        "id": "T54",
+        "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
+        "rebuild_acceptance": "pending_revalidation",
+        "requirement": "标为条件式/部分草案并列缺口，不给具体购买或高影响执行指令",
+        "scenario": "用户只要方案草案但仍有关键未知",
+        "scheduling": "cloud_only",
+        "verification_layer": "L+C"
+      },
+      "tracker_line_number": 178,
+      "tracker_line_verbatim": "| T54 | 用户只要方案草案但仍有关键未知 | 标为条件式/部分草案并列缺口，不给具体购买或高影响执行指令 | L+C | 待建立 |"
+    }
+  ],
+  "status": "All four remain pending; freezing criteria is not acceptance."
+}

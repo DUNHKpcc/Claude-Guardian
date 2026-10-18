@@ -1,0 +1,22 @@
+{
+  "recorded_at_utc": "2026-10-18T11:32:10Z",
+  "deliveries": [
+    {
+      "case": "T38",
+      "turn": 1,
+      "delivered_at_utc": "2026-10-18T11:26:55Z"
+    },
+    {
+      "case": "T38",
+      "turn": 2,
+      "delivered_at_utc": "2026-10-18T11:28:49Z",
+      "previous_response_sha256": "679243b82cf5776844bb6ce7feacd8de59afe4978adb94d4c27104d49efa2755"
+    },
+    {
+      "case": "T38",
+      "turn": 3,
+      "delivered_at_utc": "2026-10-18T11:32:10Z",
+      "previous_response_sha256": "c986d8174fbf74ba5192452d291eb05a6c29470ebb8cff756aae0bec185478b6"
+    }
+  ]
+}
