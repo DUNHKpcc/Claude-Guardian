@@ -7,11 +7,41 @@ import guardian
 import interview_flow as flow
 
 
+class _PrivateArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        # argparse's default diagnostics reproduce unknown options and values.
+        # The structured failure must not contain any of those private inputs.
+        raise flow.InterviewError('Invalid interview command arguments') from None
+
+    def _print_message(self, message, file=None):
+        # argparse otherwise ignores write failures and can claim --help worked.
+        if message:
+            stream = file if file is not None else sys.stderr
+            stream.write(message)
+            stream.flush()
+
+
+def _emit_result(result, *, indent=None):
+    try:
+        print(json.dumps(result, ensure_ascii=False, indent=indent), flush=True)
+        return True
+    except (OSError, ValueError):
+        # Never report successful delivery or expose a raw stream error. stderr
+        # may also be unavailable; the nonzero exit remains authoritative then.
+        try:
+            print(json.dumps({'status': 'blocked', 'code': 'INTERVIEW_OUTPUT_FAILED',
+                              'action_executed': False, 'saved': result.get('saved', False)}),
+                  file=sys.stderr, flush=True)
+        except (OSError, ValueError):
+            pass
+        return False
+
+
 def main(argv=None):
     try:
         if hasattr(sys.stdout, 'reconfigure'):
             sys.stdout.reconfigure(encoding='utf-8', errors='strict')
-        parser=argparse.ArgumentParser(description=__doc__)
+        parser=_PrivateArgumentParser(prog='interview_cli.py', description=__doc__)
         parser.add_argument('--input', help='Previously explicitly saved private state JSON')
         parser.add_argument('--target-ref', help='Target alias; must match when resuming')
         parser.add_argument('--account-ref', help='Account alias; must match when resuming')
@@ -51,14 +81,24 @@ def main(argv=None):
             serialized=flow.dumps_state(state,host_opt_in=True,scope='private_save')
             guardian.save_new(args.output,serialized+'\n')
             output['saved']=True
-        print(json.dumps(output,ensure_ascii=False,indent=2))
-        return 0
-    except (flow.InterviewError,guardian.GuardianError,KeyError,TypeError,ValueError):
-        print(json.dumps({'status':'blocked','code':'INVALID_OR_UNAUTHORIZED_INTERVIEW_IO','action_executed':False}))
+        return 0 if _emit_result(output, indent=2) else 2
+    except (flow.InterviewError,guardian.GuardianError,KeyError,TypeError,ValueError,OSError):
+        _emit_result({'status':'blocked','code':'INVALID_OR_UNAUTHORIZED_INTERVIEW_IO','action_executed':False})
         return 2
     except KeyboardInterrupt:
-        print(json.dumps({'status':'cancelled','action_executed':False}))
+        _emit_result({'status':'cancelled','action_executed':False})
         return 3
 
 if __name__=='__main__':
-    raise SystemExit(main())
+    code = main()
+    try:
+        sys.stdout.flush()
+    except (OSError, ValueError):
+        # Only the standalone process owns stdout. Close a failed buffered pipe
+        # here so Python's shutdown flush cannot emit an unsanitized diagnostic.
+        code = 2
+        try:
+            sys.stdout.close()
+        except (OSError, ValueError):
+            pass
+    raise SystemExit(code)

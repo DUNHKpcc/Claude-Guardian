@@ -736,7 +736,13 @@ def main(argv=None):
         finding(report, "COLLECTOR_INTERNAL_FAILURE")
         code = 4
     text = json.dumps(redact(report), ensure_ascii=False, indent=2) + "\n"
-    if args.output:
+    # Cancellation already observed by this entrypoint cannot authorize a new
+    # export, including USER_CANCELLED surfaced through a blocked error report.
+    # Interrupts after save_new has begun remain a separate writer limitation.
+    cancelled = (report.get("execution_status") == "interrupted"
+                 or any(item.get("code") == "USER_CANCELLED"
+                        for item in report.get("findings", [])))
+    if args.output and not cancelled:
         try:
             save_new(args.output, text)
         except GuardianError as error:

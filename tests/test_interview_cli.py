@@ -16,6 +16,124 @@ class InterviewCLITests(unittest.TestCase):
     def run_cli(self,*args):
         return subprocess.run([sys.executable,str(CLI),*args],capture_output=True,encoding='utf-8',timeout=10)
 
+    def test_argument_errors_never_echo_private_arguments_or_save_state(self):
+        marker = 'synthetic-private-argument-sentinel'
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp).resolve() / 'must-not-save.json'
+            for args in (['--unknown', marker], ['--unknown=' + marker],
+                         ['--' + marker], [marker], ['--help=' + marker],
+                         ['--account-ref']):
+                with self.subTest(args=args):
+                    result = self.run_cli('--output', str(output), *args)
+                    self.assertEqual(result.returncode, 2)
+                    self.assertEqual(json.loads(result.stdout), {
+                        'status': 'blocked', 'code': 'INVALID_OR_UNAUTHORIZED_INTERVIEW_IO',
+                        'action_executed': False})
+                    self.assertEqual(result.stderr, '')
+                    self.assertNotIn(marker, result.stdout + result.stderr)
+                    self.assertFalse(output.exists())
+
+    def test_help_remains_available_without_creating_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp).resolve() / 'must-not-save.json'
+            result = self.run_cli('--output', str(output), '--help')
+            self.assertEqual(result.returncode, 0)
+            self.assertIn('--answer-file', result.stdout)
+            self.assertEqual(result.stderr, '')
+            self.assertFalse(output.exists())
+
+    def test_known_token_aliases_are_rejected_before_private_save(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for prefix in ('ghp_', 'github_pat_'):
+                marker = prefix + 'syntheticPrivateCredential12'
+                for flag in ('--target-ref', '--account-ref'):
+                    with self.subTest(prefix=prefix, flag=flag):
+                        output = Path(tmp).resolve() / (prefix + flag + '.json')
+                        result = self.run_cli(flag, marker, '--output', str(output))
+                        self.assertEqual(result.returncode, 2)
+                        self.assertEqual(json.loads(result.stdout)['status'], 'blocked')
+                        self.assertEqual(result.stderr, '')
+                        self.assertNotIn(marker, result.stdout)
+                        self.assertFalse(output.exists())
+
+    def test_ordinary_private_aliases_are_retained_only_in_requested_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp).resolve() / 'state.json'
+            target, account = 'synthetic-private-device', 'synthetic-private-account'
+            result = self.run_cli('--target-ref', target, '--account-ref', account,
+                                  '--output', str(output))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            for marker in (target, account):
+                self.assertNotIn(marker, result.stdout + result.stderr)
+            saved = json.loads(output.read_text(encoding='utf-8'))
+            self.assertEqual((saved['target_alias'], saved['account_alias']), (target, account))
+
+    def test_stdout_failures_return_nonzero_without_raw_error_text(self):
+        for method in ('write', 'flush'):
+            with self.subTest(method=method):
+                output, errors = io.StringIO(), io.StringIO()
+                with patch.object(output, method, side_effect=OSError('synthetic-private-output-sentinel')), \
+                        patch.object(cli.sys, 'stdout', output), patch.object(cli.sys, 'stderr', errors):
+                    self.assertEqual(cli.main([]), 2)
+                self.assertEqual(json.loads(errors.getvalue()), {
+                    'status': 'blocked', 'code': 'INTERVIEW_OUTPUT_FAILED',
+                    'action_executed': False, 'saved': False})
+                self.assertNotIn('synthetic-private-output-sentinel', output.getvalue() + errors.getvalue())
+
+    def test_closed_pipe_has_sanitized_error_and_stable_exit(self):
+        process = subprocess.Popen([sys.executable, str(CLI)], stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        process.stdout.close()
+        try:
+            _, raw_errors = process.communicate(timeout=10)
+            errors = raw_errors.decode('utf-8')
+            self.assertEqual(process.returncode, 2)
+        finally:
+            process.stderr.close()
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=10)
+        self.assertEqual(json.loads(errors), {
+            'status': 'blocked', 'code': 'INTERVIEW_OUTPUT_FAILED',
+            'action_executed': False, 'saved': False})
+
+    def test_help_output_failure_does_not_report_success(self):
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(output, 'write', side_effect=OSError('synthetic-private-help-sentinel')), \
+                patch.object(cli.sys, 'stdout', output), patch.object(cli.sys, 'stderr', errors):
+            self.assertEqual(cli.main(['--help']), 2)
+        self.assertEqual(json.loads(errors.getvalue())['code'], 'INTERVIEW_OUTPUT_FAILED')
+        self.assertNotIn('synthetic-private-help-sentinel', errors.getvalue())
+
+    def test_output_failure_after_authorized_save_reports_retained_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            state = Path(tmp).resolve() / 'state.json'
+            output, errors = io.StringIO(), io.StringIO()
+            with patch.object(output, 'write', side_effect=OSError('synthetic-private-output-sentinel')), \
+                    patch.object(cli.sys, 'stdout', output), patch.object(cli.sys, 'stderr', errors):
+                self.assertEqual(cli.main(['--output', str(state)]), 2)
+            self.assertTrue(json.loads(errors.getvalue())['saved'])
+            self.assertEqual(cli.flow.loads_state(state.read_text(encoding='utf-8'))['target_alias'],
+                             'target-unconfirmed')
+
+    def test_stdout_configuration_error_is_sanitized_before_save(self):
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(output, 'reconfigure', create=True,
+                          side_effect=OSError('synthetic-private-stream-sentinel')), \
+                patch.object(cli.sys, 'stdout', output), patch.object(cli.sys, 'stderr', errors), \
+                patch.object(cli.guardian, 'save_new') as save:
+            self.assertEqual(cli.main(['--output', 'not-written.json']), 2)
+        self.assertEqual(json.loads(output.getvalue())['status'], 'blocked')
+        self.assertNotIn('synthetic-private-stream-sentinel', output.getvalue() + errors.getvalue())
+        save.assert_not_called()
+
+    def test_failure_reporting_handles_unavailable_output_streams(self):
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(output, 'write', side_effect=OSError('synthetic-private-output-sentinel')), \
+                patch.object(errors, 'write', side_effect=OSError('synthetic-private-error-sentinel')), \
+                patch.object(cli.sys, 'stdout', output), patch.object(cli.sys, 'stderr', errors):
+            self.assertEqual(cli.main(['--unknown']), 2)
+
     def test_cancellation_during_argument_parsing_returns_sanitized_result(self):
         output = io.StringIO()
         with patch.object(cli.argparse.ArgumentParser, 'parse_args', side_effect=KeyboardInterrupt), \

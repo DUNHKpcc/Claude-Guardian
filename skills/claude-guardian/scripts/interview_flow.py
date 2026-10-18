@@ -200,7 +200,7 @@ def _safe(value):
     elif isinstance(value, str):
         if re.search(r"(?:password|passwd|pwd|secret|token|api[_-]?key|authorization)\s*[:=]\s*\S+|[a-z][a-z0-9+.-]*://[^\s/@:]+:[^\s/@]+@|\bBearer\s+[A-Za-z0-9._~-]+", value, re.I):
             raise InterviewError("Credential assignment or credential-bearing URL rejected")
-        if len(value) > 2000 or re.search(r"sk-(?:ant-)?[A-Za-z0-9_-]{12,}|-----BEGIN .*PRIVATE KEY|(?:\d[ -]?){13,19}", value):
+        if len(value) > 2000 or re.search(r"(?:sk-(?:ant-)?|ghp_|github_pat_)[A-Za-z0-9_-]{12,}|-----BEGIN .*PRIVATE KEY|(?:\d[ -]?){13,19}", value):
             raise InterviewError("Unsanitized or oversized value rejected")
     elif isinstance(value, float) and (value != value or abs(value) == float("inf")):
         raise InterviewError("Non-finite numbers are not JSON facts")

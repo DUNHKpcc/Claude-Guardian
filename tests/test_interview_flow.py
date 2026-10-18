@@ -496,6 +496,41 @@ class InterviewTests(unittest.TestCase):
             with self.assertRaises(f.InterviewError):
                 f.record_fact(state(), qid, "unknown", state_name="inferred", source="guess")
 
+    def test_known_token_prefixes_cannot_be_aliases_facts_or_provenance(self):
+        for prefix in ('sk-', 'sk-ant-', 'ghp_', 'github_pat_'):
+            marker = prefix + 'syntheticPrivateCredential12'
+            for field in ('target_alias', 'account_alias', 'task_id'):
+                with self.subTest(prefix=prefix, field=field):
+                    labels = {'target_alias': 'device-a', 'account_alias': 'account-a', 'task_id': 'task-a'}
+                    labels[field] = marker
+                    with self.assertRaises(f.InterviewError) as raised:
+                        f.new_state(**labels)
+                    self.assertNotIn(marker, str(raised.exception))
+            for answer in ({'value': marker, 'source': 'user'},
+                           {'value': 'sanitized-error-category', 'source': marker}):
+                with self.subTest(prefix=prefix, answer=answer), self.assertRaises(f.InterviewError):
+                    f.record_fact(state(), 'Q-H03', **answer)
+
+    def test_known_token_aliases_cannot_be_saved_or_resumed(self):
+        for prefix in ('ghp_', 'github_pat_'):
+            for field in ('target_alias', 'account_alias', 'task_id'):
+                with self.subTest(prefix=prefix, field=field):
+                    saved = f.new_state('device-a', 'account-a')
+                    saved[field] = prefix + 'syntheticPrivateCredential12'
+                    with self.assertRaises(f.InterviewError):
+                        f.dumps_state(saved, host_opt_in=True)
+                    with self.assertRaises(f.InterviewError):
+                        f.loads_state(json.dumps(saved))
+
+    def test_ordinary_alias_contract_still_round_trips(self):
+        for target, account, task in (('device-a', 'account-a', 'task-1'),
+                                      ('github-project', 'ghp-project', '0_local_task'),
+                                      ('a' * 80, 'b' * 80, 'c' * 80)):
+            with self.subTest(target=target):
+                original = f.new_state(target, account, task_id=task)
+                resumed = f.loads_state(f.dumps_state(original, host_opt_in=True))
+                self.assertEqual(resumed, original)
+
     def test_target_bound_and_immutable_updates(self):
         s = state()
         with self.assertRaises(f.InterviewError):

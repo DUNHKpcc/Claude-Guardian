@@ -59,3 +59,13 @@ Two independently built packages were byte-identical, SHA-256
 `25df240a43df4d47640a8564bf0a73a4f4cfde7df38e89c0c476dcb33dae5216`.
 Independent review reran 166 targeted tests and found no remaining blocking issue.
 No complete design-case acceptance or native success is inferred from these counts.
+
+## Second-batch offline checks
+
+Recognized cancellation before export no longer creates a report. Interview
+argument/output failures avoid raw private diagnostic text, and existing
+credential screening includes GitHub-shaped tokens. Source indexes now separate
+the eight historical inputs from the current packaged sources without changing
+original source bytes or licensing attribution. Full regression: 1,100 tests,
+1,092 passed and eight skipped (13.568 seconds), plus both Node synthetic suites,
+compilation and repeatable packaging. ENV-T123 and native acceptance remain open.
