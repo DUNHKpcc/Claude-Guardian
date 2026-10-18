@@ -46,4 +46,6 @@ The candidate adds only this page and one test file. Review receipts, queue, log
 | `skills/claude-guardian/references/intake.md` | `24fb26e81ec534f3678a5d081cf126ab1526fffb53df84a96c44f1eb928e9d47` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
-| `tests/test_acceptance_local_egress.py` | `83a13ba57c59301255797d7f1178bb1c4b6dc525a0b4b759d3e08ff7456afd4d` |
+| `tests/test_acceptance_local_egress.py` | `f191e857eec5c8b6221ba2a2f8a9c97bf8b632a3f2e09a018d8f7d08655c3959` |
+
+Minimum-Python CI found that TestCase.enterContext requires Python 3.11. The equivalent ExitStack plus addCleanup(close) supports 3.10 while preserving the same patch lifetime and assertions.

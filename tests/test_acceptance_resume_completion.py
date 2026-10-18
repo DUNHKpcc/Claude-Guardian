@@ -40,7 +40,8 @@ def view(s):
 class ResumeCompletionTests(unittest.TestCase):
     def setUp(self):
         if self._testMethodName != "test_partial_cleanup_resume_observes_then_restores_without_redeletion":
-            stack = self.enterContext(ExitStack())
+            stack = ExitStack()
+            self.addCleanup(stack.close)
             for obj, name in ((builtins,"open"),(os,"open"),(socket,"socket"),(subprocess,"Popen")):
                 stack.enter_context(patch.object(obj,name,side_effect=AssertionError("Pure replay attempted external I/O")))
 

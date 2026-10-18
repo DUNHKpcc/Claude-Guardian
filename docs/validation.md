@@ -1118,3 +1118,25 @@ Windows 1,338/391. All four release hashes matched; the
 [synthetic browser preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39111983458)
 also passed. Hosted fixtures do not establish native Claude ownership, exclusive
 writer exclusion or actual user-device cleanup authorization.
+
+## Twenty-first publication and minimum-Python test hotfix
+
+Published `51193c3d610c35686596dc896d48615103420263` with exact source tree
+`7e0910aa72a39e08bbf295518dc1354daa108030`. Its
+[push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39112833044)
+failed on Python 3.10: seven new test setup methods used TestCase.enterContext,
+which is unavailable there. Ubuntu passed 1,729/eight skips, macOS 1,725/12,
+Windows 1,345/392. This run is not an all-green result.
+
+The narrow test-only repair uses ExitStack plus addCleanup(close), registering
+cleanup before patch installation. Assertion bodies, runtime and package are
+unchanged. Updated test hashes invalidate and renew only their evidence pins.
+The cloud rerun ran 1,737 tests in 35.002 seconds: 1,729 passed, eight skipped.
+Actual minimum-Python compatibility remains subject to the new push CI; an
+API-absence emulation is retained as a separate local regression reproduction.
+
+Independent hotfix rerun: 1,737 tests in 35.970 seconds, 1,729 passed and eight
+skipped. API-absence reproduction retains the original seven failures and the
+fixed eight-test success. Explicit cleanup-lifetime checks cover patch removal
+and partial setup failure; these are local compatibility probes, not a substitute
+for the actual Python 3.10 push result.

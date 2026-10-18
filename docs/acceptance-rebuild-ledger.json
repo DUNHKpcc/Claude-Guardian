@@ -204,7 +204,7 @@
       "dependencies": "A、P、U",
       "evidence": {
         "path": "docs/evidence/rebuild-resume-completion.md",
-        "sha256": "a1c8ebcf6d4ef2895e0bdcb4ca4ca4821208f4a4ac227e51e95214480e3dc428",
+        "sha256": "73e16d3fd55f8d1a5b2aabf5cb9f2a423c8fa080807aaedec3887dd866c32644",
         "layers": [
           "L",
           "C"
@@ -324,7 +324,7 @@
       "dependencies": "A、B、N、L",
       "evidence": {
         "path": "docs/evidence/rebuild-local-egress.md",
-        "sha256": "478025646a8b3b2912b5f90e86818e8fd4e31946c39b0dd9baca7ee44b6ea768",
+        "sha256": "c289a8867a663b4c6ebb3980eb296210c79c85f2b33b6f5655009af062ffff1e",
         "layers": [
           "L",
           "C"

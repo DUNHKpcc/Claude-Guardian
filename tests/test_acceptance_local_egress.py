@@ -44,7 +44,8 @@ def capture(s):
 
 class LocalEgressTests(unittest.TestCase):
     def setUp(self):
-        stack=self.enterContext(ExitStack())
+        stack=ExitStack()
+        self.addCleanup(stack.close)
         for obj,name in ((builtins,'open'),(os,'open'),(socket,'socket'),(subprocess,'Popen')):
             stack.enter_context(patch.object(obj,name,side_effect=AssertionError('Offline composition attempted external I/O')))
 

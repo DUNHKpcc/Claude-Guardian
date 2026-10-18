@@ -69,6 +69,8 @@ The following files are hashed against the reviewed current nineteenth bytes. Ca
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_cleanup_transactions.py` | `6519b87995b16bdc439a1bbad8e0398c315d79e7d5666558b821bf841c65ce06` |
 | `docs/cleanup-full-data.md` | `e4688baa07da244413232bffdf767cccb77395567c44f5f2e7b08c1eae1a6c1c` |
-| `tests/test_acceptance_resume_completion.py` | `087c811d8ffdf624f28bf83a3b69c3b334532853d640ab069ab079b92da691ba` |
+| `tests/test_acceptance_resume_completion.py` | `9b4ff7bc7c98a5f5874f853c1cd921edf05709ffd48764413364e239b0fd5e41` |
 
 The integration review found a locale-dependent fixture read. It now requests UTF-8 explicitly; no replay assertion or acceptance condition changed.
+
+Minimum-Python CI found that TestCase.enterContext requires Python 3.11. The equivalent ExitStack plus addCleanup(close) supports 3.10 while preserving the same patch lifetime and assertions.
