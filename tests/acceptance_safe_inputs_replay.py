@@ -17,6 +17,8 @@ from pathlib import Path
 import subprocess
 import sys
 from unittest.mock import patch
+from test_acceptance_skill_registry_wording import (
+    SKILL_PATH, SUPPLEMENT_RELATIVE, SUPPLEMENT_SHA256, checked_registry_wording_sha256)
 
 
 HERE = Path(__file__).resolve().parents[1] / 'docs/evidence/t11-t12-safe-inputs-v1'
@@ -47,10 +49,27 @@ def main():
     args.source = args.source.resolve()
     args.output = args.output.resolve()
     pins = read_json(HERE / 'source-pins.json')
+    actual_sources = {}
     for relative, expected in pins['source_sha256'].items():
-        actual = hashlib.sha256((args.source / relative).read_bytes()).hexdigest()
-        if actual != expected:
+        path = args.source / relative
+        content = path.read_bytes()
+        actual = hashlib.sha256(content).hexdigest()
+        if relative == SKILL_PATH:
+            try:
+                if path.is_symlink():
+                    raise ValueError('Aliased SKILL path')
+                actual = checked_registry_wording_sha256(content, expected)
+            except ValueError as exc:
+                raise SystemExit('Pinned source changed: ' + relative + '; ' + str(exc)) from None
+        elif actual != expected:
             raise SystemExit('Pinned source changed: ' + relative)
+        actual_sources[relative] = actual
+    historical_pin_file = {
+        'path': 'docs/evidence/t11-t12-safe-inputs-v1/source-pins.json',
+        'sha256': hashlib.sha256((HERE / 'source-pins.json').read_bytes()).hexdigest()}
+    compatibility = ({'documentation_compatibility': {
+        'path': SUPPLEMENT_RELATIVE, 'sha256': SUPPLEMENT_SHA256}}
+        if actual_sources[SKILL_PATH] != pins['source_sha256'][SKILL_PATH] else {})
     args.output.mkdir(parents=True, exist_ok=False)
     script = args.source / 'skills/claude-guardian/scripts/guardian.py'
     guardian = module('safe_input_guardian', script)
@@ -138,7 +157,8 @@ def main():
         'limits': 'Only this pure helper invocation; not a host response, general sandbox, or tool-policy audit.'})
     write_json(args.output / 'execution-record.json', {
         'executed_at_utc': stamp, 'python_version': sys.version, 'platform': sys.platform,
-        'source_sha256': pins['source_sha256'], 'cases': traces,
+        'source_sha256': actual_sources, 'historical_source_pin_file': historical_pin_file,
+        **compatibility, 'cases': traces,
         'status': 'supporting_runtime_cases_passed; full_T11_T12_acceptance_pending',
         'limits': pins['limits']})
     print(json.dumps({'cli_cases_passed': len(traces), 'pure_source_helper_checked': True,

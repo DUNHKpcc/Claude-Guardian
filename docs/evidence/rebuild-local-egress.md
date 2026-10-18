@@ -42,7 +42,7 @@ The candidate adds only this page and one test file. Review receipts, queue, log
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
-| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
+| `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
@@ -58,3 +58,8 @@ T23's original complete L+C requirement was re-read against D-SPEC §3.3, §5.5�
 Client runtime, VPS proxy exit and remote-workspace intent remain distinct. Explicit local Code retains local questions, records Q-N01/N02's reported provenance and never activates VM/VPS installation. The new explicit current-plan condition can add only account-bound Q-C13; it creates no payment or remote-workspace branch. An independent composed local-Code/exit-only/current-plan replay confirms that changed exit facts alone become stale while local choice, current-plan fact and all authority boundaries remain intact. Resume preserves the chosen route, G3 remains blocked, contact is PC0, payment intent is none and save consent is false. The changed legacy-bill guidance is limited to an actual billing task and does not reclassify VPS assets as workspace choice. Only the reviewed interview_flow.py and intake.md source pins are refreshed.
 
 This is preservation of the unchanged original requirements/layers, not acceptance of any additional case. Normalized synthetic host facts and current active guidance were reviewed; no model dialogue, native device, live service contact, payment, deployment, OS isolation or actual cleanup is established. The trusted host remains responsible for truthful task/target/applicability, current replies and genuine separate authorization.
+
+
+## Registry-count wording preservation review (2026-10-18)
+
+The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.

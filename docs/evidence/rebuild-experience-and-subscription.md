@@ -91,7 +91,7 @@ SHA-256 pins bind the original specification, relevant runtime, active guidance 
 
 | Dependency | SHA-256 |
 |---|---|
-| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
+| `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
@@ -122,3 +122,8 @@ for [T76/T84](rebuild-subscription-original-cases.md), including explicit expire
 old bills and the narrowly applicable current-plan question. This does not
 retroactively change earlier observations or establish actual commercial
 compatibility, entitlement, native behavior or action authority.
+
+
+## Registry-count wording preservation review (2026-10-18)
+
+The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.

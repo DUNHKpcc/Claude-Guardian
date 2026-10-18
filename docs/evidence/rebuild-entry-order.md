@@ -90,7 +90,7 @@ SHA-256 pins bind the original specification, relevant implementation, operative
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
 | `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
-| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
+| `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
@@ -108,3 +108,8 @@ A separate read-only reviewer re-read every original clause on this page and the
 The unchanged `test_acceptance_entry_order.py` suite passed all 7 tests with zero skips. Its full current replay was executed twice and is byte-identical to a fresh published twenty-eighth baseline replay; the SHA-256 is `acd4eb95f022fa61aa96d1df95262c7c4dadcaf754231fae5c0cae9b35022afc`. The same suite passed with cp1252 standard I/O under C locale, and explicit-UTF-8 replay bytes also matched. Across the five related intake/entry/mobile/status pages, 47 original tests and eight separately authored delta tests passed. Counts supplement the complete clause/content review, not replace it.
 
 The 218 original requirements and layers are unchanged. The updated current dependency pins on this page follow that actual review and replay. Historical observations remain historical. No generated dialogue, arbitrary-language extraction, real account/store/plan eligibility, native device, network/contact, payment or action-authorization evidence is added; this preservation review accepts no adjacent pending case.
+
+
+## Registry-count wording preservation review (2026-10-18)
+
+The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.

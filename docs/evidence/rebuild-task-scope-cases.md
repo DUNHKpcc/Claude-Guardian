@@ -162,7 +162,7 @@ python -B tests/test_acceptance_task_scope_rebuild.py --replay > /tmp/guardian-t
 | `tests/test_interview_cli.py` | `a3cbd2c8332d50e6c49fee61ced2bb9c10295b7a3393b39b6de2e89a9a37be4d` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_interview_migration.py` | `6c4e6bf32875b83ea179ffc836f140141f161240b478b359b62b304767063618` |
-| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
+| `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
@@ -209,3 +209,8 @@ An independent reviewer read unchanged original T34/T43/T48/T78 and D-SPEC §5.5
 T34 retains an unconfirmed route for unanswered/shown/skipped/unknown/declined/deferred/comparison inputs. A complete billing explanation can omit an unrelated route prerequisite without confirming that route; returning to environment/network/cleanup/subscription preparation exposes the original missing route and conditional plan again. T43 remains purchase_intent=none/payment_intent=none with no target-plan/payment questions in ordinary environment work; explicit relevant Q-C13 adds current-plan information only, separately account-bound and never copied from Q-C08 or claimed as established feature compatibility. T48 still preempts old-billing/current-plan branches with immediate minimal incident triage, explicit ordinary-theme postponement, bounded unknown/refusal/defer and explicit resolution; neither seven-question completion nor an emergency flag grants authority. T78 still records unknown subscription and asks the short Q-J02 when only experience is supplied; plan/compatibility flags, target choice and expertise cannot establish paid status or inferred entitlement.
 
 Independent preservation checks cover these new branch intersections and closed G3/contact/save boundaries. All four original L+C conclusions remain within the existing normalized-host/guidance contract. No arbitrary-language parser, native incident detection, actual credential action, real feature compatibility or new original-case acceptance is claimed. Current source table pins reflect only the reviewed exact bytes; original historical narrative and artifacts are preserved.
+
+
+## Registry-count wording preservation review (2026-10-18)
+
+The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.

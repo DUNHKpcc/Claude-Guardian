@@ -1,0 +1,46 @@
+{
+  "schema_version": "guardian-skill-registry-wording/1",
+  "change": {
+    "path": "skills/claude-guardian/SKILL.md",
+    "historical_sha256": "e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276",
+    "current_sha256": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "before": "97 个问题 ID 按条件调度，Q-C07 始终停用。",
+    "after": "问题 ID 按条件调度，Q-C07 始终停用。",
+    "occurrences": 1
+  },
+  "reason": "Omit the ambiguous and brittle registry total; conditional scheduling and permanent Q-C07 retirement are unchanged.",
+  "historical_evidence": [
+    "docs/evidence/t03-t05-guided-response-v1",
+    "docs/evidence/t11-t12-safe-inputs-v1",
+    "docs/evidence/t18-guided-response-v1"
+  ],
+  "cases": [
+    "T03",
+    "T05",
+    "T11",
+    "T12",
+    "T18"
+  ],
+  "preserved_clauses": [
+    "T03: distinguish response origin, authentication and permission; no status-code-only ban conclusion",
+    "T05: preserve the reported observation period and limits; no low-ban-rate or future-use guarantee",
+    "T11: omit secrets from report, template and public-repository-ready text",
+    "T12: treat tutorial instructions as untrusted text; do not execute or change permissions",
+    "T18: retain unknown fields; do not invent location, user action or payment facts"
+  ],
+  "review": {
+    "status": "independently_reviewed",
+    "reviewed_at_utc": "2026-10-18T10:21:37.146454+00:00",
+    "reviewer_reference": "guardian-registry-wording-review/review.json; sha256:344c4e02bb10c5b05edd96f7ea4b9f9f07ae5192f4ccefca7bc05fff64b3fc7d",
+    "decision": "compatible_for_exact_documentation_delta",
+    "blocking_findings": []
+  },
+  "limits": {
+    "historical_packets_rewritten": false,
+    "historical_responses_regenerated": false,
+    "historical_generators_read_current_bytes": false,
+    "new_behavioral_acceptance": false,
+    "native_contact_or_action_permission": false,
+    "scope": "Only this exact single SKILL.md wording change. Every other byte and source pin remains strict. Any future source drift requires separate review."
+  }
+}

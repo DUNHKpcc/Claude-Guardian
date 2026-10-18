@@ -79,7 +79,7 @@ The corrected migration document is pinned at its candidate bytes; all runtime a
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
 | `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
-| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
+| `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/intake.md` | `1d3d6f75788abafefe4a8ce8e9ca1c740b1f4b57656b350a4688c6629ac52dba` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/scripts/interview_migration.py` | `a52e4b7530fd99650579d418aac387231fd2e632ba8f3b407f5b94cfe1da86fd` |
@@ -100,3 +100,8 @@ The earlier statement that runtime dependencies were unchanged describes the pri
 All nine original tests pass on fresh published baseline and candidate, with zero skips. Full paired tombstone/omission, wrapper, stale-envelope, 20-question refresh, rejection and resume traces remain byte-identical across both trees and both runs: SHA-256 `3e55aa2a1e193fa7775447118a620933c3780e4cf0590cd0392b8a75df1a3e90` (277948 bytes), matching the historical replay. Independent tests confirm that retired Q-C07/account_ownership/account_control/old Q-C08 neither create Q-C13 or a completion receipt nor become missing readiness requirements. Explicitly named target_plan remains a separate stale target; imported subscription remains unknown. New current-plan and receipt account aliases are bounded association metadata, not a renamed ownership/control questionnaire or recovered permission.
 
 The full original T82 L+C conclusion is preserved under the same explicitly supported compact/report migration contract and strict rejection of unsupported shapes. This remains semantic retirement, not a universal legacy-format importer. No generated response, native import, live account verification or new action authority is added. Historical generated-response packet provenance is untouched. Refresh only the reviewed current dependency table pins and the final page hash in its ledger entry after retaining this review.
+
+
+## Registry-count wording preservation review (2026-10-18)
+
+The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.

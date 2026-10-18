@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import unittest
+from test_acceptance_skill_registry_wording import SKILL_PATH, checked_registry_wording_sha256
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=Path(os.environ.get('GUARDIAN_REPOSITORY_ROOT',ROOT)).resolve()
 DATA=ROOT/'docs/evidence/t03-t05-guided-response-v1'
@@ -22,9 +23,15 @@ class RetainedDiagnosticEvidenceTests(unittest.TestCase):
             with self.subTest(name=name): self.assertEqual(digest(DATA/name),expected)
         self.assertEqual(digest(PAGE),PAGE_HASH)
 
-    def test_exact_reviewed_guidance(self):
+    def test_historical_guidance_and_reviewed_current_doc_compatibility(self):
         for name,expected in GUIDES.items():
-            with self.subTest(name=name): self.assertEqual(digest(SOURCE/name),expected)
+            with self.subTest(name=name):
+                path = SOURCE / name
+                if name == SKILL_PATH:
+                    self.assertFalse(path.is_symlink())
+                    checked_registry_wording_sha256(path.read_bytes(), expected)
+                else:
+                    self.assertEqual(digest(path), expected)
         self.assertEqual(read(DATA/'execution-record.json')['source_hashes'],GUIDES)
 
     def test_original_clauses_layers_and_review(self):

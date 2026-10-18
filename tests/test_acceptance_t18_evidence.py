@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import unittest
+from test_acceptance_skill_registry_wording import SKILL_PATH, checked_registry_wording_sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = Path(os.environ.get('GUARDIAN_REPOSITORY_ROOT', str(ROOT))).resolve()
@@ -64,7 +65,7 @@ class T18RetainedEvidenceTests(unittest.TestCase):
         self.assertEqual(row, original['literal_row'])
         self.assertEqual(row.split('|')[3].strip(), REQUIREMENT)
 
-    def test_current_guides_match_the_reviewed_bytes(self):
+    def test_historical_guides_and_reviewed_current_doc_compatibility(self):
         manifest = read_json(EVIDENCE / 'evidence-manifest.json')
         record = read_json(EVIDENCE / 'execution-record.json')
         self.assertEqual(manifest['guide_sha256'], EXPECTED_GUIDE_SHA256)
@@ -73,8 +74,11 @@ class T18RetainedEvidenceTests(unittest.TestCase):
             with self.subTest(guide=relative):
                 path = SOURCE_ROOT / relative
                 self.assertFalse(path.is_symlink())
-                self.assertEqual(digest(path), expected,
-                                 'Guide drift requires explicit T18 evidence revalidation')
+                if relative == SKILL_PATH:
+                    checked_registry_wording_sha256(path.read_bytes(), expected)
+                else:
+                    self.assertEqual(digest(path), expected,
+                                     'Guide drift requires explicit T18 evidence revalidation')
 
     def test_exact_inputs_and_observed_response_files_correspond(self):
         dialogue = read_json(EVIDENCE / 'actual-dialogue.json')

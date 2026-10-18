@@ -27,7 +27,7 @@ AAAA 为空、`curl -4`、单次 IPv4 HTTPS 成功或 IPv6 超时都不是强制
 
 ## 完整访谈入口
 
-完整状态化访谈使用 `scripts/interview_cli.py`：默认仅输出下一题和阶段评估；已确认答案通过本地 answer JSON 传入；用户明确要求保存时才指定 `--output`。普通读档或连续轮次用 `--input`；真正中断后继续须加 `--resume <本次事件别名>`，按 [intake.md 的续接规则](references/intake.md#interruption-and-resume) 先核实相关变化，再规划。97 个问题 ID 按条件调度，Q-C07 始终停用。`guardian.py interview` 保留为兼容的简化入口，不把它的八字段流程当作完整访谈。
+完整状态化访谈使用 `scripts/interview_cli.py`：默认仅输出下一题和阶段评估；已确认答案通过本地 answer JSON 传入；用户明确要求保存时才指定 `--output`。普通读档或连续轮次用 `--input`；真正中断后继续须加 `--resume <本次事件别名>`，按 [intake.md 的续接规则](references/intake.md#interruption-and-resume) 先核实相关变化，再规划。问题 ID 按条件调度，Q-C07 始终停用。`guardian.py interview` 保留为兼容的简化入口，不把它的八字段流程当作完整访谈。
 
 由 Agent 编排检测、解释、选择内置动作、具体确认、执行和复测，详见 [agent-remediation.md](references/agent-remediation.md)。`scripts/agent_remediation.py select --input <本地报告.json> --target-ref <目标别名>` 生成结构化动作清单；只读脚本、候选、宿主库和 Agent 环境修复分开，不执行清单或从JSON恢复权限。当前尚无开放的内置生产配置写入适配器；内置脚本修不了时，由 Agent 继续检查实际环境，使用具体获准的宿主工具或经审阅的限定临时脚本完成独立最小修复、备份恢复和复测。内置门禁仍不能绕过；选择器本身不是已完成修复。不能自行提供一个返回 True 的授权回调代替用户确认。
 

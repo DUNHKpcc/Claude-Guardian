@@ -224,7 +224,7 @@ prior accepted ENV-T79/90 workflow pins after independent re-review of this delt
 | `tests/test_workflow_guard.py` | `635b39b747724477efc782eeea129c818bbfb11639d2ad0a83aa4438e8ce2587` |
 | `tests/test_workflow_contact_epoch.py` | `bbb4010d7d7e74b6ba2f080eae4c853ed0b239f8bf522bea365114c17dfc97fd` |
 | `tests/test_acceptance_boundary_rebuild.py` | `b5604c118e9c11fea9d03c19e75efdae4acb53f7bb0df3bd2ac4db38842621fd` |
-| `skills/claude-guardian/SKILL.md` | `e34047180a0259a6a14e606f583ef0897c2057f5477e7c16f2aefde7af2fd276` |
+| `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
@@ -284,3 +284,8 @@ ENV-T81's complete original L+C condition was re-read against D-ENV ยง17.5 and ย
 The sole changed pinned dependency is accounts-and-payments.md. Its expired old-bill explanation waives irrelevant purchase-device/checkout/deployment questions only for that explanatory task. It does not waive PC-G1 controls, actual-path checks, a known conflict, host permission or separate first-contact/login/payment authority. Current refund-policy checks, account access and submission remain separately scoped; the unchanged A1/A2, B2/B3/B5/B7 and PC0 stopping clauses still prohibit buying a card or logging in to resolve missing readiness. No actual login, refund, purchase, device observation or OS isolation was performed. Only that reviewed guidance pin is refreshed.
 
 This is preservation of the unchanged original requirements/layers, not acceptance of any additional case. Normalized synthetic host facts and current active guidance were reviewed; no model dialogue, native device, live service contact, payment, deployment, OS isolation or actual cleanup is established. The trusted host remains responsible for truthful task/target/applicability, current replies and genuine separate authorization.
+
+
+## Registry-count wording preservation review (2026-10-18)
+
+The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.

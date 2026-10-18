@@ -1473,3 +1473,39 @@ Prior commit 12603a4ecade3d5ee54d24436ba6821d5415acb5 passed CI 39117151076 on a
 four hosted platforms. Current-batch CI is pending. Hosted macOS/Windows jobs
 are not native acceptance on the user's devices. All original 218 conditions and
 layers are preserved; current candidate acceptance is 36, with 182 pending.
+
+
+## 2026-10-18 thirtieth: exact registry-count wording correction
+
+The local complete suite exited 0: 1,847 tests in 51.910 seconds, 1,839 passed
+and eight skipped. Log SHA-256:
+00cf9083d63fa0c5431c03ef7f2f34997195010a10d61888c1a71e52feae4da9.
+The only installed-package change is deletion of the six UTF-8 bytes for the
+hardcoded question count. Runtime scripts and 69 historical evidence files are
+byte-identical. The exact 14 current-page / 29 existing-ledger-hash map was
+independently approved after all 14 complete before/after replay streams matched.
+The original 218 clauses/layers and 36 accepted cases remain unchanged.
+
+Before the map was applied, the unchanged ledger integrity suite failed exactly
+14 stale dependency pins. The exact approved fixture then passed all three checks.
+Independent compatibility probes reject unrelated guide changes, malformed or
+changed supplements, symlinks and other source drift. Historical response-source
+hashes remain historical; fresh replay provenance reports actual current bytes.
+
+Detached package tests passed 9/9 and portability 2/2. Both Node synthetic suites,
+compilation, diff checks and repeat package builds passed. A mistaken invocation
+of the production browser helper returned INTERACTION_REQUIRES_CI before opening
+a browser; the correct synthetic protocol suite then passed. No CI-mode override
+or real browser result is claimed. Package SHA-256:
+077f7bca611e3990ed4927c69402e109cdcbbea9051bb178977737d7450b7fa1.
+
+Prior commit cec0505808d9110e65e4a2ccdae2cee6a3301120 passed CI 39120359380:
+Ubuntu 1,834 passed / 8 skipped, Python 3.10 Linux 1,834 / 8, macOS 1,830 / 12,
+and Windows 1,450 / 392. All four packages matched the recorded prior digest.
+Independent final integrated verification exited 0: 1,847 tests in 55.975 seconds,
+1,839 passed and eight skipped. Its log SHA-256 is
+e39c1ba52e9bc0615b8f465f2ace6e2c6109a60c5cf23dfe108366d5cc3b95f0.
+The independent forced-cp1252 regression set passed all 197 tests; detached9/9,
+portability2/2, both synthetic Node suites, compilation and duplicate package
+builds passed. Current-batch hosted CI is pending.
+Hosted OS jobs do not replace user-device acceptance.
