@@ -1282,3 +1282,42 @@ All jobs ran the same 1,745-test inventory. The skipped native-dependent cases
 remain unverified on user devices. The unchanged package hash was reproduced.
 This closes the preceding test-helper compatibility failures without rewriting
 their recorded outcomes. Twenty-third publication remains a separate commit.
+
+## Twenty-fourth reconstruction: callable cleanup host handoff
+
+The generic cleanup finding previously claimed that no executor existed, despite
+the shipped C5 core and CLI. Its informational host_handoff now names the existing
+plan/quarantine/reconcile/restore path and packaged cleanup guide. This does not
+execute a cleanup or grant authority: the separate Q-D02 choice selects scope_inventory planning; actual inventory
+still requires its scoped permission. The real host must verify ownership,
+inactivity, exclusions, backup choice
+and fresh per-action approval before invoking the existing executor.
+
+The installed reference resolves to references/cleanup-cli-usage.md. Seven new
+regressions cover the fixed handoff and actual package-link existence. The other
+268/269 catalog projections remain byte-for-byte equivalent. Credential stores,
+browser data, projects and shared state remain outside the automatic adapter;
+no native Mac/Windows integration, irreversible purge or host deletion ran here.
+
+The integrated local suite ran 1,767 tests in 38.334 seconds: 1,759 passed and
+eight skipped. After the corrected portability guard transplant, independent
+verification ran the same 1,767 tests in 37.955 seconds with identical outcomes.
+Both Node suites, compilation, ledger checks and repeated package builds pass.
+The changed package SHA-256 is
+3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a.
+
+Four existing evidence scopes were re-reviewed against the bridge change;
+only the enforcement page's current dependency pin needed refreshing. The
+prepared-recovery record intentionally retains its historical guide hash, while
+rule-import and idempotent-replanning reviews use their existing narrative
+dependencies. This is not a claim that four current hash pins changed. No
+original case is promoted: 26/218 accepted and 192 pending remain unchanged.
+
+The preceding twenty-third batch published as
+`04b7b476b7a76d66891b601872d34054743b5780`, tree
+`4733f05517e65b94460f58b6a02cfe071a06bbd2`.
+[Push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39114982417)
+succeeded across all four jobs: Python 3.10/Ubuntu each 1,752 passed/eight skipped,
+macOS 1,748/12, and Windows 1,368/392, from 1,760 total tests per job.
+The unchanged prior package was reproduced. These results concern the preceding
+case batch; the C5 handoff change above has its separate publication and CI.

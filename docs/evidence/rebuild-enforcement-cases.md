@@ -303,7 +303,7 @@ updating hashes alone does not renew acceptance.
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
-| `skills/claude-guardian/references/agent-remediation.md` | `b353980623c65e621a9704a53982edf4557970d2374be3ee92fa78ed0c5b0bd7` |
+| `skills/claude-guardian/references/agent-remediation.md` | `0590a83c4d80b878a649b4d8ab13edcd73bdf8852980b8e01b816b092772718b` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `docs/implementation-tracker.md` | `8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50` |

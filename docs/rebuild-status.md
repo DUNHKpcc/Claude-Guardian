@@ -1,6 +1,6 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: twenty-third rebuild, 2026-10-18
+## Current checkpoint: twenty-fourth rebuild, 2026-10-18
 
 The current ledger records 26 freshly accepted original cases and 192 pending:
 T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
@@ -136,3 +136,8 @@ The twenty-third revalidates current-versus-historical restriction, pause withou
 authorization advancement, and retired ownership-field migration through the
 supported compact/report contract. Arbitrary historical formats and native import
 are not claimed. A narrow migration-guide field listing is corrected.
+
+The twenty-fourth fixes remediation-selector discovery of the separately selected
+C5 host-bound implementation. Fixed metadata and installed links grant no action
+authority. Native discovery, ownership/inactivity adapters and permanent purge
+remain unsupported; the original acceptance count stays 26/218.

@@ -64,7 +64,7 @@ Agent 应给出可审阅的具体下一步，而不只说“脚本不支持”�
 | ENV-06 已有规则policy错误/需prepend | repair_cli.py preflight，之后获准私有diff/plan | candidate_only | merge-policy与rules-prepend范围不同；生产execute仍阻塞 |
 | ENV-07 程序忽略代理 | 精确启动入口/支持方式，Agent最小配置 | agent_investigation | 无启动器写入器；PC0不运行Claude |
 | ENV-08 时钟/时区/语言目标 | 记录原值、确认单项目标、Agent通过系统支持的接口修改 | agent_investigation | 无设置写入器；不按出口地区改时区 |
-| ENV-09 清理请求 | 精确对象/保护/备份/恢复清单，独立删除确认 | agent_investigation | 无清理执行器；事故优先不等于清理 |
+| ENV-09 清理请求 | 通用请求先确认目标与保护范围；独立选择 C5 后转限定宿主接口 | agent_investigation | 选择器不执行；cleanup_cli/cleanup_transactions 支持限定 POSIX 隔离与恢复，原生归属适配未提供；事故不等于清理授权 |
 | ENV-10 故障阻断未验证 | 列保护范围、独立恢复与平台演练方案 | agent_investigation | 无系统故障注入/防火墙写入器 |
 | 通用缺依赖、无权限、错误输入/版本 | 定位该项依赖/许可/格式/适配，修正后重跑原检查 | agent_investigation/clarify | 不安装依赖或放松门禁来制造通过 |
 
@@ -238,3 +238,27 @@ private_output = result.private_material()["output_bytes"]
 权限拒绝、取消、PC0接触限制、目标不匹配、路径安全失败不是“缺适配器”。先解决真正的授权/目标/安全前提；不得借Agent分支换路径绕过。无法安全执行时说明具体缺失条件、已完成调查与下一步，不以“脚本不支持”笼统结束。
 
 上面的系统代理端口适配建议是下一项内置实现；本次任务不要求Agent等待它发布。Agent可在用户实际环境和具体授权下用已核实的OS接口完成同一窄范围修复，并如实标明该路径和未覆盖限制。
+
+
+## C5：限定清理宿主交接
+
+选择器的 `cleanup.host_handoff` 是固定能力说明，不是已选择操作或执行授权；`target_mutation_supported=false` 和 `builtin_execution=not_available_for_target_mutation` 描述选择器本身。单独的 `cleanup_cli` / `cleanup_transactions` 已提供限定 POSIX 文件操作，但没有原生 Claude 数据发现、归属、停用或写入者排除适配。普通 `CLEANUP_REQUESTED`、事故或历史记录不能替用户选择 C5，也不能从报告中的布尔值恢复许可。
+
+Agent先核对当前目标和独立明确的 `Q-D02=full_claude_data_reset`（评估为 `C5-full-claude-data-reset`）。这仅进入 `scope_inventory`：暂停、事故优先、延期、未完成续接复核或前提失败仍停止依赖步骤。先取得限定盘点许可，核实精确 Claude 专属根、保留项、独立备份及恢复，再准备 `mode=C5-full-local-data` 的私有操作清单。清单声明和摘要本身不证明归属或同意。
+
+实际入口为 `cleanup_cli.main(argument_list, host=reviewed_live_host)`，使用受信任安装路径导入；选择器不会调用它。现有参数如下，只能通过独立审阅的进程内宿主桥执行目标操作：
+
+```text
+plan --scope <private-scope> --plan-output <new-private-plan>
+quarantine --plan-file <retained-plan> --expected-plan-digest <document_digest>
+reconcile --plan-file <retained-plan> --expected-plan-digest <document_digest> --receipt-output <new-private-receipt>
+restore --receipt-file <receipt> --expected-receipt-digest <document_digest>
+```
+
+普通脚本运行没有宿主，返回 `HOST_ADAPTER_UNAVAILABLE`；不存在注入宿主模块或“已授权/已核实”的命令行开关。包装命令使用返回的 `document_digest`，不是核心 action digest；它只绑定材料，不授予权限。完整格式与回执恢复见随包[清理CLI用法](cleanup-cli-usage.md)，核心范围见[事故与清理指南](incidents-and-integrations.md#cleanup-migration-and-recovery-m13--env-09)。
+
+宿主必须新鲜核实设备/用户/命名空间、独占 Claude 数据归属、应用与数据库停用、受保护/共享路径、独立内容备份，并在写入和校验期间保持真实写入者排除。`verify` 是获准的宿主核实；`approve` 逐次复核同一次仍有效的精确操作同意；`exclusive` 提供真实排除；`cancelled` 反映撤销或取消。不得用模型自行返回 True 的回调、保存的 JSON 或任意脚本绕过缺失前提。scope读/hash、保存计划、quarantine、reconcile、保存回执和restore各自按当前范围授权；隔离同意不包含恢复同意。
+
+默认保护 CLI、配置、历史和扩展；独立选择且核实归属的 Claude 专属 C5 数据可另行纳入。源码、Codex、其他应用、共享对象和恢复通道继续保护。成功 quarantine 移除所有已选择并验证的活动根，隔离副本、日志及独立备份仍保留；这不是永久安全擦除，也不证明发现所有 Claude 对象。报告确切所选/排除范围和部分完成情况，不声称卸载、清除远程限制或免封。
+
+失败可能发生在真实移动之后，按 recovery_id、moved_count 和 stage 报告，不能因错误码断言未修改。保留计划与隔离批次；重新核实宿主、获准 reconcile 并保存新回执后，另行展示并批准 restore，不覆盖后续改动。永久 purge 未实现，未来需要独立实现和逐动作批准。

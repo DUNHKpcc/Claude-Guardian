@@ -100,8 +100,9 @@ CATALOG = {
                     ['用户目标', '当前设置/管理权限'], ['重读被修改项；语言生效/注销另行确认']),
     'cleanup': action('agent_investigation', 'ENV-09', '先盘点精确清理对象与保留项',
                       ['列出选中对象、影响及可读备份/恢复方法',
-                       '保护项目、CLI、凭据、历史、skills/hooks/plugins与控制通道',
-                       '未实现内置清理执行器；Agent调查精确对象的安全处理方式；不运行上游整目录清理；删除需独立具体确认'],
+                       '默认保护项目、CLI、凭据、历史、skills/hooks/plugins与控制通道；仅独立选择并核实的Claude专属C5数据可纳入范围',
+                       '选择器不执行清理；独立选择C5后先获准盘点，再由可信宿主通过cleanup_cli.main进行精确plan/quarantine/reconcile/restore',
+                       '原生归属与停用核实适配未提供；缺宿主或具体批准即阻塞；保留隔离副本及独立备份，不运行上游整目录清理'],
                       ['清理目的', '精确对象', '保留清单', '恢复验证'], ['核对选中对象与保留内容；不宣称解除停用']),
     'fault': action('agent_investigation', 'ENV-10', '故障阻断需要独立平台实现与真实演练',
                     ['明确保护程序、地址族、故障与控制通道',
@@ -134,6 +135,23 @@ CATALOG = {
                         [], ['若目标或输入变化，重新读取并计划；本结果不复用旧权限']),
     'keep': action('no_change', 'ENV-04', '现有证据不足以要求修改',
                    ['保留当前配置并解释证据边界', '仅补与用户目标有关的缺口'], [], ['没有新问题不制造修复']),
+}
+
+# Informational capability discovery only; no imported report grants C5 intent,
+# ownership, a host adapter, operation consent, or execution authority.
+CATALOG['cleanup']['host_handoff'] = {
+    'capability': 'c5_selected_root_quarantine_restore',
+    'entry_point': 'cleanup_cli.main',
+    'invocation': 'in_process_with_reviewed_live_host',
+    'core_module': 'cleanup_transactions',
+    'operations': ['plan', 'quarantine', 'reconcile', 'restore'],
+    'selection_required': 'C5-full-claude-data-reset',
+    'operator_mode': 'C5-full-local-data',
+    'default_host': 'unavailable',
+    'native_ownership_adapter': 'unavailable',
+    'execution_authorized': False,
+    'permanent_purge': 'unsupported',
+    'documentation': 'references/cleanup-cli-usage.md',
 }
 
 CATALOG['plan-prepend'] = copy.deepcopy(CATALOG['plan-rules'])
