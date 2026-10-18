@@ -8,12 +8,20 @@ The host must derive them from real approvals/observations, never model output o
 persisted permission flags. Callback requests contain opaque references only;
 this module accepts no command, URL, credential or arbitrary executor.
 
+After observed contact, the host must review the current control gaps and collect
+or revalidate the affected evidence/action facts using the current contact_epoch.
+Capture that identity when the review starts; never retag preincident records at
+handoff time. The epoch is an in-process freshness assertion, not authorization,
+a credential, or proof that the host actually performed its review. It is omitted
+from requests/snapshots and must not be exported or reconstructed from reports.
+No clock-domain assumption or additional time-to-live is imposed by this marker.
+
 An allowed result is a point-in-time scheduling decision, never an execution
 capability. Re-evaluate immediately before each action. Host/OS approvals remain
 separate; saved reports cannot restore permissions. Enforcement is workflow-only,
 not process/network isolation. No support for automatic login/payment is provided.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 import math
 import re
@@ -94,6 +102,14 @@ def _fresh(observed, expires, now):
     return all(_finite_time(x) for x in (observed, expires, now)) and observed <= now < expires
 
 
+class _ContactEpoch:
+    """Opaque, non-address-bearing identity; copies are different review epochs."""
+    __slots__ = ()
+
+    def __repr__(self):
+        return '<contact-review-epoch>'
+
+
 @dataclass(frozen=True)
 class Binding:
     target: str
@@ -155,6 +171,7 @@ class Evidence:
     expires_at: float
     kind: EvidenceKind = EvidenceKind.SYNTHETIC
     result: str = 'unknown'
+    contact_epoch: object = field(default=None, repr=False)
 
     def valid_for(self, check, stage, binding, now):
         return (self.check == check and self.stage is stage and self.binding == binding
@@ -220,6 +237,7 @@ class Action:
     review_ref: str = ''
     permissions_verified: bool = False
     recovery: Recovery = Recovery()
+    facts_contact_epoch: object = field(default=None, repr=False)
 
 
 @dataclass(frozen=True)
@@ -271,11 +289,21 @@ class WorkflowGuard:
         self.adapters, self.authorize = adapters, authorize
         self._state = State()
         self._generation = 0
+        self._contact_epoch = None
         self._clock = clock
 
     @property
     def state(self):
         return self._state
+
+    @property
+    def contact_epoch(self):
+        """Capture at the start of a real scoped review, never from saved data.
+
+        None preserves legacy inputs until contact is observed or resumed.
+        Local audits/plans and neutral recovery probes do not need this marker.
+        """
+        return self._contact_epoch
 
     def supported_scopes(self):
         return tuple(a.scope for a in self.adapters if a.supported())
@@ -286,7 +314,8 @@ class WorkflowGuard:
     def _approval(self, request):
         # Approval can wait on a human and re-enter the host. Never overwrite a
         # revoke/rebind/resume that happened while that request was outstanding.
-        context = (self._generation, self.binding, self.requirements, self.adapters, self.state)
+        context = (self._generation, self.binding, self.requirements, self.adapters,
+                   self.state, self._contact_epoch)
         if not callable(self.authorize):
             return ('HOST_APPROVAL_UNAVAILABLE',), request.evaluated_at
         try:
@@ -297,7 +326,8 @@ class WorkflowGuard:
                 return ('APPROVAL_CLOCK_INVALID',), request.evaluated_at
         except Exception:
             return ('HOST_APPROVAL_FAILED',), request.evaluated_at
-        current = (self._generation, self.binding, self.requirements, self.adapters, self.state)
+        current = (self._generation, self.binding, self.requirements, self.adapters,
+                   self.state, self._contact_epoch)
         try:
             checked_at = request.evaluated_at + (finished - started)
         except OverflowError:
@@ -322,6 +352,7 @@ class WorkflowGuard:
         for check in checks:
             records = tuple(e for e in evidence if e.check == check and e.stage is stage
                             and e.binding == self.binding
+                            and e.contact_epoch is self._contact_epoch
                             and e.kind in (EvidenceKind.TARGET_NATIVE, EvidenceKind.TARGET_MANUAL))
             # Latest authoritative observation supersedes older passes, even if
             # the latest is unknown, failed, or expired. Tied conflicts deny.
@@ -341,8 +372,13 @@ class WorkflowGuard:
         self._state = State(self.state.phase, GateState.REVOKED, (), self.state.observed_contact)
 
     def record_observed_contact(self):
-        """Unexpected/past contact is history, never evidence of readiness."""
+        """Revoke and require a new scoped control-gap/evidence review.
+
+        Unexpected/past contact remains history. A later approval alone cannot
+        restore old evidence; no incident time is guessed from the elapsed clock.
+        """
         self._generation += 1
+        self._contact_epoch = _ContactEpoch()
         self._state = State(self.state.phase, GateState.REVOKED, (), 'observed')
 
     def rebind(self, binding):
@@ -350,6 +386,8 @@ class WorkflowGuard:
             raise ValueError('INVALID_BINDING')
         self._generation += 1
         self.binding = binding
+        if self._contact_epoch is not None:
+            self._contact_epoch = _ContactEpoch()
         self._state = State(observed_contact=self.state.observed_contact)
 
     def resume(self, saved):
@@ -362,6 +400,9 @@ class WorkflowGuard:
         history = 'previous_contact_reported' if isinstance(saved, dict) and (
             saved.get('phase') in (Phase.PC1.value, Phase.PC2.value)
             or saved.get('observed_contact') != 'not_measured') else self.state.observed_contact
+        if self._contact_epoch is not None or history != 'not_measured':
+            # Never restore an identity from saved input, even in this process.
+            self._contact_epoch = _ContactEpoch()
         self._state = State(observed_contact=history)
 
     def snapshot(self):
@@ -454,6 +495,8 @@ class WorkflowGuard:
         if s.operation is Operation.ROLLBACK and action.recovery.preserves_later_changes is not True:
             gaps.append('LATER_CHANGES_NOT_PROTECTED')
         if s.contact in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF):
+            if action.facts_contact_epoch is not self._contact_epoch:
+                gaps.append('CONTACT_FACTS_REVALIDATION_REQUIRED')
             if self.state.phase is Phase.PC0 or self.state.gate is not GateState.OPEN or s not in self.state.scopes:
                 gaps.append('CONTACT_GATE_CLOSED_OR_OUT_OF_SCOPE')
             gaps.extend(self._evidence(CheckStage.PRECONTACT, evidence, now))
@@ -473,6 +516,8 @@ class WorkflowGuard:
             if not _fresh(action.facts_at, action.facts_expires_at, checked_at):
                 gaps += ('STALE_OR_INVALID_FACTS',)
             if s.contact in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF):
+                if action.facts_contact_epoch is not self._contact_epoch:
+                    gaps += ('CONTACT_FACTS_REVALIDATION_REQUIRED',)
                 gaps += self._evidence(CheckStage.PRECONTACT, evidence, checked_at)
                 if s.requires_authentication or s.contact in (Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF):
                     gaps += self._evidence(CheckStage.CLIENT_UNAUTHENTICATED, evidence, checked_at)

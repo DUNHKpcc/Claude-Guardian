@@ -519,3 +519,11 @@ following review; production source bytes and package are unchanged. Fresh local
 aggregate: 1,153 tests in 14.455 seconds, 1,145 passed and eight skipped; both Node
 suites, compilation, diff checks and identical package builds passed. Windows
 confirmation depends on the follow-up remote CI; no local Windows result is claimed.
+
+
+Fifth batch closes only the synthetic post-incident stale-contact subgap. See
+[evidence and host contract](evidence/rebuild-contact-freshness.md). Full aggregate
+1,178 tests: 1,170 passed, eight skipped, 14.406 seconds. Both Node suites,
+compilation, whitespace and repeatable packaging passed; package SHA-256
+`1be01bb2ebe08fa589cf43adec74d1f52673a254316708a45879aaba9e368ba3`.
+ENV-T81/89 remain pending; no native/contact action occurred.

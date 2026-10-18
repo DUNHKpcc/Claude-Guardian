@@ -22,6 +22,22 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
             expected = [value.strip() for value in line.split('|')[1:-1]]
             self.assertEqual([case['id'], case['scenario'], case['requirement'], case['verification_layer']], expected[:4])
 
+    def test_accepted_evidence_underlying_pins_are_current(self):
+        # Hashes are invalidation signals, not substitutes for L+C review.
+        expected_counts = {
+            'docs/evidence/rebuild-route-cases.md': 12,
+            'docs/evidence/rebuild-source-dedup.md': 4,
+        }
+        for path, count in expected_counts.items():
+            page = (ROOT / path).read_text(encoding='utf-8')
+            pins = re.findall(r'^\| `([^`]+)` \| `([0-9a-f]{64})` \|$', page, re.MULTILINE)
+            self.assertEqual(len(pins), count)
+            self.assertEqual(len({name for name, _ in pins}), count)
+            for name, digest in pins:
+                with self.subTest(evidence=path, reviewed_file=name):
+                    self.assertEqual(hashlib.sha256((ROOT / name).read_bytes()).hexdigest(), digest,
+                                     'Relevant bytes changed: rerun and re-review L+C before refreshing pins')
+
     def test_scheduling_is_not_acceptance(self):
         ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))
         counts = {}
