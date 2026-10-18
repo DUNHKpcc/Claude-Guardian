@@ -1384,3 +1384,34 @@ succeeded on all four jobs: Python 3.10/Ubuntu each 1,765 passed/eight skipped,
 macOS 1,761/12, Windows 1,381/392, from 1,773 tests per job. The unchanged package
 hash was reproduced. These prior-commit results do not substitute for the
 forthcoming twenty-sixth CI or user-device acceptance.
+
+## Twenty-seventh reconstruction: experience and subscription status
+
+Original T75/T79 complete L+C clauses are covered by six deterministic regressions
+plus substantive novice/expert content review. Technical expertise/free-only use
+keeps first_subscription and concise explanation preferences. Existing paid status
+with novice preference asks the actual task when missing, then follows that task
+without starting first-purchase preparation. Before the missing task is supplied,
+the generic subscription_preparation metadata remains unresolved while Q-C11 is
+asked and no payment branch is activated; this limitation is retained truthfully.
+Explanation preference/state traces do not establish actual generated prose.
+
+The local aggregate ran 1,786 tests in 45.221 seconds: 1,778 passed and eight
+skipped. Only T75/T79 are promoted to32/218 accepted and186 pending; original
+conditions/layers/scheduling and runtime bytes remain unchanged.
+
+The preceding entry-order batch published as
+`ff859040ff488f4827021cfbd01225e6ff34666b`, tree
+`f6e397f1f163666c8c561d74d69d4e1667f2e908`.
+[Push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39116150916)
+succeeded across all four jobs, each running 1,780 tests: Python 3.10/Ubuntu
+1,772 passed/eight skipped, macOS 1,768/12, Windows 1,388/392. The unchanged
+3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a package
+was reproduced. These prior-commit results do not establish the forthcoming
+experience/status batch CI or native user-device acceptance.
+
+Independent integrated checks ran 1,786 tests in 47.771 seconds: 1,778 passed
+and eight skipped. Detached release passed9/9, portability2/2, ledger3/3 and
+forced cp1252 candidate checks6/6. Both Node suites, compilation, diff checks,
+exact UTF-8 replay and duplicate package builds passed. Package remains
+3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a.

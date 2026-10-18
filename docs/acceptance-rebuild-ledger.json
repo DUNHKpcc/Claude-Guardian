@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Thirty original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T31/T47/T82/T49/T83/T29/T57/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 188 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
+    "Thirty-two original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T31/T47/T82/T49/T83/T29/T57/T75/T79/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 186 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
   ],
   "cases": [
     {
@@ -974,9 +974,19 @@
       "requirement": "仍是 first_subscription，可采用简洁解释；不能推定已有付费权益",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "变更时复核原条件、指导/来源路径及专页工作实例，重跑支持回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer generated prose or actual paid entitlement.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-experience-and-subscription.md",
+        "sha256": "368f156654beb295ad38b8d90ca769bf9acf0ad40608591734fe3639e18dcb2f",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete normalized-host API replays and substantive explanation-depth guidance review; no generated model dialogue, actual account entitlement or native claim."
+      }
     },
     {
       "id": "T76",
@@ -1023,9 +1033,19 @@
       "requirement": "进入已有订阅任务分支，保留新手讲解深度，不进入首次购买分支",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "相关代码/契约变化后重跑链接的完整案例与发行包回归",
-      "dependencies": "A、P"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer generated prose or actual paid entitlement.",
+      "dependencies": "A、P",
+      "evidence": {
+        "path": "docs/evidence/rebuild-experience-and-subscription.md",
+        "sha256": "368f156654beb295ad38b8d90ca769bf9acf0ad40608591734fe3639e18dcb2f",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Complete normalized-host API replays and substantive explanation-depth guidance review; no generated model dialogue, actual account entitlement or native claim."
+      }
     },
     {
       "id": "T80",
