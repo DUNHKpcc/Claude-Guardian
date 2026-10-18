@@ -1098,29 +1098,55 @@ class CleanupTransactionsTests(unittest.TestCase):
         self.assert_originals()
 
     def test_unicode_path_receipt_budget_is_reserved_before_any_write(self):
-        # Each component stays below the filesystem byte limit. The inventory
-        # itself fits, but JSON escaping plus a recovery observation duplicates
-        # these legal relative paths and exceeds the persisted envelope budget.
+        # Two legal UTF-8 components keep the whole fixture below macOS PATH_MAX.
+        # More siblings preserve the real escaped recovery-envelope overflow:
+        # the plan fits 4 MiB, but duplicating its inventory in a receipt does not.
         directory = self.app
-        for index in range(4):
-            directory = directory / (('数' * 80) + str(index))
+        for index in range(2):
+            component = ('数' * 80) + str(index)
+            self.assertLessEqual(len(component.encode('utf-8')), 255)
+            directory = directory / component
+            self.assertLess(len(str(directory).encode('utf-8')) + 1, 800)
             directory.mkdir(mode=0o700)
-        for index in range(1000):
+        leaf_count = 2000
+        longest_leaf = directory / ('leaf-%04d' % (leaf_count - 1))
+        self.assertLess(len(str(longest_leaf).encode('utf-8')) + 1, 800)
+        for index in range(leaf_count):
             path = directory / ('leaf-%04d' % index)
             path.write_bytes(b'x')
             path.chmod(0o600)
-        observed_sizes = []
-        original_reserve = cleanup._reserve
+        observed_sizes, receipt_sizes, entry_counts = [], [], []
+        original_reserve, original_encode = cleanup._reserve, cleanup._encode
         def reserve(document):
-            encoded = json.dumps(document, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()
+            encoded = json.dumps(document, sort_keys=True, separators=(',', ':'),
+                                 ensure_ascii=True).encode('utf-8')
             observed_sizes.append(len(encoded))
+            entry_counts.append(sum(len(root['inventory']) for root in document['roots']))
             return original_reserve(document)
-        with patch.object(cleanup, '_reserve', side_effect=reserve):
-            self.assert_plan_rejected()
+        def encode(document):
+            if isinstance(document, dict) and document.get('schema_version') == 'guardian-cleanup-receipt/0.1':
+                encoded = json.dumps(document, sort_keys=True, separators=(',', ':'),
+                                     ensure_ascii=True).encode('utf-8')
+                receipt_sizes.append(len(encoded))
+            return original_encode(document)
+        no_write = AssertionError('Plan reservation must reject before any write')
+        with patch.object(cleanup, '_reserve', side_effect=reserve), \
+                patch.object(cleanup, '_encode', side_effect=encode), \
+                patch.object(cleanup.tx, '_write', side_effect=no_write), \
+                patch.object(cleanup.os, 'mkdir', side_effect=no_write), \
+                patch.object(cleanup.os, 'rename', side_effect=no_write):
+            error = self.assert_plan_rejected()
+        self.assertEqual(error.code, 'INVALID_DOCUMENT')
+        self.assertEqual(cleanup.MAX_DOCUMENT, 4 * 1024 * 1024)
         self.assertEqual(len(observed_sizes), 1)
-        self.assertLess(observed_sizes[0], 4 * 1024 * 1024)
+        self.assertLess(observed_sizes[0], cleanup.MAX_DOCUMENT)
+        self.assertEqual(len(receipt_sizes), 1)
+        self.assertGreater(receipt_sizes[0], cleanup.MAX_DOCUMENT)
+        self.assertEqual(entry_counts, [leaf_count + 7])
+        self.assertLess(entry_counts[0], cleanup.MAX_ENTRIES)
         self.assertEqual(list(self.quarantine_dir.iterdir()), [])
-        self.assertEqual(len(list(directory.iterdir())), 1000)
+        self.assertEqual(len(list(directory.iterdir())), leaf_count)
+        self.assertTrue(all(path.read_bytes() == b'x' for path in directory.iterdir()))
         self.assert_originals()
 
     def test_protected_inode_alias_is_rejected_before_opening_or_hashing(self):

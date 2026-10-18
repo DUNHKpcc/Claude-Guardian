@@ -82,7 +82,7 @@ The actual fixture replay `guardian-rebuild-backups/cleanup-eighteenth-replay.py
 
 Frozen runtime SHA-256: `42b1586eae6d67dbdfa59ffb398a445bd717d3da304bc19c3cd64a6b34ea797e`.
 
-Frozen test SHA-256: `9fadcace33d559c0b02ae1ceb3b1842fe7b9bcf76c08066b89715753b8059a24`.
+Frozen test SHA-256: `6519b87995b16bdc439a1bbad8e0398c315d79e7d5666558b821bf841c65ce06`.
 
 | Evidence | Observed result |
 |---|---|
@@ -98,3 +98,7 @@ Frozen test SHA-256: `9fadcace33d559c0b02ae1ceb3b1842fe7b9bcf76c08066b89715753b8
 Retained logs and receipts use `guardian-rebuild-backups/cleanup-eighteenth-*`. The first tested source snapshot and initial failures remain retained separately. The runtime borrows only existing descriptor-safe filesystem helpers from `transactions.py`; that module is unchanged by this subset.
 
 This slice is useful callable execution for a verified selection, rather than only a displayed cleanup offer. It does not certify native root discovery, closed application state, complete removal of every local identity, credential/site-data deletion, installation removal, account reset, cross-platform acceptance or end-to-end full cleanup. Those require separately reviewed adapters and their own permissions. The explicit C5 product extension does not retroactively change any original acceptance condition or ledger status.
+
+The subsequent macOS CI fixture correction changes only the Unicode budget test:
+two shallow components and 2,000 siblings preserve the real oversized recovery
+envelope without exceeding the OS pathname limit. Runtime bytes are unchanged.

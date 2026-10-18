@@ -973,3 +973,31 @@ matches those existing rows. No original scenario, condition, layer or
 acceptance status was changed by this batch. Future CLI/native integration
 requires separate evidence; these callable APIs are not a claim of complete
 end-to-end user-device cleanup.
+
+## Eighteenth publication and macOS fixture correction
+
+Published `ddd57b24ccdfe52e1ba969c2654f7e40fff7f645`, parent
+`9c5e8c9cdf906395d71942d2ff4a3740377c3ac9`. Exact 22-file delta and all 205
+source blobs/modes were verified through the complete Git tree identity.
+[Push tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39110279671)
+finished with a macOS failure; [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39110279718)
+passed. Linux/Python 3.10 passed 1,672 with eight skipped; Windows passed 1,316
+with 364 skipped. macOS ran 1,680 with one error and 12 skips: the new Unicode
+budget fixture exceeded the OS pathname limit during directory creation, before
+reaching its intended recovery-envelope budget assertion. This failed run is
+retained and is not reported as successful native acceptance.
+
+The narrow fixture correction uses two UTF-8 directory components and 2,000
+sibling files. Independent pathname-limit emulation reproduces the old fixture
+failure at 1,169 bytes and passes the new fixture at 695 bytes including NUL.
+In the initial independent emulated run, the observed plan was 2,444,957 bytes,
+below 4 MiB; its reserved recovery receipt was 4,888,515 bytes, above 4 MiB.
+Serialized metadata sizes can vary; the asserted budget inequalities are stable. All 2,007 entries remain below the 4,096-entry
+limit. The exact budget rejection, zero writes and original/protected bytes are
+asserted; no test is skipped or weakened. The core runtime is unchanged.
+The 92-test independent focused run passed; the complete cloud aggregate passed
+1,672 with eight skipped (1,680 total, 33.147 seconds). Both Node suites,
+compilation, diff checks and reproducible packaging passed with the unchanged
+release SHA `c563a758390910f407e7f896a7a379cc1b287c17f2409b9661a34b0c43c6307e`.
+Path-limit emulation is not macOS execution; the corrected push CI is tracked
+separately. Original-case acceptance remains 16/218.
