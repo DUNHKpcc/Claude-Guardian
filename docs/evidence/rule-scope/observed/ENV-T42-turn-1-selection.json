@@ -1,0 +1,164 @@
+{
+  "facts": {
+    "format_notice": "All feature source files are independently supplied, complete exact-host lists for their stated feature; combined-source is a separate complete four-feature source. No source is current official guidance.",
+    "facts_date": "2026-10-15",
+    "client": "fixture-client",
+    "installed_version_contract": "fixture-client-v1",
+    "facts": [
+      {
+        "feature": "feature-core",
+        "enabled": true,
+        "used_by_version": true
+      },
+      {
+        "feature": "feature-download",
+        "enabled": true,
+        "used_by_version": true
+      },
+      {
+        "feature": "feature-connector",
+        "enabled": false,
+        "used_by_version": true
+      },
+      {
+        "feature": "feature-bridge",
+        "enabled": true,
+        "used_by_version": false,
+        "contract_statement": "Browser integration is enabled, but the supplied fixture-client-v1 contract states it does not use the legacy bridge.workflow.invalid dependency from fixture-client-v0."
+      }
+    ],
+    "sources": [
+      {
+        "source_ref": "source-core",
+        "file": "fixtures/env-t42-core-source.txt",
+        "format_id": "exact-domain-lines/0.1",
+        "scope_statement": "This separate synthetic document contains the complete exact-host dependency set for feature-core of fixture-client-v1.",
+        "source_date": "2026-10-15",
+        "version_scope": "fixture-client-v1",
+        "client_scope": [
+          "fixture-client"
+        ],
+        "feature_alias": "feature-core",
+        "shared_service": false,
+        "sha256": "d59f172c6e22bdf3b4f088db7c9f0db7a8c3f7d58b4e8a3def1d2b8392b44a84"
+      },
+      {
+        "source_ref": "source-download",
+        "file": "fixtures/env-t42-download-source.txt",
+        "format_id": "exact-domain-lines/0.1",
+        "scope_statement": "This separate synthetic document contains the complete exact-host dependency set for feature-download of fixture-client-v1.",
+        "source_date": "2026-10-15",
+        "version_scope": "fixture-client-v1",
+        "client_scope": [
+          "fixture-client"
+        ],
+        "feature_alias": "feature-download",
+        "shared_service": false,
+        "sha256": "d2aa4296793c33bf6db6e36806260cf0a7560c4cd027d951fc13a030d07088ad"
+      },
+      {
+        "source_ref": "source-connector",
+        "file": "fixtures/env-t42-connector-source.txt",
+        "format_id": "exact-domain-lines/0.1",
+        "scope_statement": "This separate synthetic document contains the complete exact-host dependency set for feature-connector of fixture-client-v1.",
+        "source_date": "2026-10-15",
+        "version_scope": "fixture-client-v1",
+        "client_scope": [
+          "fixture-client"
+        ],
+        "feature_alias": "feature-connector",
+        "shared_service": false,
+        "sha256": "eeb6e8cdff457bbde759586911dcc3363ae9049e2afcc02774dffc4934460590"
+      },
+      {
+        "source_ref": "source-bridge",
+        "file": "fixtures/env-t42-bridge-source.txt",
+        "format_id": "exact-domain-lines/0.1",
+        "scope_statement": "This separate synthetic document contains the complete exact-host dependency set for feature-bridge of fixture-client-v0.",
+        "source_date": "2026-10-10",
+        "version_scope": "fixture-client-v0",
+        "client_scope": [
+          "fixture-client"
+        ],
+        "feature_alias": "feature-bridge",
+        "shared_service": false,
+        "sha256": "3c44cbd52a2e1b5aebbfbde9ea729a48d7df04f7b35e4b7badee93be4360a3a6"
+      }
+    ]
+  },
+  "selected_sources": [
+    {
+      "source_ref": "source-core",
+      "file": "fixtures/env-t42-core-source.txt",
+      "format_id": "exact-domain-lines/0.1",
+      "scope_statement": "This separate synthetic document contains the complete exact-host dependency set for feature-core of fixture-client-v1.",
+      "source_date": "2026-10-15",
+      "version_scope": "fixture-client-v1",
+      "client_scope": [
+        "fixture-client"
+      ],
+      "feature_alias": "feature-core",
+      "shared_service": false,
+      "sha256": "d59f172c6e22bdf3b4f088db7c9f0db7a8c3f7d58b4e8a3def1d2b8392b44a84"
+    },
+    {
+      "source_ref": "source-download",
+      "file": "fixtures/env-t42-download-source.txt",
+      "format_id": "exact-domain-lines/0.1",
+      "scope_statement": "This separate synthetic document contains the complete exact-host dependency set for feature-download of fixture-client-v1.",
+      "source_date": "2026-10-15",
+      "version_scope": "fixture-client-v1",
+      "client_scope": [
+        "fixture-client"
+      ],
+      "feature_alias": "feature-download",
+      "shared_service": false,
+      "sha256": "d2aa4296793c33bf6db6e36806260cf0a7560c4cd027d951fc13a030d07088ad"
+    }
+  ],
+  "excluded": [
+    {
+      "feature": "feature-connector",
+      "reason": "explicitly disabled; no required dependency checks or additions"
+    },
+    {
+      "feature": "feature-bridge",
+      "reason": "installed fixture-client-v1 explicitly does not use legacy fixture-client-v0 dependency; not applicable"
+    }
+  ],
+  "source_date_note": "source_date is the supplied document date; verified_at is this offline byte inspection date, not official verification.",
+  "request_changes_from_fixture": [
+    "intent.rule_refs includes selected feature-core and feature-download only"
+  ],
+  "binding": {
+    "schema_version": "guardian-rules-extension-binding/0.1",
+    "operation": "insert_selected_prepend_rules",
+    "target_ref": "lab-device",
+    "scope_refs": [
+      "workflow-a"
+    ],
+    "layer_ref": "extension",
+    "base_layer_ref": "effective",
+    "layer_kind": "owned-profile-rules-extension",
+    "placement": "prepend",
+    "group_name": "approved-group",
+    "rules": {
+      "rule-core": {
+        "kind": "DOMAIN",
+        "domain": "api.workflow.invalid"
+      },
+      "rule-download": {
+        "kind": "DOMAIN",
+        "domain": "downloads.workflow.invalid"
+      }
+    },
+    "rule_order": [
+      "rule-core",
+      "rule-download"
+    ],
+    "protected_rule_indexes": [
+      0,
+      1
+    ]
+  }
+}

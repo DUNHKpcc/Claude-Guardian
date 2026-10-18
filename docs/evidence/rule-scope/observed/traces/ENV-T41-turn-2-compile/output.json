@@ -1,0 +1,182 @@
+{
+  "return_type": "PrivateRulesCandidate",
+  "repr": "<PrivateRulesCandidate: native apply blocked; private data omitted>",
+  "preview": {
+    "schema_version": "guardian-rules-extension-preview/0.1",
+    "status": "candidate_only_blocked",
+    "apply_supported": false,
+    "operation": "insert_selected_prepend_rules",
+    "added_rules": 1,
+    "matched_rules": 0,
+    "placement": "explicit_prepend_before_base_rules",
+    "known_base_overlap_count": 2,
+    "known_append_overlap_count": 0,
+    "unknown_base_or_append_rule_count": 0,
+    "protected_index_coverage": "caller_declared_unverified",
+    "other_bytes": "preserved",
+    "append_and_delete": "unchanged",
+    "authorization": "pending",
+    "native_acceptance": "not_run",
+    "blockers": [
+      "NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED",
+      "VERSION_CAPABILITY_UNVERIFIED",
+      "NATIVE_ACCEPTANCE_NOT_RUN",
+      "EFFECTIVE_RULE_PRIORITY_UNVERIFIED",
+      "BASE_RULE_GRAPH_UNVERIFIED",
+      "GROUP_GRAPH_UNVERIFIED",
+      "PROTECTED_RULE_COVERAGE_UNVERIFIED",
+      "LATER_MERGE_SCRIPT_EFFECTS_UNVERIFIED",
+      "ACTION_AUTHORIZATION_PENDING"
+    ]
+  },
+  "private_material": {
+    "original_bytes": {
+      "type": "bytes",
+      "base64": "IyBzeW50aGV0aWMgb3duZWQgcnVsZXMgZXh0ZW5zaW9uOyByZXRhaW4gYWxsIGJ5dGVzIG91dHNpZGUgdGhlIHNlbGVjdGVkIGluc2VydGlvbgpwcmVwZW5kOiBbXSAjIHByZXNlcnZlIGNvbW1lbnQKYXBwZW5kOiBbJ0RPTUFJTixhcHBlbmQuZXhhbXBsZS5pbnZhbGlkLE90aGVyJ10KZGVsZXRlOiBbXQp1bmtub3duLWZpZWxkOiB7bmVzdGVkOiBbdHJ1ZSwgMTIsIGtlZXAtZXh0ZW5zaW9uXX0K",
+      "sha256": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99",
+      "length": 225,
+      "utf8": "# synthetic owned rules extension; retain all bytes outside the selected insertion\nprepend: [] # preserve comment\nappend: ['DOMAIN,append.example.invalid,Other']\ndelete: []\nunknown-field: {nested: [true, 12, keep-extension]}\n"
+    },
+    "candidate_bytes": {
+      "type": "bytes",
+      "base64": "IyBzeW50aGV0aWMgb3duZWQgcnVsZXMgZXh0ZW5zaW9uOyByZXRhaW4gYWxsIGJ5dGVzIG91dHNpZGUgdGhlIHNlbGVjdGVkIGluc2VydGlvbgpwcmVwZW5kOiBbJ0RPTUFJTixndWFyZGlhbi5pbmdlc3Quc2VudHJ5LmludmFsaWQsYXBwcm92ZWQtZ3JvdXAnXSAjIHByZXNlcnZlIGNvbW1lbnQKYXBwZW5kOiBbJ0RPTUFJTixhcHBlbmQuZXhhbXBsZS5pbnZhbGlkLE90aGVyJ10KZGVsZXRlOiBbXQp1bmtub3duLWZpZWxkOiB7bmVzdGVkOiBbdHJ1ZSwgMTIsIGtlZXAtZXh0ZW5zaW9uXX0K",
+      "sha256": "6b362040159e1283fd9ef301334b669ccff323d9b2e972caa80fa12188ce7d8e",
+      "length": 279,
+      "utf8": "# synthetic owned rules extension; retain all bytes outside the selected insertion\nprepend: ['DOMAIN,guardian.ingest.sentry.invalid,approved-group'] # preserve comment\nappend: ['DOMAIN,append.example.invalid,Other']\ndelete: []\nunknown-field: {nested: [true, 12, keep-extension]}\n"
+    },
+    "original_sha256": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99",
+    "candidate_sha256": "6b362040159e1283fd9ef301334b669ccff323d9b2e972caa80fa12188ce7d8e",
+    "declared_binding": {
+      "type": "tuple",
+      "items": [
+        "lab-device",
+        {
+          "type": "tuple",
+          "items": [
+            "workflow-a"
+          ]
+        },
+        "extension",
+        "effective",
+        {
+          "type": "tuple",
+          "items": [
+            {
+              "type": "tuple",
+              "items": [
+                "effective",
+                "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1"
+              ]
+            },
+            {
+              "type": "tuple",
+              "items": [
+                "extension",
+                "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            {
+              "type": "tuple",
+              "items": [
+                "core",
+                "1.19.0"
+              ]
+            },
+            {
+              "type": "tuple",
+              "items": [
+                "gui",
+                "2.5.8"
+              ]
+            },
+            {
+              "type": "tuple",
+              "items": [
+                "product",
+                "clash-verge-rev"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            0,
+            1
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "rule-guardian-ingest"
+          ]
+        },
+        "prepend"
+      ]
+    },
+    "ordered_additions": {
+      "type": "tuple",
+      "items": [
+        {
+          "type": "tuple",
+          "items": [
+            "rule-guardian-ingest",
+            "DOMAIN,guardian.ingest.sentry.invalid,approved-group"
+          ]
+        }
+      ]
+    },
+    "matched_rule_refs": {
+      "type": "tuple",
+      "items": []
+    },
+    "known_priority_overlaps": {
+      "type": "tuple",
+      "items": [
+        {
+          "type": "tuple",
+          "items": [
+            "rule-guardian-ingest",
+            "base",
+            2,
+            "DOMAIN-SUFFIX,sentry.invalid,SharedTelemetry"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "rule-guardian-ingest",
+            "base",
+            6,
+            "MATCH,DIRECT"
+          ]
+        }
+      ]
+    },
+    "byte_insertion": {
+      "type": "tuple",
+      "items": [
+        93,
+        {
+          "type": "bytes",
+          "base64": "",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "length": 0,
+          "utf8": ""
+        },
+        {
+          "type": "bytes",
+          "base64": "J0RPTUFJTixndWFyZGlhbi5pbmdlc3Quc2VudHJ5LmludmFsaWQsYXBwcm92ZWQtZ3JvdXAn",
+          "sha256": "a41caf5464d2077b05d4be7fe43710091b189a63dd3de830d850a979d02a9bf5",
+          "length": 54,
+          "utf8": "'DOMAIN,guardian.ingest.sentry.invalid,approved-group'"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "return_type": "PrivateCandidate",
+  "repr": "<PrivateCandidate: blocked, private content omitted>",
+  "preview": {
+    "schema_version": "guardian-config-edit-preview/0.1",
+    "status": "candidate_only_blocked",
+    "changed_rules": 1,
+    "matched_rules": 0,
+    "apply_supported": false,
+    "authorization": "pending",
+    "blockers": [
+      "NATIVE_ACCEPTANCE_NOT_RUN",
+      "NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED",
+      "VERSION_CAPABILITY_UNVERIFIED",
+      "ACTION_AUTHORIZATION_PENDING"
+    ],
+    "native_compatibility": "unknown",
+    "native_acceptance": "not_run",
+    "ownership_and_scope": "declared_unverified",
+    "unrelated_bytes": "preserved"
+  },
+  "private_material": {
+    "original_bytes": {
+      "type": "bytes",
+      "base64": "IyBzeW50aGV0aWMgVExTIGNvbmZpZ3VyYXRpb247IHJldGFpbiBhbGwgY29tbWVudHMgYW5kIG5vbi1zZWxlY3RlZCBmaWVsZHMKcHJveGllczoKICAtIG5hbWU6IG5vZGUtYQogICAgdHlwZTogdHJvamFuCiAgICBzZXJ2ZXI6IG5vZGUuZXhhbXBsZS5pbnZhbGlkCiAgICBwb3J0OiA0NDMKICAgIHNuaTogbm9kZS5leGFtcGxlLmludmFsaWQKICAgIGZpbmdlcnByaW50OiBjaHJvbWUKICAgIGNsaWVudC1maW5nZXJwcmludDogZmlyZWZveAogICAgc2tpcC1jZXJ0LXZlcmlmeTogZmFsc2UKcHJveHktZ3JvdXBzOgogIC0gbmFtZTogYXBwcm92ZWQtZ3JvdXAKICAgIHR5cGU6IHNlbGVjdAogICAgcHJveGllczogW25vZGUtYV0KcnVsZXM6CiAgLSBET01BSU4sYXBpLndvcmtmbG93LmludmFsaWQsT2xkICMgc2VsZWN0ZWQgaW5kZXBlbmRlbnQgcnVsZQogIC0gRE9NQUlOLHdvcmsuZXhhbXBsZS5pbnZhbGlkLFdvcmsKICAtIE1BVENILERJUkVDVAp1bmtub3duLWZpZWxkOiB7bmVzdGVkOiBbdHJ1ZSwgMTIsIGtlZXAtVExTLWNhc2VdfQo=",
+      "sha256": "be83e62b0468b0485073f5482c904130aa5af852d4b8600af8603776031523a2",
+      "length": 533,
+      "utf8": "# synthetic TLS configuration; retain all comments and non-selected fields\nproxies:\n  - name: node-a\n    type: trojan\n    server: node.example.invalid\n    port: 443\n    sni: node.example.invalid\n    fingerprint: chrome\n    client-fingerprint: firefox\n    skip-cert-verify: false\nproxy-groups:\n  - name: approved-group\n    type: select\n    proxies: [node-a]\nrules:\n  - DOMAIN,api.workflow.invalid,Old # selected independent rule\n  - DOMAIN,work.example.invalid,Work\n  - MATCH,DIRECT\nunknown-field: {nested: [true, 12, keep-TLS-case]}\n"
+    },
+    "candidate_bytes": {
+      "type": "bytes",
+      "base64": "IyBzeW50aGV0aWMgVExTIGNvbmZpZ3VyYXRpb247IHJldGFpbiBhbGwgY29tbWVudHMgYW5kIG5vbi1zZWxlY3RlZCBmaWVsZHMKcHJveGllczoKICAtIG5hbWU6IG5vZGUtYQogICAgdHlwZTogdHJvamFuCiAgICBzZXJ2ZXI6IG5vZGUuZXhhbXBsZS5pbnZhbGlkCiAgICBwb3J0OiA0NDMKICAgIHNuaTogbm9kZS5leGFtcGxlLmludmFsaWQKICAgIGZpbmdlcnByaW50OiBjaHJvbWUKICAgIGNsaWVudC1maW5nZXJwcmludDogZmlyZWZveAogICAgc2tpcC1jZXJ0LXZlcmlmeTogZmFsc2UKcHJveHktZ3JvdXBzOgogIC0gbmFtZTogYXBwcm92ZWQtZ3JvdXAKICAgIHR5cGU6IHNlbGVjdAogICAgcHJveGllczogW25vZGUtYV0KcnVsZXM6CiAgLSBET01BSU4sYXBpLndvcmtmbG93LmludmFsaWQsYXBwcm92ZWQtZ3JvdXAgIyBzZWxlY3RlZCBpbmRlcGVuZGVudCBydWxlCiAgLSBET01BSU4sd29yay5leGFtcGxlLmludmFsaWQsV29yawogIC0gTUFUQ0gsRElSRUNUCnVua25vd24tZmllbGQ6IHtuZXN0ZWQ6IFt0cnVlLCAxMiwga2VlcC1UTFMtY2FzZV19Cg==",
+      "sha256": "b5557c42b8e99712ed28db648186f41fd24853787653cb97194b53fc77060d73",
+      "length": 544,
+      "utf8": "# synthetic TLS configuration; retain all comments and non-selected fields\nproxies:\n  - name: node-a\n    type: trojan\n    server: node.example.invalid\n    port: 443\n    sni: node.example.invalid\n    fingerprint: chrome\n    client-fingerprint: firefox\n    skip-cert-verify: false\nproxy-groups:\n  - name: approved-group\n    type: select\n    proxies: [node-a]\nrules:\n  - DOMAIN,api.workflow.invalid,approved-group # selected independent rule\n  - DOMAIN,work.example.invalid,Work\n  - MATCH,DIRECT\nunknown-field: {nested: [true, 12, keep-TLS-case]}\n"
+    },
+    "declared_binding": {
+      "type": "tuple",
+      "items": [
+        "lab-device",
+        {
+          "type": "tuple",
+          "items": [
+            "workflow-a"
+          ]
+        },
+        "extension",
+        {
+          "type": "tuple",
+          "items": [
+            {
+              "type": "tuple",
+              "items": [
+                "extension",
+                "be83e62b0468b0485073f5482c904130aa5af852d4b8600af8603776031523a2"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            {
+              "type": "tuple",
+              "items": [
+                "core",
+                "1.19.0"
+              ]
+            },
+            {
+              "type": "tuple",
+              "items": [
+                "gui",
+                "2.5.8"
+              ]
+            },
+            {
+              "type": "tuple",
+              "items": [
+                "product",
+                "clash-verge-rev"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "policy_token_edits": {
+      "type": "tuple",
+      "items": [
+        {
+          "type": "tuple",
+          "items": [
+            396,
+            399,
+            {
+              "type": "bytes",
+              "base64": "T2xk",
+              "sha256": "bca97160f4e1211fe659338d0a9705a7dff8aa3ea2e1be1cc1958100a33962c2",
+              "length": 3,
+              "utf8": "Old"
+            },
+            {
+              "type": "bytes",
+              "base64": "YXBwcm92ZWQtZ3JvdXA=",
+              "sha256": "9f12bc1e7cd426e02e2b5b7230d421c2bd88e0d6a48e0ef01290acb41fe86309",
+              "length": 14,
+              "utf8": "approved-group"
+            }
+          ]
+        }
+      ]
+    },
+    "matched_rule_refs": {
+      "type": "tuple",
+      "items": []
+    },
+    "changed_rule_refs": {
+      "type": "tuple",
+      "items": [
+        "rule-core"
+      ]
+    },
+    "original_sha256": "be83e62b0468b0485073f5482c904130aa5af852d4b8600af8603776031523a2",
+    "candidate_sha256": "b5557c42b8e99712ed28db648186f41fd24853787653cb97194b53fc77060d73"
+  }
+}

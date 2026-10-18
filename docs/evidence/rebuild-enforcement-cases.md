@@ -301,9 +301,9 @@ updating hashes alone does not renew acceptance.
 | `skills/claude-guardian/scripts/inventory_cli.py` | `e0c5fc46800e5838e9d40bc8271c8ca1e1da093c85055ed85256ddd57a1cb3b1` |
 | `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
-| `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
+| `skills/claude-guardian/references/network-and-remedies.md` | `a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
-| `skills/claude-guardian/references/agent-remediation.md` | `0590a83c4d80b878a649b4d8ab13edcd73bdf8852980b8e01b816b092772718b` |
+| `skills/claude-guardian/references/agent-remediation.md` | `1c772512b25dc24a8d24589eb916ee6bf3d0dca697acd5d08ade498165c8f0a1` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `docs/implementation-tracker.md` | `8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50` |
@@ -375,3 +375,12 @@ This is preservation of the unchanged original requirements/layers, not acceptan
 ## Registry-count wording preservation review (2026-10-18)
 
 The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.
+
+
+### Thirty-first rule-scope guidance preservation review (2026-10-18 UTC)
+
+The unchanged original ENV-T79 (L) and ENV-T90 (L+C) conditions were independently reviewed against the exact two-reference guidance delta, D-ENV §5.7–5.9, D08/D09 and the existing contact/enforcement contract. The new text requires Agent selection before whole-source atomic import, distinguishes source declarations from actual feature/version or shared-service verification, and preserves source bytes and provenance. Historical Inbound/Outbound and TLS meanings are explicitly dated; they authorize no lookup, client execution, CIDR implementation or configuration write. Unsupported imports are not relabeled successful partial imports. Existing workflow-only enforcement, uncovered search/MCP/browser scope and deferred actual traffic evidence remain unchanged.
+
+The same 222 focused preservation checks passed on the exact thirtieth baseline and thirty-first candidate, with no failures or skips. This includes all eight unchanged ENV-T79/90 tests. Two complete boundary replays per tree are byte-identical and retain SHA-256 `b014fc2e16015a9ecd07b2f95460ab5fead21b625fd882eb01d8031042325581`. The runtime/test files are unchanged between those trees. The replay's file/DNS/socket/process API sentinels remain unused during the guarded pure paths; this is test instrumentation, not host-wide telemetry or OS isolation.
+
+Only the two reviewed current reference pins are refreshed. This preservation review does not accept ENV-T38/39/41/42/58, certify future model responses, establish current external source validity or grant live-device, probe, apply or cleanup authority. Final integrated-batch aggregate/package checks are recorded separately.

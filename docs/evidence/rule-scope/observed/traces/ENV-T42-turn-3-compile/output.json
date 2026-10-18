@@ -1,0 +1,207 @@
+{
+  "return_type": "PrivateRulesCandidate",
+  "repr": "<PrivateRulesCandidate: native apply blocked; private data omitted>",
+  "preview": {
+    "schema_version": "guardian-rules-extension-preview/0.1",
+    "status": "candidate_only_blocked",
+    "apply_supported": false,
+    "operation": "insert_selected_prepend_rules",
+    "added_rules": 3,
+    "matched_rules": 0,
+    "placement": "explicit_prepend_before_base_rules",
+    "known_base_overlap_count": 3,
+    "known_append_overlap_count": 0,
+    "unknown_base_or_append_rule_count": 0,
+    "protected_index_coverage": "caller_declared_unverified",
+    "other_bytes": "preserved",
+    "append_and_delete": "unchanged",
+    "authorization": "pending",
+    "native_acceptance": "not_run",
+    "blockers": [
+      "NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED",
+      "VERSION_CAPABILITY_UNVERIFIED",
+      "NATIVE_ACCEPTANCE_NOT_RUN",
+      "EFFECTIVE_RULE_PRIORITY_UNVERIFIED",
+      "BASE_RULE_GRAPH_UNVERIFIED",
+      "GROUP_GRAPH_UNVERIFIED",
+      "PROTECTED_RULE_COVERAGE_UNVERIFIED",
+      "LATER_MERGE_SCRIPT_EFFECTS_UNVERIFIED",
+      "ACTION_AUTHORIZATION_PENDING"
+    ]
+  },
+  "private_material": {
+    "original_bytes": {
+      "type": "bytes",
+      "base64": "IyBzeW50aGV0aWMgb3duZWQgcnVsZXMgZXh0ZW5zaW9uOyByZXRhaW4gYWxsIGJ5dGVzIG91dHNpZGUgdGhlIHNlbGVjdGVkIGluc2VydGlvbgpwcmVwZW5kOiBbXSAjIHByZXNlcnZlIGNvbW1lbnQKYXBwZW5kOiBbJ0RPTUFJTixhcHBlbmQuZXhhbXBsZS5pbnZhbGlkLE90aGVyJ10KZGVsZXRlOiBbXQp1bmtub3duLWZpZWxkOiB7bmVzdGVkOiBbdHJ1ZSwgMTIsIGtlZXAtZXh0ZW5zaW9uXX0K",
+      "sha256": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99",
+      "length": 225,
+      "utf8": "# synthetic owned rules extension; retain all bytes outside the selected insertion\nprepend: [] # preserve comment\nappend: ['DOMAIN,append.example.invalid,Other']\ndelete: []\nunknown-field: {nested: [true, 12, keep-extension]}\n"
+    },
+    "candidate_bytes": {
+      "type": "bytes",
+      "base64": "IyBzeW50aGV0aWMgb3duZWQgcnVsZXMgZXh0ZW5zaW9uOyByZXRhaW4gYWxsIGJ5dGVzIG91dHNpZGUgdGhlIHNlbGVjdGVkIGluc2VydGlvbgpwcmVwZW5kOiBbJ0RPTUFJTixhcGkud29ya2Zsb3cuaW52YWxpZCxhcHByb3ZlZC1ncm91cCcsICdET01BSU4sZG93bmxvYWRzLndvcmtmbG93LmludmFsaWQsYXBwcm92ZWQtZ3JvdXAnLCAnRE9NQUlOLGNvbm5lY3Rvci53b3JrZmxvdy5pbnZhbGlkLGFwcHJvdmVkLWdyb3VwJ10gIyBwcmVzZXJ2ZSBjb21tZW50CmFwcGVuZDogWydET01BSU4sYXBwZW5kLmV4YW1wbGUuaW52YWxpZCxPdGhlciddCmRlbGV0ZTogW10KdW5rbm93bi1maWVsZDoge25lc3RlZDogW3RydWUsIDEyLCBrZWVwLWV4dGVuc2lvbl19Cg==",
+      "sha256": "76fd83a29dec050545086d8aa6e3355eabb361326590c84dce11887675836881",
+      "length": 373,
+      "utf8": "# synthetic owned rules extension; retain all bytes outside the selected insertion\nprepend: ['DOMAIN,api.workflow.invalid,approved-group', 'DOMAIN,downloads.workflow.invalid,approved-group', 'DOMAIN,connector.workflow.invalid,approved-group'] # preserve comment\nappend: ['DOMAIN,append.example.invalid,Other']\ndelete: []\nunknown-field: {nested: [true, 12, keep-extension]}\n"
+    },
+    "original_sha256": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99",
+    "candidate_sha256": "76fd83a29dec050545086d8aa6e3355eabb361326590c84dce11887675836881",
+    "declared_binding": {
+      "type": "tuple",
+      "items": [
+        "lab-device",
+        {
+          "type": "tuple",
+          "items": [
+            "workflow-a"
+          ]
+        },
+        "extension",
+        "effective",
+        {
+          "type": "tuple",
+          "items": [
+            {
+              "type": "tuple",
+              "items": [
+                "effective",
+                "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1"
+              ]
+            },
+            {
+              "type": "tuple",
+              "items": [
+                "extension",
+                "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            {
+              "type": "tuple",
+              "items": [
+                "core",
+                "1.19.0"
+              ]
+            },
+            {
+              "type": "tuple",
+              "items": [
+                "gui",
+                "2.5.8"
+              ]
+            },
+            {
+              "type": "tuple",
+              "items": [
+                "product",
+                "clash-verge-rev"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            0,
+            1
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "rule-core",
+            "rule-download",
+            "rule-connector"
+          ]
+        },
+        "prepend"
+      ]
+    },
+    "ordered_additions": {
+      "type": "tuple",
+      "items": [
+        {
+          "type": "tuple",
+          "items": [
+            "rule-core",
+            "DOMAIN,api.workflow.invalid,approved-group"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "rule-download",
+            "DOMAIN,downloads.workflow.invalid,approved-group"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "rule-connector",
+            "DOMAIN,connector.workflow.invalid,approved-group"
+          ]
+        }
+      ]
+    },
+    "matched_rule_refs": {
+      "type": "tuple",
+      "items": []
+    },
+    "known_priority_overlaps": {
+      "type": "tuple",
+      "items": [
+        {
+          "type": "tuple",
+          "items": [
+            "rule-core",
+            "base",
+            6,
+            "MATCH,DIRECT"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "rule-download",
+            "base",
+            6,
+            "MATCH,DIRECT"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "rule-connector",
+            "base",
+            6,
+            "MATCH,DIRECT"
+          ]
+        }
+      ]
+    },
+    "byte_insertion": {
+      "type": "tuple",
+      "items": [
+        93,
+        {
+          "type": "bytes",
+          "base64": "",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "length": 0,
+          "utf8": ""
+        },
+        {
+          "type": "bytes",
+          "base64": "J0RPTUFJTixhcGkud29ya2Zsb3cuaW52YWxpZCxhcHByb3ZlZC1ncm91cCcsICdET01BSU4sZG93bmxvYWRzLndvcmtmbG93LmludmFsaWQsYXBwcm92ZWQtZ3JvdXAnLCAnRE9NQUlOLGNvbm5lY3Rvci53b3JrZmxvdy5pbnZhbGlkLGFwcHJvdmVkLWdyb3VwJw==",
+          "sha256": "ca12f9a7839ca91c5257f192aa83050f1c53897d2239b7c9458a6d8a00ba9c11",
+          "length": 148,
+          "utf8": "'DOMAIN,api.workflow.invalid,approved-group', 'DOMAIN,downloads.workflow.invalid,approved-group', 'DOMAIN,connector.workflow.invalid,approved-group'"
+        }
+      ]
+    }
+  }
+}

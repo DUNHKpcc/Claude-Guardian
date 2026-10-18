@@ -226,7 +226,7 @@ prior accepted ENV-T79/90 workflow pins after independent re-review of this delt
 | `tests/test_acceptance_boundary_rebuild.py` | `b5604c118e9c11fea9d03c19e75efdae4acb53f7bb0df3bd2ac4db38842621fd` |
 | `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
-| `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
+| `skills/claude-guardian/references/network-and-remedies.md` | `a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
@@ -289,3 +289,12 @@ This is preservation of the unchanged original requirements/layers, not acceptan
 ## Registry-count wording preservation review (2026-10-18)
 
 The current SKILL dependency pin incorporates only removal of the hardcoded registry total, as independently reviewed in [the exact documentation compatibility record](skill-registry-wording-compatibility.json). Conditional scheduling and permanent Q-C07 retirement are unchanged. Earlier observations and generated-response source bytes remain historical; this correction adds no acceptance case, runtime behavior, native evidence, contact or action authorization.
+
+
+### Thirty-first rule-scope guidance preservation review (2026-10-18 UTC)
+
+The unchanged original ENV-T81 (L+C) condition was independently re-reviewed with the exact network-reference addition and its Agent selection cross-reference. Excluding an explicitly disabled feature or a version-inapplicable dependency does not waive a required selected control or certify whole-client readiness. Genuine unknown facts remain gaps; source metadata, frozen examples, parser success and blocked candidates provide no native evidence or authorization. Inbound/Outbound direction and TLS field explanations create no PC0 contact exception, automatic login/payment path or broader network change. The existing current IPv4-only policy and required-control boundaries remain intact.
+
+The same 222 focused checks passed on the exact thirtieth baseline and thirty-first candidate, including all 23 required-control tests, without failures or skips. Two complete required-control replays per tree are byte-identical, SHA-256 `097e5442157d2942152f0a2c99035af7f9ead6b800967696d1165818f9a6840b`. The reviewed runtime and fixture files are unchanged; required controls still block or revoke contact grants, independent offline work can proceed, and synthetic applicability/approval declarations are not real host evidence or consent. API-level no-I/O sentinels remain test instrumentation only.
+
+Only the reviewed current network-reference pin is refreshed. No new original case, native enforcement, current source verification, service contact or operation authorization is established by this preservation review.

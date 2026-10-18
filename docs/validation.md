@@ -1509,3 +1509,44 @@ The independent forced-cp1252 regression set passed all 197 tests; detached9/9,
 portability2/2, both synthetic Node suites, compilation and duplicate package
 builds passed. Current-batch hosted CI is pending.
 Hosted OS jobs do not replace user-device acceptance.
+
+## 2026-10-18 thirty-first: observed Agent rule-scope selection
+
+The final local suite exited 0: 1,863 tests in 52.639 seconds, 1,855 passed
+and eight skipped. Log SHA-256:
+c34a59ee4ca24a1c55abbce8fa50ab7040a730e8f55fb5167e1d46cdac680912.
+The initial unrefreshed 1,847-test run had only three stale reference-pin failures.
+Independent baseline/candidate preservation checks passed 222/222, with complete
+ENV-T79/90 and ENV-T81 replay bytes unchanged. Four reference pins on three pages
+and three existing ledger hashes were then refreshed under exact review.
+
+The first integrated aggregate had one explicit acceptance-registration mismatch:
+the ledger already contained the five approved rows while the test's exact
+ACCEPTED map still held the previous list. That failed log is retained. Only the
+five exact case/layer entries and new page's 21-pin count were registered; every
+assertion remains intact, and the final full run above passed.
+
+Eleven actual model-authored turns, 22 original helper calls and six complete
+candidates/diffs are retained unchanged. Independent review added ten clearly
+separate reviewer controls, not fabricated original calls. All 22 calls replay
+exactly with API-level no-I/O sentinels unused; these observations do not establish
+historical host-wide isolation. Sixteen retained-evidence tests pass normally and
+under forced cp1252/C-locale; a combined preservation/evidence set passed 241/241.
+Only ENV-T38/39/41/42/58 receive new complete original L+C acceptance, making 41/218.
+Original source dates, clauses/layers, current IPv4 policy and native deferrals
+are preserved. No new runtime feature-selection engine or actual device repair
+is introduced. Selection happens explicitly before the atomic source importer.
+
+Both Node synthetic suites, compilation, diff checks and duplicate package builds
+passed. Package SHA-256:
+d5d848e61e6ce37b70a9e3e2ac0219454b6d301fe52897ea273dbe5c0c122981.
+Prior commit a25e71975fecf579d34e577a335ca21e236faa30 passed CI 39121431849:
+Ubuntu/Python 3.10 each 1,839 passed / 8 skipped, macOS 1,835 / 12, Windows 1,455 / 392.
+Independent integrated aggregate exited 0: 1,863 tests in 56.686 seconds,
+1,855 passed and eight skipped; independent log SHA-256 is
+c3d97bf3e9f8f903a38ac66ca2362f8ba9d1a84a2ea4ae08a9b8bf4278c5e988.
+Ledger 3/3, forced cp1252/C 16/16,
+Node synthetic suites, compilation and repeat packages passed. All 63 installed
+members match the tested source, with only the two active references changed
+from the previous package. Current-batch hosted CI is pending. Hosted OS
+jobs do not replace user-device acceptance or prove unseen Agent conversations.

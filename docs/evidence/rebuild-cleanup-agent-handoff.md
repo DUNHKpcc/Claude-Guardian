@@ -19,8 +19,17 @@ That review rechecks four scopes: rebuild-enforcement-cases, rebuild-prepared-re
 | Path | SHA-256 |
 | --- | --- |
 | `skills/claude-guardian/scripts/agent_remediation.py` | `0eb6cccf0165a156a8d6fb8355c1c82d01e325ccd1ea4f5dedafc218a723a912` |
-| `skills/claude-guardian/references/agent-remediation.md` | `0590a83c4d80b878a649b4d8ab13edcd73bdf8852980b8e01b816b092772718b` |
+| `skills/claude-guardian/references/agent-remediation.md` | `1c772512b25dc24a8d24589eb916ee6bf3d0dca697acd5d08ade498165c8f0a1` |
 | `skills/claude-guardian/scripts/cleanup_cli.py` | `c49f1249bb8e19fb2461fbba2b82477a5842fd6fb98a2e2592f59245887ba5d5` |
 | `skills/claude-guardian/scripts/cleanup_transactions.py` | `42b1586eae6d67dbdfa59ffb398a445bd717d3da304bc19c3cd64a6b34ea797e` |
 | `skills/claude-guardian/references/cleanup-cli-usage.md` | `08be1e07744fd3b3efd05291722a753b1bd6fd14ddefe19f42750673d9fe3faa` |
 | `tests/test_cleanup_agent_handoff.py` | `821a157135d7e52805b55abfeee746a8a03023bb25894bd9b01949b96d9a8c49` |
+
+
+## Thirty-first rule-scope guidance preservation review (2026-10-18 UTC)
+
+Independent review compared the complete thirtieth and thirty-first Agent guides. The only addition is the ENV-06 selected-source section; the scoped C5 handoff, independent repair/restore guidance and cleanup link are byte-for-byte preserved. The new feature/version/source-selection duties apply to rule planning and supply no cleanup selection, mutation permission, native ownership evidence or authorization callback.
+
+The same 222 focused preservation checks passed on both exact trees, with no failures or skips. They include all seven cleanup-handoff tests, selector and guide tests, installed detached-package link resolution, and the retained prepared-recovery CLI regressions using synthetic temporary files/terminals. No real user cleanup, device setting or network operation was performed. Production cleanup/selector/recovery runtime bytes remain unchanged.
+
+Only this page's current Agent-guide implementation pin is refreshed. The dated historical Agent-guide pin in `rebuild-prepared-recovery-cli.md` remains untouched, and rule-import/idempotent/IPv4-only narrative receipts are not rewritten as fresh runtime evidence. This is a compatibility preservation record, not original cleanup-case acceptance or new execution authority.

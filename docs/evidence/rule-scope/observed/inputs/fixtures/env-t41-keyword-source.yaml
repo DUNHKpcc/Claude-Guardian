@@ -1,0 +1,4 @@
+rules:
+  - DOMAIN-KEYWORD,datadog,approved-group
+  - DOMAIN-KEYWORD,sentry,approved-group
+  - DOMAIN-KEYWORD,sift,approved-group

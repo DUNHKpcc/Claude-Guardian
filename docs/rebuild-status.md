@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: thirtieth rebuild, 2026-10-18
+## Current checkpoint: thirty-first rebuild, 2026-10-18
 
-The current ledger records 36 freshly accepted original cases and 182 pending:
-T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 41 freshly accepted original cases and 177 pending:
+ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58, T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
@@ -178,3 +178,12 @@ historical packet files and T18's original guide hash remain unchanged.
 A narrowly pinned test-only compatibility record documents the six-byte edit;
 other guide or source drift remains rejected. No runtime or acceptance-count
 change is claimed.
+
+
+The thirty-first completes the original ENV-T38/39/41/42/58 observed L+C
+examples: TLS-field meaning, traffic direction, shared-service scope, disabled
+or version-inapplicable features, and unaccepted recommendations. Two active
+references clarify Agent selection before the existing atomic importer. Eleven
+actual responses, 22 actual helper calls and six full candidates are retained;
+ten independent reviewer controls are separate supplements. No runtime engine,
+native configuration capability or universal response guarantee is added.

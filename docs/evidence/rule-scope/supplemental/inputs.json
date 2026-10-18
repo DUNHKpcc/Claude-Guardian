@@ -1,0 +1,893 @@
+{
+  "schema": "guardian-rule-scope-review-supplement/1",
+  "frozen_at_utc": "2026-10-18T11:12:26.911566+00:00",
+  "status": "inputs_frozen_before_execution",
+  "origin": "independent reviewer supplemental controls, not original generator calls or responses",
+  "calls": [
+    {
+      "call_id": "review-ENV-T38-extra-TLS-field",
+      "callable": "config_edit_plan.compile_edit_plan",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "type": "bytes",
+            "base64": "IyBzeW50aGV0aWMgVExTIGNvbmZpZ3VyYXRpb247IHJldGFpbiBhbGwgY29tbWVudHMgYW5kIG5vbi1zZWxlY3RlZCBmaWVsZHMKcHJveGllczoKICAtIG5hbWU6IG5vZGUtYQogICAgdHlwZTogdHJvamFuCiAgICBzZXJ2ZXI6IG5vZGUuZXhhbXBsZS5pbnZhbGlkCiAgICBwb3J0OiA0NDMKICAgIHNuaTogbm9kZS5leGFtcGxlLmludmFsaWQKICAgIGZpbmdlcnByaW50OiBjaHJvbWUKICAgIGNsaWVudC1maW5nZXJwcmludDogZmlyZWZveAogICAgc2tpcC1jZXJ0LXZlcmlmeTogZmFsc2UKcHJveHktZ3JvdXBzOgogIC0gbmFtZTogYXBwcm92ZWQtZ3JvdXAKICAgIHR5cGU6IHNlbGVjdAogICAgcHJveGllczogW25vZGUtYV0KcnVsZXM6CiAgLSBET01BSU4sYXBpLndvcmtmbG93LmludmFsaWQsT2xkICMgc2VsZWN0ZWQgaW5kZXBlbmRlbnQgcnVsZQogIC0gRE9NQUlOLHdvcmsuZXhhbXBsZS5pbnZhbGlkLFdvcmsKICAtIE1BVENILERJUkVDVAp1bmtub3duLWZpZWxkOiB7bmVzdGVkOiBbdHJ1ZSwgMTIsIGtlZXAtVExTLWNhc2VdfQo=",
+            "sha256": "be83e62b0468b0485073f5482c904130aa5af852d4b8600af8603776031523a2",
+            "length": 533,
+            "utf8": "# synthetic TLS configuration; retain all comments and non-selected fields\nproxies:\n  - name: node-a\n    type: trojan\n    server: node.example.invalid\n    port: 443\n    sni: node.example.invalid\n    fingerprint: chrome\n    client-fingerprint: firefox\n    skip-cert-verify: false\nproxy-groups:\n  - name: approved-group\n    type: select\n    proxies: [node-a]\nrules:\n  - DOMAIN,api.workflow.invalid,Old # selected independent rule\n  - DOMAIN,work.example.invalid,Work\n  - MATCH,DIRECT\nunknown-field: {nested: [true, 12, keep-TLS-case]}\n"
+          },
+          {
+            "schema_version": "guardian-remedy-plan-input/0.1",
+            "target_ref": "lab-device",
+            "observed_target_ref": "lab-device",
+            "route_ref": "offline-route",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "template": "keep-existing",
+            "revisions": {
+              "extension": "be83e62b0468b0485073f5482c904130aa5af852d4b8600af8603776031523a2"
+            },
+            "revision_refs": {
+              "extension": "snapshot-extension"
+            },
+            "intent": {
+              "rule_refs": [
+                "rule-core"
+              ],
+              "egress_group_ref": "approved-group",
+              "no_direct": "yes",
+              "ipv6_goal": "preserve",
+              "udp_goal": "preserve"
+            },
+            "facts": {
+              "versions": {
+                "product": "clash-verge-rev",
+                "gui": "2.5.8",
+                "core": "1.19.0"
+              },
+              "mode": "rule",
+              "control": {
+                "dependency_known": "yes",
+                "preserved": "yes",
+                "rescue_available": "yes",
+                "scope_refs": [
+                  "control-a"
+                ]
+              },
+              "rules": {
+                "first_match_verified": "yes",
+                "protected_priority_preserved": "yes",
+                "complete": "yes"
+              },
+              "ownership": {
+                "known": "yes",
+                "persistent_extension_available": "yes",
+                "gui_readback_available": "yes"
+              },
+              "groups": {
+                "approved-group": {
+                  "kind": "group",
+                  "complete": "yes",
+                  "members": [
+                    "node-a"
+                  ]
+                },
+                "node-a": {
+                  "kind": "proxy",
+                  "protocol": "trojan",
+                  "complete": "yes",
+                  "members": []
+                }
+              },
+              "ipv6": "verified",
+              "udp": "verified",
+              "dns": {
+                "nodes": [
+                  "resolver",
+                  "bootstrap"
+                ],
+                "edges": [
+                  {
+                    "from": "resolver",
+                    "to": "bootstrap",
+                    "path": "both"
+                  }
+                ],
+                "complete": "yes",
+                "local_preserved": "yes",
+                "browser_doh_known": "yes",
+                "bootstrap_known": "yes",
+                "policy_merge_known": "yes",
+                "responsibility": "mihomo"
+              }
+            },
+            "current_revisions": {
+              "extension": "be83e62b0468b0485073f5482c904130aa5af852d4b8600af8603776031523a2"
+            }
+          },
+          {
+            "schema_version": "guardian-config-edit-binding/0.1",
+            "target_ref": "lab-device",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "layer_ref": "extension",
+            "layer_kind": "owned-profile-extension",
+            "group_name": "approved-group",
+            "rules": {
+              "rule-core": {
+                "index": 0,
+                "expected": "DOMAIN,api.workflow.invalid,Old"
+              }
+            },
+            "client-fingerprint": "chrome"
+          }
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "INVALID_BINDING",
+      "purpose": "Separate API closed-schema test, not generated TLS explanation"
+    },
+    {
+      "call_id": "review-ENV-T41-protected-selected-host",
+      "callable": "rules_extension_plan.compile_rules_extension",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "type": "bytes",
+            "base64": "IyBzeW50aGV0aWMgb3duZWQgcnVsZXMgZXh0ZW5zaW9uOyByZXRhaW4gYWxsIGJ5dGVzIG91dHNpZGUgdGhlIHNlbGVjdGVkIGluc2VydGlvbgpwcmVwZW5kOiBbXSAjIHByZXNlcnZlIGNvbW1lbnQKYXBwZW5kOiBbJ0RPTUFJTixhcHBlbmQuZXhhbXBsZS5pbnZhbGlkLE90aGVyJ10KZGVsZXRlOiBbXQp1bmtub3duLWZpZWxkOiB7bmVzdGVkOiBbdHJ1ZSwgMTIsIGtlZXAtZXh0ZW5zaW9uXX0K",
+            "sha256": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99",
+            "length": 225,
+            "utf8": "# synthetic owned rules extension; retain all bytes outside the selected insertion\nprepend: [] # preserve comment\nappend: ['DOMAIN,append.example.invalid,Other']\ndelete: []\nunknown-field: {nested: [true, 12, keep-extension]}\n"
+          },
+          {
+            "type": "bytes",
+            "base64": "IyBzeW50aGV0aWMgZWZmZWN0aXZlIGJhc2U7IG5vdCBwcm9vZiBvZiBHVUkgb3IgcnVudGltZSBiZWhhdmlvcgpwcm94eS1ncm91cHM6CiAgLSBuYW1lOiBhcHByb3ZlZC1ncm91cAogICAgdHlwZTogc2VsZWN0CiAgICBwcm94aWVzOiBbbm9kZS1hXQpydWxlczoKICAtIERPTUFJTixyZXNjdWUuZXhhbXBsZS5pbnZhbGlkLERJUkVDVAogIC0gRE9NQUlOLGNvcnAuc2VudHJ5LmludmFsaWQsQ29ycAogIC0gRE9NQUlOLVNVRkZJWCxzZW50cnkuaW52YWxpZCxTaGFyZWRUZWxlbWV0cnkKICAtIERPTUFJTi1TVUZGSVgsZGF0YWRvZ2hxLmNvbSxXb3JrCiAgLSBET01BSU4tU1VGRklYLHNpZnQuaW52YWxpZCxQYXltZW50cwogIC0gRE9NQUlOLVNVRkZJWCxleGFtcGxlLmludmFsaWQsR2VuZXJhbAogIC0gTUFUQ0gsRElSRUNUCnVua25vd24tZmllbGQ6IGtlZXAtYmFzZQo=",
+            "sha256": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+            "length": 437,
+            "utf8": "# synthetic effective base; not proof of GUI or runtime behavior\nproxy-groups:\n  - name: approved-group\n    type: select\n    proxies: [node-a]\nrules:\n  - DOMAIN,rescue.example.invalid,DIRECT\n  - DOMAIN,corp.sentry.invalid,Corp\n  - DOMAIN-SUFFIX,sentry.invalid,SharedTelemetry\n  - DOMAIN-SUFFIX,datadoghq.com,Work\n  - DOMAIN-SUFFIX,sift.invalid,Payments\n  - DOMAIN-SUFFIX,example.invalid,General\n  - MATCH,DIRECT\nunknown-field: keep-base\n"
+          },
+          {
+            "schema_version": "guardian-remedy-plan-input/0.1",
+            "target_ref": "lab-device",
+            "observed_target_ref": "lab-device",
+            "route_ref": "offline-route",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "template": "keep-existing",
+            "revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            },
+            "revision_refs": {
+              "effective": "snapshot-base",
+              "extension": "snapshot-extension"
+            },
+            "intent": {
+              "rule_refs": [
+                "rule-guardian-ingest"
+              ],
+              "egress_group_ref": "approved-group",
+              "no_direct": "yes",
+              "ipv6_goal": "preserve",
+              "udp_goal": "preserve"
+            },
+            "facts": {
+              "versions": {
+                "product": "clash-verge-rev",
+                "gui": "2.5.8",
+                "core": "1.19.0"
+              },
+              "mode": "rule",
+              "control": {
+                "dependency_known": "yes",
+                "preserved": "yes",
+                "rescue_available": "yes",
+                "scope_refs": [
+                  "control-a"
+                ]
+              },
+              "rules": {
+                "first_match_verified": "yes",
+                "protected_priority_preserved": "yes",
+                "complete": "yes"
+              },
+              "ownership": {
+                "known": "yes",
+                "persistent_extension_available": "yes",
+                "gui_readback_available": "yes"
+              },
+              "groups": {
+                "approved-group": {
+                  "kind": "group",
+                  "complete": "yes",
+                  "members": [
+                    "node-a"
+                  ]
+                },
+                "node-a": {
+                  "kind": "proxy",
+                  "protocol": "socks5",
+                  "complete": "yes",
+                  "members": []
+                }
+              },
+              "ipv6": "verified",
+              "udp": "verified",
+              "dns": {
+                "nodes": [
+                  "resolver",
+                  "bootstrap"
+                ],
+                "edges": [
+                  {
+                    "from": "resolver",
+                    "to": "bootstrap",
+                    "path": "both"
+                  }
+                ],
+                "complete": "yes",
+                "local_preserved": "yes",
+                "browser_doh_known": "yes",
+                "bootstrap_known": "yes",
+                "policy_merge_known": "yes",
+                "responsibility": "mihomo"
+              }
+            },
+            "current_revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            }
+          },
+          {
+            "schema_version": "guardian-rules-extension-binding/0.1",
+            "operation": "insert_selected_prepend_rules",
+            "target_ref": "lab-device",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "layer_ref": "extension",
+            "base_layer_ref": "effective",
+            "layer_kind": "owned-profile-rules-extension",
+            "placement": "prepend",
+            "group_name": "approved-group",
+            "rules": {
+              "rule-guardian-ingest": {
+                "kind": "DOMAIN",
+                "domain": "guardian.ingest.sentry.invalid"
+              }
+            },
+            "rule_order": [
+              "rule-guardian-ingest"
+            ],
+            "protected_rule_indexes": [
+              0,
+              1,
+              2
+            ]
+          }
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "PROTECTED_RULE_PRIORITY_CONFLICT",
+      "purpose": "Protect existing sentry.invalid suffix at index 2, which includes selected exact host, in addition to corp/rescue; never drop protection"
+    },
+    {
+      "call_id": "review-ENV-T41-keyword-input",
+      "callable": "rule_source_import.import_rule_bindings",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "type": "bytes",
+            "base64": "cnVsZXM6CiAgLSBET01BSU4tS0VZV09SRCxkYXRhZG9nLGFwcHJvdmVkLWdyb3VwCiAgLSBET01BSU4tS0VZV09SRCxzZW50cnksYXBwcm92ZWQtZ3JvdXAKICAtIERPTUFJTi1LRVlXT1JELHNpZnQsYXBwcm92ZWQtZ3JvdXAK",
+            "sha256": "43b544785df28b88803ee8c584a4154dae83fc6d732b7d22f45f833878a8b4e0",
+            "length": 129,
+            "utf8": "rules:\n  - DOMAIN-KEYWORD,datadog,approved-group\n  - DOMAIN-KEYWORD,sentry,approved-group\n  - DOMAIN-KEYWORD,sift,approved-group\n"
+          },
+          "mihomo-domain-rules-fragment/0.1",
+          [
+            "keyword-datadog",
+            "keyword-sentry",
+            "keyword-sift"
+          ],
+          {
+            "schema_version": "guardian-rule-source-binding/0.1",
+            "source_ref": "source-guardian-ingest",
+            "expected_sha256": "43b544785df28b88803ee8c584a4154dae83fc6d732b7d22f45f833878a8b4e0",
+            "evidence_kind": "user_supplied",
+            "verified_at": "2026-10-18",
+            "version_scope": "synthetic-fixture-v1",
+            "purpose": "workflow-repair",
+            "client_scope": [
+              "fixture-client"
+            ],
+            "feature_gate": "feature-workflow",
+            "shared_service": true,
+            "activation_state": "candidate"
+          },
+          {
+            "kind": "user_selected_egress",
+            "group_name": "approved-group"
+          }
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "UNSUPPORTED_RULE_RECORD",
+      "purpose": "Grammar control only, never selected as a real candidate"
+    },
+    {
+      "call_id": "review-ENV-T42-misleading-feature-alias",
+      "callable": "rule_source_import.import_rule_bindings",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "type": "bytes",
+            "base64": "Y29ubmVjdG9yLndvcmtmbG93LmludmFsaWQK",
+            "sha256": "eeb6e8cdff457bbde759586911dcc3363ae9049e2afcc02774dffc4934460590",
+            "length": 27,
+            "utf8": "connector.workflow.invalid\n"
+          },
+          "exact-domain-lines/0.1",
+          [
+            "rule-connector"
+          ],
+          {
+            "schema_version": "guardian-rule-source-binding/0.1",
+            "source_ref": "source-connector",
+            "expected_sha256": "eeb6e8cdff457bbde759586911dcc3363ae9049e2afcc02774dffc4934460590",
+            "evidence_kind": "user_supplied",
+            "verified_at": "2026-10-18",
+            "version_scope": "fixture-client-v1",
+            "purpose": "workflow-repair",
+            "client_scope": [
+              "fixture-client"
+            ],
+            "feature_gate": "disabled",
+            "shared_service": false,
+            "activation_state": "candidate"
+          },
+          {
+            "kind": "user_selected_egress",
+            "group_name": "approved-group"
+          }
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "imported_candidate_only",
+      "purpose": "Metadata-only experiment; never forwarded to a planner; cannot count as Agent gating"
+    },
+    {
+      "call_id": "review-ENV-T58-extra-endpoint_url",
+      "callable": "remedy_plans.compile_plan",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "schema_version": "guardian-remedy-plan-input/0.1",
+            "target_ref": "lab-device",
+            "observed_target_ref": "lab-device",
+            "route_ref": "offline-route",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "template": "keep-existing",
+            "revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            },
+            "revision_refs": {
+              "effective": "snapshot-base",
+              "extension": "snapshot-extension"
+            },
+            "intent": {
+              "rule_refs": [
+                "rule-core"
+              ],
+              "egress_group_ref": "approved-group",
+              "no_direct": "yes",
+              "ipv6_goal": "preserve",
+              "udp_goal": "preserve"
+            },
+            "facts": {
+              "versions": {
+                "product": "clash-verge-rev",
+                "gui": "2.5.8",
+                "core": "1.19.0"
+              },
+              "mode": "rule",
+              "control": {
+                "dependency_known": "yes",
+                "preserved": "yes",
+                "rescue_available": "yes",
+                "scope_refs": [
+                  "control-a"
+                ]
+              },
+              "rules": {
+                "first_match_verified": "yes",
+                "protected_priority_preserved": "yes",
+                "complete": "yes"
+              },
+              "ownership": {
+                "known": "yes",
+                "persistent_extension_available": "yes",
+                "gui_readback_available": "yes"
+              },
+              "groups": {
+                "approved-group": {
+                  "kind": "group",
+                  "complete": "yes",
+                  "members": [
+                    "node-a"
+                  ]
+                },
+                "node-a": {
+                  "kind": "proxy",
+                  "protocol": "socks5",
+                  "complete": "yes",
+                  "members": []
+                }
+              },
+              "ipv6": "verified",
+              "udp": "verified",
+              "dns": {
+                "nodes": [
+                  "resolver",
+                  "bootstrap"
+                ],
+                "edges": [
+                  {
+                    "from": "resolver",
+                    "to": "bootstrap",
+                    "path": "both"
+                  }
+                ],
+                "complete": "yes",
+                "local_preserved": "yes",
+                "browser_doh_known": "yes",
+                "bootstrap_known": "yes",
+                "policy_merge_known": "yes",
+                "responsibility": "mihomo"
+              }
+            },
+            "current_revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            },
+            "endpoint_url": "https://new-echo.invalid/private"
+          }
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "invalid object shape",
+      "purpose": "Closed projection rejects unrecognized endpoint_url member; not an adoption API"
+    },
+    {
+      "call_id": "review-ENV-T58-extra-command",
+      "callable": "remedy_plans.compile_plan",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "schema_version": "guardian-remedy-plan-input/0.1",
+            "target_ref": "lab-device",
+            "observed_target_ref": "lab-device",
+            "route_ref": "offline-route",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "template": "keep-existing",
+            "revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            },
+            "revision_refs": {
+              "effective": "snapshot-base",
+              "extension": "snapshot-extension"
+            },
+            "intent": {
+              "rule_refs": [
+                "rule-core"
+              ],
+              "egress_group_ref": "approved-group",
+              "no_direct": "yes",
+              "ipv6_goal": "preserve",
+              "udp_goal": "preserve"
+            },
+            "facts": {
+              "versions": {
+                "product": "clash-verge-rev",
+                "gui": "2.5.8",
+                "core": "1.19.0"
+              },
+              "mode": "rule",
+              "control": {
+                "dependency_known": "yes",
+                "preserved": "yes",
+                "rescue_available": "yes",
+                "scope_refs": [
+                  "control-a"
+                ]
+              },
+              "rules": {
+                "first_match_verified": "yes",
+                "protected_priority_preserved": "yes",
+                "complete": "yes"
+              },
+              "ownership": {
+                "known": "yes",
+                "persistent_extension_available": "yes",
+                "gui_readback_available": "yes"
+              },
+              "groups": {
+                "approved-group": {
+                  "kind": "group",
+                  "complete": "yes",
+                  "members": [
+                    "node-a"
+                  ]
+                },
+                "node-a": {
+                  "kind": "proxy",
+                  "protocol": "socks5",
+                  "complete": "yes",
+                  "members": []
+                }
+              },
+              "ipv6": "verified",
+              "udp": "verified",
+              "dns": {
+                "nodes": [
+                  "resolver",
+                  "bootstrap"
+                ],
+                "edges": [
+                  {
+                    "from": "resolver",
+                    "to": "bootstrap",
+                    "path": "both"
+                  }
+                ],
+                "complete": "yes",
+                "local_preserved": "yes",
+                "browser_doh_known": "yes",
+                "bootstrap_known": "yes",
+                "policy_merge_known": "yes",
+                "responsibility": "mihomo"
+              }
+            },
+            "current_revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            },
+            "command": [
+              "install",
+              "unreviewed-component"
+            ]
+          }
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "invalid object shape",
+      "purpose": "Closed projection rejects unrecognized command member; not an adoption API"
+    },
+    {
+      "call_id": "review-ENV-T58-extra-authorization",
+      "callable": "remedy_plans.compile_plan",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "schema_version": "guardian-remedy-plan-input/0.1",
+            "target_ref": "lab-device",
+            "observed_target_ref": "lab-device",
+            "route_ref": "offline-route",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "template": "keep-existing",
+            "revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            },
+            "revision_refs": {
+              "effective": "snapshot-base",
+              "extension": "snapshot-extension"
+            },
+            "intent": {
+              "rule_refs": [
+                "rule-core"
+              ],
+              "egress_group_ref": "approved-group",
+              "no_direct": "yes",
+              "ipv6_goal": "preserve",
+              "udp_goal": "preserve"
+            },
+            "facts": {
+              "versions": {
+                "product": "clash-verge-rev",
+                "gui": "2.5.8",
+                "core": "1.19.0"
+              },
+              "mode": "rule",
+              "control": {
+                "dependency_known": "yes",
+                "preserved": "yes",
+                "rescue_available": "yes",
+                "scope_refs": [
+                  "control-a"
+                ]
+              },
+              "rules": {
+                "first_match_verified": "yes",
+                "protected_priority_preserved": "yes",
+                "complete": "yes"
+              },
+              "ownership": {
+                "known": "yes",
+                "persistent_extension_available": "yes",
+                "gui_readback_available": "yes"
+              },
+              "groups": {
+                "approved-group": {
+                  "kind": "group",
+                  "complete": "yes",
+                  "members": [
+                    "node-a"
+                  ]
+                },
+                "node-a": {
+                  "kind": "proxy",
+                  "protocol": "socks5",
+                  "complete": "yes",
+                  "members": []
+                }
+              },
+              "ipv6": "verified",
+              "udp": "verified",
+              "dns": {
+                "nodes": [
+                  "resolver",
+                  "bootstrap"
+                ],
+                "edges": [
+                  {
+                    "from": "resolver",
+                    "to": "bootstrap",
+                    "path": "both"
+                  }
+                ],
+                "complete": "yes",
+                "local_preserved": "yes",
+                "browser_doh_known": "yes",
+                "bootstrap_known": "yes",
+                "policy_merge_known": "yes",
+                "responsibility": "mihomo"
+              }
+            },
+            "current_revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            },
+            "authorization": true
+          }
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "invalid object shape",
+      "purpose": "Closed projection rejects unrecognized authorization member; not an adoption API"
+    },
+    {
+      "call_id": "review-ENV-T58-extra-binding-command",
+      "callable": "rules_extension_plan.compile_rules_extension",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "type": "bytes",
+            "base64": "IyBzeW50aGV0aWMgb3duZWQgcnVsZXMgZXh0ZW5zaW9uOyByZXRhaW4gYWxsIGJ5dGVzIG91dHNpZGUgdGhlIHNlbGVjdGVkIGluc2VydGlvbgpwcmVwZW5kOiBbXSAjIHByZXNlcnZlIGNvbW1lbnQKYXBwZW5kOiBbJ0RPTUFJTixhcHBlbmQuZXhhbXBsZS5pbnZhbGlkLE90aGVyJ10KZGVsZXRlOiBbXQp1bmtub3duLWZpZWxkOiB7bmVzdGVkOiBbdHJ1ZSwgMTIsIGtlZXAtZXh0ZW5zaW9uXX0K",
+            "sha256": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99",
+            "length": 225,
+            "utf8": "# synthetic owned rules extension; retain all bytes outside the selected insertion\nprepend: [] # preserve comment\nappend: ['DOMAIN,append.example.invalid,Other']\ndelete: []\nunknown-field: {nested: [true, 12, keep-extension]}\n"
+          },
+          {
+            "type": "bytes",
+            "base64": "IyBzeW50aGV0aWMgZWZmZWN0aXZlIGJhc2U7IG5vdCBwcm9vZiBvZiBHVUkgb3IgcnVudGltZSBiZWhhdmlvcgpwcm94eS1ncm91cHM6CiAgLSBuYW1lOiBhcHByb3ZlZC1ncm91cAogICAgdHlwZTogc2VsZWN0CiAgICBwcm94aWVzOiBbbm9kZS1hXQpydWxlczoKICAtIERPTUFJTixyZXNjdWUuZXhhbXBsZS5pbnZhbGlkLERJUkVDVAogIC0gRE9NQUlOLGNvcnAuc2VudHJ5LmludmFsaWQsQ29ycAogIC0gRE9NQUlOLVNVRkZJWCxzZW50cnkuaW52YWxpZCxTaGFyZWRUZWxlbWV0cnkKICAtIERPTUFJTi1TVUZGSVgsZGF0YWRvZ2hxLmNvbSxXb3JrCiAgLSBET01BSU4tU1VGRklYLHNpZnQuaW52YWxpZCxQYXltZW50cwogIC0gRE9NQUlOLVNVRkZJWCxleGFtcGxlLmludmFsaWQsR2VuZXJhbAogIC0gTUFUQ0gsRElSRUNUCnVua25vd24tZmllbGQ6IGtlZXAtYmFzZQo=",
+            "sha256": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+            "length": 437,
+            "utf8": "# synthetic effective base; not proof of GUI or runtime behavior\nproxy-groups:\n  - name: approved-group\n    type: select\n    proxies: [node-a]\nrules:\n  - DOMAIN,rescue.example.invalid,DIRECT\n  - DOMAIN,corp.sentry.invalid,Corp\n  - DOMAIN-SUFFIX,sentry.invalid,SharedTelemetry\n  - DOMAIN-SUFFIX,datadoghq.com,Work\n  - DOMAIN-SUFFIX,sift.invalid,Payments\n  - DOMAIN-SUFFIX,example.invalid,General\n  - MATCH,DIRECT\nunknown-field: keep-base\n"
+          },
+          {
+            "schema_version": "guardian-remedy-plan-input/0.1",
+            "target_ref": "lab-device",
+            "observed_target_ref": "lab-device",
+            "route_ref": "offline-route",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "template": "keep-existing",
+            "revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            },
+            "revision_refs": {
+              "effective": "snapshot-base",
+              "extension": "snapshot-extension"
+            },
+            "intent": {
+              "rule_refs": [
+                "rule-core"
+              ],
+              "egress_group_ref": "approved-group",
+              "no_direct": "yes",
+              "ipv6_goal": "preserve",
+              "udp_goal": "preserve"
+            },
+            "facts": {
+              "versions": {
+                "product": "clash-verge-rev",
+                "gui": "2.5.8",
+                "core": "1.19.0"
+              },
+              "mode": "rule",
+              "control": {
+                "dependency_known": "yes",
+                "preserved": "yes",
+                "rescue_available": "yes",
+                "scope_refs": [
+                  "control-a"
+                ]
+              },
+              "rules": {
+                "first_match_verified": "yes",
+                "protected_priority_preserved": "yes",
+                "complete": "yes"
+              },
+              "ownership": {
+                "known": "yes",
+                "persistent_extension_available": "yes",
+                "gui_readback_available": "yes"
+              },
+              "groups": {
+                "approved-group": {
+                  "kind": "group",
+                  "complete": "yes",
+                  "members": [
+                    "node-a"
+                  ]
+                },
+                "node-a": {
+                  "kind": "proxy",
+                  "protocol": "socks5",
+                  "complete": "yes",
+                  "members": []
+                }
+              },
+              "ipv6": "verified",
+              "udp": "verified",
+              "dns": {
+                "nodes": [
+                  "resolver",
+                  "bootstrap"
+                ],
+                "edges": [
+                  {
+                    "from": "resolver",
+                    "to": "bootstrap",
+                    "path": "both"
+                  }
+                ],
+                "complete": "yes",
+                "local_preserved": "yes",
+                "browser_doh_known": "yes",
+                "bootstrap_known": "yes",
+                "policy_merge_known": "yes",
+                "responsibility": "mihomo"
+              }
+            },
+            "current_revisions": {
+              "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+              "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+            }
+          },
+          {
+            "schema_version": "guardian-rules-extension-binding/0.1",
+            "operation": "insert_selected_prepend_rules",
+            "target_ref": "lab-device",
+            "scope_refs": [
+              "workflow-a"
+            ],
+            "layer_ref": "extension",
+            "base_layer_ref": "effective",
+            "layer_kind": "owned-profile-rules-extension",
+            "placement": "prepend",
+            "group_name": "approved-group",
+            "rules": {
+              "rule-core": {
+                "kind": "DOMAIN",
+                "domain": "api.workflow.invalid"
+              }
+            },
+            "rule_order": [
+              "rule-core"
+            ],
+            "protected_rule_indexes": [
+              0,
+              1
+            ],
+            "command": [
+              "install",
+              "unreviewed-component"
+            ]
+          }
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "INVALID_BINDING",
+      "purpose": "Closed binding does not accept an executable command"
+    },
+    {
+      "call_id": "review-ENV-T58-fixed-selector-baseline",
+      "callable": "agent_remediation.select",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "schema_version": "guardian-remediation-findings/0.1",
+            "target_ref": "lab-device",
+            "findings": [
+              {
+                "code": "RULE_POLICY_MISMATCH"
+              }
+            ]
+          },
+          "lab-device"
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "fixed_selection",
+      "purpose": "Actual fixed catalog baseline"
+    },
+    {
+      "call_id": "review-ENV-T58-fixed-selector-untrusted-fields",
+      "callable": "agent_remediation.select",
+      "positional_arguments": {
+        "type": "tuple",
+        "items": [
+          {
+            "schema_version": "guardian-remediation-findings/0.1",
+            "target_ref": "lab-device",
+            "findings": [
+              {
+                "code": "RULE_POLICY_MISMATCH"
+              }
+            ],
+            "endpoint_url": "https://new-echo.invalid/private",
+            "command": [
+              "install",
+              "unreviewed-component"
+            ],
+            "authorization": true,
+            "apply_supported": true,
+            "recommendation_pending": [
+              {
+                "category": "endpoint",
+                "approved": true
+              }
+            ]
+          },
+          "lab-device"
+        ]
+      },
+      "keyword_arguments": {},
+      "expected_review_outcome": "same_as_fixed_baseline",
+      "purpose": "Ignored extra report fields cannot change the existing fixed catalog selection; not pending-proposal adoption"
+    }
+  ]
+}

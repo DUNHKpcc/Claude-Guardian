@@ -1,0 +1,36 @@
+{"time_utc": "2026-10-18T11:02:17.907648+00:00", "kind": "initialized", "scenario_order": ["ENV-T42", "ENV-T41", "ENV-T39", "ENV-T38", "ENV-T58"], "mode": "offline_synthetic_only"}
+{"time_utc": "2026-10-18T11:02:31.152264+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-1-import-feature-core", "return_type": "PrivateRuleImport"}
+{"time_utc": "2026-10-18T11:02:31.152731+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-1-import-feature-download", "return_type": "PrivateRuleImport"}
+{"time_utc": "2026-10-18T11:02:31.153373+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-1-semantic", "return_type": "dict"}
+{"time_utc": "2026-10-18T11:02:31.157077+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-1-compile", "return_type": "PrivateRulesCandidate"}
+{"time_utc": "2026-10-18T11:03:17.051459+00:00", "kind": "response_saved", "case_id": "ENV-T42", "turn": 1, "response": "responses/ENV-T42-turn-1.md", "sha256": "5182a3da7a88a70f1b3fbe2718fc3f2f03d7071f1dd3a41b50a57314eedf547f", "conversation": "conversations/ENV-T42-through-turn-1.md"}
+{"time_utc": "2026-10-18T11:03:17.090640+00:00", "kind": "response_saved", "case_id": "ENV-T42", "turn": 2, "response": "responses/ENV-T42-turn-2.md", "sha256": "afc1360400dd77e779655858aaae9f0abc14abce3b176e0dec12f23c357df762", "conversation": "conversations/ENV-T42-through-turn-2.md"}
+{"time_utc": "2026-10-18T11:03:31.714691+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-3-import-feature-core", "return_type": "PrivateRuleImport"}
+{"time_utc": "2026-10-18T11:03:31.715236+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-3-import-feature-download", "return_type": "PrivateRuleImport"}
+{"time_utc": "2026-10-18T11:03:31.715731+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-3-import-feature-connector", "return_type": "PrivateRuleImport"}
+{"time_utc": "2026-10-18T11:03:31.717419+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-3-semantic", "return_type": "dict"}
+{"time_utc": "2026-10-18T11:03:31.721678+00:00", "kind": "helper_return", "call_id": "ENV-T42-turn-3-compile", "return_type": "PrivateRulesCandidate"}
+{"time_utc": "2026-10-18T11:03:52.114005+00:00", "kind": "response_saved", "case_id": "ENV-T42", "turn": 3, "response": "responses/ENV-T42-turn-3.md", "sha256": "82c7ce0cf45c5b23d512dbe8745f06e54e1765336171fa19a8280854b8fbe330", "conversation": "conversations/ENV-T42-through-turn-3.md"}
+{"time_utc": "2026-10-18T11:04:28.835204+00:00", "kind": "offline_host_match_calculation", "case_id": "ENV-T41", "mode": "keyword", "script_sha256": "4892bad7d223411ef783c2f429cc6e678525bc0d545b23249b4b886a4ea5ea10", "host_count": 12}
+{"time_utc": "2026-10-18T11:04:54.157753+00:00", "kind": "response_saved", "case_id": "ENV-T41", "turn": 1, "response": "responses/ENV-T41-turn-1.md", "sha256": "dc26b872b9a28d6b80049d3a09ec1f5eb8b60c4f62540afc3867b0fb4038836d", "conversation": "conversations/ENV-T41-through-turn-1.md"}
+{"time_utc": "2026-10-18T11:04:54.220305+00:00", "kind": "helper_return", "call_id": "ENV-T41-turn-2-import-exact", "return_type": "PrivateRuleImport"}
+{"time_utc": "2026-10-18T11:04:54.221075+00:00", "kind": "helper_return", "call_id": "ENV-T41-turn-2-semantic", "return_type": "dict"}
+{"time_utc": "2026-10-18T11:04:54.224977+00:00", "kind": "helper_return", "call_id": "ENV-T41-turn-2-compile", "return_type": "PrivateRulesCandidate"}
+{"time_utc": "2026-10-18T11:04:54.292169+00:00", "kind": "offline_host_match_calculation", "case_id": "ENV-T41", "mode": "exact", "script_sha256": "4892bad7d223411ef783c2f429cc6e678525bc0d545b23249b4b886a4ea5ea10", "host_count": 12}
+{"time_utc": "2026-10-18T11:05:21.689995+00:00", "kind": "response_saved", "case_id": "ENV-T41", "turn": 2, "response": "responses/ENV-T41-turn-2.md", "sha256": "f33aae3ddb13e7e2857d63945cf01d99a0fd886db94190063704ea15135f33c6", "conversation": "conversations/ENV-T41-through-turn-2.md"}
+{"time_utc": "2026-10-18T11:05:35.412004+00:00", "kind": "helper_error", "call_id": "ENV-T39-turn-1-import-domain-first", "exception_type": "SourceImportError", "message": "UNSUPPORTED_RULE_RECORD"}
+{"time_utc": "2026-10-18T11:05:35.412900+00:00", "kind": "helper_error", "call_id": "ENV-T39-turn-1-import-cidr-first", "exception_type": "SourceImportError", "message": "UNSUPPORTED_RULE_RECORD"}
+{"time_utc": "2026-10-18T11:06:03.245457+00:00", "kind": "response_saved", "case_id": "ENV-T39", "turn": 1, "response": "responses/ENV-T39-turn-1.md", "sha256": "5aa023f280ff9809884e4018b8cbffbbe38b0cf6bc8334621ff1c0c885eea97f", "conversation": "conversations/ENV-T39-through-turn-1.md"}
+{"time_utc": "2026-10-18T11:06:03.296354+00:00", "kind": "helper_return", "call_id": "ENV-T39-turn-2-import-exact", "return_type": "PrivateRuleImport"}
+{"time_utc": "2026-10-18T11:06:03.297028+00:00", "kind": "helper_return", "call_id": "ENV-T39-turn-2-semantic", "return_type": "dict"}
+{"time_utc": "2026-10-18T11:06:03.300953+00:00", "kind": "helper_return", "call_id": "ENV-T39-turn-2-compile", "return_type": "PrivateRulesCandidate"}
+{"time_utc": "2026-10-18T11:06:22.669122+00:00", "kind": "response_saved", "case_id": "ENV-T39", "turn": 2, "response": "responses/ENV-T39-turn-2.md", "sha256": "b70e840fb3591348d10c890d3f823806cf0e8ba43f7ebe47cfa7dc8b78f0952c", "conversation": "conversations/ENV-T39-through-turn-2.md"}
+{"time_utc": "2026-10-18T11:06:53.154794+00:00", "kind": "response_saved", "case_id": "ENV-T38", "turn": 1, "response": "responses/ENV-T38-turn-1.md", "sha256": "9af66052811a76c9ebcc39ee01672e7ac8714f8cc3c9ea4a3abc1ae54b907629", "conversation": "conversations/ENV-T38-through-turn-1.md"}
+{"time_utc": "2026-10-18T11:06:53.205258+00:00", "kind": "helper_return", "call_id": "ENV-T38-turn-2-semantic", "return_type": "dict"}
+{"time_utc": "2026-10-18T11:06:53.209397+00:00", "kind": "helper_return", "call_id": "ENV-T38-turn-2-compile", "return_type": "PrivateCandidate"}
+{"time_utc": "2026-10-18T11:07:22.363202+00:00", "kind": "response_saved", "case_id": "ENV-T38", "turn": 2, "response": "responses/ENV-T38-turn-2.md", "sha256": "c3ea83ab1f62e9545511ef6b5cafb21ade1690dd1d991edba626ed9db306b967", "conversation": "conversations/ENV-T38-through-turn-2.md"}
+{"time_utc": "2026-10-18T11:07:39.075641+00:00", "kind": "helper_return", "call_id": "ENV-T58-turn-1-import-exact", "return_type": "PrivateRuleImport"}
+{"time_utc": "2026-10-18T11:07:39.076300+00:00", "kind": "helper_return", "call_id": "ENV-T58-turn-1-semantic", "return_type": "dict"}
+{"time_utc": "2026-10-18T11:07:39.079937+00:00", "kind": "helper_return", "call_id": "ENV-T58-turn-1-compile", "return_type": "PrivateRulesCandidate"}
+{"time_utc": "2026-10-18T11:08:18.577534+00:00", "kind": "response_saved", "case_id": "ENV-T58", "turn": 1, "response": "responses/ENV-T58-turn-1.md", "sha256": "71adfe2b4469b0e03ca37579ec6f34344416a0b41270f3825b5a6bdea35a52b2", "conversation": "conversations/ENV-T58-through-turn-1.md"}
+{"time_utc": "2026-10-18T11:08:18.620479+00:00", "kind": "response_saved", "case_id": "ENV-T58", "turn": 2, "response": "responses/ENV-T58-turn-2.md", "sha256": "c0f7198a7fffd529fa4ef84d59112ebaa4648cbb30c4385186b98b093704ce1a", "conversation": "conversations/ENV-T58-through-turn-2.md"}

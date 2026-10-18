@@ -447,3 +447,13 @@
 - 新增始终阻止写入的离线预检，明确部分安全信息、未验证目标/新鲜度和未实现元数据保留
 - 新增有界 BackupRead 序列帧检查，仅接受默认数据与安全流；调用方输入不构成原生捕获或完整安全描述符证据
 - 增加12项合成回归及极大整数预算回归；不提权、不启用特权、不开放 Windows 写入或恢复
+
+
+## 2026-10-18 rule-scope guidance and observed original-case evidence
+
+- Clarify TLS field semantics, traffic direction, shared-service preservation,
+  feature/version source selection and pending recommendation boundaries
+- Preserve atomic import and current scoped IPv4-only policy; add no runtime
+  feature-gating engine or device operations
+- Retain independently reviewed ENV-T38/39/41/42/58 observed L+C examples,
+  actual helper traces and separately identified reviewer negative controls

@@ -1,0 +1,154 @@
+{
+  "return_type": "PrivateRuleImport",
+  "repr": "<PrivateRuleImport: candidate only; private source data omitted>",
+  "preview": {
+    "schema_version": "guardian-rule-source-preview/0.1",
+    "status": "imported_candidate_only",
+    "record_count": 1,
+    "exact_count": 1,
+    "suffix_count": 0,
+    "apply_supported": false,
+    "native_acceptance": "not_run",
+    "source_authenticity": "not_established",
+    "source_freshness": "not_established",
+    "independent_sources": "not_established",
+    "effective_priority": "not_established",
+    "authorization": "not_required_for_offline_conversion"
+  },
+  "binding_components": {
+    "rules": {
+      "rule-download": {
+        "kind": "DOMAIN",
+        "domain": "downloads.workflow.invalid"
+      }
+    },
+    "rule_order": [
+      "rule-download"
+    ],
+    "group_name": "approved-group"
+  },
+  "private_material": {
+    "source_bytes": {
+      "type": "bytes",
+      "base64": "ZG93bmxvYWRzLndvcmtmbG93LmludmFsaWQK",
+      "sha256": "d2aa4296793c33bf6db6e36806260cf0a7560c4cd027d951fc13a030d07088ad",
+      "length": 27,
+      "utf8": "downloads.workflow.invalid\n"
+    },
+    "source_sha256": "d2aa4296793c33bf6db6e36806260cf0a7560c4cd027d951fc13a030d07088ad",
+    "source_format": "exact-domain-lines/0.1",
+    "declared_source": {
+      "type": "tuple",
+      "items": [
+        {
+          "type": "tuple",
+          "items": [
+            "activation_state",
+            "candidate"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "client_scope",
+            {
+              "type": "tuple",
+              "items": [
+                "fixture-client"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "evidence_kind",
+            "user_supplied"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "expected_sha256",
+            "d2aa4296793c33bf6db6e36806260cf0a7560c4cd027d951fc13a030d07088ad"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "feature_gate",
+            "feature-download"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "purpose",
+            "workflow-repair"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "schema_version",
+            "guardian-rule-source-binding/0.1"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "shared_service",
+            false
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "source_ref",
+            "source-download"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "verified_at",
+            "2026-10-18"
+          ]
+        },
+        {
+          "type": "tuple",
+          "items": [
+            "version_scope",
+            "fixture-client-v1"
+          ]
+        }
+      ]
+    },
+    "records": {
+      "type": "tuple",
+      "items": [
+        {
+          "type": "RuleRecord",
+          "fields": {
+            "rule_ref": "rule-download",
+            "source_index": 0,
+            "source_line": 1,
+            "start": 0,
+            "end": 26,
+            "original_record": {
+              "type": "bytes",
+              "base64": "ZG93bmxvYWRzLndvcmtmbG93LmludmFsaWQ=",
+              "sha256": "eb16b8c632ee743dca913acab080c346678ed87495be6ac11fc6767718a9660f",
+              "length": 26,
+              "utf8": "downloads.workflow.invalid"
+            },
+            "kind": "DOMAIN",
+            "domain": "downloads.workflow.invalid",
+            "source_action": null,
+            "action": "approved-group"
+          }
+        }
+      ]
+    }
+  }
+}

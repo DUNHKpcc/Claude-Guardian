@@ -1,0 +1,146 @@
+{
+  "call_id": "ENV-T41-turn-2-compile",
+  "callable": "rules_extension_plan.compile_rules_extension",
+  "signature": "(raw, base_raw, request, binding, *, max_seconds=5, cancelled=<function <lambda> at 0x7f9ee7fa1580>)",
+  "positional_arguments": {
+    "type": "tuple",
+    "items": [
+      {
+        "type": "bytes",
+        "base64": "IyBzeW50aGV0aWMgb3duZWQgcnVsZXMgZXh0ZW5zaW9uOyByZXRhaW4gYWxsIGJ5dGVzIG91dHNpZGUgdGhlIHNlbGVjdGVkIGluc2VydGlvbgpwcmVwZW5kOiBbXSAjIHByZXNlcnZlIGNvbW1lbnQKYXBwZW5kOiBbJ0RPTUFJTixhcHBlbmQuZXhhbXBsZS5pbnZhbGlkLE90aGVyJ10KZGVsZXRlOiBbXQp1bmtub3duLWZpZWxkOiB7bmVzdGVkOiBbdHJ1ZSwgMTIsIGtlZXAtZXh0ZW5zaW9uXX0K",
+        "sha256": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99",
+        "length": 225,
+        "utf8": "# synthetic owned rules extension; retain all bytes outside the selected insertion\nprepend: [] # preserve comment\nappend: ['DOMAIN,append.example.invalid,Other']\ndelete: []\nunknown-field: {nested: [true, 12, keep-extension]}\n"
+      },
+      {
+        "type": "bytes",
+        "base64": "IyBzeW50aGV0aWMgZWZmZWN0aXZlIGJhc2U7IG5vdCBwcm9vZiBvZiBHVUkgb3IgcnVudGltZSBiZWhhdmlvcgpwcm94eS1ncm91cHM6CiAgLSBuYW1lOiBhcHByb3ZlZC1ncm91cAogICAgdHlwZTogc2VsZWN0CiAgICBwcm94aWVzOiBbbm9kZS1hXQpydWxlczoKICAtIERPTUFJTixyZXNjdWUuZXhhbXBsZS5pbnZhbGlkLERJUkVDVAogIC0gRE9NQUlOLGNvcnAuc2VudHJ5LmludmFsaWQsQ29ycAogIC0gRE9NQUlOLVNVRkZJWCxzZW50cnkuaW52YWxpZCxTaGFyZWRUZWxlbWV0cnkKICAtIERPTUFJTi1TVUZGSVgsZGF0YWRvZ2hxLmNvbSxXb3JrCiAgLSBET01BSU4tU1VGRklYLHNpZnQuaW52YWxpZCxQYXltZW50cwogIC0gRE9NQUlOLVNVRkZJWCxleGFtcGxlLmludmFsaWQsR2VuZXJhbAogIC0gTUFUQ0gsRElSRUNUCnVua25vd24tZmllbGQ6IGtlZXAtYmFzZQo=",
+        "sha256": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+        "length": 437,
+        "utf8": "# synthetic effective base; not proof of GUI or runtime behavior\nproxy-groups:\n  - name: approved-group\n    type: select\n    proxies: [node-a]\nrules:\n  - DOMAIN,rescue.example.invalid,DIRECT\n  - DOMAIN,corp.sentry.invalid,Corp\n  - DOMAIN-SUFFIX,sentry.invalid,SharedTelemetry\n  - DOMAIN-SUFFIX,datadoghq.com,Work\n  - DOMAIN-SUFFIX,sift.invalid,Payments\n  - DOMAIN-SUFFIX,example.invalid,General\n  - MATCH,DIRECT\nunknown-field: keep-base\n"
+      },
+      {
+        "schema_version": "guardian-remedy-plan-input/0.1",
+        "target_ref": "lab-device",
+        "observed_target_ref": "lab-device",
+        "route_ref": "offline-route",
+        "scope_refs": [
+          "workflow-a"
+        ],
+        "template": "keep-existing",
+        "revisions": {
+          "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+          "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+        },
+        "revision_refs": {
+          "effective": "snapshot-base",
+          "extension": "snapshot-extension"
+        },
+        "intent": {
+          "rule_refs": [
+            "rule-guardian-ingest"
+          ],
+          "egress_group_ref": "approved-group",
+          "no_direct": "yes",
+          "ipv6_goal": "preserve",
+          "udp_goal": "preserve"
+        },
+        "facts": {
+          "versions": {
+            "product": "clash-verge-rev",
+            "gui": "2.5.8",
+            "core": "1.19.0"
+          },
+          "mode": "rule",
+          "control": {
+            "dependency_known": "yes",
+            "preserved": "yes",
+            "rescue_available": "yes",
+            "scope_refs": [
+              "control-a"
+            ]
+          },
+          "rules": {
+            "first_match_verified": "yes",
+            "protected_priority_preserved": "yes",
+            "complete": "yes"
+          },
+          "ownership": {
+            "known": "yes",
+            "persistent_extension_available": "yes",
+            "gui_readback_available": "yes"
+          },
+          "groups": {
+            "approved-group": {
+              "kind": "group",
+              "complete": "yes",
+              "members": [
+                "node-a"
+              ]
+            },
+            "node-a": {
+              "kind": "proxy",
+              "protocol": "socks5",
+              "complete": "yes",
+              "members": []
+            }
+          },
+          "ipv6": "verified",
+          "udp": "verified",
+          "dns": {
+            "nodes": [
+              "resolver",
+              "bootstrap"
+            ],
+            "edges": [
+              {
+                "from": "resolver",
+                "to": "bootstrap",
+                "path": "both"
+              }
+            ],
+            "complete": "yes",
+            "local_preserved": "yes",
+            "browser_doh_known": "yes",
+            "bootstrap_known": "yes",
+            "policy_merge_known": "yes",
+            "responsibility": "mihomo"
+          }
+        },
+        "current_revisions": {
+          "effective": "12a95b63f3c7bb072b8190061b3daaeac389084e2ea745542477c41f04d6d2d1",
+          "extension": "4e3ab056951981e7eba67945ad1a598888f3b68e2fe81aa68a2441e9b4f3ed99"
+        }
+      },
+      {
+        "schema_version": "guardian-rules-extension-binding/0.1",
+        "operation": "insert_selected_prepend_rules",
+        "target_ref": "lab-device",
+        "scope_refs": [
+          "workflow-a"
+        ],
+        "layer_ref": "extension",
+        "base_layer_ref": "effective",
+        "layer_kind": "owned-profile-rules-extension",
+        "placement": "prepend",
+        "group_name": "approved-group",
+        "rules": {
+          "rule-guardian-ingest": {
+            "kind": "DOMAIN",
+            "domain": "guardian.ingest.sentry.invalid"
+          }
+        },
+        "rule_order": [
+          "rule-guardian-ingest"
+        ],
+        "protected_rule_indexes": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "keyword_arguments": {},
+  "started_at": "2026-10-18T11:04:54.221178+00:00",
+  "default_arguments": "Omitted keyword-only defaults are the function defaults shown in signature. No live authorization callback supplied."
+}

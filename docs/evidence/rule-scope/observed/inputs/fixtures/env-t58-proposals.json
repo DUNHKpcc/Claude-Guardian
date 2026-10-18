@@ -1,0 +1,37 @@
+{
+  "accepted_design": {
+    "decisions": "D01-D12",
+    "adoption_state": "accepted_design",
+    "source": "D-ENV v0.3, 2026-10-15 §16.1",
+    "already_selected_conditional_plan": {
+      "template": "keep-existing",
+      "source_file": "fixtures/env-t39-supported-source.txt",
+      "exact_host": "api.workflow.invalid",
+      "egress_group": "approved-group",
+      "rule_ref": "rule-core"
+    }
+  },
+  "new_proposals": [
+    {
+      "proposal_ref": "proposal-endpoint",
+      "category": "endpoint",
+      "adoption_state": "recommendation_pending",
+      "value": "new-echo-endpoint",
+      "description": "A newly suggested external IP echo endpoint alias; no endpoint URL, review or per-operation approval exists."
+    },
+    {
+      "proposal_ref": "proposal-dependency",
+      "category": "dependency",
+      "adoption_state": "recommendation_pending",
+      "value": "extra-egress-component",
+      "description": "An extra system-level egress control component, with installation and permissions undecided."
+    },
+    {
+      "proposal_ref": "proposal-release",
+      "category": "release_scope",
+      "adoption_state": "recommendation_pending",
+      "value": "all-platform-writes",
+      "description": "Expand the default first release to all Mac/Windows setting writes and deep cleanup without completed native validation."
+    }
+  ]
+}

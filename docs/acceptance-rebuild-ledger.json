@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Thirty-six original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T31/T47/T82/T49/T83/T29/T57/T75/T79/T11/T12/T76/T84/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 182 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
+    "Forty-one original cases have freshly reviewed, pinned evidence under unchanged original layers; remaining 177 cases are pending_revalidation. The five latest ENV-T38/39/41/42/58 cases use independently reviewed observed dialogue and offline helper evidence. Observed examples do not guarantee unseen model outputs; relevant byte changes require review."
   ],
   "cases": [
     {
@@ -1642,9 +1642,19 @@
       "requirement": "识别为证书指纹字段语义不匹配；不自动改写节点 TLS 配置",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
+        "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      }
     },
     {
       "id": "ENV-T39",
@@ -1652,9 +1662,19 @@
       "requirement": "保留流量方向；不把 Outbound 清单直接编成客户端默认目标规则",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
+        "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      }
     },
     {
       "id": "ENV-T40",
@@ -1681,9 +1701,19 @@
       "requirement": "默认不产生跨业务宽泛规则，保留原有策略",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
+        "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      }
     },
     {
       "id": "ENV-T42",
@@ -1691,9 +1721,19 @@
       "requirement": "按功能门控，不强制探测/修改该依赖",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
+        "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      }
     },
     {
       "id": "ENV-T43",
@@ -1851,9 +1891,19 @@
       "requirement": "不得因为 D01—D12 已接受，就把尚待评审的新端点/依赖/发布范围编译成默认 apply 动作",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
+        "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      }
     },
     {
       "id": "ENV-T59",
@@ -2066,7 +2116,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-enforcement-cases.md",
-        "sha256": "290cb8aff51504548d5826014a6431a2946991a26b3036900405ece0b6e90f18",
+        "sha256": "deb11002f6a89bdae077388bca4666b2f44b384e069c5531cc9de9c1e326d97e",
         "layers": [
           "L"
         ],
@@ -2095,7 +2145,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-required-controls-case.md",
-        "sha256": "e8f242452e9204880553d557714ddb2fe557ecaacb6eb2be1813108706b5a598",
+        "sha256": "afc1f1a5425b40e4a8f0fdbb49c6a315b70483e86f9eff88bf8bcf45a20eff23",
         "layers": [
           "L",
           "C"
@@ -2194,7 +2244,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-enforcement-cases.md",
-        "sha256": "290cb8aff51504548d5826014a6431a2946991a26b3036900405ece0b6e90f18",
+        "sha256": "deb11002f6a89bdae077388bca4666b2f44b384e069c5531cc9de9c1e326d97e",
         "layers": [
           "L",
           "C"

@@ -51,6 +51,17 @@ A future approved check proceeds from selected proxy entry → scoped HTTPS samp
 - WebRTC host/private/link-local/mDNS candidates differ from public candidates. A different public candidate requires path/family analysis. ICE 701, no candidates, or timeout is inconclusive, not proof of no leakage
 - A child's inherited proxy variable does not prove adoption. MCP subprocesses, external interpreters, plugins, background clients, and update paths require their own later evidence
 
+<a id="tls-and-direction-semantics"></a>
+## TLS 字段与服务方向：先解释，后限定规则候选
+
+以下继承 D-ENV v0.3（2026-10-15）§5.9、§8.1、D08／D09 的语义纠正；不是重新核验的当前协议支持表、生产 allowlist 或握手结果。
+
+Mihomo 的 `fingerprint` 是证书指纹字段，`fingerprint: chrome` 属于字段语义不匹配；其适用代理协议中的 `client-fingerprint` 才是客户端 uTLS 参数。两者不能直接互换，不自动改名覆盖已有合法 `client-fingerprint`，不编造证书哈希。代理到节点的外层 TLS 与应用到服务的内层 TLS 分开；改变外层参数不能证明内层应用成为 Chrome，也没有“伪装 Chrome 更安全”的结论。保留既有节点必要 TLS 设置；只有具体证书／协议兼容错误及已核实的版本能力才另出最小修改计划。不得靠 `skip-cert-verify`、关闭校验或安装自签根证书补救。独立规则候选须保持全部 TLS 字节不变，通用 unsupported 错误不能代替对此语义错误的正面解释。
+
+冻结的 2026-10-15 来源在 §5.9／E28 将 `160.79.104.0/23` 和 `2607:6bc0::/48` 记为服务 **Inbound**，将 `160.79.104.0/21` 记为平台 **Outbound**。方向以 Anthropic 为参照：前者是 `client_to_service`，后者是 `service_to_external`，不是按本机网卡命名。解释时保留这个来源日期、用途和覆盖边界；较宽范围包含较窄范围或某 API 地址，也不能把平台 Outbound 清单编成客户端默认目标规则，更不证明覆盖第三方 CDN／授权依赖。历史条目不当成今天已核验的清单；新的精确 CIDR 方案仍需独立来源核验及能力评审，不因此在 PC0 自动访问目标服务。
+
+现有域名转换／导入 API 不支持 CIDR，不添加它们不接受的方向字段。方向和来源证据由 Agent 在转换前审阅并随私有候选保留；不能只因解析器拒绝就省略方向解释。混合域名与 CIDR 输入仍整批报错，不从失败批次取部分规则继续编译；另有独立、完整且明确选中的受支持域名来源时，可单独生成窄候选并保留其他策略。功能和跨业务选择见[Agent 规则范围](agent-remediation.md#selected-rule-scope)。
+
 ## Finding → minimal plan
 
 | Observation | Proposed remedy and preserved scope |
