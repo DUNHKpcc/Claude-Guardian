@@ -107,6 +107,59 @@ class SelectionTests(unittest.TestCase):
                         self.assertIn(out['next_phase'], {'stop', 'resolve_prerequisites'})
                         self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
 
+    def test_no_change_transport_codes_stop_without_fallback_or_native_claims(self):
+        for code in ('NO_CHANGE_TO_RETAIN', 'NO_CHANGE_TO_EXECUTE'):
+            for inp in (report(code), report(code, 'DNS_PATH_CONFLICT'),
+                        report('NATIVE_REPAIR_ADAPTER_UNAVAILABLE', code),
+                        report('UNRECOGNIZED_DIAGNOSTIC', code),
+                        dict(report(), errors=[code]),
+                        dict(report(), status='blocked', code=code)):
+                with self.subTest(code=code, inp=inp):
+                    out = ar.select(inp, 'device-1')
+                    self.assertEqual(out['next_phase'], 'stop')
+                    self.assertEqual(out['status'], 'stopped')
+                    self.assertEqual([a['action_id'] for a in out['actions']], ['no-change'])
+                    self.assertEqual(out['actions'][0]['kind'], 'no_change')
+                    self.assertEqual(out['actions'][0]['agent_fallback'], 'none')
+                    self.assertIsNone(out['actions'][0]['command_template'])
+                    self.assertEqual(out['actions'][0]['finding_codes'], [code])
+                    self.assertEqual(out['prerequisite_blockers'], [])
+                    self.assertEqual(out['completion'], 'no_repair_performed')
+                    self.assertEqual(out['changes'], [])
+                    self.assertEqual(out['authority'], 'none')
+                    self.assertEqual(out['native_acceptance'], 'not_established')
+                    self.assertFalse(out['environment_pass'])
+
+    def test_no_change_preserves_independent_incident_triage_in_both_orders(self):
+        for code in ('NO_CHANGE_TO_RETAIN', 'NO_CHANGE_TO_EXECUTE'):
+            for codes in ((code, 'INCIDENT_PRIORITY'), ('INCIDENT_PRIORITY', code)):
+                with self.subTest(codes=codes):
+                    out = ar.select(report(*codes, 'DNS_PATH_CONFLICT'), 'device-1')
+                    self.assertEqual(out['next_phase'], 'stop')
+                    self.assertEqual({a['action_id'] for a in out['actions']}, {'no-change', 'incident'})
+                    self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+                    incident = next(a for a in out['actions'] if a['action_id'] == 'incident')
+                    self.assertEqual(incident['finding_codes'], ['INCIDENT_PRIORITY'])
+                    self.assertEqual(incident['kind'], 'clarify')
+                    self.assertEqual(out['completion'], 'no_repair_performed')
+                    self.assertFalse(out['environment_pass'])
+                    cancelled = ar.select(report(*codes, 'USER_CANCELLED'), 'device-1')
+                    self.assertEqual([a['action_id'] for a in cancelled['actions']], ['stop'])
+
+    def test_no_change_does_not_hide_cancellation_or_genuine_prerequisite_failure(self):
+        for code in ('NO_CHANGE_TO_RETAIN', 'NO_CHANGE_TO_EXECUTE'):
+            out = ar.select(report(code, 'USER_CANCELLED'), 'device-1')
+            self.assertEqual([a['action_id'] for a in out['actions']], ['stop'])
+            for gate in ('STALE_FILE', 'PERMISSION_DENIED', 'ROLLBACK_CONFLICT'):
+                with self.subTest(code=code, gate=gate):
+                    out = ar.select(report(code, gate, 'DNS_PATH_CONFLICT'), 'device-1')
+                    self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+                    self.assertIn(gate, out['prerequisite_blockers'])
+                    self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+            out = ar.select(dict(report(code), status='failed'), 'device-1')
+            self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+            self.assertIn('DIAGNOSTIC_PREREQUISITES_UNRESOLVED', out['prerequisite_blockers'])
+
     def test_structured_errors_and_codes_preserve_gates(self):
         for diagnostic in [{'errors': ['PERMISSION_DENIED']},
                            {'errors': [{'code': 'PERMISSION_DENIED', 'detail': 'SECRET'}]},

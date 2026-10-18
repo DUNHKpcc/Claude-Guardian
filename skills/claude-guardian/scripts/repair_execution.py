@@ -35,6 +35,8 @@ def retain(prepared, *, plan_path, backup_directory, cancelled=None):
     A change detected after the write leaves a private artifact, but no successful
     retention result. Execution independently revalidates every retained binding.
     """
+    if prepared._plan is None:
+        raise tx.TransactionError('NO_CHANGE_TO_RETAIN')
     prepared.recheck_review(cancelled=cancelled)
     tx._path(backup_directory)
     document = {'schema_version': SCHEMA, 'request_digest': prepared._request_digest,
@@ -104,6 +106,8 @@ def _bound_document(plan_path, plan_digest, target_path, target_ref, backup_dire
         raise tx.TransactionError('TARGET_MISMATCH')
     if document['backup_directory'] != backup_directory:
         raise tx.TransactionError('BACKUP_SCOPE_MISMATCH')
+    if document['plan']['before']['sha256'] == document['plan']['after_sha256']:
+        raise tx.TransactionError('NO_CHANGE_TO_EXECUTE')
     return document
 
 
@@ -139,6 +143,8 @@ def execute(*, request_path, plan_path, plan_digest, target_path, target_ref,
         if (prepared._base_source != document['base_source']
                 or prepared._metadata_sources != document['metadata_sources']):
             raise tx.TransactionError('SOURCE_SNAPSHOT_CHANGED')
+        if prepared._plan is None:
+            raise tx.TransactionError('STALE_FILE')
         fresh, retained = prepared._plan, document['plan']
         if any(fresh[key] != retained[key] for key in
                ('before', 'parent_identity', 'after_sha256', 'proposed_base64')):

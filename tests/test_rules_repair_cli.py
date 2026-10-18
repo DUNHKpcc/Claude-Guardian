@@ -77,6 +77,78 @@ class RulesRepairCLI(unittest.TestCase):
                     target_path=str(self.target), target_ref='mac-a', backup_directory=str(self.backups),
                     **self.scope)
 
+    def matching_snapshot(self):
+        candidate = r.rules_edits.compile_rules_extension(RAW, BASE, *inputs())
+        raw = candidate.private_material()['candidate_bytes']
+        self.target.write_bytes(raw)
+        semantic, binding = inputs(raw=raw)
+        self.document = {'schema_version': r.SCHEMA, 'remedy_request': semantic, 'binding': binding}
+        self.request.write_text(json.dumps(self.document))
+        return raw
+
+    def test_exact_repeat_cli_is_an_observation_without_artifact_or_receipt(self):
+        raw = self.matching_snapshot()
+        with patch.object(r.tx, 'plan', side_effect=AssertionError('action plan')):
+            prepared = self.preflight()
+            self.assertIsNone(prepared._plan)
+            self.assertEqual(prepared.public_report()['matched_rules'], 1)
+        result = self.run_cli('plan', '--plan-file', str(self.plan),
+                              '--backup-directory', str(self.root / 'absent'), '--private-review')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        review, report = map(json.loads, result.stdout.splitlines())
+        self.assertEqual(report['status'], 'no_change_in_supplied_snapshot')
+        self.assertEqual(report['added_rules'], 0)
+        self.assertEqual(report['matched_rules'], 1)
+        self.assertFalse(report['apply_supported'])
+        self.assertEqual(report['effective_routing'], 'not_run')
+        self.assertEqual(review['selected_rule_changes'], [])
+        self.assertEqual(review['matched_rule_refs'], ['rule-a'])
+        self.assertIsNone(review['byte_insertion'])
+        self.assertEqual(review['operation'], 'none')
+        for key in ('plan_digest', 'retained_plan_digest', 'action_id', 'recovery_id', 'receipt_digest'):
+            self.assertNotIn(key, review)
+            self.assertNotIn(key, report)
+        self.assertFalse(self.plan.exists())
+        self.assertFalse((self.root / 'absent').exists())
+        self.assertEqual(self.target.read_bytes(), raw)
+        self.assertEqual(list(self.backups.iterdir()), [])
+
+    def test_exact_repeat_review_rechecks_every_supporting_source_identity(self):
+        self.matching_snapshot()
+        for source in (self.base, self.info, self.index):
+            with self.subTest(source=source.name):
+                prepared = self.preflight()
+                replacement = source.with_name('replacement')
+                replacement.write_bytes(source.read_bytes())
+                replacement.chmod(0o600)
+                replacement.replace(source)
+                for render in (prepared.public_report, prepared.private_review):
+                    with self.assertRaisesRegex(r.RepairError, '^SOURCE_SNAPSHOT_CHANGED$'):
+                        render()
+
+    def test_exact_repeat_retention_is_rejected_without_destination_access(self):
+        self.matching_snapshot()
+        prepared = self.preflight()
+        with patch.object(e.tx, '_path', side_effect=AssertionError('destination validation')), \
+                patch.object(e.tx, '_directory', side_effect=AssertionError('backup access')), \
+                patch.object(e.tx, '_parent', side_effect=AssertionError('artifact access')):
+            with self.assertRaisesRegex(e.tx.TransactionError, '^NO_CHANGE_TO_RETAIN$'):
+                e.retain(prepared, plan_path='unused', backup_directory='unused')
+        self.assertFalse(self.plan.exists())
+        self.assertEqual(list(self.backups.iterdir()), [])
+
+    def test_exact_repeat_source_change_during_compilation_still_blocks(self):
+        self.matching_snapshot()
+        compile = r.rules_edits.compile_rules_extension
+        def changed(*args, **kwargs):
+            result = compile(*args, **kwargs)
+            self.index.write_bytes(INDEX + b'# changed during compilation\n')
+            return result
+        with patch.object(r.rules_edits, 'compile_rules_extension', side_effect=changed), \
+                patch.object(r.tx, 'plan', side_effect=AssertionError('action plan')):
+            with self.assertRaisesRegex(r.RepairError, '^SOURCE_SNAPSHOT_CHANGED$'):
+                self.preflight()
+
     def test_preflight_and_exact_private_diff_no_write(self):
         result = self.run_cli('diff', '--private-review')
         self.assertEqual(result.returncode, 0, result.stderr)

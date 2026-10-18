@@ -118,6 +118,10 @@ CATALOG = {
                        '核对已有可信运行时的真实目录与权限；需要安装时另取许可',
                        '保留部分元数据；不放松链接检查或伪造上下文句柄'],
                       ['受影响路径字段及原因', '可信本机运行时'], ['在合规运行时重跑诊断；DNS授权仍需单独满足']),
+    'no-change': action('no_change', 'ENV-06', '当前修复请求没有待写入差异，停止本次写入流程',
+                        ['保留当前文件；不创建计划、备份或回执，不改走另一条修改路径',
+                         '仅说明已验证的输入快照范围；不宣称应用、运行时或路径已经通过'],
+                        [], ['若目标或输入变化，重新读取并计划；本结果不复用旧权限']),
     'keep': action('no_change', 'ENV-04', '现有证据不足以要求修改',
                    ['保留当前配置并解释证据边界', '仅补与用户目标有关的缺口'], [], ['没有新问题不制造修复']),
 }
@@ -151,6 +155,7 @@ GROUPS = {
     'input': 'INPUT_OR_RESPONSE_INVALID UNSAFE_OR_OFFLINE_PATH BUDGET_EXCEEDED FILE_NOT_FOUND_IN_APPROVED_SCOPE INVENTORY_CALLBACK_FAILED OS_QUERY_FAILED OUTPUT_SAVE_FAILED COLLECTOR_INTERNAL_FAILURE INPUT_INVALID INVALID_ARGUMENTS_OR_SAVE_FAILED SESSION_FAILED TIMEOUT CLEANUP_FAILED CONTROLLER_RESPONSE_REJECTED APPROVAL_CLOCK_INVALID INVALID_APPROVAL_TIMEOUT CANCELLATION_CHECK_FAILED INVALID_CANCELLATION_CALLBACK DIAGNOSTIC_PREREQUISITES_UNRESOLVED TERMINAL_FLUSH_FAILED',
     'incident': 'INCIDENT_PRIORITY',
     'runtime': 'RUNTIME_PATH_INVALID',
+    'no-change': 'NO_CHANGE_TO_RETAIN NO_CHANGE_TO_EXECUTE',
     'keep': 'FAKE_IP_WITH_WORKING_HTTPS IPV6_TIMEOUT_ONLY EGRESS_TIMEZONE_DIFFERENCE NO_CHANGE',
 }
 REPAIR_PREREQUISITES = {
@@ -275,7 +280,8 @@ def diagnostic_codes(report):
             # A stated capability gap can still be investigated. An unexplained
             # failed/blocked report cannot lend its old findings to a repair.
             capability_only = codes and all(FINDING_ACTIONS.get(code) == 'unsupported' for code in codes)
-            if value == 'failed' or not capability_only:
+            no_change_only = codes and all(FINDING_ACTIONS.get(code) == 'no-change' for code in codes)
+            if value == 'failed' or not (capability_only or no_change_only):
                 codes.append('DIAGNOSTIC_PREREQUISITES_UNRESOLVED')
     return codes
 
@@ -292,6 +298,14 @@ def select(report, target_ref):
     # Cancellation wins over every pending proposal, including modifications.
     if any(code in GROUPS['stop'].split() for code in codes):
         codes = ['USER_CANCELLED']
+    barriers = sorted(set(codes) & PREREQUISITE_CODES)
+    no_change = not barriers and any(FINDING_ACTIONS.get(code) == 'no-change' for code in codes)
+    if no_change:
+        # A completed no-write branch is not a missing capability to work around.
+        # Genuine prerequisite failures above remain barriers, never hidden by it.
+        # Independent account/incident triage is not a substitute configuration
+        # repair and must remain visible even while this write branch stops.
+        codes = [code for code in codes if FINDING_ACTIONS.get(code) in {'no-change', 'incident'}]
     selected = {}
     for code in codes:
         key = FINDING_ACTIONS.get(code, 'unsupported')
@@ -299,19 +313,18 @@ def select(report, target_ref):
             selected[key] = dict(action_id=key, **copy.deepcopy(CATALOG[key]), finding_codes=[])
         # Do not echo unrecognized codes: they may contain private data.
         selected[key]['finding_codes'].append(code if code in FINDING_ACTIONS else 'UNRECOGNIZED_FINDING')
-    barriers = sorted(set(codes) & PREREQUISITE_CODES)
     for item in selected.values():
         item['builtin_execution'] = 'not_available_for_target_mutation'
-        item['agent_fallback'] = ('investigate_scoped_repair' if not barriers and item['kind'] in {'agent_investigation', 'candidate_only', 'host_library_only'} else 'none')
+        item['agent_fallback'] = ('investigate_scoped_repair' if not barriers and not no_change and item['kind'] in {'agent_investigation', 'candidate_only', 'host_library_only'} else 'none')
         item['fallback_requirements'] = (['inspect_actual_target_and_supported_interface',
             'explain_exact_diff_impact_backup_and_recovery', 'obtain_required_specific_approval',
             'execute_only_reviewed_minimal_operation', 'read_back_and_redetect_same_scope',
             'never_bypass_denial_or_builtin_gate'] if item['agent_fallback'] != 'none' else [])
     return dict(schema_version=SCHEMA, target_ref=target_ref,
-                status='stopped' if 'stop' in selected else 'selected' if selected else 'insufficient_evidence',
+                status='stopped' if 'stop' in selected or no_change else 'selected' if selected else 'insufficient_evidence',
                 actions=list(selected.values()), prerequisite_blockers=barriers, changes=[], authority='none',
                 native_acceptance='not_established', environment_pass=False,
-                next_phase='stop' if 'stop' in selected else 'resolve_prerequisites' if barriers else 'agent_review',
+                next_phase='stop' if 'stop' in selected or no_change else 'resolve_prerequisites' if barriers else 'agent_review',
                 completion='no_repair_performed')
 
 

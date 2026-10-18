@@ -36,13 +36,17 @@ def _hash(raw):
 
 class PrivateCandidate:
     """Explicit private access only; not a transaction plan or serializable report."""
-    __slots__ = ('_original', '_candidate', '_count', '_binding', '_edits')
+    __slots__ = ('_original', '_candidate', '_count', '_binding', '_edits',
+                 '_matched_refs', '_changed_refs')
 
-    def __init__(self, original, candidate, count, binding, edits=()):
+    def __init__(self, original, candidate, count, binding, edits=(), *,
+                 matched_rule_refs=(), changed_rule_refs=()):
         self._original, self._candidate, self._count = original, candidate, count
         self._binding = binding
         self._edits = tuple((start, end, original[start:end], replacement)
                             for start, end, replacement in edits)
+        self._matched_refs = tuple(matched_rule_refs)
+        self._changed_refs = tuple(changed_rule_refs)
 
     def __repr__(self):
         return '<PrivateCandidate: blocked, private content omitted>'
@@ -55,14 +59,20 @@ class PrivateCandidate:
         return {'original_bytes': self._original, 'candidate_bytes': self._candidate,
                 'declared_binding': self._binding,
                 'policy_token_edits': self._edits,
+                'matched_rule_refs': self._matched_refs,
+                'changed_rule_refs': self._changed_refs,
                 'original_sha256': _hash(self._original),
                 'candidate_sha256': _hash(self._candidate)}
 
     def preview(self):
+        no_change = self._candidate == self._original
         return {'schema_version': 'guardian-config-edit-preview/0.1',
-                'status': 'candidate_only_blocked', 'changed_rules': self._count,
-                'apply_supported': False, 'authorization': 'pending',
-                'blockers': sorted(_ALLOWED_BLOCKERS) + ['ACTION_AUTHORIZATION_PENDING'],
+                'status': ('no_change_in_supplied_snapshot'
+                           if no_change else 'candidate_only_blocked'),
+                'changed_rules': self._count, 'matched_rules': len(self._matched_refs),
+                'apply_supported': False,
+                'authorization': 'not_required_for_snapshot_observation' if no_change else 'pending',
+                'blockers': sorted(_ALLOWED_BLOCKERS) + ([] if no_change else ['ACTION_AUTHORIZATION_PENDING']),
                 'native_compatibility': 'unknown', 'native_acceptance': 'not_run',
                 'ownership_and_scope': 'declared_unverified',
                 'unrelated_bytes': 'preserved'}
@@ -219,8 +229,9 @@ def compile_edit_plan(raw, remedy_request, binding):
         names.append(name.value)
     if len(names) != len(set(names)) or names.count(group) != 1:
         _fail('EGRESS_GROUP_MISSING_OR_AMBIGUOUS')
-    edits, indexes = [], set()
-    for item in rule_bindings.values():
+    edits, indexes, matched_refs, changed_refs = [], set(), [], []
+    for ref in proposals[0]['rule_refs']:
+        item = rule_bindings[ref]
         if type(item) is not dict or set(item) != {'index', 'expected'}:
             _fail('INVALID_RULE_BINDING')
         index = item['index']
@@ -249,15 +260,19 @@ def compile_edit_plan(raw, remedy_request, binding):
             _fail('AMBIGUOUS_OR_UNSUPPORTED_RULE')
         if _provably_shadowed(rules.value, index, match.group(2)):
             _fail('SELECTED_RULE_SHADOWED')
-        if match.group(3) == group:
-            _fail('NO_CHANGE')
         # PyYAML indexes Unicode characters; splice bytes only after conversion.
         start_char = node.start_mark.index + match.start(3)
         end_char = node.end_mark.index
         if text[node.start_mark.index:end_char] != node.value:
             _fail('UNSUPPORTED_SCALAR_ENCODING')
+        # Matching policy tokens still require every selection/semantic check.
+        # They are reported separately and never become empty byte edits.
+        if match.group(3) == group:
+            matched_refs.append(ref)
+            continue
         start, end = len(text[:start_char].encode('utf-8')), len(text[:end_char].encode('utf-8'))
         edits.append((start, end, group.encode('ascii')))
+        changed_refs.append(ref)
         node.value = node.value[:match.start(3)] + group
     edits.sort()
     if any(left[1] > right[0] for left, right in zip(edits, edits[1:])):
@@ -271,4 +286,5 @@ def compile_edit_plan(raw, remedy_request, binding):
     declared_binding = (remedy_request['target_ref'], tuple(remedy_request['scope_refs']),
                         layer, tuple(sorted(remedy_request['revisions'].items())),
                         tuple(sorted(remedy_request['facts']['versions'].items())))
-    return PrivateCandidate(raw, candidate, len(edits), declared_binding, edits)
+    return PrivateCandidate(raw, candidate, len(edits), declared_binding, edits,
+                            matched_rule_refs=matched_refs, changed_rule_refs=changed_refs)

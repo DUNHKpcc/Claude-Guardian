@@ -119,10 +119,16 @@ def preflight(request_path, target_path, target_ref, *, max_seconds=30,
         candidate = edits.compile_edit_plan(original, semantic, binding)
     material = candidate.private_material()
     _guard(cancelled, deadline)
-    plan = tx.plan(target_path, material['candidate_bytes'], target_ref,
-                   ttl_seconds=600)
-    if plan['before'] != snapshot or plan['parent_identity'] != parent_identity:
-        raise RepairError('STALE_FILE')
+    target_source = {'path': target_path, 'snapshot': snapshot,
+                     'parent_identity': parent_identity}
+    # An observation of matching bytes is not an action plan. In particular,
+    # tx.plan would invent an action ID even when no file change is needed.
+    plan = None
+    if material['candidate_bytes'] != original:
+        plan = tx.plan(target_path, material['candidate_bytes'], target_ref,
+                       ttl_seconds=600)
+        if plan['before'] != snapshot or plan['parent_identity'] != parent_identity:
+            raise RepairError('STALE_FILE')
     _guard(cancelled, deadline)
     _check_source(base_source)
     for source in metadata_sources.values():
@@ -140,20 +146,25 @@ def preflight(request_path, target_path, target_ref, *, max_seconds=30,
                    'selector': ','.join(item['expected'].split(',')[:2]),
                    'before_policy': item['expected'].split(',')[2],
                    'after_policy': binding['group_name']}
-                  for ref, item in binding['rules'].items()]
-    return PrivatePreflight(candidate, plan, fingerprint, review, candidate_kind, base_source,
-                            metadata_sources, extension_uid, linkage, deadline,
-                            request_path=request_path, cancelled=cancelled)
+                  for ref, item in binding['rules'].items()
+                  if ref in material['changed_rule_refs']]
+    prepared = PrivatePreflight(candidate, plan, fingerprint, review, candidate_kind, base_source,
+                                metadata_sources, extension_uid, linkage, deadline,
+                                request_path=request_path, cancelled=cancelled,
+                                target_source=target_source, target_ref=target_ref)
+    if plan is None:
+        prepared.recheck_review()
+    return prepared
 
 
 class PrivatePreflight:
     __slots__ = ('_candidate', '_plan', '_request_digest', '_review', '_candidate_kind', '_base_source',
                  '_metadata_sources', '_extension_uid', '_linkage', '_deadline', '_request_path',
-                 '_cancelled')
+                 '_cancelled', '_target_source', '_target_ref')
 
     def __init__(self, candidate, plan, request_digest, review, candidate_kind='merge-policy', base_source=None,
                  metadata_sources=None, extension_uid=None, linkage=None, deadline=None, *,
-                 request_path=None, cancelled=lambda: False):
+                 request_path=None, cancelled=lambda: False, target_source=None, target_ref=None):
         self._deadline = deadline
         self._request_path, self._cancelled = request_path, cancelled
         self._candidate_kind, self._base_source = candidate_kind, base_source
@@ -163,6 +174,7 @@ class PrivatePreflight:
         self._plan = plan
         self._request_digest = request_digest
         self._review = tuple(tuple(sorted(item.items())) for item in review)
+        self._target_source, self._target_ref = target_source, target_ref
 
     def __repr__(self):
         return '<PrivatePreflight: native apply blocked; private data omitted>'
@@ -171,6 +183,8 @@ class PrivatePreflight:
         raise TypeError('private repair preflight serialization disabled')
 
     def public_report(self, command='preflight'):
+        if self._plan is None:
+            self.recheck_review()
         result = {'schema_version': RESULT_SCHEMA, 'command': command,
                 'status': 'planned_but_blocked', 'apply_supported': False,
                 'changed_rules': self._candidate.preview().get('changed_rules', 0),
@@ -182,6 +196,7 @@ class PrivatePreflight:
                 'file_freshness': 'matched_during_preflight',
                 'application_reload': 'not_run', 'effective_routing': 'not_run',
                 'recovery': 'not_needed_no_write', 'candidate_kind': self._candidate_kind}
+        result['matched_rules'] = self._candidate.preview()['matched_rules']
         if self._candidate_kind == 'rules-prepend':
             candidate = self._candidate.preview()
             result['ownership'] = self._linkage.public_report()
@@ -191,6 +206,14 @@ class PrivatePreflight:
             result['priority_review'] = {key: candidate[key] for key in (
                 'placement', 'known_base_overlap_count', 'known_append_overlap_count',
                 'unknown_base_or_append_rule_count', 'protected_index_coverage')}
+        if self._plan is None:
+            result.update({'status': 'no_change_in_supplied_snapshot',
+                           'artifact_write': 'not_created_no_change',
+                           'native_acceptance': 'not_run'})
+            result['diff'] = {'operation': 'none', 'other_bytes': 'preserved',
+                              'values': 'no_changes'}
+            result['blockers'] = [code for code in result['blockers']
+                                  if code != 'ACTION_AUTHORIZATION_PENDING']
         return result
 
     def recheck_review(self, request_path=None, *, cancelled=None):
@@ -205,13 +228,19 @@ class PrivatePreflight:
             if cancelled is not None:
                 _guard(cancelled, self._deadline)
         guard()
-        tx._validate(self._plan, time.time())
+        if self._plan is not None:
+            tx._validate(self._plan, time.time())
+            target_source = {'path': self._plan['path'], 'snapshot': self._plan['before'],
+                             'parent_identity': self._plan['parent_identity']}
+        else:
+            if self._target_source is None:
+                raise RepairError('INVALID_REPAIR_REQUEST')
+            target_source = self._target_source
         if tx.digest(_load_request(request_path)) != self._request_digest:
             raise RepairError('REQUEST_CHANGED')
         guard()
-        current = _read_source(self._plan['path'])[1]
-        if (current['snapshot'] != self._plan['before']
-                or current['parent_identity'] != self._plan['parent_identity']):
+        current = _read_source(target_source['path'])[1]
+        if current != target_source:
             raise RepairError('STALE_FILE')
         for source in [self._base_source] + list(self._metadata_sources.values()):
             guard()
@@ -220,17 +249,25 @@ class PrivatePreflight:
 
     def private_review(self):
         """For the authorized private host/user dialogue only. Never publish or log."""
+        if self._plan is None:
+            self.recheck_review()
         material = self._candidate.private_material()
-        result = {'target_path': self._plan['path'], 'target_ref': self._plan['target_ref'],
-                  'plan_digest': tx.digest(self._plan), 'candidate_kind': self._candidate_kind,
+        result = {'target_path': self._plan['path'] if self._plan is not None else self._target_source['path'],
+                  'target_ref': self._plan['target_ref'] if self._plan is not None else self._target_ref,
+                  'candidate_kind': self._candidate_kind,
                   'before_sha256': material['original_sha256'],
                   'after_sha256': material['candidate_sha256'],
                   'selected_rule_changes': [dict(item) for item in self._review],
+                  'matched_rule_refs': list(material['matched_rule_refs']),
                   'blockers': self.public_report()['blockers'],
                   'application_reload': 'not_run', 'effective_routing': 'not_run'}
+        if self._plan is not None:
+            result['plan_digest'] = tx.digest(self._plan)
+        else:
+            result['status'] = 'no_change_in_supplied_snapshot'
         if self._candidate_kind == 'rules-prepend':
-            offset, before, inserted = material['byte_insertion']
-            result.update({'operation': 'insert_selected_prepend_rules',
+            insertion = material['byte_insertion']
+            result.update({'operation': 'none' if insertion is None else 'insert_selected_prepend_rules',
                            'placement': 'before_all_base_rules',
                            'extension_uid': self._extension_uid,
                            'metadata_sources': {name: {'path': value['path'],
@@ -241,7 +278,8 @@ class PrivatePreflight:
                            'known_priority_overlaps': [
                                {'rule_ref': ref, 'source': source, 'index': index, 'rule': value}
                                for ref, source, index, value in material['known_priority_overlaps']],
-                           'byte_insertion': {'offset': offset, 'text': inserted.decode('ascii')}})
+                           'byte_insertion': None if insertion is None else {
+                               'offset': insertion[0], 'text': insertion[2].decode('ascii')}})
         else:
             result['policy_token_edits'] = [
                 {'start': start, 'end': end, 'before': before.decode('ascii'), 'after': after.decode('ascii')}
@@ -298,19 +336,23 @@ def main(argv=None):
                              base_path=args.base_path, app_info_path=args.app_info,
                                        profile_index_path=args.profile_index, extension_uid=args.extension_uid)
         result = prepared.public_report(args.command)
-        if args.plan_file:
+        if args.plan_file and prepared._plan is not None:
             result['retained_plan_digest'] = execution.retain(prepared, plan_path=args.plan_file,
                                                             backup_directory=args.backup_directory)
             result['artifact_write'] = 'private_plan_retained'
             result['recovery'] = 'no_target_write_private_plan_retained'
+        review = None
         if args.private_review:
             prepared.recheck_review(args.request)
             review = prepared.private_review()
-            if args.plan_file:
+            if args.plan_file and prepared._plan is not None:
                 review.update({'retained_plan_digest': result['retained_plan_digest'],
                                'backup_directory': args.backup_directory,
                                'action_id': prepared._plan['action_id'],
                                'expires_at': prepared._plan['expires_at']})
+        if prepared._plan is None:
+            prepared.recheck_review()
+        if review is not None:
             print(json.dumps(review, sort_keys=True), flush=True)
         print(json.dumps(result, sort_keys=True), flush=True)
         return 0

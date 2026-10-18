@@ -1,4 +1,4 @@
-"""Offline additions to an existing empty Clash Verge Rev 2.5.8 prepend list.
+"""Offline additions or exact-repeat recognition for a narrow prepend list.
 
 This is not the merge-mapping policy-token editor. It never replaces base rules,
 executes scripts, writes files, or admits native repair. Supplied graph/ownership/
@@ -89,12 +89,15 @@ def _overlap(a, b):
 
 
 class PrivateRulesCandidate:
-    __slots__ = ('_original', '_candidate', '_binding', '_additions', '_overlaps', '_edit', '_unknown')
+    __slots__ = ('_original', '_candidate', '_binding', '_additions', '_overlaps',
+                 '_edit', '_unknown', '_matched_refs')
 
-    def __init__(self, original, candidate, binding, additions, overlaps, edit, unknown):
+    def __init__(self, original, candidate, binding, additions, overlaps, edit, unknown, *,
+                 matched_rule_refs=()):
         self._original, self._candidate = original, candidate
         self._binding, self._additions = binding, tuple(additions)
         self._overlaps, self._edit, self._unknown = tuple(overlaps), edit, unknown
+        self._matched_refs = tuple(matched_rule_refs)
 
     def __repr__(self):
         return '<PrivateRulesCandidate: native apply blocked; private data omitted>'
@@ -103,20 +106,26 @@ class PrivateRulesCandidate:
         raise TypeError('private rules candidate serialization disabled')
 
     def preview(self):
+        no_change = self._candidate == self._original
         return {'schema_version': 'guardian-rules-extension-preview/0.1',
-                'status': 'candidate_only_blocked', 'apply_supported': False,
+                'status': ('no_change_in_supplied_snapshot'
+                           if no_change else 'candidate_only_blocked'),
+                'apply_supported': False,
                 'operation': 'insert_selected_prepend_rules', 'added_rules': len(self._additions),
+                'matched_rules': len(self._matched_refs),
                 'placement': 'explicit_prepend_before_base_rules',
                 'known_base_overlap_count': sum(x[1] == 'base' for x in self._overlaps),
                 'known_append_overlap_count': sum(x[1] == 'append' for x in self._overlaps),
                 'unknown_base_or_append_rule_count': self._unknown,
                 'protected_index_coverage': 'caller_declared_unverified',
                 'other_bytes': 'preserved', 'append_and_delete': 'unchanged',
-                'authorization': 'pending', 'native_acceptance': 'not_run',
+                'authorization': 'not_required_for_snapshot_observation' if no_change else 'pending',
+                'native_acceptance': 'not_run',
                 'blockers': list(NATIVE_BLOCKERS) + ['EFFECTIVE_RULE_PRIORITY_UNVERIFIED',
                     'BASE_RULE_GRAPH_UNVERIFIED', 'GROUP_GRAPH_UNVERIFIED',
                     'PROTECTED_RULE_COVERAGE_UNVERIFIED',
-                    'LATER_MERGE_SCRIPT_EFFECTS_UNVERIFIED', 'ACTION_AUTHORIZATION_PENDING']}
+                    'LATER_MERGE_SCRIPT_EFFECTS_UNVERIFIED']
+                    + ([] if no_change else ['ACTION_AUTHORIZATION_PENDING'])}
 
     def private_material(self):
         """Only the authorized private host/user dialogue; never public exports."""
@@ -124,6 +133,7 @@ class PrivateRulesCandidate:
                 'original_sha256': _hash(self._original), 'candidate_sha256': _hash(self._candidate),
                 'declared_binding': self._binding,
                 'ordered_additions': self._additions,
+                'matched_rule_refs': self._matched_refs,
                 'known_priority_overlaps': self._overlaps,
                 'byte_insertion': self._edit}
 
@@ -196,12 +206,13 @@ def compile_rules_extension(raw, base_raw, request, binding, *, max_seconds=5,
     # any of the three mandatory SeqMap fields in this supported format.
     prepend = extension.get('prepend')
     existing = {key: _strings(extension.get(key)) for key in ('prepend', 'append', 'delete')}
-    if existing['prepend']:
-        _fail('NONEMPTY_PREPEND_UNSUPPORTED')
     if existing['delete']:
         _fail('DELETE_SEQUENCE_UNSUPPORTED')
     start_char, end_char = prepend.start_mark.index, prepend.end_mark.index
-    if (prepend.start_mark.line != prepend.end_mark.line
+    if existing['prepend']:
+        if not prepend.flow_style or prepend.start_mark.line != prepend.end_mark.line:
+            _fail('NONEMPTY_PREPEND_UNSUPPORTED')
+    elif (prepend.start_mark.line != prepend.end_mark.line
             or not re.fullmatch(r'\[[ \t]*\]', text[start_char:end_char])):
         _fail('EMPTY_INLINE_PREPEND_REQUIRED')
     _, base_root = _parse(base_raw)
@@ -256,16 +267,27 @@ def compile_rules_extension(raw, base_raw, request, binding, *, max_seconds=5,
             overlaps.append((ref, source, index, original_rule))
         selectors.append(selected)
         additions.append((ref, item['kind'] + ',' + item['domain'] + ',' + group))
-    insertion = ', '.join("'" + rule + "'" for _, rule in additions).encode('ascii')
-    offset = len(text[:start_char + 1].encode('utf-8'))
-    candidate = raw[:offset] + insertion + raw[offset:]
+    matched_refs = ()
+    if existing['prepend']:
+        # Only a complete ordered repeat is supported, never a partial merge.
+        # Base/append selectors, protected priority and every selection have
+        # already been checked, even when the supplied bytes need no edit.
+        if existing['prepend'] != [rule for _, rule in additions]:
+            _fail('NONEMPTY_PREPEND_UNSUPPORTED')
+        candidate, edit = raw, None
+        matched_refs, additions = tuple(order), []
+    else:
+        insertion = ', '.join("'" + rule + "'" for _, rule in additions).encode('ascii')
+        offset = len(text[:start_char + 1].encode('utf-8'))
+        candidate = raw[:offset] + insertion + raw[offset:]
+        edit = (offset, b'', insertion)
+        prepend.value = [config.yaml.nodes.ScalarNode('tag:yaml.org,2002:str', rule)
+                         for _, rule in additions]
     if len(candidate) > config.MAX_BYTES:
         _fail('CANDIDATE_TOO_LARGE')
     guard()
     _, after = _parse(candidate)
     # Compare the entire syntax tree, changing only the expected prepend values.
-    prepend.value = [config.yaml.nodes.ScalarNode('tag:yaml.org,2002:str', rule)
-                     for _, rule in additions]
     if config._signature(root) != config._signature(after):
         _fail('UNEXPECTED_SEMANTIC_DELTA')
     guard()
@@ -274,4 +296,4 @@ def compile_rules_extension(raw, base_raw, request, binding, *, max_seconds=5,
                 tuple(protected), tuple(order), 'prepend')
     unknown = sum(item is None for item in known) + sum(item is None for item in append_known)
     return PrivateRulesCandidate(raw, candidate, declared, additions, overlaps,
-                                 (offset, b'', insertion), unknown)
+                                 edit, unknown, matched_rule_refs=matched_refs)

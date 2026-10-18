@@ -527,3 +527,23 @@ Fifth batch closes only the synthetic post-incident stale-contact subgap. See
 compilation, whitespace and repeatable packaging passed; package SHA-256
 `1be01bb2ebe08fa589cf43adec74d1f52673a254316708a45879aaba9e368ba3`.
 ENV-T81/89 remain pending; no native/contact action occurred.
+
+
+Published follow-up results: `386da6c` fixed the Windows test portability issue;
+all four triggered CI jobs passed, and Windows logs contain neither encoding
+errors nor the prior reader-thread traceback. Preview was not triggered for that
+test/docs-only change. The next runtime batch `7f30247` passed both workflows and
+all five jobs: Linux 1,170/8 skipped, macOS 1,169/9, Windows 1,007/171, Python 3.10
+Linux 1,170/8; preview 27/27 and detached runtime 9/9. Native-context skips persist
+and are not user-device acceptance. Remote main and exact file deltas were verified.
+
+Sixth batch: supported exact-repeat prepend and already-correct merge selections
+can report no change in supplied snapshots without creating a transaction or
+retained artifact. Mixed selections change only needed tokens. Freshness checks
+and incident/prerequisite precedence remain. See
+[evidence and limits](evidence/rebuild-idempotent-replanning.md); full ENV-T60 L+R
+remains incomplete. Second aggregate rerun: 1,207 tests in 14.762 seconds, 1,199
+passed and eight skipped. Both Node synthetic suites, compilation, diff checks
+and two identical packages passed; SHA-256
+`ac389186fc8a45b99e5d35da090441bbb15c04f52d49e6329543ea1360813f57`.
+Independent review reran 151 focused/integrity tests with no remaining blockers.

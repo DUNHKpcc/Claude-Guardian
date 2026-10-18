@@ -55,6 +55,9 @@ class ConfigEditTests(unittest.TestCase):
         self.assertEqual(material['declared_binding'][0], 'mac-a')
         self.assertFalse(result.preview()['apply_supported'])
         self.assertEqual(len(result.preview()['blockers']), 4)
+        self.assertEqual(result.preview()['authorization'], 'pending')
+        self.assertEqual(result.preview()['blockers'],
+                         sorted(c._ALLOWED_BLOCKERS) + ['ACTION_AUTHORIZATION_PENDING'])
 
     def test_unicode_bom_crlf_offsets_and_trailing_comment(self):
         raw = b'\xef\xbb\xbf' + '# 非英文🙂\n'.encode() + RAW.replace(b'\n', b'\r\n')
@@ -258,8 +261,157 @@ class ConfigEditTests(unittest.TestCase):
         raw = RAW.replace(b',Old', b',approved-group')
         request, binding = inputs(raw)
         binding['rules']['rule-a']['expected'] = 'DOMAIN,example.test,approved-group'
-        with self.assertRaisesRegex(c.EditPlanError, 'NO_CHANGE'):
-            c.compile_edit_plan(raw, request, binding)
+        result = c.compile_edit_plan(raw, request, binding)
+        material, report = result.private_material(), result.preview()
+        self.assertEqual(material['candidate_bytes'], raw)
+        self.assertEqual(material['original_bytes'], raw)
+        self.assertEqual(material['original_sha256'], material['candidate_sha256'])
+        self.assertEqual(material['policy_token_edits'], ())
+        self.assertEqual(material['changed_rule_refs'], ())
+        self.assertEqual(material['matched_rule_refs'], ('rule-a',))
+        self.assertEqual(report['status'], 'no_change_in_supplied_snapshot')
+        self.assertEqual(report['changed_rules'], 0)
+        self.assertEqual(report['matched_rules'], 1)
+        self.assertFalse(report['apply_supported'])
+        self.assertEqual(report['native_acceptance'], 'not_run')
+        self.assertEqual(report['authorization'], 'not_required_for_snapshot_observation')
+        self.assertEqual(report['blockers'], sorted(c._ALLOWED_BLOCKERS))
+        self.assertNotIn('ACTION_AUTHORIZATION_PENDING', report['blockers'])
+
+    def test_fresh_replanning_is_byte_identical_private_and_io_free(self):
+        raw = b'\xef\xbb\xbf' + '# 中文🙂\n'.encode() + RAW.replace(b'\n', b'\r\n')
+        request, binding = inputs(raw)
+        request['intent']['rule_refs'].append('rule-b')
+        binding['rules']['rule-b'] = {'index': 1, 'expected': 'DOMAIN-SUFFIX,example.org,Old'}
+        first = c.compile_edit_plan(raw, request, binding)
+        repeated_raw = first.private_material()['candidate_bytes']
+        with self.assertRaisesRegex(c.EditPlanError, '^SNAPSHOT_REVISION_MISMATCH$'):
+            c.compile_edit_plan(repeated_raw, request, binding)
+        request['revisions']['extension'] = hashlib.sha256(repeated_raw).hexdigest()
+        request['current_revisions'] = deepcopy(request['revisions'])
+        for item in binding['rules'].values():
+            item['expected'] = item['expected'].replace(',Old', ',approved-group')
+        before = deepcopy((request, binding))
+        with patch.object(builtins, 'open', side_effect=AssertionError('file')), \
+                patch.object(socket, 'socket', side_effect=AssertionError('network')), \
+                patch.object(subprocess, 'Popen', side_effect=AssertionError('process')):
+            repeated = c.compile_edit_plan(repeated_raw, request, binding)
+        self.assertEqual((request, binding), before)
+        material, report = repeated.private_material(), repeated.preview()
+        self.assertEqual(material['candidate_bytes'], repeated_raw)
+        self.assertEqual(material['original_sha256'], material['candidate_sha256'])
+        self.assertEqual(material['policy_token_edits'], ())
+        self.assertEqual(material['matched_rule_refs'], ('rule-a', 'rule-b'))
+        self.assertEqual(material['changed_rule_refs'], ())
+        self.assertEqual(report['matched_rules'], 2)
+        self.assertEqual(report['changed_rules'], 0)
+        self.assertEqual(report['status'], 'no_change_in_supplied_snapshot')
+        self.assertFalse(report['apply_supported'])
+        self.assertEqual(report['native_acceptance'], 'not_run')
+        self.assertEqual(report['authorization'], 'not_required_for_snapshot_observation')
+        self.assertEqual(report['blockers'], [code for code in first.preview()['blockers']
+                                             if code != 'ACTION_AUTHORIZATION_PENDING'])
+        self.assertNotIn('ACTION_AUTHORIZATION_PENDING', report['blockers'])
+        material['matched_rule_refs'] = ()
+        self.assertEqual(repeated.private_material()['matched_rule_refs'], ('rule-a', 'rule-b'))
+        for private in ('rule-a', 'rule-b', 'example.test', 'approved-group', 'secret-SENTINEL',
+                        hashlib.sha256(repeated_raw).hexdigest()):
+            self.assertNotIn(private, json.dumps(report) + repr(repeated))
+        with self.assertRaises(TypeError):
+            pickle.dumps(repeated)
+        with self.assertRaises(TypeError):
+            json.dumps(repeated)
+
+    def test_mixed_matches_and_edits_preserve_order_and_exact_spans(self):
+        raw = RAW.replace(b'DOMAIN,example.test,Old', b'DOMAIN,example.test,approved-group')
+        for order in (['rule-a', 'rule-b'], ['rule-b', 'rule-a']):
+            request, binding = inputs(raw)
+            request['intent']['rule_refs'] = order
+            binding['rules']['rule-a']['expected'] = 'DOMAIN,example.test,approved-group'
+            binding['rules']['rule-b'] = {'index': 1, 'expected': 'DOMAIN-SUFFIX,example.org,Old'}
+            with self.subTest(order=order):
+                result = c.compile_edit_plan(raw, request, binding)
+                report, material = result.preview(), result.private_material()
+                self.assertEqual(report['status'], 'candidate_only_blocked')
+                self.assertEqual(report['matched_rules'], 1)
+                self.assertEqual(report['changed_rules'], 1)
+                self.assertEqual(material['matched_rule_refs'], ('rule-a',))
+                self.assertEqual(material['changed_rule_refs'], ('rule-b',))
+                self.assertEqual(material['candidate_bytes'], raw.replace(b',Old', b',approved-group'))
+                self.assertEqual(len(material['policy_token_edits']), 1)
+                start, end, before, after = material['policy_token_edits'][0]
+                self.assertEqual(raw[start:end], before)
+                self.assertEqual(before, b'Old')
+                self.assertEqual(after, b'approved-group')
+                self.assertEqual(raw[:start] + after + raw[end:], material['candidate_bytes'])
+                self.assertFalse(report['apply_supported'])
+                self.assertEqual(report['native_acceptance'], 'not_run')
+                self.assertEqual(report['authorization'], 'pending')
+                self.assertEqual(report['blockers'],
+                                 sorted(c._ALLOWED_BLOCKERS) + ['ACTION_AUTHORIZATION_PENDING'])
+
+    def test_matching_selection_cannot_hide_later_or_earlier_invalid_selection(self):
+        correct = RAW.replace(b'DOMAIN,example.test,Old', b'DOMAIN,example.test,approved-group')
+        cases = [
+            (correct, {'index': 0, 'expected': 'DOMAIN,example.test,approved-group'},
+             'AMBIGUOUS_RULE_SELECTION'),
+            (correct, {'index': 1, 'expected': 'DOMAIN-SUFFIX,example.org,changed'},
+             'UNSUPPORTED_OR_CHANGED_RULE'),
+            (correct.replace(b'example.org', b'bad..org'),
+             {'index': 1, 'expected': 'DOMAIN-SUFFIX,bad..org,Old'},
+             'AMBIGUOUS_OR_UNSUPPORTED_RULE'),
+            (correct.replace(b'  - DOMAIN-SUFFIX,example.org,Old',
+                             b'  - DOMAIN-SUFFIX,org,Other\n  - DOMAIN-SUFFIX,example.org,Old'),
+             {'index': 2, 'expected': 'DOMAIN-SUFFIX,example.org,Old'},
+             'SELECTED_RULE_SHADOWED'),
+        ]
+        for raw, other, code in cases:
+            for order in (['rule-a', 'rule-b'], ['rule-b', 'rule-a']):
+                request, binding = inputs(raw)
+                request['intent']['rule_refs'] = order
+                binding['rules']['rule-a']['expected'] = 'DOMAIN,example.test,approved-group'
+                binding['rules']['rule-b'] = other
+                before = deepcopy((request, binding))
+                with self.subTest(code=code, order=order), self.assertRaisesRegex(c.EditPlanError, '^' + code + '$'):
+                    c.compile_edit_plan(raw, request, binding)
+                self.assertEqual((request, binding), before)
+
+    def test_matching_rules_retain_duplicate_shadow_group_and_syntax_guards(self):
+        correct = RAW.replace(b',Old', b',approved-group')
+        cases = [
+            (correct.replace(b'MATCH,DIRECT', b'DOMAIN,EXAMPLE.TEST.,Other'), 0,
+             'AMBIGUOUS_OR_UNSUPPORTED_RULE'),
+            (correct.replace(b'rules:\n', b'rules:\n  - MATCH,DIRECT\n'), 1,
+             'SELECTED_RULE_SHADOWED'),
+            (correct.replace(b'rules:\n', b'rules:\n  - DOMAIN-SUFFIX,test,Other\n'), 1,
+             'SELECTED_RULE_SHADOWED'),
+            (correct.replace(b'name: approved-group', b'name: missing-group'), 0,
+             'EGRESS_GROUP_MISSING_OR_AMBIGUOUS'),
+            (correct.replace(b'rules:\n', b'  - name: approved-group\nrules:\n'), 0,
+             'EGRESS_GROUP_MISSING_OR_AMBIGUOUS'),
+            (correct.replace(b'DOMAIN,example.test,approved-group', b'"DOMAIN,example.test,approved-group"'), 0,
+             'UNSUPPORTED_OR_CHANGED_RULE'),
+            (correct + b'unknown-field: duplicate\n', 0, 'AMBIGUOUS_MAPPING'),
+        ]
+        for raw, index, code in cases:
+            request, binding = inputs(raw)
+            binding['rules']['rule-a'] = {'index': index, 'expected': 'DOMAIN,example.test,approved-group'}
+            with self.subTest(code=code, raw=raw), self.assertRaisesRegex(c.EditPlanError, '^' + code + '$'):
+                c.compile_edit_plan(raw, request, binding)
+
+    def test_matching_rules_retain_revision_and_semantic_guards(self):
+        raw = RAW.replace(b',Old', b',approved-group')
+        for change in ('stale', 'cancel', 'version', 'control', 'protected', 'revision'):
+            request, binding = inputs(raw)
+            binding['rules']['rule-a']['expected'] = 'DOMAIN,example.test,approved-group'
+            if change == 'stale': request['current_revisions']['extension'] = 'a' * 64
+            if change == 'cancel': request['cancelled'] = True
+            if change == 'version': request['facts']['versions']['core'] = 'unknown'
+            if change == 'control': request['facts']['control']['preserved'] = 'no'
+            if change == 'protected': request['facts']['rules']['protected_priority_preserved'] = 'unknown'
+            if change == 'revision': request['revisions']['extension'] = 'a' * 64
+            with self.subTest(change=change), self.assertRaises(c.EditPlanError):
+                c.compile_edit_plan(raw, request, binding)
 
 
 if __name__ == '__main__':

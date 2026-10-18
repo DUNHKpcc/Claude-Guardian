@@ -46,6 +46,136 @@ class RepairCLI(unittest.TestCase):
     def tree(self):
         return {p.name: p.read_bytes() for p in self.root.iterdir()}
 
+    def matching_snapshot(self, *, mixed=False):
+        raw = RAW.replace(b'DOMAIN,example.test,Old', b'DOMAIN,example.test,approved-group')
+        request, binding = inputs(raw)
+        binding['rules']['rule-a']['expected'] = 'DOMAIN,example.test,approved-group'
+        if mixed:
+            request['intent']['rule_refs'].append('rule-b')
+            binding['rules']['rule-b'] = {'index': 1, 'expected': 'DOMAIN-SUFFIX,example.org,Old'}
+        self.document = {'schema_version': r.SCHEMA, 'remedy_request': request, 'binding': binding}
+        self.target.write_bytes(raw)
+        self.save()
+        return raw
+
+    def test_matching_snapshot_has_no_transaction_plan_or_receipt(self):
+        self.matching_snapshot()
+        before = self.tree()
+        with patch.object(r.tx, 'plan', side_effect=AssertionError('action plan')), \
+                patch.object(r.tx, 'apply', side_effect=AssertionError('apply')):
+            prepared = self.prepare()
+            self.assertIsNone(prepared._plan)
+            report = prepared.public_report()
+            review = prepared.private_review()
+        self.assertEqual(report['status'], 'no_change_in_supplied_snapshot')
+        self.assertEqual(report['changed_rules'], 0)
+        self.assertEqual(report['matched_rules'], 1)
+        self.assertFalse(report['apply_supported'])
+        self.assertEqual(report['native_acceptance'], 'not_run')
+        self.assertEqual(report['effective_routing'], 'not_run')
+        self.assertEqual(review['selected_rule_changes'], [])
+        self.assertEqual(review['matched_rule_refs'], ['rule-a'])
+        self.assertEqual(review['policy_token_edits'], [])
+        for field in ('plan_digest', 'retained_plan_digest', 'action_id', 'recovery_id', 'receipt_digest'):
+            self.assertNotIn(field, report)
+            self.assertNotIn(field, review)
+        self.assertNotIn('ACTION_AUTHORIZATION_PENDING', report['blockers'])
+        self.assertEqual(self.tree(), before)
+
+    def test_matching_cli_plan_does_not_access_or_create_artifact_destinations(self):
+        self.matching_snapshot()
+        before = self.tree()
+        # Neither destination exists. No-change observation must not open them.
+        artifact = self.root / 'absent' / 'plan.json'
+        backup = self.root / 'absent-backups'
+        for command in ('preflight', 'diff', 'plan'):
+            extra = [] if command == 'preflight' else ['--private-review']
+            if command == 'plan':
+                extra.extend(['--plan-file', str(artifact), '--backup-directory', str(backup)])
+            result = self.run_cli(command, *extra)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(result.stdout.splitlines()[-1])
+            self.assertEqual(report['status'], 'no_change_in_supplied_snapshot')
+            self.assertEqual(report['artifact_write'], 'not_created_no_change')
+            self.assertNotIn('retained_plan_digest', result.stdout)
+            self.assertNotIn('action_id', result.stdout)
+            self.assertFalse(artifact.exists())
+            self.assertFalse(backup.exists())
+            self.assertEqual(self.tree(), before)
+
+    def test_mixed_private_review_only_lists_real_change_and_full_request_digest(self):
+        raw = self.matching_snapshot(mixed=True)
+        prepared = self.prepare()
+        report, review = prepared.public_report(), prepared.private_review()
+        self.assertEqual(report['changed_rules'], 1)
+        self.assertEqual(report['matched_rules'], 1)
+        self.assertEqual([item['rule_ref'] for item in review['selected_rule_changes']], ['rule-b'])
+        self.assertEqual(review['matched_rule_refs'], ['rule-a'])
+        self.assertEqual(prepared._request_digest, r.tx.digest(self.document))
+        proposed = prepared._candidate.private_material()['candidate_bytes']
+        self.assertEqual(proposed, raw.replace(b'DOMAIN-SUFFIX,example.org,Old',
+                                              b'DOMAIN-SUFFIX,example.org,approved-group'))
+        self.assertEqual(self.target.read_bytes(), raw)
+
+    def test_matching_report_rechecks_changed_request_and_target(self):
+        for change in ('request', 'bytes', 'inode', 'parent'):
+            with self.subTest(change=change):
+                self.matching_snapshot()
+                prepared = self.prepare()
+                if change == 'request':
+                    self.document['remedy_request']['route_ref'] = 'changed-route'
+                    self.save()
+                    expected = 'REQUEST_CHANGED'
+                elif change == 'bytes':
+                    self.target.write_bytes(self.target.read_bytes() + b'# later edit\n')
+                    expected = 'STALE_FILE'
+                elif change == 'inode':
+                    replacement = self.root / 'replacement'
+                    replacement.write_bytes(self.target.read_bytes())
+                    replacement.chmod(0o600)
+                    replacement.replace(self.target)
+                    expected = 'STALE_FILE'
+                else:
+                    read = r._read_source
+                    def changed_parent(path):
+                        raw, source = read(path)
+                        if path == str(self.target):
+                            source['parent_identity'] = [0, 0]
+                        return raw, source
+                    with patch.object(r, '_read_source', side_effect=changed_parent):
+                        with self.assertRaisesRegex(r.RepairError, '^STALE_FILE$'):
+                            prepared.public_report()
+                    continue
+                for render in (prepared.public_report, prepared.private_review):
+                    with self.assertRaisesRegex(r.RepairError, '^' + expected + '$'):
+                        render()
+
+    def test_matching_report_keeps_original_cancel_and_deadline(self):
+        self.matching_snapshot()
+        cancelled = False
+        prepared = self.prepare(cancelled=lambda: cancelled)
+        cancelled = True
+        with patch.object(r, '_load_request', side_effect=AssertionError('read')):
+            with self.assertRaisesRegex(r.RepairError, '^CANCELLED$'):
+                prepared.public_report()
+        prepared = self.prepare()
+        with patch.object(r.time, 'monotonic', return_value=prepared._deadline + 1), \
+                patch.object(r, '_load_request', side_effect=AssertionError('read')):
+            with self.assertRaisesRegex(r.RepairError, '^DEADLINE_EXCEEDED$'):
+                prepared.private_review()
+
+    def test_matching_preflight_rechecks_target_after_compilation(self):
+        self.matching_snapshot()
+        compile = r.edits.compile_edit_plan
+        def changed(*args):
+            result = compile(*args)
+            self.target.write_bytes(self.target.read_bytes() + b'# after compile\n')
+            return result
+        with patch.object(r.edits, 'compile_edit_plan', side_effect=changed), \
+                patch.object(r.tx, 'plan', side_effect=AssertionError('plan')):
+            with self.assertRaisesRegex(r.RepairError, '^STALE_FILE$'):
+                self.prepare()
+
     def test_all_commands_nonmutating_execute_precisely_blocked(self):
         before = self.tree()
         for command in ('plan', 'preflight', 'diff'):

@@ -1,6 +1,7 @@
 """Transport orchestration with synthetic adapter only; no production admission."""
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 import io
+import base64
 import json
 import os
 from pathlib import Path
@@ -32,6 +33,78 @@ class RepairExecution(unittest.TestCase):
     save = fixtures.RepairCLI.save
     prepare = fixtures.RepairCLI.prepare
     tree = fixtures.RepairCLI.tree
+
+    def test_no_change_retention_rejected_before_any_destination_access(self):
+        fixtures.RepairCLI.matching_snapshot(self)
+        prepared = self.prepare()
+        before = self.tree()
+        with patch.object(e.tx, '_path', side_effect=AssertionError('destination validation')), \
+                patch.object(e.tx, '_directory', side_effect=AssertionError('backup access')), \
+                patch.object(e.tx, '_parent', side_effect=AssertionError('artifact access')):
+            with self.assertRaisesRegex(e.tx.TransactionError, '^NO_CHANGE_TO_RETAIN$'):
+                e.retain(prepared, plan_path='not-opened', backup_directory='not-opened')
+        self.assertEqual(self.tree(), before)
+
+    def test_no_change_cli_rechecks_before_printing_cached_report(self):
+        fixtures.RepairCLI.matching_snapshot(self)
+        public = r.PrivatePreflight.public_report
+        def changed_after_report(prepared, command='preflight'):
+            result = public(prepared, command)
+            self.document['remedy_request']['route_ref'] = 'changed-after-report'
+            self.save()
+            return result
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(r.PrivatePreflight, 'public_report', changed_after_report), \
+                redirect_stdout(output), redirect_stderr(errors):
+            result = r.main(['plan', '--request', str(self.request),
+                             '--target-path', str(self.target), '--target-ref', 'mac-a',
+                             '--plan-file', str(self.root / 'plan.json'),
+                             '--backup-directory', str(self.root / 'absent')])
+        self.assertEqual(result, 2)
+        self.assertEqual(output.getvalue(), '')
+        self.assertEqual(json.loads(errors.getvalue())['code'], 'REQUEST_CHANGED')
+        self.assertFalse((self.root / 'plan.json').exists())
+        self.assertFalse((self.root / 'absent').exists())
+
+    def test_mixed_plan_retains_full_request_and_only_changed_rule(self):
+        raw = fixtures.RepairCLI.matching_snapshot(self, mixed=True)
+        prepared = self.prepare()
+        self.retained()
+        document = json.loads(self.plan.read_text())
+        self.assertEqual(document['request_digest'], e.tx.digest(self.document))
+        self.assertEqual(prepared.private_review()['matched_rule_refs'], ['rule-a'])
+        self.assertEqual([item['rule_ref'] for item in prepared.private_review()['selected_rule_changes']],
+                         ['rule-b'])
+        with synthetic_adapter():
+            result = e.execute(**self.arguments)
+        self.assertEqual(result['status'], 'written_but_not_verified')
+        self.assertEqual(self.target.read_bytes(), raw.replace(b'DOMAIN-SUFFIX,example.org,Old',
+                                                              b'DOMAIN-SUFFIX,example.org,approved-group'))
+        self.assertEqual(result['effective_routing'], 'not_run')
+
+    def test_old_retained_plan_cannot_become_no_change_success(self):
+        self.retained()
+        prepared = self.prepare()
+        prepared._plan = None  # Simulate a recompile returning the new no-action result.
+        with synthetic_adapter(), patch.object(r, 'preflight', return_value=prepared), \
+                patch.object(e.tx, 'apply', side_effect=AssertionError('write')):
+            with self.assertRaisesRegex(e.tx.TransactionError, '^STALE_FILE$'):
+                e.execute(**self.arguments)
+        self.assertEqual(self.target.read_bytes(), RAW)
+        self.assertEqual(list(self.backups.iterdir()), [])
+
+    def test_noop_retained_document_rejected_before_native_admission(self):
+        self.retained()
+        document = json.loads(self.plan.read_text())
+        document['plan']['after_sha256'] = document['plan']['before']['sha256']
+        document['plan']['proposed_base64'] = base64.b64encode(RAW).decode('ascii')
+        self.plan.write_text(json.dumps(document))
+        self.arguments['plan_digest'] = e.tx.digest(document)
+        with patch.object(e, '_native_session', side_effect=AssertionError('native admission')):
+            with self.assertRaisesRegex(e.tx.TransactionError, '^NO_CHANGE_TO_EXECUTE$'):
+                e.execute(**self.arguments)
+        self.assertEqual(list(self.backups.iterdir()), [])
+        self.assertEqual(self.target.read_bytes(), RAW)
 
     def retained(self):
         self.backups = self.root / 'backups'

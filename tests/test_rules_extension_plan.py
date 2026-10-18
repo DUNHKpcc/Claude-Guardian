@@ -53,6 +53,146 @@ class RulesExtensionPlan(unittest.TestCase):
         self.assertEqual(material['ordered_additions'], (('rule-a', 'DOMAIN,example.test,approved-group'),))
         self.assertEqual([x[2] for x in material['known_priority_overlaps']], [1, 2])
         self.assertEqual(material['candidate_sha256'], hashlib.sha256(expected).hexdigest())
+        self.assertEqual(material['matched_rule_refs'], ())
+        self.assertEqual(self.compile().preview()['matched_rules'], 0)
+
+    def test_exact_repeat_preserves_bytes_hashes_blockers_and_private_matches(self):
+        raw = b'\xef\xbb\xbf' + '# 中文🙂\n'.encode() + RAW.replace(b'[] #', b'[  ] #').replace(b'\n', b'\r\n')
+        request, binding = inputs(raw)
+        request['intent']['rule_refs'] = ['rule-b', 'rule-a']
+        binding['rule_order'] = ['rule-b', 'rule-a']
+        binding['rules']['rule-b'] = {'kind': 'DOMAIN-SUFFIX', 'domain': 'other.example'}
+        first = r.compile_rules_extension(raw, BASE, request, binding)
+        repeated_raw = first.private_material()['candidate_bytes']
+        self.reject(request, binding, 'SNAPSHOT_REVISION_MISMATCH', raw=repeated_raw)
+        request['revisions']['extension'] = hashlib.sha256(repeated_raw).hexdigest()
+        request['current_revisions'] = deepcopy(request['revisions'])
+        before = deepcopy((request, binding, repeated_raw, BASE))
+        with patch('builtins.open', side_effect=AssertionError('file')), \
+                patch('socket.socket', side_effect=AssertionError('network')), \
+                patch('subprocess.Popen', side_effect=AssertionError('process')):
+            repeated = r.compile_rules_extension(repeated_raw, BASE, request, binding)
+        self.assertEqual((request, binding, repeated_raw, BASE), before)
+        material, report = repeated.private_material(), repeated.preview()
+        self.assertEqual(material['candidate_bytes'], repeated_raw)
+        self.assertEqual(material['original_bytes'], repeated_raw)
+        self.assertEqual(material['candidate_sha256'], material['original_sha256'])
+        self.assertEqual(material['candidate_sha256'], hashlib.sha256(repeated_raw).hexdigest())
+        self.assertEqual(material['ordered_additions'], ())
+        self.assertIsNone(material['byte_insertion'])
+        self.assertEqual(material['matched_rule_refs'], ('rule-b', 'rule-a'))
+        self.assertEqual(material['known_priority_overlaps'], first.private_material()['known_priority_overlaps'])
+        self.assertEqual(report['status'], 'no_change_in_supplied_snapshot')
+        self.assertEqual(report['added_rules'], 0)
+        self.assertEqual(report['matched_rules'], 2)
+        self.assertFalse(report['apply_supported'])
+        self.assertEqual(report['native_acceptance'], 'not_run')
+        self.assertEqual(report['authorization'], 'not_required_for_snapshot_observation')
+        self.assertEqual(report['blockers'], [code for code in first.preview()['blockers']
+                                             if code != 'ACTION_AUTHORIZATION_PENDING'])
+        self.assertNotIn('ACTION_AUTHORIZATION_PENDING', report['blockers'])
+        for code in r.NATIVE_BLOCKERS:
+            self.assertIn(code, report['blockers'])
+        self.assertEqual(report['known_base_overlap_count'], first.preview()['known_base_overlap_count'])
+        material['matched_rule_refs'] = ()
+        self.assertEqual(repeated.private_material()['matched_rule_refs'], ('rule-b', 'rule-a'))
+        for private in ('rule-a', 'rule-b', 'example.test', 'approved-group', 'keep-SENTINEL',
+                        hashlib.sha256(repeated_raw).hexdigest()):
+            self.assertNotIn(private, json.dumps(report) + repr(repeated))
+        with self.assertRaises(TypeError):
+            pickle.dumps(repeated)
+        with self.assertRaises(TypeError):
+            json.dumps(repeated)
+
+    def test_exact_single_line_repeat_keeps_original_literal_formatting(self):
+        for value in (b"[ 'DOMAIN,example.test,approved-group' ]",
+                      b'["DOMAIN,example.test,approved-group"]'):
+            raw = RAW.replace(b'prepend: []', b'prepend: ' + value)
+            with self.subTest(value=value):
+                result = self.compile(raw=raw)
+                self.assertEqual(result.private_material()['candidate_bytes'], raw)
+                self.assertEqual(result.preview()['status'], 'no_change_in_supplied_snapshot')
+                self.assertEqual(result.preview()['matched_rules'], 1)
+
+    def test_nonempty_prepend_does_not_become_a_general_merge(self):
+        first = b"'DOMAIN,example.test,approved-group'"
+        second = b"'DOMAIN-SUFFIX,other.example,approved-group'"
+        for value in (b'[' + first + b']', b'[' + second + b', ' + first + b']',
+                      b'[' + first + b', ' + second + b', ' + first + b']',
+                      b"['DOMAIN,unrelated.test,approved-group']",
+                      b"['DOMAIN,example.test,Other', " + second + b']',
+                      b"['DOMAIN,EXAMPLE.TEST,approved-group', " + second + b']',
+                      b"['DOMAIN, example.test,approved-group', " + second + b']',
+                      b'[\n' + first + b', ' + second + b'\n]',
+                      b'\n  - ' + first + b'\n  - ' + second):
+            raw = RAW.replace(b'prepend: []', b'prepend: ' + value)
+            request, binding = inputs(raw)
+            request['intent']['rule_refs'].append('rule-b')
+            binding['rule_order'].append('rule-b')
+            binding['rules']['rule-b'] = {'kind': 'DOMAIN-SUFFIX', 'domain': 'other.example'}
+            with self.subTest(value=value):
+                self.reject(request, binding, 'NONEMPTY_PREPEND_UNSUPPORTED', raw=raw)
+
+    def test_exact_repeat_retains_base_group_protected_and_duplicate_guards(self):
+        repeated = self.compile().private_material()['candidate_bytes']
+        cases = [
+            (BASE.replace(b'name: approved-group', b'name: missing-group'), [0],
+             'EGRESS_GROUP_MISSING_OR_AMBIGUOUS'),
+            (BASE.replace(b'    type: select', b'  - name: approved-group\n    type: select'), [0],
+             'EGRESS_GROUP_MISSING_OR_AMBIGUOUS'),
+            (BASE, [1], 'PROTECTED_RULE_PRIORITY_CONFLICT'),
+            (BASE, [2], 'PROTECTED_RULE_PRIORITY_CONFLICT'),
+            (BASE, [True], 'INVALID_PROTECTED_RULE_INDEXES'),
+            (BASE.replace(b'DOMAIN,local.test,Local', b'RULE-SET,organization,Local'), [0],
+             'PROTECTED_RULE_TYPE_UNSUPPORTED'),
+            (BASE.replace(b'DOMAIN,local.test,Local', b'DOMAIN,EXAMPLE.TEST.,Other'), [],
+             'RULE_SELECTOR_ALREADY_PRESENT'),
+            (BASE + b'rules: []\n', [0], 'AMBIGUOUS_MAPPING'),
+        ]
+        for base, protected, code in cases:
+            request, binding = inputs(repeated, base)
+            binding['protected_rule_indexes'] = protected
+            with self.subTest(code=code, protected=protected):
+                self.reject(request, binding, code, raw=repeated, base=base)
+        raw = repeated.replace(b'append: []', b"append: ['domain, EXAMPLE.TEST. ,Other']")
+        request, binding = inputs(raw)
+        self.reject(request, binding, 'RULE_SELECTOR_ALREADY_PRESENT', raw=raw)
+        raw = repeated.replace(b'delete: []', b"delete: ['MATCH,DIRECT']")
+        request, binding = inputs(raw)
+        self.reject(request, binding, 'DELETE_SEQUENCE_UNSUPPORTED', raw=raw)
+
+    def test_repeat_match_cannot_skip_other_invalid_or_overlapping_selection(self):
+        raw = self.compile().private_material()['candidate_bytes']
+        for other, code in [({'kind': 'DOMAIN', 'domain': 'bad..test'}, 'INVALID_SELECTED_RULE'),
+                            ({'kind': 'DOMAIN-SUFFIX', 'domain': 'example.test'}, 'OVERLAPPING_SELECTED_RULES')]:
+            for order in (['rule-a', 'rule-b'], ['rule-b', 'rule-a']):
+                request, binding = inputs(raw)
+                request['intent']['rule_refs'] = order
+                binding['rule_order'] = order[:]
+                binding['rules']['rule-b'] = other
+                before = deepcopy((request, binding))
+                with self.subTest(code=code, order=order):
+                    self.reject(request, binding, code, raw=raw)
+                self.assertEqual((request, binding), before)
+
+    def test_exact_repeat_retains_revisions_semantics_cancellation_and_deadline(self):
+        raw = self.compile().private_material()['candidate_bytes']
+        for change in ('extension', 'effective', 'stale', 'version', 'protected', 'cancel'):
+            request, binding = inputs(raw)
+            if change in ('extension', 'effective'):
+                request['revisions'][change] = '0' * 64
+                request['current_revisions'] = deepcopy(request['revisions'])
+            if change == 'stale': request['current_revisions']['extension'] = '0' * 64
+            if change == 'version': request['facts']['versions']['gui'] = '2.5.7'
+            if change == 'protected': request['facts']['rules']['protected_priority_preserved'] = 'unknown'
+            if change == 'cancel': request['cancelled'] = True
+            with self.subTest(change=change), self.assertRaises(r.RulesPlanError):
+                r.compile_rules_extension(raw, BASE, request, binding)
+        with self.assertRaisesRegex(r.RulesPlanError, '^CANCELLED$'):
+            self.compile(raw=raw, cancelled=lambda: True)
+        with patch.object(r.time, 'monotonic', side_effect=[0, 6]):
+            with self.assertRaisesRegex(r.RulesPlanError, '^DEADLINE_EXCEEDED$'):
+                self.compile(raw=raw)
 
     def test_private_public_and_no_authority(self):
         result = self.compile()
@@ -61,6 +201,11 @@ class RulesExtensionPlan(unittest.TestCase):
         self.assertEqual(report['operation'], 'insert_selected_prepend_rules')
         self.assertEqual(report['known_base_overlap_count'], 2)
         self.assertEqual(report['protected_index_coverage'], 'caller_declared_unverified')
+        self.assertEqual(report['authorization'], 'pending')
+        self.assertEqual(report['blockers'], list(r.NATIVE_BLOCKERS) + [
+            'EFFECTIVE_RULE_PRIORITY_UNVERIFIED', 'BASE_RULE_GRAPH_UNVERIFIED',
+            'GROUP_GRAPH_UNVERIFIED', 'PROTECTED_RULE_COVERAGE_UNVERIFIED',
+            'LATER_MERGE_SCRIPT_EFFECTS_UNVERIFIED', 'ACTION_AUTHORIZATION_PENDING'])
         for blocker in ('BASE_RULE_GRAPH_UNVERIFIED', 'EFFECTIVE_RULE_PRIORITY_UNVERIFIED',
                         'NATIVE_ACCEPTANCE_NOT_RUN', 'ACTION_AUTHORIZATION_PENDING'):
             self.assertIn(blocker, report['blockers'])

@@ -58,15 +58,21 @@ and no version is certified by this implementation.
 
 Returned `PrivateCandidate` does not serialize through ordinary JSON or pickle and
 its representation omits private data. `preview()` exposes only fixed states and
-the changed-rule count; it omits configuration, domains, group names, revision
-hashes, targets and paths. All three mandatory semantic blockers remain explicit,
-alongside pending action authorization; `apply_supported` is always false.
+the changed/matched-rule counts; it omits configuration, domains, group names,
+revision hashes, targets and paths. All three mandatory semantic blockers remain
+explicit; `apply_supported` is always false. Changed candidates retain pending
+action authorization. An all-matching supplied snapshot reports
+`no_change_in_supplied_snapshot`, with authorization
+`not_required_for_snapshot_observation` and no action-only pending blocker.
+That observation does not certify the current app, effective configuration or route.
 
 `private_material()` deliberately exposes the original and candidate bytes, their
 SHA-256 hashes, and immutable declared target/scope/layer/revision/version bindings
 for an explicitly private local review. It also exposes immutable
 `policy_token_edits` tuples, each containing an original-byte start/end offset
-and the before/after bytes, in ascending offset order. Apply these spans in
+and the before/after bytes, in ascending offset order. Immutable
+`matched_rule_refs` and `changed_rule_refs` identify the two sets in the semantic
+request order. Apply these spans in
 reverse order to reconstruct the candidate; they are not executable write plans. Never log or serialize this material into
 public reports. Serialization guards prevent accidental default export, not access
 by a caller already holding the configuration. This module is not an isolation or
@@ -82,10 +88,16 @@ The candidate is parsed again; its complete syntax-tree semantic signature must
 equal the original tree with only selected rule values changed. No YAML dump or
 constructor-driven object loading occurs.
 
-No-op rules are rejected rather than silently generating a misleading change.
-Failure codes never embed raw parser errors or supplied configuration values.
+Every selected rule is validated, including already-correct rules. Already-correct
+policy tokens enter `matched_rule_refs` and produce no edit; other selected rules
+produce the exact minimal token edits. This works with either selection order and
+does not short-circuit later malformed, duplicate, stale or shadowed selections.
+An all-matching result keeps the original bytes/hash and has no edit spans. A
+repeat request must be rebound to the freshly supplied snapshot and expected
+rule values; the earlier immutable request remains stale. Failure codes never
+embed raw parser errors or supplied configuration values.
 
-## Future integration boundary
+## Agent integration boundary
 
 Ownership, selected-rule scope, group-name provenance and target identity remain
 caller declarations. The parser proves neither valid Mihomo semantics nor GUI
@@ -93,8 +105,18 @@ merge behavior. A future native adapter must verify version-specific ownership,
 protected paths, effective group graph and ordering, then show exact local diff,
 backup/recovery plan and obtain action-specific permission. A fresh safe read and
 revision conflict check are required immediately before any separately authorized
-write. Existing `transactions.py` may eventually provide a restricted transport;
-this candidate object is not a transaction plan and is not wired to that engine.
+write. The shared `repair_cli.preflight` now uses `transactions.py` only when
+candidate bytes differ. An unchanged candidate has no transaction plan, action
+ID, retained artifact or receipt. Before returning or presenting this observation,
+the CLI rechecks the full request digest, target bytes/file/parent identity,
+explicit supporting sources, cancellation and the original deadline. Supplying
+`--plan-file`/`--backup-directory` does not cause destination access for this branch;
+existing artifacts are not replaced. Direct `repair_execution.retain` rejects it
+with `NO_CHANGE_TO_RETAIN` before any destination access.
+
+Mixed-change private review lists only real edits while the retained artifact
+still binds the complete original request. An execute-time no-change recompile
+is stale, not an applied receipt. Production native admission remains blocked.
 Native acceptance and actual route behavior must be measured independently.
 
 ## Evidence and rollback
@@ -113,3 +135,7 @@ reconstruction, domain-label bounds, known earlier coverage, later/noncovering
 rules, unknown rule types remaining unverified, and rejection after an earlier
 in-memory edit without modifying any input. The full batch evidence and remaining
 native/CI limits are recorded in `validation.md`.
+
+2026-10-18 idempotent-replanning increment: 28 compiler tests pass. See
+[evidence and original-requirement limits](evidence/rebuild-idempotent-replanning.md).
+This closes only a bounded candidate/replanning subgap, not full ENV-T60 (L + R).
