@@ -1,5 +1,11 @@
 # 版本记录
 
+## 2026-10-18 验收测试编码与可移植性回归
+
+- 修复七处证据文本读取默认编码，保留原文与断言
+- 增加验收辅助测试静态编码/已知最低版本API检查和独立cp1252默认编码子进程回归
+- 如实记录第二十二批Windows CI失败，运行时与23项验收结论不变
+
 ## Twenty-second reconstruction, 2026-10-18
 
 - Revalidate original T03/T05 using retained actual two-turn guided responses and independent sentence-level review

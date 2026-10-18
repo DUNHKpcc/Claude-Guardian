@@ -30,8 +30,8 @@ class RetainedDiagnosticEvidenceTests(unittest.TestCase):
     def test_original_clauses_layers_and_review(self):
         clauses={'T03':('403 错误','不直接认定封号；先确认响应来源、认证与权限'),
                  'T05':('VPS 实测正常一周','可记录观察期，不能输出“极低封号率”')}
-        spec=(SOURCE/'skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md').read_text()
-        tracker=(SOURCE/'docs/implementation-tracker.md').read_text()
+        spec=(SOURCE/'skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md').read_text(encoding='utf-8')
+        tracker=(SOURCE/'docs/implementation-tracker.md').read_text(encoding='utf-8')
         record=read(DATA/'execution-record.json'); review=read(DATA/'independent-review.json')
         for case,(scenario,requirement) in clauses.items():
             self.assertIn('| '+case+' | '+scenario+' | '+requirement+' |',spec)
@@ -49,11 +49,11 @@ class RetainedDiagnosticEvidenceTests(unittest.TestCase):
             dialogue=read(DATA/(case+'-actual-dialogue.json'))
             self.assertEqual([x['role'] for x in dialogue],['user','assistant','user','assistant'])
             self.assertEqual([x['text'] for x in dialogue if x['role']=='user'],INPUTS[case])
-            for i in (1,2): self.assertEqual(dialogue[2*i-1]['text'],(DATA/(case+'-response-'+str(i)+'.txt')).read_text())
+            for i in (1,2): self.assertEqual(dialogue[2*i-1]['text'],(DATA/(case+'-response-'+str(i)+'.txt')).read_text(encoding='utf-8'))
         for name,expected in record['artifacts'].items():self.assertEqual(digest(DATA/name),expected)
 
     def test_t03_all_required_distinctions_preserved(self):
-        first=(DATA/'t03-response-1.txt').read_text(); second=(DATA/'t03-response-2.txt').read_text()
+        first=(DATA/'t03-response-1.txt').read_text(encoding='utf-8'); second=(DATA/'t03-response-2.txt').read_text(encoding='utf-8')
         for topic in ('响应来源','认证','权限'):
             self.assertIn(topic,first); self.assertIn(topic,second)
         self.assertIn('不能仅凭 403 认定账号被封',first)
@@ -64,7 +64,7 @@ class RetainedDiagnosticEvidenceTests(unittest.TestCase):
         self.assertIn('这里不执行',second)
 
     def test_t05_reported_period_and_no_probability_guarantee(self):
-        first=(DATA/'t05-response-1.txt').read_text(); second=(DATA/'t05-response-2.txt').read_text()
+        first=(DATA/'t05-response-1.txt').read_text(encoding='utf-8'); second=(DATA/'t05-response-2.txt').read_text(encoding='utf-8')
         self.assertIn('不足以写成“极低封号率”或长期保证',first)
         for text in ('用户报告','2026-10-10 至 2026-10-16','每天约 20 分钟','在 VPS 上使用 Claude Code','未由我独立核验','不是连续七天全天测试','不能扩展为“极低封号率”'):
             self.assertIn(text,second)

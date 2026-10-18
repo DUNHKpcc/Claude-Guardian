@@ -1178,3 +1178,34 @@ passed on all four jobs: Python 3.10 and Ubuntu 1,729 passed/eight skipped;
 macOS 1,725/12; Windows 1,345/392. All release hashes matched. This closes the
 specific enterContext test compatibility defect; the earlier failed run remains
 recorded, and hosted results do not replace actual user-device acceptance.
+
+## Twenty-second publication and explicit-encoding regression
+
+Published `3430901cf84f0034b4151170235cbb8030b21c67`, exact 240-source tree
+`6dd659e5351c2f635bb16893dad201a0187a2e24`. Its
+[push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39113513208)
+failed on Windows: four retained-evidence tests read Chinese text with default
+cp1252. Python 3.10/Ubuntu passed 1,735/eight skipped and macOS 1,731/12.
+The failed run remains recorded, without relabeling it as success.
+
+The repair adds explicit UTF-8 at seven read_text call sites. Responses, review
+artifacts, source pins, assertions and runtime remain unchanged. Two small
+regressions parse acceptance helpers using Python 3.10 grammar, reject known
+unsupported enterContext and implicit text encoding, and run the fourteen
+relevant tests in a separate process with cp1252 default text decoding.
+The emulation handles both None and the literal locale encoding sentinel. An
+earlier wrapper that handled None alone did not reproduce the fault and was
+corrected before release. Independent old-source replay now reproduces all four
+errors; fixed replay passes. These bounded checks do not establish arbitrary
+API compatibility or substitute for actual Windows/minimum-Python push CI.
+
+The final local suite ran 1,745 tests in 36.394 seconds: 1,737 passed and eight
+skipped. No case count changes: 23 accepted,195 pending. Guards apply to the
+acceptance-helper family; other newly changed helpers require explicit read-only
+encoding/API review before freezing rather than inheriting a blanket certification.
+
+The final independent rerun ran 1,745 tests in 35.889 seconds: 1,737 passed and
+eight skipped. Thirteen isolated AST mutation cases check both rejected implicit
+text/API usage and accepted binary/explicit-encoding forms. Both Node suites,
+compilation and reproducible package remain successful at the unchanged release
+hash `9ce77248c44c36e1d6f79bfc80ac59cec70ae126f43813c377e0d5f3138256b7`.
