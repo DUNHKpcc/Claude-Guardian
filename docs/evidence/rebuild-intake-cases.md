@@ -151,7 +151,7 @@ python -B tests/test_acceptance_intake_rebuild.py --replay > /tmp/guardian-intak
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `d9eaa53b02787b2414ad1b0c204bb58fa31d9ff288f898b60dbc0af4c2df6298` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `53b69a72d86e7d6c4d1f569e26c70b3dbb73677a34f8cec57f0f5212a1936d1c` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
 | `tests/test_acceptance_intake_rebuild.py` | `69cd85aed9b568c960db65791e0e21bbb6d7dffeb80b2383d69b1bd602dd212b` |
 | `tests/test_interview_flow.py` | `2e9fa3e886262c62c1a11bbcb0ebda4f02356d03be595de6f9bac804d31b1d4a` |
@@ -159,7 +159,18 @@ python -B tests/test_acceptance_intake_rebuild.py --replay > /tmp/guardian-intak
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `tests/test_interview_migration.py` | `75c016cfc9e1129a948bca8b21e963a16bc62b96ad200cb0a43cb142d29a1b18` |
 | `skills/claude-guardian/SKILL.md` | `958c27324e41d46dc2977d60db285b26994bcd5aa6691ae61263be7469765d6e` |
-| `skills/claude-guardian/references/intake.md` | `a871c5f9daec76a1e896fc95850f4a412719cd9ee0fa649747dc35e93bbeab6a` |
+| `skills/claude-guardian/references/intake.md` | `f736f42bf9f962ee1a945452ccf9c3497a849aaa08097ab261b8cdad4bc1e4a7` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
+
+
+### Twelfth-batch preservation review
+
+The task-intent and exposure-triage changes in interview_flow.py and active intake
+guidance were independently re-reviewed against all original conditions on this
+page. The unchanged route replay remains `8e2a95d3` (prefix), and the eleventh
+intake replay remains `67406ca1` (prefix); complete hashes remain in their original
+evidence sections. The 181 focused checks passed. New emergency postponement is
+a derived projection, not user deferral or action authorization. Only these two
+reviewed file pins are refreshed here; no native or model-integration proof is added.

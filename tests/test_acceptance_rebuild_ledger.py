@@ -14,7 +14,10 @@ ACCEPTED = {
        for case in ('T19', 'T20', 'T21', 'T24')},
     **{case: ('docs/evidence/rebuild-intake-cases.md', 'L+C', ['L', 'C'])
        for case in ('T53', 'T74', 'T81')},
+    **{case: ('docs/evidence/rebuild-task-scope-cases.md', 'L+C', ['L', 'C'])
+       for case in ('T34', 'T43', 'T48', 'T78')},
     'ENV-T79': ('docs/evidence/rebuild-enforcement-cases.md', 'L', ['L']),
+    'ENV-T81': ('docs/evidence/rebuild-required-controls-case.md', 'L + C', ['L', 'C']),
     'ENV-T90': ('docs/evidence/rebuild-enforcement-cases.md', 'L + C', ['L', 'C']),
 }
 
@@ -40,6 +43,8 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
             'docs/evidence/rebuild-source-dedup.md': 4,
             'docs/evidence/rebuild-enforcement-cases.md': 15,
             'docs/evidence/rebuild-intake-cases.md': 14,
+            'docs/evidence/rebuild-required-controls-case.md': 12,
+            'docs/evidence/rebuild-task-scope-cases.md': 16,
         }
         for path, count in expected_counts.items():
             page = (ROOT / path).read_text(encoding='utf-8')

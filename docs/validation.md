@@ -721,3 +721,45 @@ packages are byte-identical, SHA-256
 `457a1b48ccd35e370aae3f312e22d75d0b352c41019d91e2bcd4d5b7fcc1217b`.
 All 47 accepted-evidence underlying pins and original ledger invariants passed
 independent review. Cloud CI publication is recorded separately after it completes.
+
+Eleventh batch was published as `ffc786c8e735f93d82900ff528029acfc8cb884b`,
+parent `84f8f732288a8f89ea8c528b85ca83974a02bc0f`. Both push workflows succeeded:
+[tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39103430733)
+and [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39103430722).
+Of 1,423 tests: Linux 1,415 passed/8 skipped; macOS 1,412/11; Windows 1,170/253;
+Python 3.10 Linux 1,415/8. Preview 27/27 and detached runtime 9/9 passed.
+Skip counts and native-context boundaries were unchanged. The exact 14-file
+remote delta, expected parent, blob hashes and modes were verified.
+
+
+## Twelfth rebuild batch: task scope, incident priority and invalidated grants
+
+T34/T78/T43/T48 and ENV-T81 have complete independent review under their original
+L+C (ENV literal L + C) conditions. Unanswered routes stay unconfirmed; experience
+does not imply an active subscription. Explicit technical tasks synchronize both
+derived intent labels, including supported task round-trips, without rewriting
+facts. Credential-exposure prompts avoid the unrelated restriction/billing survey;
+automatic emergency postponement is distinct from user deferral. Immediate
+protective guidance is not conditioned on completing seven questions, and no
+credential-revocation executor or extra action authority is invented.
+
+A genuine failure of a current grant's prerequisites revokes its public scope
+while retaining phase/contact history. A fresh review identity prevents reuse of
+old passing evidence after same-binding reset/resume. Approval-time expiry also
+invalidates the grant on cancellation/denial while preserving the primary result.
+Unrelated malformed requests, later-stage collection and independent local plans
+remain distinct. This is trusted-host workflow enforcement, not native detection
+or OS/network isolation. Failing-first counterexamples were retained.
+
+The ten previously accepted cases were rechecked before their affected source
+pins were refreshed. All 218 original rows and layers remain unchanged; the
+ledger now records 15 accepted and 203 pending. Scheduling remains 75/113/30.
+The parent aggregate ran 1,461 tests in 29.017 seconds: 1,453 passed, eight skipped.
+The worker's earlier sole stale-evidence-pin failure was retained and resolved by
+explicit re-review, not a weakened assertion. Both Node synthetic suites,
+compilation and diff checks pass. Two packages are byte-identical, SHA-256
+`b807550e8331899646947edff1e93b89d449551475b15aa26741b8cedd8ea825`.
+Final integrated ledger/pin checks and publication evidence are recorded separately.
+
+Final integrated rerun: 1,461 total in 29.649 seconds, 1,453 passed and eight skipped.
+All 75 underlying accepted-evidence pins and ledger integrity checks passed.

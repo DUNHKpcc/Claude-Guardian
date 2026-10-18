@@ -8,7 +8,8 @@ The host must derive them from real approvals/observations, never model output o
 persisted permission flags. Callback requests contain opaque references only;
 this module accepts no command, URL, credential or arbitrary executor.
 
-After observed contact, the host must review the current control gaps and collect
+After observed contact or invalidation of a granted prerequisite, the host must
+review the current control gaps and collect
 or revalidate the affected evidence/action facts using the current contact_epoch.
 Capture that identity when the review starts; never retag preincident records at
 handoff time. The epoch is an in-process freshness assertion, not authorization,
@@ -20,6 +21,9 @@ An allowed result is a point-in-time scheduling decision, never an execution
 capability. Re-evaluate immediately before each action. Host/OS approvals remain
 separate; saved reports cannot restore permissions. Enforcement is workflow-only,
 not process/network isolation. No support for automatic login/payment is provided.
+If a valid scoped request finds a prerequisite of the current grant missing or
+conflicting, that grant is revoked without erasing phase/contact history. Later
+stage checks remain pending; unrelated invalid requests do not revoke a grant.
 """
 from dataclasses import dataclass, field
 from enum import Enum
@@ -300,7 +304,8 @@ class WorkflowGuard:
     def contact_epoch(self):
         """Capture at the start of a real scoped review, never from saved data.
 
-        None preserves legacy inputs until contact is observed or resumed.
+        None preserves legacy inputs until contact is observed/resumed or an
+        established grant is invalidated by a failed prerequisite.
         Local audits/plans and neutral recovery probes do not need this marker.
         """
         return self._contact_epoch
@@ -371,6 +376,21 @@ class WorkflowGuard:
         self._generation += 1
         self._state = State(self.state.phase, GateState.REVOKED, (), self.state.observed_contact)
 
+    def _grant_prerequisite_gaps(self, phase, readiness, evidence, now):
+        """Current grant basis only; later-stage pending checks are not waivers."""
+        gaps = readiness.gaps() + self._evidence(CheckStage.PRECONTACT, evidence, now)
+        if phase is Phase.PC2:
+            gaps += self._evidence(CheckStage.CLIENT_UNAUTHENTICATED, evidence, now)
+        return gaps
+
+    def _invalidate_failed_grant(self, readiness, evidence, now):
+        # Called only for a valid next handoff or an otherwise valid action in
+        # the exact current grant. Unrelated malformed requests cannot revoke it.
+        if (self.state.gate is GateState.OPEN
+                and self._grant_prerequisite_gaps(self.state.phase, readiness, evidence, now)):
+            self._contact_epoch = _ContactEpoch()
+            self.revoke()
+
     def record_observed_contact(self):
         """Revoke and require a new scoped control-gap/evidence review.
 
@@ -424,15 +444,22 @@ class WorkflowGuard:
         gaps.extend(self._evidence(CheckStage.PRECONTACT, evidence, now))
         if phase is Phase.PC2:
             gaps.extend(self._evidence(CheckStage.CLIENT_UNAUTHENTICATED, evidence, now))
+        scopes_valid = True
         for scope in scopes:
             if scope not in self.supported_scopes():
                 gaps.append('UNSUPPORTED_OPERATION_SCOPE')
+                scopes_valid = False
             if scope.contact not in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF):
                 gaps.append('CONTACT_SCOPE_REQUIRED')
+                scopes_valid = False
             if phase is Phase.PC1 and (scope.contact is not Contact.CLAUDE or scope.requires_authentication):
                 gaps.append('PC1_SCOPE_EXCEEDED')
+                scopes_valid = False
         if gaps:
+            if scopes_valid:
+                self._invalidate_failed_grant(readiness, evidence, now)
             return self._decision(gaps)
+        previous_phase, previously_open = self.state.phase, self.state.gate is GateState.OPEN
         self._generation += 1
         generation = self._generation
         self._state = State(self.state.phase, GateState.AWAITING, (), self.state.observed_contact)
@@ -443,7 +470,13 @@ class WorkflowGuard:
                 gaps += self._evidence(CheckStage.CLIENT_UNAUTHENTICATED, evidence, checked_at)
         if gaps:
             if self._generation == generation and self.state.gate is GateState.AWAITING:
-                self._state = State(self.state.phase, GateState.CLOSED, (), self.state.observed_contact)
+                invalidated = (previously_open and self._grant_prerequisite_gaps(
+                    previous_phase, readiness, evidence, checked_at))
+                if invalidated:
+                    self._contact_epoch = _ContactEpoch()
+                    self.revoke()
+                else:
+                    self._state = State(self.state.phase, GateState.CLOSED, (), self.state.observed_contact)
             return self._decision(gaps)
         self._state = State(phase, GateState.OPEN, scopes, self.state.observed_contact)
         return self._decision(pending=self.requirements.client_unauthenticated + self.requirements.client_authenticated
@@ -495,6 +528,9 @@ class WorkflowGuard:
         if s.operation is Operation.ROLLBACK and action.recovery.preserves_later_changes is not True:
             gaps.append('LATER_CHANGES_NOT_PROTECTED')
         if s.contact in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF):
+            current_grant_action = (self.state.gate is GateState.OPEN and s in self.state.scopes
+                and action.facts_contact_epoch is self._contact_epoch
+                and all(gap in ('G1_INCOMPLETE', 'G2_INCOMPLETE', 'KNOWN_CONFLICT') for gap in gaps))
             if action.facts_contact_epoch is not self._contact_epoch:
                 gaps.append('CONTACT_FACTS_REVALIDATION_REQUIRED')
             if self.state.phase is Phase.PC0 or self.state.gate is not GateState.OPEN or s not in self.state.scopes:
@@ -508,6 +544,8 @@ class WorkflowGuard:
                 gaps.extend(self._evidence(CheckStage.CLIENT_AUTHENTICATED, evidence, now))
                 if not _ref(action.review_ref):
                     gaps.append('CURRENT_PURCHASE_REVIEW_REQUIRED')
+            if gaps and current_grant_action and 'CURRENT_PURCHASE_REVIEW_REQUIRED' not in gaps:
+                self._invalidate_failed_grant(readiness, evidence, now)
         if gaps:
             return self._decision(gaps)
         gaps, checked_at = self._approval(ApprovalRequest('action:' + s.operation.value, self.binding,
@@ -523,4 +561,12 @@ class WorkflowGuard:
                     gaps += self._evidence(CheckStage.CLIENT_UNAUTHENTICATED, evidence, checked_at)
                 if s.contact is Contact.PAYMENT_HANDOFF:
                     gaps += self._evidence(CheckStage.CLIENT_AUTHENTICATED, evidence, checked_at)
+                if gaps:
+                    self._invalidate_failed_grant(readiness, evidence, checked_at)
+        elif (gaps == ('CURRENT_EXACT_APPROVAL_REQUIRED',)
+              and s.contact in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF)):
+            # A declined reply is still timed and context-checked by _approval.
+            # Retain its primary denial; do not retain a now-expired grant.
+            # Failure/invalid-clock/context-change results supply no such basis.
+            self._invalidate_failed_grant(readiness, evidence, checked_at)
         return self._decision(gaps)

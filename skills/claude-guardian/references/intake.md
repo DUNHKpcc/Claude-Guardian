@@ -14,6 +14,12 @@ Normal order: Q-J01 → OS/purpose/target plan → account history and route →
 
 The local route is a proposal until accepted. Record `explicit_choice`, `task_context`, or `accepted_default`; an unaccepted default stays `default_proposal`. Do not infer a route from expertise or owned equipment.
 
+Q-C05未回答、跳过、未知、拒答或延期时，保留未确认的候选；只给路线比较或带缺口的初步建议，不按本机开始部署，也不把停止追问当作已接受。仅说“我是老手/用过”由宿主标记`ambiguous_experience=true`，当前订阅仍unknown，用Q-J02简短澄清一次；熟练度只改变讲解深度。未知/拒答/延期后不重复追问，不能猜成当前付费。
+
+明确已有订阅且只查本机环境时，一轮吸收订阅阶段、environment任务、系统与local选择，复用已知事实，不问新目标套餐或付款渠道。`purchase_intent=none`与`payment_intent=none`表示本次未处理购买，不表示没有订阅。旧保存记录中的任务标签按当前明确任务归一化，不改订阅证据的来源/时间；同任务的已完成购买仍保留completed，明确新任务由`begin_task`重置其任务标签，不拿旧目标套餐作新购买目标。
+
+凭据泄露/当前停用优先进入最小事故分流；`emergency_deferred_branches`只列因事故暂缓的其他未完成主题，区别于用户主动延期的`deferred_branches`，不修改其已答事实。泄露使用原Q-H01—Q-H07的凭据语境，仅问类别、服务、脱敏迹象、受影响组件与已有保护状态，不问秘密值、无关账单或退款；未知/拒答/不适用可直接记录。发现泄露立即停止助手自己尚未发送的重试和新请求，说明官方保护入口与影响；不等七题答齐才给保护建议。实际撤销凭据、停止用户任务、退出会话或接触服务仍按独立权限处理，不能借紧急状态打开G3或接触门禁。按[事故处理卡](incidents-and-integrations.md#incident-triage-m12)先给最小必要指导，其他细节只在依赖它的步骤补充；只有明确报告本次事故已处理后才恢复此前任务，不把未知/拒答当作事故解决。
+
 ## Fact states and gates
 
 Keep value, state, source, target alias, observation time, applicability, required gate, and missing-evidence reason together. States: `unasked`, `reported`, `observed`, `inferred`, `unknown`, `declined`, `conflict`, `stale`, `not_applicable`. Unknown/declined are not false. Never infer actual residence, payment eligibility, subscription status, bans, or authorization.

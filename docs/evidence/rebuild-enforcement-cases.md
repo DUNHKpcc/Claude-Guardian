@@ -297,7 +297,7 @@ updating hashes alone does not renew acceptance.
 | `skills/claude-guardian/scripts/rules_extension_plan.py` | `15c3b620d2b63601794100af8685df1c3f515e6b0fe99272a4beb9649332d0d1` |
 | `skills/claude-guardian/scripts/config_edit_plan.py` | `d50499f5a92508a9a20dd7e6193f7b2a320bba06bc8fd8ba5eb93ec2b39259dd` |
 | `skills/claude-guardian/scripts/remedy_plans.py` | `d9f1faa146681adb74c47a549b7efec1734d5c78d266a7a4c4285c7973712b09` |
-| `skills/claude-guardian/scripts/workflow_guard.py` | `8008ae69a05031f5166d36b165597635d460530fa08d7854e4f0256920630f0a` |
+| `skills/claude-guardian/scripts/workflow_guard.py` | `68aa99db78a70d0387a3901d4f3ba25a9c4dcee19fa2ff3a584706419ccfeed0` |
 | `skills/claude-guardian/scripts/inventory_cli.py` | `e0c5fc46800e5838e9d40bc8271c8ca1e1da093c85055ed85256ddd57a1cb3b1` |
 | `skills/claude-guardian/SKILL.md` | `958c27324e41d46dc2977d60db285b26994bcd5aa6691ae61263be7469765d6e` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
@@ -307,3 +307,14 @@ updating hashes alone does not renew acceptance.
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `docs/implementation-tracker.md` | `8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50` |
+
+
+### Twelfth-batch grant-invalidation preservation review
+
+The workflow-only grant invalidation and review-epoch change was independently
+rechecked against the complete original ENV-T79/ENV-T90 conditions. All eight
+unchanged exact fixtures pass and their full replay remains
+`b014fc2e16015a9ecd07b2f95460ab5fead21b625fd882eb01d8031042325581`.
+The 98 combined checks passed. Only the reviewed workflow implementation pin is
+refreshed; offline-domain semantics, executes=false, workflow_guard enforcement
+and absence of native/OS isolation proof are unchanged.

@@ -126,6 +126,13 @@ QUESTION_PROMPTS = {'Q-J01': '这次是第一次准备订阅（包括只用过�
  'Q-Z05': '是否保存/导出不含秘密的本次进度，还是仅留在当前对话？',
  'Q-C07': 'retired；从展示集、调度、画像必填和就绪要求中删除，不复用编号'}
 QUESTION_PROMPTS[RETIRED] = "Retired; never collect account ownership"
+EXPOSURE_PROMPTS = {
+    'Q-H01': '可能泄露的是哪类凭据、涉及哪个服务或客户端？只说类别和对象，不要发送密码、令牌或密钥内容。',
+    'Q-H03': '有什么迹象提示凭据可能泄露？只提供脱敏后的提示或现象，不要贴原始秘密或完整日志。',
+    'Q-H04': '发现泄露前做过什么相关操作，或把信息发到了哪类位置？不要贴具体秘密或含密链接。',
+    'Q-H05': '哪些设备、客户端或自动任务可能使用这类凭据？只列受影响对象，不读取凭据内容。',
+    'Q-H06': '是否已经通过官方渠道处理这次泄露，或收到需要完成的保护指示？不知道可以说明。',
+}
 
 # Context is routing metadata supplied explicitly by the host, never inferred
 # from expertise, equipment ownership, IP geolocation or a default proposal.
@@ -222,6 +229,19 @@ def new_state(target_alias, account_alias, *, task_id="task-1"):
     }
     validate_state(state)
     return state
+
+
+def _sync_task_intent(state):
+    """Refresh derived task labels, never subscription evidence or permissions."""
+    context = state['context']
+    if not (context['purchase_completed'] and state['purchase_intent'] == 'completed'):
+        state['purchase_intent'] = ('subscription_preparation'
+                                    if context['task'] in PURCHASE_TASKS else 'none')
+        if context['task'] in PURCHASE_TASKS:
+            state['payment_intent'] = (context['task'] if context['task'] in {'renew','upgrade','change_channel'}
+                else {'first_subscription':'new_subscription','returning_subscription':'resubscribe'}.get(journey(state),'unresolved'))
+    if context['task'] in {'environment', 'network', 'incident'} or state['purchase_intent'] == 'completed':
+        state['payment_intent'] = 'none'
 
 
 def _validate_date(value):
@@ -430,6 +450,7 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
         if fresh_reply:
             review['retained_keys'].remove(qid)
     _refresh_resume_binding(result)
+    _sync_task_intent(result)
     validate_state(result)
     return result
 
@@ -548,6 +569,8 @@ def set_context(state, **changes):
             and (state["context"]["incident"] != changes["incident"]
                  or state["context"]["incident_resolved"] or _legacy_incident_review(state))):
         _refresh_incident_answers(result)
+    validate_state(result)
+    _sync_task_intent(result)
     validate_state(result)
     return result
 
@@ -772,6 +795,9 @@ def next_question(state):
         if item["id"] in state["asked_question_ids"] and not clarification:
             continue
         prompt = '你已经选好套餐；具体是哪一个套餐？' if unnamed_plan else QUESTION_PROMPTS[item['id']]
+        if (item['id'] in EXPOSURE_PROMPTS and state['context']['incident'] == 'credential_exposure'
+                and not state['context']['incident_resolved']):
+            prompt = EXPOSURE_PROMPTS[item['id']]
         return {**item, "prompt": prompt, "clarification": clarification,
                 "allowed_outcomes": ["reported", "unknown", "declined", "deferred"],
                 "requires_action_authorization": False}
@@ -854,6 +880,15 @@ def assessment(state):
             "deferred_branches": list(state["deferred_branches"]),
             "route_confirmation": "unconfirmed" if c["route_selection_basis"] == "default_proposal" else "confirmed",
             "current_subscription": deepcopy(state["current_subscription"])}
+    if urgent:
+        # Projection only: distinguish emergency postponement from explicit user
+        # deferral. Never resolve the real incident or change retained facts.
+        routine = deepcopy(state)
+        routine['context'].update(incident_resolved=True, account_incident_resolved=True)
+        pending = {item['id'] for item in assessment(routine)['G1']['unresolved_fields']}
+        result['emergency_deferred_branches'] = list(dict.fromkeys(
+            item['branch'] for item in applicable_questions(routine)
+            if item['branch'] != 'incident' and item['id'] in pending))
     if review is not None:
         result["resume_review"] = {key: deepcopy(review[key]) for key in
                                    ("event_id", "status", "response", "scope_keys", "changed_keys", "reported_at")}
@@ -911,6 +946,7 @@ def dumps_state(state, *, host_opt_in=False, scope="private_save"):
     """
     result = deepcopy(validate_state(state))
     _normalize_incident_context(result)
+    _sync_task_intent(result)
     if scope == "public_export":
         raise InterviewError("Public export requires a separately reviewed redacted artifact")
     if scope not in result["persistence_consent"] or host_opt_in is not True:
@@ -940,6 +976,7 @@ def loads_state(serialized):
         raise InterviewError("Invalid saved interview: " + str(exc)) from None
     validate_state(result)
     _normalize_incident_context(result)
+    _sync_task_intent(result)
     # Saved permission is historical evidence, not new permission to save/export.
     result["persistence_consent"] = {key: False for key in result["persistence_consent"]}
     return result
