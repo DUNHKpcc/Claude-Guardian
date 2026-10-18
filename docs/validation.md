@@ -1415,3 +1415,24 @@ and eight skipped. Detached release passed9/9, portability2/2, ledger3/3 and
 forced cp1252 candidate checks6/6. Both Node suites, compilation, diff checks,
 exact UTF-8 replay and duplicate package builds passed. Package remains
 3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a.
+
+## 2026-10-18 twenty-eighth: observed T11/T12 safe-input evidence
+
+The complete local suite ran 1,793 tests in 47.126 seconds: 1,785 passed and
+8 skipped. Seven focused safe-input checks and three ledger integrity checks
+passed. The four actual generated responses and original provenance/execution
+records are retained unchanged. Independent candidate review found the initial
+wrapper failed on non-ASCII output paths under legacy encoding; both JSON
+serialization points now escape non-ASCII characters. The new regression fails
+against the former wrapper and passes under ordinary and forced cp1252/C-locale
+execution. These supporting tests do not regenerate model responses.
+
+The prior twenty-seventh commit 99c1820872f0fa56e3e8a940456108da6377624c passed
+CI run 39116710419 on all four platforms: Ubuntu 1,778 passed / 8 skipped,
+Python 3.10 Linux 1,778 / 8, macOS 1,774 / 12, and Windows 1,394 / 392.
+The hosted matrix is not user-device acceptance. The prior package remains
+3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a.
+Independent integrated checks ran 1,793 tests in 47.194 seconds: 1,785 passed
+and eight skipped. Detached release9/9, portability2/2, ledger3/3, forced cp1252
+7/7, both Node synthetic suites, compilation and duplicate package builds passed.
+Current-batch CI is pending.

@@ -1,0 +1,22 @@
+{
+  "schema_version": "guardian-offline/0.1",
+  "target_ref": "device-1",
+  "record_kind": "synthetic_example",
+  "target_binding": {
+    "declared_os": "macos",
+    "desktop_user_relation": "same",
+    "filesystem_namespace": "host_desktop",
+    "execution_location": "native_local"
+  },
+  "facts": [
+    {
+      "id": "S08",
+      "value": "Windows:Bearer T11_UNKNOWN_SYNTHETIC_20261018",
+      "state": "reported",
+      "context_ref": "device-1",
+      "observed_at": "2026-10-18T09:32:30.061396+00:00",
+      "layer": "reported",
+      "source_ref": "synthetic-source"
+    }
+  ]
+}

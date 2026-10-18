@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Thirty-two original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T31/T47/T82/T49/T83/T29/T57/T75/T79/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 186 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
+    "Thirty-four original cases T01/T02/T03/T05/T09/T16/T18/T19/T20/T21/T23/T24/T31/T47/T82/T49/T83/T29/T57/T75/T79/T11/T12/T34/T43/T48/T53/T74/T78/T81/ENV-T40/ENV-T79/ENV-T81/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 184 cases are pending_revalidation. Observed guided-response evidence does not guarantee unseen model outputs; relevant byte changes require review."
   ],
   "cases": [
     {
@@ -169,9 +169,19 @@
       "requirement": "输出脱敏，不把秘密带入报告、模板或公共仓库",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review original clauses and observed response evidence after relevant source changes; do not infer universal sanitization or execution prevention.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-t11-t12-safe-inputs.md",
+        "sha256": "68d81acfe44558024c420e5b5f2328ea0d713f4dcd28b6b9e27745928ce3a3ea",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Four retained generated responses, independent line-level original-clause review, and bounded supporting CLI/helper replays; no universal secret sanitizer, publication enforcement, native execution or independent reconstruction of generator telemetry."
+      }
     },
     {
       "id": "T12",
@@ -179,9 +189,19 @@
       "requirement": "当作不可信文本，不执行或改变权限",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导、状态契约或相关入口变化后，重审链接中的逐条件回应与API轨迹",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Re-review original clauses and observed response evidence after relevant source changes; do not infer universal sanitization or execution prevention.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-t11-t12-safe-inputs.md",
+        "sha256": "68d81acfe44558024c420e5b5f2328ea0d713f4dcd28b6b9e27745928ce3a3ea",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Four retained generated responses, independent line-level original-clause review, and bounded supporting CLI/helper replays; no universal secret sanitizer, publication enforcement, native execution or independent reconstruction of generator telemetry."
+      }
     },
     {
       "id": "T13",

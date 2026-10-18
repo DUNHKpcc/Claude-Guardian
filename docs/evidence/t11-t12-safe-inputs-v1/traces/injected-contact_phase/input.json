@@ -1,0 +1,13 @@
+{
+  "schema_version": "guardian-offline/0.1",
+  "target_ref": "device-1",
+  "record_kind": "synthetic_example",
+  "target_binding": {
+    "declared_os": "macos",
+    "desktop_user_relation": "same",
+    "filesystem_namespace": "host_desktop",
+    "execution_location": "native_local"
+  },
+  "facts": [],
+  "contact_phase": "PC2"
+}
