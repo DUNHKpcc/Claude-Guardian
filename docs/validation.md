@@ -1038,3 +1038,44 @@ completed successfully: Linux/Python 3.10 1,672 passed/eight skipped; macOS
 1,668/12; Windows 1,316/364. All four jobs built the same release hash shown
 above. The exact four-file delta and complete 205-source Git tree were verified.
 These hosted tests do not establish native user-device cleanup acceptance.
+
+## Twentieth callable C5 CLI and installed host-bound recovery
+
+A bounded standard-library dispatcher now exposes capabilities, strict scope
+validation, plan, quarantine, reconciliation and separately authorized restore.
+The ordinary entry point has no host and refuses selected-root operations.
+An in-process Agent host must independently establish scope ownership, inactive
+state, writer exclusion, verified backup and current operation consent; saved
+JSON and command flags do not establish those facts. The shipped usage guide
+states that native application adapters and permanent purge remain unavailable.
+
+Independent review of the core-composed CLI found and corrected fixture scope/
+backup verification, host exception sanitization, truthful post-move recovery
+metadata, cancellation and deadline checks around private output persistence.
+The 118-check runtime subset and independent schema/recovery probes passed.
+Installed-package integration then exercised two genuinely separate interpreters:
+the second rechecks parent-created inode/content/backup bindings and obtains
+fresh restore consent after the first exits. Negative probes reject changed
+backup, replaced inode, additional unbacked data, occupied destination, denied
+consent, serialized authority and changed parent digest. This is controlled
+fixture restart evidence, not native Claude ownership or production exclusion.
+
+The final aggregate ran 1,729 tests in 35.204 seconds: 1,721 passed and eight
+skipped. Both Node suites, compilation and diff checks passed. Two release builds
+were byte-identical, SHA-256
+`9ce77248c44c36e1d6f79bfc80ac59cec70ae126f43813c377e0d5f3138256b7`.
+Only the CLI and its usage guide are newly packaged; the synthetic host/helper
+and private test artifacts are excluded. An independent 23-test source and
+nine-test installed-library replay preserves original T09 source deduplication,
+authorizing its single packager dependency-pin refresh. Original-case acceptance
+stays 19/218; no new native or complete-device cleanup acceptance is inferred.
+
+## Nineteenth publication verification
+
+Published `cfdd270cc495299fd8bfb035b2e8c555148a093d`, parent
+`486aaf1c01dcaac394d3c40bf3b2a65581aadc47`; exact 17-file delta and complete
+217-source Git tree verified. [Push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39111478733)
+passed: Linux/Python 3.10 1,693 passed/eight skipped; macOS 1,689/12;
+Windows 1,337/364. All four release hashes matched. No preview workflow was
+triggered by that test/evidence-only scope, and no hosted result is promoted to
+actual user-device acceptance.

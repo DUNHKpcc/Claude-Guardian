@@ -1,6 +1,6 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: nineteenth rebuild, 2026-10-18
+## Current checkpoint: twentieth rebuild, 2026-10-18
 
 The current ledger records 19 freshly accepted original cases and 199 pending:
 T01, T02, T18, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
@@ -28,6 +28,11 @@ The nineteenth adds original T01/T02 complete intake replay and guidance review,
 and T18 observed two-turn synthetic appeal drafting with independent factual
 review. Retained-evidence tests do not regenerate model output or prove unseen
 inputs. No runtime changes are included.
+The twentieth ships a bounded C5 dispatcher and private scope/plan/receipt
+handling. A reviewed in-process host must supply actual ownership, inactivity,
+backup and authority; ordinary CLI invocation remains blocked for root actions.
+Two separate interpreters exercise controlled-fixture recovery, without claiming
+a native Claude adapter or complete user-device cleanup.
 This is not full-project or user-device acceptance.
 
 ## Basis
