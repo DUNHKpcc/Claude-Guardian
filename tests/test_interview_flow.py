@@ -402,6 +402,191 @@ class InterviewTests(unittest.TestCase):
         historical = f.set_context(s, incident="data_risk", incident_resolved=True)
         self.assertNotEqual(f.assessment(historical)["G1"]["status"], "emergency_deferred")
 
+    def test_exact_incident_replay_preserves_resolution_and_episode_answers(self):
+        for qid, value in (("Q-C03", "current_suspension"), ("Q-C04", "suspended")):
+            s = f.record_fact(state(), qid, value, source="user:incident", observed_at="2026-10-15T10:00:00Z")
+            s = f.record_fact(s, "Q-H01", "Claude account", source="user:details")
+            s = f.set_context(s, incident_resolved=True)
+            s = f.loads_state(f.dumps_state(s, host_opt_in=True))
+            before = json.dumps(s, sort_keys=True)
+            for timestamp in ("2026-10-15T10:00:00Z", "2026-10-15T12:00:00+02:00"):
+                replayed = f.record_fact(s, qid, value, source="user:incident", observed_at=timestamp)
+                self.assertEqual(replayed, s)
+                self.assertNotEqual(f.assessment(replayed)["G1"]["status"], "emergency_deferred")
+                self.assertEqual(replayed["facts"]["Q-H01"]["state"], "reported")
+            self.assertEqual(json.dumps(s, sort_keys=True), before)
+
+    def test_exact_replay_cannot_refresh_invalidated_account_or_episode_evidence(self):
+        for qid, value in (("Q-C03", "current_suspension"), ("Q-C04", "suspended"),
+                           ("Q-H01", {"object": "Claude account"})):
+            s = f.record_fact(state(incident="data_risk"), qid, value,
+                              source="user:old", observed_at="2026-10-15T10:00:00Z")
+            s = f.invalidate_facts(s, [qid], reason="Evidence needs a current confirmation")
+            s = f.loads_state(f.dumps_state(s, host_opt_in=True))
+            for correction in (False, True):
+                replayed = f.record_fact(s, qid, value, source="user:old",
+                                         observed_at="2026-10-15T10:00:00Z", correction=correction)
+                self.assertEqual(replayed, s)
+                self.assertEqual(replayed["facts"][qid]["state"], "stale")
+                self.assertEqual(f.assessment(replayed)["G3"]["status"], "blocked")
+
+    def test_replayed_incident_detail_keeps_clarification_budget(self):
+        s = f.record_fact(state(incident="data_risk"), "Q-H01", "account", source="user:old",
+                          observed_at="2026-10-15T10:00:00Z")
+        s = f.invalidate_facts(s, ["Q-H01"], reason="New episode")
+        s = f.mark_asked(s, "Q-H01")
+        replayed = f.record_fact(s, "Q-H01", "account", source="user:old",
+                                 observed_at="2026-10-15T10:00:00Z")
+        self.assertEqual(replayed, s)
+        self.assertNotEqual(f.next_question(replayed)["id"], "Q-H01")
+
+    def test_replayed_expired_history_cannot_restore_planning_readiness(self):
+        s = state("existing_subscriber", task="network", route="local", route_selection_basis="task_context")
+        s = f.record_fact(s, "Q-C03", "past_suspension", source="user:history")
+        s = f.record_fact(s, "Q-H01", "Claude account", source="user:episode",
+                          observed_at="2026-10-15T10:00:00Z")
+        for _ in range(100):
+            question = f.next_question(s)
+            if question is None:
+                break
+            value = {"Q-C02": "macos", "Q-C04": "unregistered"}.get(question["id"], "sanitized answer")
+            s = f.record_fact(s, question["id"], value, source="user:answer")
+        self.assertEqual(f.assessment(s)["G2"]["status"], "pass")
+        s = f.invalidate_facts(s, ["Q-H01"], reason="Historical object needs reconfirmation")
+        replayed = f.record_fact(s, "Q-H01", "Claude account", source="user:episode",
+                                 observed_at="2026-10-15T10:00:00Z")
+        self.assertEqual(f.assessment(replayed)["G2"]["status"], "blocked")
+        self.assertIn({"id": "Q-H01", "reason": "stale"}, f.assessment(replayed)["G1"]["unresolved_fields"])
+
+    def test_older_account_evidence_cannot_clear_or_reopen_current_incident(self):
+        for first_qid, first_value, old_qid, old_value in (
+                ("Q-C04", "suspended", "Q-C04", "active"),
+                ("Q-C04", "active", "Q-C04", "suspended"),
+                ("Q-C04", "active", "Q-C03", "current_suspension"),
+                ("Q-C03", "current_suspension", "Q-C04", "active")):
+            s = f.record_fact(state(), first_qid, first_value, source="user:new",
+                              observed_at="2026-10-16T10:00:00Z")
+            before = json.dumps(s, sort_keys=True)
+            with self.subTest(first=first_qid, old=old_qid), self.assertRaisesRegex(f.InterviewError, "Older incident evidence"):
+                f.record_fact(s, old_qid, old_value, source="user:old",
+                              observed_at="2026-10-15T10:00:00Z")
+            self.assertEqual(json.dumps(s, sort_keys=True), before)
+
+    def test_same_time_contradiction_needs_explicit_correction_without_faking_time(self):
+        timestamp = "2026-10-15T10:00:00Z"
+        s = f.record_fact(state(), "Q-C04", "suspended", source="user:mistake", observed_at=timestamp)
+        with self.assertRaisesRegex(f.InterviewError, "Conflicting same-time"):
+            f.record_fact(s, "Q-C04", "active", source="user:correction", observed_at=timestamp)
+        corrected = f.record_fact(s, "Q-C04", "active", source="user:correction",
+                                  observed_at=timestamp, correction=True)
+        self.assertEqual(corrected["facts"]["Q-C04"]["observed_at"], timestamp)
+        self.assertNotEqual(f.assessment(corrected)["G1"]["status"], "emergency_deferred")
+        older = f.record_fact(s, "Q-C04", "active", source="user:correct-time",
+                              observed_at="2026-10-14T10:00:00Z", correction=True)
+        self.assertEqual(older["facts"]["Q-C04"]["observed_at"], "2026-10-14T10:00:00Z")
+        self.assertEqual(f.assessment(older)["G3"]["status"], "blocked")
+        self.assertEqual(s["facts"]["Q-C04"]["value"], "suspended")
+
+    def test_equivalent_cross_question_incident_replay_preserves_lifecycle(self):
+        timestamp = "2026-10-15T10:00:00Z"
+        for first, second in ((("Q-C03", "current_suspension"), ("Q-C04", "suspended")),
+                              (("Q-C04", "suspended"), ("Q-C03", "current_suspension"))):
+            s = f.record_fact(state(), *first, source="user:episode", observed_at=timestamp)
+            s = f.record_fact(s, "Q-H01", "Claude account", source="user:details")
+            s = f.set_context(s, incident_resolved=True)
+            resolved = f.record_fact(s, *second, source="user:episode", observed_at=timestamp)
+            self.assertTrue(resolved["context"]["account_incident_resolved"])
+            self.assertEqual(resolved["facts"]["Q-H01"]["state"], "reported")
+            self.assertNotEqual(f.assessment(resolved)["G1"]["status"], "emergency_deferred")
+            stale = f.invalidate_facts(s, [first[0]], reason="Expired incident evidence")
+            stale = f.loads_state(f.dumps_state(stale, host_opt_in=True))
+            replayed = f.record_fact(stale, *second, source="user:episode", observed_at=timestamp)
+            self.assertEqual(replayed["facts"][second[0]]["state"], "stale")
+            self.assertNotEqual(f.assessment(replayed)["G1"]["status"], "emergency_deferred")
+
+    def test_fresh_identical_reply_keeps_default_and_batch_new_observation_semantics(self):
+        for qid, value in (("Q-C03", "current_suspension"), ("Q-C04", "suspended")):
+            s = f.record_fact(state(), qid, value, source="user:current-turn",
+                              observed_at="2026-10-15T10:00:00Z")
+            s = f.record_fact(s, "Q-H01", "old episode", source="user:old-details")
+            s = f.set_context(s, incident_resolved=True)
+            with patch.object(f, "_now", return_value="2026-10-16T10:00:00Z"):
+                updated = [f.record_fact(s, qid, value, source="user:current-turn"),
+                           f.record_facts(s, [{"question_id": qid, "value": value}], source="user:current-turn")]
+            for fresh in updated:
+                self.assertEqual(f.assessment(fresh)["G1"]["status"], "emergency_deferred")
+                self.assertEqual(fresh["facts"]["Q-H01"]["state"], "stale")
+                self.assertEqual(fresh["facts"][qid]["observed_at"], "2026-10-16T10:00:00Z")
+
+    def test_concurrent_account_facts_cannot_silently_cancel_suspension(self):
+        answers = [{"question_id": "Q-C03", "value": "current_suspension"},
+                   {"question_id": "Q-C04", "value": "active"}]
+        with patch.object(f, "_now", return_value="2026-10-15T10:00:00Z"):
+            for order in (answers, list(reversed(answers))):
+                s = f.record_facts(state(), order, source="user:mixed")
+                self.assertEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+                self.assertEqual(f.next_question(s)["id"], "Q-H01")
+                self.assertEqual(s["facts"]["Q-C04"]["value"], "active")
+
+    def test_clock_resolution_does_not_turn_new_reply_into_a_replay(self):
+        timestamp = "2026-10-15T10:00:00Z"
+        s = f.record_fact(state(), "Q-C04", "suspended", source="user:current-turn", observed_at=timestamp)
+        s = f.set_context(s, incident_resolved=True)
+        with patch.object(f, "_now", return_value=timestamp):
+            direct = f.record_fact(s, "Q-C04", "suspended", source="user:current-turn")
+            batch = f.record_facts(s, [{"question_id": "Q-C04", "value": "suspended"}], source="user:current-turn")
+        for fresh in (direct, batch):
+            self.assertEqual(f.assessment(fresh)["G1"]["status"], "emergency_deferred")
+            self.assertFalse(fresh["context"]["account_incident_resolved"])
+
+    def test_replay_validation_cannot_bypass_target_timestamp_or_correction_types(self):
+        s = f.record_fact(state(), "Q-C04", "suspended", source="user:incident",
+                          observed_at="2026-10-15T10:00:00Z")
+        for extra in ({"subject_ref": "wrong-account"}, {"correction": "yes"},
+                      {"correction": 1}, {"observed_at": ""}, {"observed_at": 0},
+                      {"state_name": []}, {"blocker_reason": {"invalid": True}}):
+            kwargs = {"source": "user:incident", "observed_at": "2026-10-15T10:00:00Z", **extra}
+            with self.subTest(extra=extra), self.assertRaises(f.InterviewError):
+                f.record_fact(s, "Q-C04", "suspended", **kwargs)
+
+    def test_incident_details_keep_sanitized_structured_json_support(self):
+        for value in ({"category": "connection"}, ["connection", "retry-later"], None, True, 2):
+            with self.subTest(value=value):
+                direct = f.record_fact(state(incident="unknown_error"), "Q-H03", value, source="user:diagnostic")
+                batch = f.record_facts(state(incident="unknown_error"),
+                                       [{"question_id": "Q-H03", "value": value}], source="user:diagnostic")
+                for saved in (direct, batch):
+                    self.assertEqual(saved["facts"]["Q-H03"]["value"], value)
+                    self.assertEqual(f.loads_state(f.dumps_state(saved, host_opt_in=True)), saved)
+
+    def test_same_time_json_type_changes_are_corrections_not_replays(self):
+        timestamp = "2026-10-15T10:00:00Z"
+        for original, corrected in (({"confirmed": 1}, {"confirmed": True}),
+                                     ({"confirmed": True}, {"confirmed": 1}),
+                                     ([{"confirmed": 1}], [{"confirmed": True}]),
+                                     (1, True), (0, False), (1, 1.0)):
+            with self.subTest(original=original, corrected=corrected):
+                s = f.record_fact(state(incident="unknown_error"), "Q-H03", original,
+                                  source="user:notice", observed_at=timestamp)
+                with self.assertRaisesRegex(f.InterviewError, "Conflicting same-time"):
+                    f.record_fact(s, "Q-H03", corrected, source="user:notice", observed_at=timestamp)
+                changed = f.record_fact(s, "Q-H03", corrected, source="user:notice",
+                                        observed_at=timestamp, correction=True)
+                self.assertEqual(json.dumps(changed["facts"]["Q-H03"]["value"]), json.dumps(corrected))
+                self.assertEqual(json.dumps(s["facts"]["Q-H03"]["value"]), json.dumps(original))
+                self.assertEqual(changed["facts"]["Q-H03"]["observed_at"], timestamp)
+
+    def test_equivalent_json_key_order_is_still_an_immutable_replay(self):
+        timestamp = "2026-10-15T10:00:00Z"
+        s = f.record_fact(state(incident="unknown_error"), "Q-H03", {"a": 1, "b": [True]},
+                          source="user:notice", observed_at=timestamp)
+        s = f.invalidate_facts(s, ["Q-H03"], reason="New episode")
+        value = {"b": [True], "a": 1}
+        replayed = f.record_fact(s, "Q-H03", value, source="user:notice", observed_at=timestamp)
+        self.assertEqual(replayed, s)
+        value["b"].append(False)
+        self.assertEqual(replayed, s)
+
     def test_aliases_do_not_repeat(self):
         s = f.record_fact(state(), "Q-OS01", "macos", source="user:1")
         self.assertIn("Q-C02", s["facts"])

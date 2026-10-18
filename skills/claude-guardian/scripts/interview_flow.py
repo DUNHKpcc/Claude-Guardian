@@ -229,6 +229,7 @@ def _validate_date(value):
             date = datetime.fromisoformat(value.replace("Z", "+00:00"))
             if date.tzinfo is None:
                 raise ValueError()
+            return date
         except (ValueError, TypeError, AttributeError):
             raise InterviewError("Timestamp must be timezone-aware ISO 8601") from None
 
@@ -323,15 +324,37 @@ def validate_state(state):
 
 
 def record_fact(state, question_id, value=None, *, state_name="reported", source=None,
-                subject_ref=None, observed_at=None, blocker_reason=None, clarification=False):
+                subject_ref=None, observed_at=None, blocker_reason=None, clarification=False,
+                correction=False):
     """Absorb each useful fact in a reply; does not mark actions authorized.
 
     Replacing an answer is an explicit host correction. Cross-object answers fail
     rather than overwrite a different machine/account's facts. Unknown/refused
     answers are terminal until the user volunteers a correction.
+
+    Supplied incident timestamps identify evidence, not its import time. Replaying
+    the same evidence cannot refresh it or reopen a resolved episode. Older or
+    contradictory same-time evidence requires correction=True to explicitly
+    replace a mistaken record without fabricating a newer observation time.
+    Omitting observed_at still means a new reply, even with the same source/value.
+    This correction flag is not permission for any external action.
     """
+    return _record_fact(state, question_id, value, state_name=state_name, source=source,
+                        subject_ref=subject_ref, observed_at=observed_at,
+                        blocker_reason=blocker_reason, clarification=clarification,
+                        correction=correction, fresh_reply=observed_at is None)
+
+
+def _record_fact(state, question_id, value=None, *, state_name="reported", source=None,
+                 subject_ref=None, observed_at=None, blocker_reason=None, clarification=False,
+                 correction=False, fresh_reply=False):
     validate_state(state)
     qid = canonical(question_id)
+    if type(state_name) is not str or state_name not in FACT_STATES:
+        raise InterviewError("Invalid answer state")
+    if type(correction) is not bool:
+        raise InterviewError("Correction must be an explicit boolean")
+    _validate_date(observed_at)
     result = deepcopy(state)
     _normalize_incident_context(result)
     if qid in {"Q-J01", "Q-J02", "Q-C02", "Q-C03", "Q-C04", "Q-C05", "Q-C08", "Q-C11", "Q-P06"} and value is not None and not isinstance(value, str):
@@ -341,10 +364,22 @@ def record_fact(state, question_id, value=None, *, state_name="reported", source
     if count > 1:
         raise InterviewError("Clarification exhausted; permit unknown, decline or pause")
     fact = {"value": value, "state": state_name, "source": source,
-            "subject_ref": subject_ref or state["account_alias" if qid in ACCOUNT_QUESTIONS else "target_alias"], "observed_at": observed_at or _now(),
+            "subject_ref": subject_ref or state["account_alias" if qid in ACCOUNT_QUESTIONS else "target_alias"], "observed_at": observed_at if observed_at is not None else _now(),
             "applies_when": "current task and target", "required_for": ["intake", "plan"],
             "sensitivity": "low", "clarification_count": count, "blocker_reason": blocker_reason}
+    prior_facts = result["facts"].copy()
     result["facts"][qid] = fact
+    if (qid in ACCOUNT_INCIDENT_VALUES or qid.startswith("Q-H")) and state_name in {"reported", "observed"}:
+        # Validate the full candidate before a replay can return early; malformed
+        # provenance, targets and metadata must not hide behind idempotency.
+        validate_state(result)
+        replay = _incident_evidence_replay(prior_facts, qid, fact, correction=correction,
+                                           fresh_reply=fresh_reply)
+        if replay is not None:
+            result["facts"][qid] = deepcopy(replay)
+            result["facts"][qid]["value"] = deepcopy(value)
+            validate_state(result)
+            return result
     if qid in {"Q-J01", "Q-J02"}:
         # These IDs describe one fact. A correction supersedes the alternative
         # entry instead of allowing registry priority to override recency.
@@ -390,6 +425,45 @@ def record_fact(state, question_id, value=None, *, state_name="reported", source
     return result
 
 
+def _incident_evidence_replay(prior_facts, qid, fact, *, correction, fresh_reply):
+    """Return retained evidence for a replay, or reject ambiguous chronology.
+
+    C03 and C04 both describe account incidents. They share a time boundary, but
+    a newer answer to one question does not silently erase the other's evidence.
+    Explicit corrections can retain their real observation date. Exact replays
+    still preserve resolution, staleness and the original clarification budget.
+    """
+    old = prior_facts.get(qid)
+    observed = _validate_date(fact["observed_at"])
+    def same_observation(previous):
+        return (previous["source"] == fact["source"]
+                and _validate_date(previous["observed_at"]) == observed)
+    # Python equality conflates JSON true/1 (including nested values). Evidence
+    # identity must preserve JSON types as well as its content and provenance.
+    same_value = (old is not None and json.dumps(old["value"], sort_keys=True, allow_nan=False)
+                  == json.dumps(fact["value"], sort_keys=True, allow_nan=False))
+    if not fresh_reply and same_value and same_observation(old):
+        return old
+    relevant = ([previous for key, previous in prior_facts.items() if key in ACCOUNT_INCIDENT_VALUES]
+                if qid in ACCOUNT_INCIDENT_VALUES else [old] if old else [])
+    if not correction:
+        for previous in relevant:
+            previous_time = _validate_date(previous["observed_at"])
+            if observed is not None and previous_time is not None and observed < previous_time:
+                raise InterviewError("Older incident evidence requires an explicit correction")
+        if not fresh_reply and old and _validate_date(old["observed_at"]) == observed:
+            raise InterviewError("Conflicting same-time incident evidence requires an explicit correction")
+    category = ACCOUNT_INCIDENT_VALUES[qid].get(fact["value"]) if qid in ACCOUNT_INCIDENT_VALUES else None
+    if category and not fresh_reply:
+        for key, previous in prior_facts.items():
+            if (key in ACCOUNT_INCIDENT_VALUES
+                    and isinstance(previous["value"], str)
+                    and ACCOUNT_INCIDENT_VALUES[key].get(previous["value"]) == category
+                    and same_observation(previous)):
+                return previous
+    return None
+
+
 def record_facts(state, answers, *, source=None):
     """Atomically absorb normalized facts from one reply, before choosing a question.
 
@@ -426,9 +500,10 @@ def record_facts(state, answers, *, source=None):
         if (item["question_id"] == "Q-C11" and item.get("state", "reported") in {"reported", "observed"}
                 and journey(result) in {"first_subscription", "returning_subscription"}):
             raise InterviewError("Old-subscriber task conflicts with subscription journey; clarify first")
-        result = record_fact(result, item["question_id"], item.get("value"),
-                             state_name=item.get("state", "reported"),
-                             source=item.get("source", source), observed_at=observed_at)
+        result = _record_fact(result, item["question_id"], item.get("value"),
+                              state_name=item.get("state", "reported"),
+                              source=item.get("source", source), observed_at=observed_at,
+                              fresh_reply=True)
     return result
 
 

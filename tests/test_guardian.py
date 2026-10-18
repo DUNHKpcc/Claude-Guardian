@@ -255,7 +255,7 @@ class FileAndCLITests(unittest.TestCase):
     def test_mocked_native_report_to_analysis_and_plan(self):
         # Mocking macOS dispatch on Linux verifies control flow, NOT native API validity.
         args = g.parser().parse_args(["check", "--target-ref", "device-1", "--target-os", "macos", "--confirm-target", "--authorize-audit", "--namespace", "desktop", "--execution-location", "native_local", "--user-context", "same"])
-        with patch.object(g.sys, "platform", "darwin"), patch.object(g, "extended_inventory", return_value=([], [])), patch.object(g.os, "uname", return_value=type("Uname", (), {"release": "fixture-kernel"})(), create=True):
+        with patch.object(g.sys, "platform", "darwin"), patch.object(g, "extended_inventory", return_value=([], [])), patch.object(g.os, "uname", return_value=type("Uname", (), {"release": "24.1.0"})(), create=True):
             report = g.native_check(args)
         for planning in (False, True):
             result = g.analyze(copy.deepcopy(report), "device-1", planning)

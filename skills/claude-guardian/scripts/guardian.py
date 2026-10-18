@@ -24,6 +24,15 @@ MAX_BYTES = 262144
 MAX_AGE = 86400
 ALIAS = re.compile(r"[A-Za-z][A-Za-z0-9_-]{0,47}\Z")
 SECRET = re.compile(r"(?i)(?:bearer\s+\S+|(?:sk-|ghp_|github_pat_)[A-Za-z0-9_-]+|(?:password|secret|token|api[_-]?key|authorization)\s*[:=]\s*\S+)")
+# Known credential shapes are screened before report assembly. Language and
+# locale fields use their producer grammar for sk- forms: Slovak tags such as
+# sk-Latn-SK-fonipa overlap the generic token pattern. This is not a universal
+# secret detector; ambiguous strings cannot gain authenticity from a format.
+CREDENTIAL_TEXT = (
+    r"(?:(?<![A-Za-z0-9])(?:ghp_|github_pat_)[A-Za-z0-9_-]{12,}|bearer\s+\S+"
+    r"|(?:password|secret|token|api[_-]?key|authorization)\s*[:=]\s*\S+)")
+KNOWN_CREDENTIAL_VALUE = re.compile(r"(?i)(?:(?<![A-Za-z0-9])sk-(?:ant-)?[A-Za-z0-9_-]{12,}|" + CREDENTIAL_TEXT + r")")
+KNOWN_CREDENTIAL_LANGUAGE = re.compile(r"(?i)" + CREDENTIAL_TEXT)
 MODULES = ["ENV-%02d" % n for n in range(1, 11)]
 
 
@@ -37,7 +46,8 @@ def now():
 
 
 def alias(value):
-    if not isinstance(value, str) or not ALIAS.fullmatch(value):
+    if (not isinstance(value, str) or not ALIAS.fullmatch(value)
+            or KNOWN_CREDENTIAL_VALUE.search(value)):
         raise GuardianError("INPUT_OR_RESPONSE_INVALID")
     return value
 
@@ -145,7 +155,78 @@ def contact_guard(obj):
         raise GuardianError("PRECONTACT_ACTION_REJECTED", 3)
 
 
+# This release has typed values for its minimal native producers and the
+# offline proxy-plan contract only. The full 47-field catalog is not implemented.
+# An ID being reserved is not permission to echo an arbitrary scalar value.
+VALUELESS_STATES = {"unknown", "blocked", "not_applicable", "not_found_in_scope", "conflict", "stale"}
+FACT_REASON_CODES = {
+    "KERNEL_VERSION_ONLY", "WINDOWS_VERSION_API_ONLY", "READ_ONLY_PROCESS_CONTEXT",
+    "PREFERRED_LANGUAGES_NOT_EFFECTIVE_UI", "PROCESS_UI_CULTURE",
+    "READ_ONLY_LIMITED_METADATA", "PROCESS_VIEW_NOT_HARDWARE_ARCHITECTURE",
+}
+FACT_COVERAGES = {"current_process_os", "target_os_metadata", "default_flags_only"}
+FACT_ENUMS = {
+    "H04": {"same", "different", "unknown"},
+    "S01": {"macos", "windows"},
+    "S04": {"arm64", "aarch64", "x86_64", "amd64", "x64", "x86"},
+    "P11": {"rule", "global", "direct"},
+}
+VERSION_VALUE = (r"(?:[0-9]{1,3}(?:\.[0-9]{1,6}){1,3}"
+                 r"|macOS-product-[0-9]{1,3}(?:\.[0-9]{1,3}){1,2}(?:;build-[0-9]{1,3}[A-Z][0-9]{1,6}[a-z]?)?"
+                 r"|Windows-version-[0-9]{1,3}(?:\.[0-9]{1,6}){1,3};build-[0-9]{1,8})")
+LANGUAGE_VALUE = r"[A-Za-z]{2,8}(?:-[A-Za-z0-9]{2,8})*"
+LOCALE_VALUE = r"[A-Za-z]{2,8}(?:[_-][A-Za-z0-9]{2,16})*(?:@calendar=[a-z]+)?"
+TIMEZONE_VALUE = r"(?:IANA:[A-Za-z0-9_+:-]+|Windows:[A-Za-z0-9 .()+_-]{1,100})"
+
+
+def validate_fact_value(fact):
+    """Reject unsupported values before a fact can enter an agent-visible report.
+
+    Formats describe known producers, not a universal secret detector or proof
+    that imported facts are true. Unknown fields retain only an explicit gap.
+    """
+    field, value = fact["id"], fact.get("value")
+    credential_pattern = KNOWN_CREDENTIAL_LANGUAGE if field in {"S06", "S07"} else KNOWN_CREDENTIAL_VALUE
+    if type(value) is str and credential_pattern.search(value):
+        raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+    if value is None:
+        if fact["state"] in VALUELESS_STATES:
+            return
+        raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+    valid = False
+    if field in FACT_ENUMS:
+        valid = type(value) is str and value in FACT_ENUMS[field]
+    elif field == "S02":
+        valid = type(value) is str and re.fullmatch(VERSION_VALUE, value) is not None
+    elif field == "S03":
+        valid = type(value) is int and 0 <= value <= 10000
+    elif field == "S06":
+        # Empty UI override is an observed value, not missing UI-language evidence.
+        valid = type(value) is str and (value == "" or (len(value.split(",")) <= 16
+            and all(len(item) <= 160 and re.fullmatch(LANGUAGE_VALUE, item)
+                    for item in value.split(","))))
+    elif field == "S07":
+        valid = type(value) is str and len(value) <= 160 and re.fullmatch(LOCALE_VALUE, value) is not None
+    elif field == "S08":
+        valid = type(value) is str and len(value) <= 256 and re.fullmatch(TIMEZONE_VALUE, value) is not None
+    elif field == "S09":
+        valid = type(value) is int and -86400 <= value <= 86400
+    elif field == "P06" and type(value) is str:
+        valid = re.fullmatch(PROXY_SUMMARY, value) is not None
+    elif field in {"P06", "P09"}:
+        keys = {"enabled", "port"} if field == "P06" else {"selected_instance_port", "port_owner_matches"}
+        if type(value) is dict and set(value) == keys:
+            port = value.get("port", value.get("selected_instance_port"))
+            flag = value.get("enabled", value.get("port_owner_matches"))
+            valid = type(port) is int and 1 <= port <= 65535 and type(flag) is bool
+    elif field == "P12":
+        valid = type(value) is bool
+    if not valid:
+        raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+
+
 def validate_offline(obj, target):
+    alias(target)
     contact_guard(obj)
     allowed = {"schema_version", "target_ref", "target_binding", "record_kind", "contact_phase", "gate_state", "facts", "cancelled", "snapshot_state"}
     if set(obj) - allowed or obj.get("schema_version") != INPUT_SCHEMA:
@@ -178,9 +259,10 @@ def validate_offline(obj, target):
         if fact.get("layer") not in {"reported", "os_query", "static_file", "runtime", "derived"}:
             raise GuardianError("INPUT_OR_RESPONSE_INVALID")
         alias(fact.get("source_ref"))
-        for qualifier in ("reason_code", "coverage"):
-            if qualifier in fact:
-                alias(fact[qualifier])
+        for qualifier, allowed_values in (("reason_code", FACT_REASON_CODES), ("coverage", FACT_COVERAGES)):
+            if qualifier in fact and (type(fact[qualifier]) is not str or fact[qualifier] not in allowed_values):
+                raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+        validate_fact_value(fact)
         try:
             stamp = datetime.fromisoformat(fact["observed_at"].replace("Z", "+00:00"))
             if stamp.tzinfo is None:
@@ -190,31 +272,6 @@ def validate_offline(obj, target):
             raise GuardianError("INPUT_OR_RESPONSE_INVALID") from None
         if age > MAX_AGE or age < -300:
             fact["state"] = "stale"
-        # Restrict useful semantic structures; unknown keys do not become secret channels.
-        if fact["id"] == "P06" and isinstance(fact.get("value"), str) and re.fullmatch(PROXY_SUMMARY, fact["value"]):
-            pass
-        elif fact["id"] in {"P06", "P09"} and (isinstance(fact.get("value"), dict) or fact["state"] in {"observed", "reported"}):
-            val = fact.get("value")
-            keys = {"enabled", "port"} if fact["id"] == "P06" else {"selected_instance_port", "port_owner_matches"}
-            if not isinstance(val, dict) or set(val) != keys:
-                raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-            port = val.get("port", val.get("selected_instance_port"))
-            flag = val.get("enabled", val.get("port_owner_matches"))
-            if type(port) is not int or not 1 <= port <= 65535 or type(flag) is not bool:
-                raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-        elif isinstance(fact.get("value"), (dict, list)):
-            raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-        elif not isinstance(fact.get("value"), (str, bool, int, type(None))):
-            raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-        elif isinstance(fact.get("value"), str) and len(fact["value"]) > 256:
-            raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-        if fact["state"] in {"observed", "reported"}:
-            if fact["id"] == "S01" and fact.get("value") not in {"macos", "windows"}:
-                raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-            if fact["id"] == "P11" and fact.get("value") not in {"rule", "global", "direct"}:
-                raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-            if fact["id"] == "P12" and type(fact.get("value")) is not bool:
-                raise GuardianError("INPUT_OR_RESPONSE_INVALID")
     return obj
 
 
