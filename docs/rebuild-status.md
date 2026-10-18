@@ -69,3 +69,13 @@ the eight historical inputs from the current packaged sources without changing
 original source bytes or licensing attribution. Full regression: 1,100 tests,
 1,092 passed and eight skipped (13.568 seconds), plus both Node synthetic suites,
 compilation and repeatable packaging. ENV-T123 and native acceptance remain open.
+
+
+## Fourth-batch original-case revalidation
+
+T09, T19, T20 and T21 now have freshly reviewed evidence at their original L+C
+layers. See the pinned evidence paths in acceptance-rebuild-ledger.json. This
+means deterministic normalized-input replay plus full active-guidance review,
+not arbitrary model integration, native deployment or production safety. The
+other 214 original cases remain pending; T24 has a reproduced resume review gap.
+The historical tracker rows and their exact hash remain unchanged.

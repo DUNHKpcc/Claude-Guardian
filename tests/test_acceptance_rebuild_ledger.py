@@ -26,7 +26,19 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))
         counts = {}
         for case in ledger['cases']:
-            self.assertEqual(case['rebuild_acceptance'], 'pending_revalidation')
+            accepted = case['id'] in {'T09', 'T19', 'T20', 'T21'}
+            self.assertEqual(case['rebuild_acceptance'], 'accepted_revalidated' if accepted else 'pending_revalidation')
+            if accepted:
+                self.assertEqual(case['verification_layer'], 'L+C')
+                evidence = case['evidence']
+                expected_path = ('docs/evidence/rebuild-source-dedup.md' if case['id'] == 'T09'
+                                 else 'docs/evidence/rebuild-route-cases.md')
+                self.assertEqual(evidence['path'], expected_path)
+                self.assertEqual(evidence['layers'], ['L', 'C'])
+                self.assertEqual(evidence['sha256'], hashlib.sha256((ROOT / expected_path).read_bytes()).hexdigest())
+                self.assertTrue(evidence['boundary'])
+            else:
+                self.assertNotIn('evidence', case)
             self.assertTrue(case['next_steps'])
             self.assertTrue(case['dependencies'])
             counts[case['scheduling']] = counts.get(case['scheduling'], 0) + 1

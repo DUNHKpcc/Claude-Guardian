@@ -1,0 +1,52 @@
+{
+  "fixture_scope": "Synthetic normalized interview facts. No natural-language parsing, live model, native device, network, deployment or permission proof.",
+  "dialogue_inputs": {
+    "T19": "目前已有订阅，这次准备 Code 的运行环境；没有决定部署方案，也没有指定远端任务。先给计划。",
+    "T20": "我是零基础，明确选虚拟机，请按新手步骤指导。准备新建，虚拟化软件还没选。",
+    "T21_existing": "明确选 VPS 上完整部署 Code 工作区。我已有一台服务器，优先接入，不重新购买或重装。",
+    "T21_new": "明确选 VPS 上完整部署 Code 工作区。我还没有服务器，先比较资源和费用，不购买。",
+    "T24_vm": "继续同一个虚拟机任务；保留已选路线。中断后网络可能改变，需先核实。",
+    "T24_vps": "继续同一个 VPS 任务；保留已选路线。中断后 SSH 和独立救援可用性需先核实。"
+  },
+  "common_answers": [
+    {"question_id": "Q-J01", "value": "existing_subscriber"},
+    {"question_id": "Q-C02", "value": "macos"},
+    {"question_id": "Q-C01", "value": "prepare_code_workspace"},
+    {"question_id": "Q-OS03", "value": "synthetic_version_reported"},
+    {"question_id": "Q-C03", "value": "no_incident_reported"},
+    {"question_id": "Q-C04", "value": "active"},
+    {"question_id": "Q-C06", "value": "official_login_reported"},
+    {"question_id": "Q-C09", "value": "region_reported_not_verified"},
+    {"question_id": "Q-N01", "value": "existing_proxy_reported"},
+    {"question_id": "Q-N02", "value": "runtime_locations_to_be_planned"},
+    {"question_id": "Q-N03", "value": "stable_network_intended"},
+    {"question_id": "Q-N04", "value": "no_other_workspaces_reported"},
+    {"question_id": "Q-N06", "value": "no_management_restrictions_reported"},
+    {"question_id": "Q-C12", "value": "preserve_projects_and_existing_settings"},
+    {"question_id": "Q-Z01", "value": "plan_only"},
+    {"question_id": "Q-C10", "value": "step_by_step_beginner"}
+  ],
+  "route_answers": {
+    "vm": [
+      {"question_id": "Q-V01", "value": {"lifecycle": "new", "hypervisor": "not_selected"}},
+      {"question_id": "Q-V02", "value": {"host": "macos", "host_architecture": "reported_arm64", "guest": "linux_candidate", "compatibility": "pending_verification"}},
+      {"question_id": "Q-V03", "value": {"memory_budget_gib": 8, "disk_budget_gib": 64, "preserve": "host_projects"}},
+      {"question_id": "Q-V04", "value": {"mode": "nat_planned", "proxy_location": "host", "guest_reachability": "not_tested"}},
+      {"question_id": "Q-V05", "value": {"shared_directories": "none_initially", "clipboard": "disabled_planned", "credential_mounts": "none"}},
+      {"question_id": "Q-V06", "value": {"backup": "private_project_backup_planned", "snapshot": "not_created", "restore": "not_tested"}}
+    ],
+    "vps": [
+      {"question_id": "Q-S01", "value": "workspace_not_exit_only"},
+      {"question_id": "Q-S02", "value": {"lifecycle": "existing", "server_alias": "server-a", "os": "linux_reported", "resources": "two_vcpu_four_gib_reported", "region": "reported_not_verified"}},
+      {"question_id": "Q-S03", "value": {"ssh": "reported_available", "independent_rescue": "reported_available_not_tested"}},
+      {"question_id": "Q-S04", "value": "preserve_existing_service_and_projects"},
+      {"question_id": "Q-S05", "value": "project_copy_requires_separate_approval_no_local_hardware_dependency_reported"},
+      {"question_id": "Q-S06", "value": "cost_comparison_only_no_purchase_approval"},
+      {"question_id": "Q-S07", "value": "remote_ssh_with_backup_and_update_plan"}
+    ]
+  },
+  "server_variants": {
+    "existing": {"lifecycle": "existing", "server_alias": "server-a", "os": "linux_reported", "resources": "two_vcpu_four_gib_reported", "region": "reported_not_verified"},
+    "new": {"lifecycle": "new", "server_alias": "none", "os": "linux_candidate", "resources": "compare_project_needs", "region": "pending_eligibility_review"}
+  }
+}

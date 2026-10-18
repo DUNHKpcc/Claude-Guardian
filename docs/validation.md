@@ -478,3 +478,29 @@ Mac可执行文件符号链接及Windows外部上下文导致的原生capture跳
 独立审查重新执行213项定向测试，所有已发现反例均已修复，未发现剩余阻断项。
 保留普通短别名、长task别名、Slovak语言标签、长语言列表和既有原生生产者格式；
 不将任意字符串、来源名或格式通过当成真实性证明。原218例与原始来源字节未改。
+
+第三批已普通非强制发布f87fdbf426097eae22cefa9fea7a2febe3e611d7，父提交d8f4e2b，
+精确7文件路径/SHA/blob/模式已核对，无额外删除或修改。推送工作流
+[39095809216](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39095809216)及
+[39095809124](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39095809124)均终止成功。
+Linux1125通过/8跳过、Mac1124/9、Windows962/171、Python3.10 Linux1125/8；
+预览27通过、独立运行时9通过。原生capture仍分别因Mac可执行文件符号链接和Windows外部上下文跳过。
+
+## 2026-10-18 重建批次 4：逐例云端证据
+
+本批来源去重助手只处理调用者已获准读取的有限公开字节与非识别性别名，内部计算SHA-256并比较字节，
+不接受调用者伪造摘要，不读文件、不联网、不执行原文。输出不含原文；不同内容组不意味着独立来源。
+过大、空、无法读取或不合格输入不当作已经完成去重核验。原资料字节与各自许可归属保留。
+
+路线重放是规范化合成输入到当前访谈API的确定性测试，加上活动Skill/路线卡逐句内容审阅，
+不宣称对任意模型自然语言理解、完整部署或用户真机作了测试。T24的保存续接虽然保留VM/VPS路线，
+但环境变化复核还未接入必经续接流程，明确保留待办，不把局部成功当整例通过。
+本批回滚撤回对应帮助器、打包条目、测试及证据差异，不触及系统配置。
+
+Fourth-batch aggregate checks (2026-10-18 UTC): 1,153 tests ran in 14.636
+seconds, 1,145 passed and eight skipped. Both Node synthetic suites, compilation
+and whitespace validation passed. Two package builds were byte-identical:
+`afcd86b25476300a2465c51a354cff22fc8feadcfe62bde64d46d792a77c4b7f`.
+Independent review supports only T09/T19/T20/T21 at original L+C layers using
+the pinned evidence pages; 214 original cases, including T24, remain pending.
+These counts do not imply native or arbitrary model acceptance.

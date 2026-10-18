@@ -9,7 +9,8 @@
     "Recovered historical scheduling is retained; historical complete-case claims are not carried forward.",
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
-    "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions."
+    "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
+    "Four original L+C cases T09/T19/T20/T21 have freshly reviewed, pinned evidence; remaining 214 cases are pending_revalidation. Evidence must be re-reviewed after relevant changes."
   ],
   "cases": [
     {
@@ -98,9 +99,19 @@
       "requirement": "只算一个来源，不当交叉证据",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
+      "rebuild_acceptance": "accepted_revalidated",
       "next_steps": "相关代码/契约变化后重跑链接的完整案例与发行包回归",
-      "dependencies": "A、P"
+      "dependencies": "A、P",
+      "evidence": {
+        "path": "docs/evidence/rebuild-source-dedup.md",
+        "sha256": "fd7d1a29a27dbc015a510673ab4ab5152eaddb24f337009b9c2e03aff623e33b",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      }
     },
     {
       "id": "T10",
@@ -198,9 +209,19 @@
       "requirement": "本机仅为默认候选，先询问选择/接受建议；未答时为 `unconfirmed`，不是已选本机",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
+      "rebuild_acceptance": "accepted_revalidated",
       "next_steps": "变更时重跑专页对应完整轨迹及语义审阅；实际执行仍另核授权",
-      "dependencies": "A"
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-route-cases.md",
+        "sha256": "d959ce3eb613a2d8522082670976e5a831de7e9f186f4d179eaf371ad262f024",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      }
     },
     {
       "id": "T20",
@@ -208,9 +229,19 @@
       "requirement": "进入 `R-VM`，提供新手步骤，不强制先走本机或 VPS 教程",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "pending_revalidation",
+      "rebuild_acceptance": "accepted_revalidated",
       "next_steps": "回放“L0 明确选择虚拟机”，逐项核对：进入 `R-VM`，提供新手步骤，不强制先走本机或 VPS 教程。实际 Mac/Windows 宿主与所选客机组合另验；路线调度/教程现在可审",
-      "dependencies": "A、V、B"
+      "dependencies": "A、V、B",
+      "evidence": {
+        "path": "docs/evidence/rebuild-route-cases.md",
+        "sha256": "d959ce3eb613a2d8522082670976e5a831de7e9f186f4d179eaf371ad262f024",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      }
     },
     {
       "id": "T21",
@@ -218,9 +249,19 @@
       "requirement": "进入 `R-VPS`，不被本机默认值覆盖；区分已有与新建服务器",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "pending_revalidation",
+      "rebuild_acceptance": "accepted_revalidated",
       "next_steps": "回放“用户明确选择 VPS 完整部署”，逐项核对：进入 `R-VPS`，不被本机默认值覆盖；区分已有与新建服务器。本机 SSH/编辑器入口的 Mac/Windows 行为另验；Linux VPS 不受本机平台等待阻塞",
-      "dependencies": "A、V、B"
+      "dependencies": "A、V、B",
+      "evidence": {
+        "path": "docs/evidence/rebuild-route-cases.md",
+        "sha256": "d959ce3eb613a2d8522082670976e5a831de7e9f186f4d179eaf371ad262f024",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      }
     },
     {
       "id": "T22",
