@@ -47,7 +47,7 @@ class SourceEvidenceTests(unittest.TestCase):
                 self.assertEqual(result['independent_sources'], 'not_established')
 
     def test_s03_pdf_and_derived_text_remain_two_byte_groups_not_two_independent_sources(self):
-        manifest = json.loads((SKILL / 'sources/manifest.json').read_text())
+        manifest = json.loads((SKILL / 'sources/manifest.json').read_text(encoding='utf-8'))
         source = next(record for record in manifest['sources'] if record['id'] == 'S03')
         companion = source['companions'][0]
         result = evidence.group_source_bytes([

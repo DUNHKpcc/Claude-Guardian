@@ -104,7 +104,7 @@
       "dependencies": "A、P",
       "evidence": {
         "path": "docs/evidence/rebuild-source-dedup.md",
-        "sha256": "fd7d1a29a27dbc015a510673ab4ab5152eaddb24f337009b9c2e03aff623e33b",
+        "sha256": "be04bcd7be49ae2f7f9da67d70dc026672fef787cd80c67fef054f2b943354f8",
         "layers": [
           "L",
           "C"

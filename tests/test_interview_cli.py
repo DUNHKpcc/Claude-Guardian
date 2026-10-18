@@ -84,6 +84,8 @@ class InterviewCLITests(unittest.TestCase):
         process = subprocess.Popen([sys.executable, str(CLI)], stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         process.stdout.close()
+        # communicate must not start a Windows reader thread on the closed handle.
+        process.stdout = None
         try:
             _, raw_errors = process.communicate(timeout=10)
             errors = raw_errors.decode('utf-8')

@@ -504,3 +504,18 @@ and whitespace validation passed. Two package builds were byte-identical:
 Independent review supports only T09/T19/T20/T21 at original L+C layers using
 the pinned evidence pages; 214 original cases, including T24, remain pending.
 These counts do not imply native or arbitrary model acceptance.
+
+Fourth publication `6e0688f` CI was not fully green: Windows reported one test
+error decoding the UTF-8 source manifest with locale-default cp1252 (981 passed,
+171 skipped); its later capture/compile/package stages were skipped. Linux
+1,145/8, macOS 1,144/9, minimum Python 3.10 Linux 1,145/8 and preview 27/27 passed.
+The closed-pipe regression also emitted a Windows reader-thread exception while
+marked passing; this is recorded rather than treated as clean output.
+
+The follow-up changes only test portability: explicit UTF-8 manifest decoding and
+removing the already-closed stdout handle before communicate starts reader
+threads. Original assertions remain. T09 test-file/evidence pins were refreshed
+following review; production source bytes and package are unchanged. Fresh local
+aggregate: 1,153 tests in 14.455 seconds, 1,145 passed and eight skipped; both Node
+suites, compilation, diff checks and identical package builds passed. Windows
+confirmation depends on the follow-up remote CI; no local Windows result is claimed.

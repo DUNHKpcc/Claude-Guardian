@@ -157,7 +157,7 @@ Reviewed file SHA-256 values:
 |---|---|
 | `skills/claude-guardian/scripts/source_evidence.py` | `a1754f0445012e717dddfb9ed28245d94cb760f9d421fb47b0027a90e6f0feaf` |
 | `skills/claude-guardian/references/evidence-policy.md` | `8afb262a1d85050a897c6c9a89f54afbc96a653874b7308472dbeec4c3ea1838` |
-| `tests/test_source_evidence.py` | `a8dfcd4e5af45a9d5a3c5e73dda675e246d428b44ba417cd11bd41b04e82587b` |
+| `tests/test_source_evidence.py` | `cd9804d062f0226dcd25f7efc204c2fb4d43005be828b79dbeeb6df0ded8b86d` |
 | `tools/package_skill.py` | `6cd30bab0a4a4dc63925ce95fd6bb2a858af1e60689458de0239f2af9cdd47b5` |
 
 Disposition: the exact original two-identical-tutorial scenario now has executable
