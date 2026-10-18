@@ -22,6 +22,20 @@ Keep value, state, source, target alias, observation time, applicability, requir
 
 These gates do not replace PC-G1/PC-G2. When a purchase is later completed, update the current state and stop treating the user as still awaiting purchase. Old Q-C08 answers must not silently become new target-plan answers.
 
+## Interruption and resume
+
+真正中断后继续同一任务时，Agent 必须先调用 `resume_interview(state, resume_id=...)`，CLI 使用 `--input <已批准保存的状态> --resume <本次事件别名>`。普通 `loads_state` / `--input` 只是读档或连续轮次，不代表发生中断；不得每轮重启审查。已有 `paused=true` 不能直接改为 false 绕过续接。
+
+保留当前任务的 VM/VPS 选择、原事实来源/时间、保护要求和已发生接触阶段，不能恢复成本机默认值或“从未接触”。尚未接受的本机仍只是候选。事件别名只用于本次重试去重，不是秘密、用户授权或设备身份凭据；宿主为每次真正的新中断使用新别名。
+
+向用户展示一次 `resume_review_prompt` 的相关分组摘要：还是同一目标设备/账号吗，已记录的系统/版本、网络与测试、当前路线资源/访问/共享/恢复、登录和使用地区是否变化；订阅只在本次购买/账单任务相关时纳入。范围包含本路线已记录但尚未展开的条件项，不能因稍后激活某个分支而把旧事实当成新事实；不询问详细地址、凭据或全部问卷。没有可复用的相关环境事实时不加空审查门槛。
+
+当前回答通过 `record_resume_review` / `--resume-review-file` 归一化记录。回答没变保留旧观测时间，另存本次 reported 复核的来源和时间，不能升级成设备实测。回答变化时仅使所报、属于本次范围的稳定字段 ID 失效，再补相应原题；不得失效路线选择、已选套餐、保护选择或动作权限。未知、拒答、稍后再说都停止自动重复此提示，保留条件建议；后续由用户主动补充或更正。已知换目标需 `begin_task` 显式重新绑定；只有用户明确更正“刚才说错，仍是原设备/账号”才能用新的当前回复解除该状态。
+
+未回答或未解决的审查阻止 G2 个性化就绪；通用/条件指导与紧急事故分流仍可进行，紧急事故优先。已完成购买的同会话状态转换不制造新中断；尚未解决的相关环境或目标变化仍保留。复核、路线选择和保存的记录都不能打开 G3、PC-G1/PC-G2 或任何实际操作许可。
+
+宿主须区分当前回复与历史导入：`record_facts` 的整批输入、以及未提供 `observed_at` 的 `record_fact` 表示明确的当前回复；提供 `observed_at` 的 `record_fact` 是保留证据日期的导入，不能因日期较旧记录更新就当作本次回复。不能把历史日志放进当前回复接口来伪造新鲜性。读档、输出或续接事件/复核回复的幂等重试不得刷新事实时间、重获保存同意或将旧记录自动标成已观察；不存在任意 TTL。CLI 先开始真正续接，再处理上下文和本次复核，再吸收本次字段答案，整轮验证失败不保存部分状态。
+
 ## Stable question IDs
 
 The following are short prompts/field meanings, not a mandatory sequence. Preserve IDs in progress records. Q-C07 remains a retired tombstone only, never an active question or missing field.

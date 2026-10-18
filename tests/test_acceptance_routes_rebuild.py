@@ -2,7 +2,7 @@
 
 Expected outputs are authored here, independently of interview_flow constants.
 The fixture contains normalized synthetic user facts, not an NLP transcript test.
-T24's missing automatic resume review is a documented gap, NOT an acceptance.
+T24 now has normative explicit-resume traces; original acceptance still requires C review.
 Run this file with --replay to print the concrete actual projections as JSON.
 """
 from contextlib import ExitStack
@@ -22,6 +22,7 @@ flow = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(flow)
 FIXTURE = json.loads((ROOT / 'tests/fixtures/acceptance-routes-rebuild.json').read_text(encoding='utf-8'))
 TIME = '2026-10-18T04:00:00Z'
+REVIEW_TIME = '2026-10-18T04:30:00Z'
 SOURCE = 'synthetic:route-case'
 G3_REASON = ('Interview answers are not specific action authorization; '
              'action and contact gates must be checked separately')
@@ -91,7 +92,7 @@ def expected(*, route='local', basis='default_proposal', next_id='Q-C05',
 
 def project(state):
     """Explicit assertion boundary; includes full question and full assessment."""
-    return {
+    result = {
         'task_id': state['task_id'], 'target_alias': state['target_alias'],
         'account_alias': state['account_alias'],
         'route': state['context']['route'],
@@ -103,6 +104,9 @@ def project(state):
         'contact_phase': state['context']['contact_phase'],
         'persistence_consent': deepcopy(state['persistence_consent']),
     }
+    if 'resume_review' in state:
+        result['resume_prompt'] = flow.resume_review_prompt(state)
+    return result
 
 
 def base():
@@ -127,12 +131,41 @@ def complete(route):
     return state
 
 
-def resume_without_review(route):
+def resumed(route):
     state = complete(route)
     paused = flow.set_context(state, paused=True)
     saved = flow.dumps_state(paused, host_opt_in=True)
     loaded = flow.loads_state(saved)
-    return state, paused, loaded, flow.set_context(loaded, paused=False)
+    return state, paused, loaded, flow.resume_interview(loaded, resume_id='route-resume')
+
+
+def review(state, response='unchanged', changed_keys=()):
+    return flow.record_resume_review(state, resume_id='route-resume', response=response,
+                                      changed_keys=changed_keys, source='synthetic:current-review',
+                                      reported_at=REVIEW_TIME)
+
+
+def expected_resumed(route, *, response=None, changed_key=None):
+    scope = ['Q-C02', 'Q-C04', 'Q-C06', 'Q-C09', 'Q-N01', 'Q-N02', 'Q-N03', 'Q-N04', 'Q-N06', 'Q-OS03'] + ROUTE_IDS[route]
+    result = expected(route=route, basis='explicit_choice', next_id=changed_key, next_branch=route,
+                      unresolved=[{'id': changed_key, 'reason': 'stale'}] if changed_key else [],
+                      status='partial' if changed_key else 'complete', clarification=bool(changed_key))
+    result['assessment']['resume_review'] = {
+        'event_id': 'route-resume', 'status': 'pending' if response is None else 'reviewed',
+        'response': response, 'scope_keys': scope,
+        'changed_keys': [changed_key] if changed_key else [],
+        'reported_at': None if response is None else REVIEW_TIME}
+    result['resume_prompt'] = None
+    if response is None:
+        result['assessment']['G2'] = {'status': 'blocked', 'conditional_plan_only': True,
+                                      'reason': 'resume_review_required'}
+        name, topic = ('虚拟机', '虚拟机资源、网络、共享和恢复条件') if route == 'vm' else ('VPS', '服务器、SSH/救援、数据、费用和使用方式')
+        result['resume_prompt'] = {
+            'kind': 'resume_review', 'event_id': 'route-resume', 'scope_keys': scope,
+            'prompt': f'继续上次的{name}任务：还是原来的目标设备和账号吗；上次记录的系统/版本、语言和时间设置、网络/代理及此前测试、{topic}、账号登录情况、使用地区/跨地区安排（无需详细地址）（含本路线已记录但尚未展开的条件项）有没有变化？可以说没变、具体变化、不确定、暂不回答或稍后再说；换了目标请先说明。',
+            'allowed_outcomes': ['unchanged', 'changed', 'unknown', 'declined', 'deferred', 'target_changed'],
+            'requires_action_authorization': False}
+    return result
 
 
 def replay():
@@ -163,12 +196,14 @@ def replay():
                                        'server_fact': deepcopy(vps['facts']['Q-S02'])}
         result['T24'] = {}
         for route, qid in (('vm', 'Q-V04'), ('vps', 'Q-S03')):
-            _, paused, loaded, resumed = resume_without_review(route)
-            stale = flow.invalidate_facts(resumed, [qid], reason='User reports changed network since interruption')
+            _, paused, loaded, pending = resumed(route)
+            unchanged = review(pending)
+            changed = review(pending, 'changed', [qid])
             result['T24'][route] = {'paused': project(paused), 'loaded': project(loaded),
-                                    'resumed_without_environment_review': project(resumed),
-                                    'host_explicitly_invalidated_changed_fact': project(stale),
-                                    'changed_fact': deepcopy(stale['facts'][qid])}
+                                    'explicit_resume_pending': project(pending),
+                                    'current_unchanged_review': project(unchanged),
+                                    'current_changed_review': project(changed),
+                                    'changed_fact': deepcopy(changed['facts'][qid])}
         return result
 
 
@@ -244,34 +279,33 @@ class RouteAcceptanceRebuildTests(unittest.TestCase):
                     flow.record_fact(state, 'Q-C05', 'accepted_default', source=SOURCE, observed_at=TIME)
                 self.assertEqual(state, before)
 
-    def test_T24_route_retention_and_explicit_host_refresh_are_only_partial_evidence(self):
-        for route, qid in (('vm', 'Q-V04'), ('vps', 'Q-S03')):
+    def test_T24_same_task_retains_route_and_requires_exact_environment_review(self):
+        for route in ('vm', 'vps'):
             with self.subTest(route=route):
-                before, paused, loaded, resumed = resume_without_review(route)
+                before, paused, loaded, pending = resumed(route)
                 self.assertEqual(project(paused), expected(route=route, basis='explicit_choice',
                                  next_id=None, next_branch=route, unresolved=[], status='paused'))
                 self.assertEqual(loaded, paused)
-                self.assertEqual(resumed, before)
-                stale = flow.invalidate_facts(resumed, [qid], reason='User reports changed network since interruption')
-                self.assertEqual(project(stale), expected(route=route, basis='explicit_choice',
-                                 next_id=qid, next_branch=route, unresolved=[{'id': qid, 'reason': 'stale'}],
-                                 clarification=True))
-                unaffected = {key: value for key, value in before['facts'].items() if key != qid}
-                self.assertEqual({key: value for key, value in stale['facts'].items() if key != qid}, unaffected)
-                self.assertEqual(stale['facts'][qid]['source'], SOURCE)
-                self.assertEqual(stale['facts'][qid]['observed_at'], TIME)
+                with self.assertRaisesRegex(flow.InterviewError, 'Use resume_interview'):
+                    flow.set_context(loaded, paused=False)
+                self.assertEqual(pending['facts'], before['facts'])
+                self.assertEqual(project(pending), expected_resumed(route))
+                unchanged = review(pending)
+                self.assertEqual(project(unchanged), expected_resumed(route, response='unchanged'))
+                self.assertEqual(unchanged['facts'], before['facts'])
+                self.assertEqual(flow.resume_interview(unchanged, resume_id='route-resume'), unchanged)
 
-    def test_T24_gap_resume_alone_performs_no_environment_change_review(self):
-        # Passing this assertion establishes the defect; it does NOT accept T24.
-        # Original requirement: review relevant environment changes before continuing.
-        # Actual: clearing pause immediately reuses complete G1/G2 and emits no review.
-        for route in ('vm', 'vps'):
+    def test_T24_current_change_invalidates_only_relevant_vm_or_vps_fact(self):
+        for route, qid in (('vm', 'Q-V04'), ('vps', 'Q-S03')):
             with self.subTest(route=route):
-                _, _, _, resumed = resume_without_review(route)
-                self.assertEqual(project(resumed), expected(route=route, basis='explicit_choice',
-                                 next_id=None, next_branch=route, unresolved=[], status='complete'))
-                self.assertEqual(resumed['facts']['Q-C05']['state'], 'reported')
-                self.assertEqual(resumed['facts']['Q-C05']['value'], route)
+                before, _, _, pending = resumed(route)
+                changed = review(pending, 'changed', [qid])
+                self.assertEqual(project(changed), expected_resumed(route, response='changed', changed_key=qid))
+                self.assertEqual({key: value for key, value in changed['facts'].items() if key != qid},
+                                 {key: value for key, value in before['facts'].items() if key != qid})
+                self.assertEqual(changed['facts'][qid], {**before['facts'][qid], 'state': 'stale',
+                                 'blocker_reason': 'Reported change since interview interruption', 'clarification_count': 0})
+                self.assertEqual(changed['facts']['Q-C05']['value'], route)
 
 
 if __name__ == '__main__':

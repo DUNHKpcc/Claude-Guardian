@@ -2,7 +2,8 @@
 
 Public API: new_state, record_fact, record_facts, set_context, next_question, assessment,
 mark_asked, defer_branch, resume_branch, complete_purchase, dumps_state,
-loads_state, validate_state. All updates return copies. Persisting returned JSON
+loads_state, validate_state, resume_interview, record_resume_review,
+resume_review_prompt, resume_scope_keys. All updates return copies. Persisting returned JSON
 is exclusively the host's responsibility and requires explicit opt-in per scope.
 
 Example::
@@ -241,7 +242,7 @@ def validate_state(state):
     required = {"schema_version", "task_id", "target_alias", "account_alias", "facts", "context",
                 "asked_question_ids", "deferred_branches", "current_subscription", "payment_intent",
                 "purchase_intent", "persistence_consent"}
-    if set(state) != required:
+    if set(state) - required - {'resume_review'} or required - set(state):
         raise InterviewError("Unexpected or missing state fields")
     _safe(state)
     for name in ("task_id", "target_alias", "account_alias"):
@@ -320,6 +321,7 @@ def validate_state(state):
         raise InterviewError("Invalid payment intent")
     if state["purchase_intent"] not in {"subscription_preparation", "completed", "none"}:
         raise InterviewError("Invalid purchase intent")
+    _validate_resume_review(state)
     return state
 
 
@@ -421,6 +423,13 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
                 or _account_incident_resolved(state)):
             _refresh_incident_answers(result)
         result["context"]["account_incident_resolved"] = False
+    review = result.get('resume_review')
+    if review is not None and qid in review['retained_keys']:
+        # Only explicit fresh reports retire retained evidence. Re-rendering,
+        # loading, and replaying an old observation cannot make it current.
+        if fresh_reply:
+            review['retained_keys'].remove(qid)
+    _refresh_resume_binding(result)
     validate_state(result)
     return result
 
@@ -519,7 +528,10 @@ def set_context(state, **changes):
     validate_state(state)
     result = deepcopy(state)
     _normalize_incident_context(result)
+    if state["context"]["paused"] and changes.get("paused") is False:
+        raise InterviewError("Use resume_interview for an interrupted session")
     result["context"].update(changes)
+    _refresh_resume_binding(result)
     if "incident" in changes:
         result["context"]["incident_origin"] = "host"
     if ("incident" in changes and changes["incident"] != "none"
@@ -734,6 +746,9 @@ def next_question(state):
     validate_state(state)
     if state["context"]["paused"] or state["context"]["blocked_reason"]:
         return None
+    if (state.get("resume_review", {}).get("status") == "pending"
+            and not _urgent_incident(state) and not _legacy_incident_review(state)):
+        return None
     for item in applicable_questions(state):
         if item["branch"] in state["deferred_branches"]:
             continue
@@ -816,14 +831,25 @@ def assessment(state):
         outcome = "paused"
     if c["blocked_reason"]:
         outcome = "blocked"
-    return {"stage": next((i["stage"] for i in required if any(u["id"] == i["id"] for u in unresolved)), "I6"),
+    review = state.get("resume_review")
+    review_blocks = review is not None and review["status"] in {"pending", "unresolved"}
+    result = {"stage": next((i["stage"] for i in required if any(u["id"] == i["id"] for u in unresolved)), "I6"),
             "G1": {"status": outcome, "unresolved_fields": unresolved},
-            "G2": {"status": "pass" if outcome == "complete" else "blocked", "conditional_plan_only": outcome != "complete"},
+            "G2": {"status": "pass" if outcome == "complete" and not review_blocks else "blocked",
+                   "conditional_plan_only": outcome != "complete" or review_blocks},
             "G3": {"status": "blocked", "reason": "Interview answers are not specific action authorization; action and contact gates must be checked separately"},
             "active_branches": list(dict.fromkeys(i["branch"] for i in required)),
             "deferred_branches": list(state["deferred_branches"]),
             "route_confirmation": "unconfirmed" if c["route_selection_basis"] == "default_proposal" else "confirmed",
             "current_subscription": deepcopy(state["current_subscription"])}
+    if review is not None:
+        result["resume_review"] = {key: deepcopy(review[key]) for key in
+                                   ("event_id", "status", "response", "scope_keys", "changed_keys", "reported_at")}
+        if review_blocks:
+            result["G2"]["reason"] = ("resume_target_rebind_required" if review["response"] == "target_changed"
+                                      else "resume_review_required" if review["status"] == "pending"
+                                      else "resume_review_unresolved")
+    return result
 
 
 def complete_purchase(state, *, source, observed_at=None, observed=False):
@@ -835,6 +861,30 @@ def complete_purchase(state, *, source, observed_at=None, observed=False):
     result["context"].update(purchase_completed=True, task="environment")
     result["purchase_intent"] = "completed"
     result["payment_intent"] = "none"
+    review = result.get('resume_review')
+    if review is not None:
+        remaining = [key for key in review['retained_keys'] if key not in {'Q-J01', 'Q-J02'}]
+        if review['status'] in ('reviewed', 'not_required'):
+            if set(remaining) - set(review['scope_keys']):
+                # Preserve the completed receipt and old off-route obligations.
+                # The same live route needs no new review; another route cannot
+                # inherit an unchanged report that never covered its old facts.
+                review['binding'] = _resume_binding(result)
+                review['retained_keys'] = remaining
+            else:
+                del result['resume_review']
+        else:
+            # Completing purchase resolves obsolete billing uncertainty, not
+            # retained environmental or target-change uncertainty.
+            review['binding'] = _resume_binding(result)
+            review['retained_keys'] = remaining
+            review['scope_keys'] = [key for key in review['scope_keys'] if key not in {'Q-J01', 'Q-J02'}]
+            if not review['scope_keys'] and review['response'] != 'target_changed':
+                if remaining:
+                    review.update(status='not_required', response=None, changed_keys=[],
+                                  source=None, reported_at=None)
+                else:
+                    del result['resume_review']
     validate_state(result)
     return result
 
@@ -858,7 +908,10 @@ def dumps_state(state, *, host_opt_in=False, scope="private_save"):
 
 
 def loads_state(serialized):
-    """Validate resume data; never inherit action permissions from saved answers."""
+    """Deserialize state; not a session-resume event and never action permission.
+
+    Hosts call resume_interview separately after an actual interruption.
+    """
     if not isinstance(serialized, str) or len(serialized) > 250000:
         raise InterviewError("Invalid or oversized saved interview")
     def unique_pairs(pairs):
@@ -878,6 +931,208 @@ def loads_state(serialized):
     # Saved permission is historical evidence, not new permission to save/export.
     result["persistence_consent"] = {key: False for key in result["persistence_consent"]}
     return result
+
+
+# Resume review is a planning obligation, never an operation/identity permission.
+# An explicit event boundary is separate from ordinary JSON deserialization.
+RESUME_FIELD_KEYS = frozenset(
+    {'Q-C02', 'Q-C04', 'Q-C06', 'Q-C09', 'Q-Z04', 'Q-J01', 'Q-J02'} |
+    {f'Q-OS{i:02d}' for i in range(2, 13)} |
+    {f'Q-N{i:02d}' for i in range(1, 7)} |
+    {f'Q-L{i:02d}' for i in range(1, 5)} |
+    {f'Q-V{i:02d}' for i in range(1, 7)} |
+    {f'Q-S{i:02d}' for i in range(1, 8)})
+RESUME_RESPONSES = frozenset({'unchanged', 'changed', 'unknown', 'declined', 'deferred', 'target_changed'})
+
+
+def _resume_binding(state):
+    return {**{key: state[key] for key in ('task_id', 'target_alias', 'account_alias')},
+            **{key: state['context'][key] for key in ('task', 'route', 'route_selection_basis')}}
+
+
+def _validate_resume_review(state):
+    review = state.get('resume_review')
+    if review is None and 'resume_review' not in state:
+        return
+    required = {'event_id', 'binding', 'scope_keys', 'retained_keys', 'status', 'response',
+                'changed_keys', 'source', 'reported_at'}
+    if not isinstance(review, dict) or set(review) != required:
+        raise InterviewError('Invalid resume review')
+    if not isinstance(review['event_id'], str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', review['event_id']):
+        raise InterviewError('Use a short non-identifying resume event label')
+    if review['binding'] != _resume_binding(state):
+        raise InterviewError('Resume review target or task mismatch')
+    for name in ('scope_keys', 'retained_keys', 'changed_keys'):
+        keys = review[name]
+        if (not isinstance(keys, list) or any(type(key) is not str or key not in RESUME_FIELD_KEYS for key in keys)
+                or len(keys) != len(set(keys))):
+            raise InterviewError('Invalid resume scope keys')
+    if not set(review['changed_keys']).issubset(review['scope_keys']):
+        raise InterviewError('Changed facts are outside the reviewed scope')
+    if review['status'] not in ('pending', 'reviewed', 'unresolved', 'not_required'):
+        raise InterviewError('Invalid resume review status')
+    if review['status'] in ('pending', 'not_required'):
+        if review['status'] == 'not_required' and review['scope_keys']:
+            raise InterviewError('Nonempty resume scope requires review')
+        if any(review[key] is not None for key in ('response', 'source', 'reported_at')) or review['changed_keys']:
+            raise InterviewError('Pending resume review cannot contain an answer')
+    else:
+        response = review['response']
+        if type(response) is not str or response not in RESUME_RESPONSES:
+            raise InterviewError('Invalid resume response')
+        if not isinstance(review['source'], str) or not review['source'] or review['reported_at'] is None:
+            raise InterviewError('Resume response requires current reported provenance')
+        _validate_date(review['reported_at'])
+        if (response == 'changed') != bool(review['changed_keys']):
+            raise InterviewError('Changed response requires a nonempty scoped key set')
+        expected = 'reviewed' if response in ('unchanged', 'changed') else 'unresolved'
+        if review['status'] != expected:
+            raise InterviewError('Resume response contradicts its status')
+
+
+def resume_scope_keys(state):
+    """Snapshot retained topics, including dormant conditionals in the chosen route.
+
+    A later flag must not activate an old fact omitted from review. Fresh answers
+    supplied after this snapshot are current reports, not another interruption.
+    The prompt explicitly includes the bounded retained conditional topics.
+    """
+    validate_state(state)
+    allowed = {key for key in RESUME_FIELD_KEYS if not key.startswith(('Q-L', 'Q-V', 'Q-S', 'Q-J'))}
+    if state['context']['route_selection_basis'] != 'default_proposal':
+        prefix = {'local': 'Q-L', 'vm': 'Q-V', 'vps': 'Q-S'}.get(state['context']['route'])
+        if prefix:
+            allowed.update(key for key in RESUME_FIELD_KEYS if key.startswith(prefix))
+    if state['context']['task'] in PURCHASE_TASKS | BILLING_TASKS:
+        allowed.update({'Q-J01', 'Q-J02'})
+    return sorted(key for key, fact in state['facts'].items() if key in allowed
+                  and fact['state'] in {'reported', 'observed', 'inferred', 'stale', 'conflict'})
+
+
+def resume_interview(state, *, resume_id):
+    """Start an explicit actual interruption boundary, not a load/save round trip.
+
+    The host supplies a fresh non-identifying event label for each interruption;
+    the same label is only an idempotent retry of that event. It is not a secret,
+    authorization token, or native identity proof. Existing facts/contact history
+    and chosen route are retained. A completed old event cannot review a new one.
+    """
+    result = deepcopy(validate_state(state))
+    _safe(resume_id)
+    if type(resume_id) is not str or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', resume_id):
+        raise InterviewError('Use a short non-identifying resume event label')
+    old = result.get('resume_review')
+    result['context']['paused'] = False
+    result['persistence_consent'] = {key: False for key in result['persistence_consent']}
+    if old is not None and old['event_id'] == resume_id:
+        if state['context']['paused'] and old['status'] in {'reviewed', 'not_required'}:
+            raise InterviewError('A new interruption requires a new resume event label')
+        return validate_state(result)
+    result['resume_review'] = {
+        'event_id': resume_id, 'binding': _resume_binding(result),
+        'scope_keys': resume_scope_keys(result),
+        'retained_keys': sorted(key for key, fact in result['facts'].items()
+                                if key in RESUME_FIELD_KEYS and fact['state'] in
+                                {'reported', 'observed', 'inferred', 'stale', 'conflict'}),
+        'status': 'pending', 'response': None,
+        'changed_keys': [], 'source': None, 'reported_at': None}
+    if not result['resume_review']['scope_keys']:
+        result['resume_review']['status'] = 'not_required'
+    return validate_state(result)
+
+
+def _refresh_resume_binding(state):
+    """Rebind only retained relevant facts, never manufacture an interruption."""
+    review = state.get('resume_review')
+    if review is not None and review['binding'] != _resume_binding(state):
+        del state['resume_review']
+        scope = sorted(set(resume_scope_keys(state)) & set(review['retained_keys']))
+        review['binding'] = _resume_binding(state)
+        review['scope_keys'] = scope
+        if review['response'] != 'target_changed':
+            review.update(status='pending' if scope else 'not_required', response=None,
+                          changed_keys=[], source=None, reported_at=None)
+        state['resume_review'] = review
+
+
+def record_resume_review(state, *, resume_id, response, source, changed_keys=(), reported_at=None):
+    """Record one fresh user report; changed keys alone are marked stale atomically.
+
+    Unknown/refused/deferred/target-changed answers stop automatic review prompts
+    and keep personalized planning conditional. Generic guidance and incident
+    triage remain available. Resolving an unresolved review is an explicit later
+    reply. A repeated successful response never invalidates refreshed facts again.
+    """
+    result = deepcopy(validate_state(state))
+    review = result.get('resume_review')
+    if (review is None or review['status'] == 'not_required'
+            or type(resume_id) is not str or resume_id != review['event_id']):
+        raise InterviewError('No matching resume review event')
+    if type(response) is not str or response not in RESUME_RESPONSES:
+        raise InterviewError('Invalid resume response')
+    if type(changed_keys) not in (list, tuple):
+        raise InterviewError('Changed facts must be a bounded list')
+    keys = list(changed_keys)
+    if (any(type(key) is not str or key not in review['scope_keys'] for key in keys)
+            or len(keys) != len(set(keys))):
+        raise InterviewError('Changed facts are outside the reviewed scope')
+    if (response == 'changed') != bool(keys):
+        raise InterviewError('Changed response requires a nonempty scoped key set')
+    if not isinstance(source, str) or not source:
+        raise InterviewError('Resume response requires current reported provenance')
+    _validate_date(reported_at)
+    candidate = {**review, 'response': response, 'changed_keys': sorted(keys),
+                 'status': 'reviewed' if response in ('unchanged', 'changed') else 'unresolved',
+                 'source': source, 'reported_at': _now() if reported_at is None else reported_at}
+    result['resume_review'] = candidate
+    validate_state(result)  # Also screens provenance before the idempotent path.
+    same = (review['response'] == response and review['changed_keys'] == candidate['changed_keys']
+            and review['source'] == source)
+    if same:
+        return deepcopy(state)
+    if review['status'] == 'reviewed':
+        raise InterviewError('Resume event already reviewed; start a new event for a new change')
+    if response == 'changed':
+        result = invalidate_facts(result, keys, reason='Reported change since interview interruption')
+    return validate_state(result)
+
+
+def resume_review_prompt(state):
+    """One scoped host prompt, separate from the stable Q registry; no action."""
+    validate_state(state)
+    review = state.get('resume_review')
+    if (review is None or review['status'] != 'pending' or state['context']['paused']
+            or state['context']['blocked_reason'] or _urgent_incident(state) or _legacy_incident_review(state)):
+        return None
+    route = {'local': '本机', 'vm': '虚拟机', 'vps': 'VPS', 'compare': '方案比较'}[state['context']['route']]
+    if state['context']['route_selection_basis'] == 'default_proposal':
+        route = '路线尚未确认（本机只是默认候选）的'
+    keys = set(review['scope_keys'])
+    topics = []
+    if keys & ({'Q-C02'} | {f'Q-OS{i:02d}' for i in range(2, 13)}):
+        topics.append('系统/版本、语言和时间设置')
+    if keys & {f'Q-N{i:02d}' for i in range(1, 7)}:
+        topics.append('网络/代理及此前测试')
+    if keys & {f'Q-V{i:02d}' for i in range(1, 7)}:
+        topics.append('虚拟机资源、网络、共享和恢复条件')
+    if keys & {f'Q-S{i:02d}' for i in range(1, 8)}:
+        topics.append('服务器、SSH/救援、数据、费用和使用方式')
+    if keys & {f'Q-L{i:02d}' for i in range(1, 5)}:
+        topics.append('客户端版本/兼容性、集成和本机依赖')
+    if keys & {'Q-C04', 'Q-C06'}:
+        topics.append('账号登录情况')
+    if 'Q-C09' in keys:
+        topics.append('使用地区/跨地区安排（无需详细地址）')
+    if 'Q-Z04' in keys:
+        topics.append('备份/救援条件')
+    if keys & {'Q-J01', 'Q-J02'}:
+        topics.append('订阅状态')
+    detail = '；上次记录的' + '、'.join(topics) + '（含本路线已记录但尚未展开的条件项）有没有变化' if topics else ''
+    return {'kind': 'resume_review', 'event_id': review['event_id'],
+            'scope_keys': list(review['scope_keys']),
+            'prompt': f'继续上次的{route}任务：还是原来的目标设备和账号吗{detail}？可以说没变、具体变化、不确定、暂不回答或稍后再说；换了目标请先说明。',
+            'allowed_outcomes': ['unchanged', 'changed', 'unknown', 'declined', 'deferred', 'target_changed'],
+            'requires_action_authorization': False}
 
 
 # Machine-readable schema entrypoint; runtime validation adds cross-field and
@@ -945,6 +1200,7 @@ def begin_task(state, *, task_id, task, target_alias=None, account_alias=None):
                 result["context"]["account_incident_resolved"] = _account_incident_resolved(state)
     else:
         result = deepcopy(state)
+        result.pop("resume_review", None)
         old_task = result["task_id"]
         result["task_id"] = task_id
         for fact in result["facts"].values():
@@ -994,4 +1250,23 @@ STATE_SCHEMA["properties"]["persistence_consent"] = {
     "type": "object", "additionalProperties": False,
     "required": ["private_save", "export", "public_export"],
     "properties": {key: {"type": "boolean"} for key in ("private_save", "export", "public_export")},
+}
+
+
+STATE_SCHEMA["properties"]["resume_review"] = {
+    "type": "object", "additionalProperties": False,
+    "required": ["event_id", "binding", "scope_keys", "retained_keys", "status", "response", "changed_keys", "source", "reported_at"],
+    "properties": {
+        "event_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,80}$"},
+        "binding": {"type": "object", "additionalProperties": False,
+                    "required": ["task_id", "target_alias", "account_alias", "task", "route", "route_selection_basis"],
+                    "properties": {key: {"type": "string"} for key in
+                                   ("task_id", "target_alias", "account_alias", "task", "route", "route_selection_basis")}},
+        **{key: {"type": "array", "uniqueItems": True, "items": {"enum": sorted(RESUME_FIELD_KEYS)}}
+           for key in ("scope_keys", "retained_keys", "changed_keys")},
+        "status": {"enum": ["pending", "reviewed", "unresolved", "not_required"]},
+        "response": {"enum": [None] + sorted(RESUME_RESPONSES)},
+        "source": {"type": ["string", "null"]},
+        "reported_at": {"type": ["string", "null"]},
+    },
 }

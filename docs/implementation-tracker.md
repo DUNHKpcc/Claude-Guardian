@@ -535,7 +535,7 @@ ENV-02/06、ENG/VAL：统一内部CLI提供精确preflight/plan/private diff及�
 所有116个原生层N案例仍有后续步骤和依赖。此分类不是通过率、失败数或权限。
 
 
-## 重建验收现状（2026-10-18）
+## 第四批重建验收历史快照（2026-10-18）
 
 上面 218 行及其“待建立”列保留为发布基线的历史快照，不改写原条件和层级。当前状态以 [逐项 ledger](acceptance-rebuild-ledger.json) 的重建状态及固定证据为准。
 
@@ -544,3 +544,12 @@ ENV-02/06、ENG/VAL：统一内部CLI提供精确preflight/plan/private diff及�
 - [T19/T20/T21 路线与新手指导](evidence/rebuild-route-cases.md)
 
 其余 214 行仍为 pending_revalidation。T24 已复现“恢复后未先核实环境变化”的缺口，不能整行通过。L 证据采用明确归一化输入的确定性回放，C 为活动指导逐句语义审阅；没有证明任意模型表现、原生设备部署或生产安全。相关实现或指导变更后需重新复核证据。
+
+
+## 第七批重建验收现状（2026-10-18）
+
+T24 中断续接的原 L+C 条件已补齐并独立复核：同任务保留 VM/VPS 选择，显式中断先核实环境变化，变化仅失效对应旧事实，不重置本机默认值。普通读档与当前回复不被当成新的中断。
+
+当前共 5 行 accepted_revalidated：T09、T19、T20、T21、T24；其余 213 行仍为 pending_revalidation。完整原行及其哈希保持不变。当前证据见 [ledger](acceptance-rebuild-ledger.json) 与 [路线证据](evidence/rebuild-route-cases.md)。
+
+L 为确定性归一化输入回放，C 为活动指导逐句语义审阅。宿主必须真实区分中断、当前回复与历史导入；不声称已验证任意模型、UI、真实设备部署或操作许可。原生延期及其余验收边界不变。

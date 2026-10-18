@@ -47,8 +47,12 @@ def main(argv=None):
         parser.add_argument('--account-ref', help='Account alias; must match when resuming')
         parser.add_argument('--answer-file', help='Local JSON: one question_id/value/state/source answer, or {"answers": [same answer objects]} from one reply')
         parser.add_argument('--context-file', help='Explicit host routing facts; not action permission')
+        parser.add_argument('--resume', help='Actual interruption event label; requires --input, not an authorization token')
+        parser.add_argument('--resume-review-file', help='Current normalized reply: resume_id/response/source, optional changed_keys/reported_at')
         parser.add_argument('--output', help='Opt-in private state file; never overwrites')
         args=parser.parse_args(argv)
+        if (args.resume is not None or args.resume_review_file is not None) and not args.input:
+            raise flow.InterviewError('Resume requires a saved input state')
         if args.input:
             state=flow.loads_state(json.dumps(guardian.load_json(args.input)))
             if ((args.target_ref is not None and args.target_ref != state['target_alias']) or
@@ -57,8 +61,17 @@ def main(argv=None):
         else:
             state=flow.new_state(args.target_ref if args.target_ref is not None else 'target-unconfirmed',
                                  args.account_ref if args.account_ref is not None else 'account-unconfirmed')
+        if args.resume is not None:
+            state=flow.resume_interview(state,resume_id=args.resume)
         if args.context_file:
             state=flow.set_context(state,**guardian.load_json(args.context_file))
+        if args.resume_review_file:
+            reply=guardian.load_json(args.resume_review_file)
+            required={'resume_id','response','source'}
+            if (not isinstance(reply,dict) or not required.issubset(reply)
+                    or set(reply)-required-{'changed_keys','reported_at'}):
+                raise flow.InterviewError('Invalid resume review envelope')
+            state=flow.record_resume_review(state,**reply)
         if args.answer_file:
             item=guardian.load_json(args.answer_file)
             if isinstance(item,dict) and set(item)=={'answers'}:
@@ -72,6 +85,8 @@ def main(argv=None):
         output={'schema_version':'guardian-intake-result/1','question':question,
                 'assessment':flow.assessment(state),'contact_control':'host_authorization_required',
                 'action_executed':False,'saved':False}
+        if 'resume_review' in state:
+            output['resume_review']=flow.resume_review_prompt(state)
         # Provenance may contain private user text or identifiers. Preserve it in
         # explicitly saved private state, but do not reproduce it on stdout.
         subscription=output['assessment']['current_subscription']

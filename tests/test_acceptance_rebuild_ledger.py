@@ -25,7 +25,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
     def test_accepted_evidence_underlying_pins_are_current(self):
         # Hashes are invalidation signals, not substitutes for L+C review.
         expected_counts = {
-            'docs/evidence/rebuild-route-cases.md': 12,
+            'docs/evidence/rebuild-route-cases.md': 14,
             'docs/evidence/rebuild-source-dedup.md': 4,
         }
         for path, count in expected_counts.items():
@@ -42,7 +42,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))
         counts = {}
         for case in ledger['cases']:
-            accepted = case['id'] in {'T09', 'T19', 'T20', 'T21'}
+            accepted = case['id'] in {'T09', 'T19', 'T20', 'T21', 'T24'}
             self.assertEqual(case['rebuild_acceptance'], 'accepted_revalidated' if accepted else 'pending_revalidation')
             if accepted:
                 self.assertEqual(case['verification_layer'], 'L+C')

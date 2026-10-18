@@ -547,3 +547,27 @@ passed and eight skipped. Both Node synthetic suites, compilation, diff checks
 and two identical packages passed; SHA-256
 `ac389186fc8a45b99e5d35da090441bbb15c04f52d49e6329543ea1360813f57`.
 Independent review reran 151 focused/integrity tests with no remaining blockers.
+
+Sixth publication `94983007` passed both workflows and all five jobs: Linux
+1,199/8 skipped, macOS 1,198/9, Windows 1,021/186, Python 3.10 Linux 1,199/8;
+preview 27/27 and detached runtime 9/9. The 15 additional Windows skips are new
+POSIX-only CLI/file-transport regressions, not Windows acceptance. Native-context
+capture remains skipped on Mac/Windows. Exact remote delta and parent verified.
+
+Seventh batch: explicit interruption review retains the selected route and
+same-task facts, distinguishes current replies from historical imports, and
+preserves uncovered old-route obligations through purchase completion. Ordinary
+loads remain ordinary loads. See [resume API](interview-resume.md) and the
+[full original-case evidence](evidence/rebuild-route-cases.md). T24 joins the
+four prior original L+C acceptances: five accepted, 213 pending; all original
+218 rows/conditions/layers remain unchanged. These are normalized offline logic
+and active-guidance results, not arbitrary-model/UI/native or permission proof.
+
+Second full aggregate: 1,240 tests in 17.823 seconds, 1,232 passed and eight skipped.
+Both Node synthetic suites, compilation and whitespace checks passed. Two package
+builds matched SHA-256
+`b36a139cf6d2bb0bfe2ad5b83f8cfcf2819aa3fe846ff0e107396de9a25a1e90`.
+Independent full-condition review supports T24; prior T19/T20/T21 replay objects
+remain byte-equivalent at their unchanged projections. Rollback code, CLI,
+guidance, saved-state compatibility and evidence/ledger together; do not discard
+an unresolved resume record merely to load it with an older reader.

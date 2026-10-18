@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Four original L+C cases T09/T19/T20/T21 have freshly reviewed, pinned evidence; remaining 214 cases are pending_revalidation. Evidence must be re-reviewed after relevant changes."
+    "Five original L+C cases T09/T19/T20/T21/T24 have freshly reviewed, pinned evidence; remaining 213 cases are pending_revalidation. Evidence must be re-reviewed after relevant changes."
   ],
   "cases": [
     {
@@ -214,7 +214,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "d959ce3eb613a2d8522082670976e5a831de7e9f186f4d179eaf371ad262f024",
+        "sha256": "247d29f30bc8ad169024eacc914a6751f028ad37ac555da0bdef609c1922d1d0",
         "layers": [
           "L",
           "C"
@@ -234,7 +234,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "d959ce3eb613a2d8522082670976e5a831de7e9f186f4d179eaf371ad262f024",
+        "sha256": "247d29f30bc8ad169024eacc914a6751f028ad37ac555da0bdef609c1922d1d0",
         "layers": [
           "L",
           "C"
@@ -254,7 +254,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "d959ce3eb613a2d8522082670976e5a831de7e9f186f4d179eaf371ad262f024",
+        "sha256": "247d29f30bc8ad169024eacc914a6751f028ad37ac555da0bdef609c1922d1d0",
         "layers": [
           "L",
           "C"
@@ -289,9 +289,19 @@
       "requirement": "按当前任务保留选择，核实环境变化，不重置本机默认值",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "pending_revalidation",
+      "rebuild_acceptance": "accepted_revalidated",
       "next_steps": "回放“已选 VM/VPS 后中断再继续”，逐项核对：按当前任务保留选择，核实环境变化，不重置本机默认值。真实本机控制端重连及客机/远端变更分别延期，不混 namespace",
-      "dependencies": "A、V、U"
+      "dependencies": "A、V、U",
+      "evidence": {
+        "path": "docs/evidence/rebuild-route-cases.md",
+        "sha256": "247d29f30bc8ad169024eacc914a6751f028ad37ac555da0bdef609c1922d1d0",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      }
     },
     {
       "id": "T25",

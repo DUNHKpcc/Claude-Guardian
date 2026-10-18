@@ -79,3 +79,12 @@ means deterministic normalized-input replay plus full active-guidance review,
 not arbitrary model integration, native deployment or production safety. The
 other 214 original cases remain pending; T24 has a reproduced resume review gap.
 The historical tracker rows and their exact hash remain unchanged.
+
+
+## Seventh-batch original-case revalidation
+
+T24 now joins T09/T19/T20/T21 as accepted_revalidated at its original L+C
+layers after fresh deterministic replay and full active-guidance review. All
+218 original rows and layers are unchanged; 213 remain pending. Runtime host
+contracts distinguish actual interruptions, current replies and historical
+imports. No model/UI/native/deployment or permission proof is inferred.

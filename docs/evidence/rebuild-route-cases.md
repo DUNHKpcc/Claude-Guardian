@@ -1,6 +1,6 @@
 # T19 / T20 / T21 / T24：路线验收重建证据
 
-日期：2026-10-18（UTC）。仓库基线：`584064fc9c210e684ba4a0e11b79db74f1946155`；本次评审对象是基线上已有重建修改的工作树，不能把 HEAD 当成全部受审字节。文末逐文件 SHA-256 固定实际评审对象。
+日期：2026-10-18（UTC），本页已按第七工作树的 T24 修复重新回放和逐句复核。仓库基线：`584064fc9c210e684ba4a0e11b79db74f1946155`；本次评审对象是基线上已有重建修改的工作树，不能把 HEAD 当成全部受审字节。文末逐文件 SHA-256 固定实际评审对象。
 
 ## 结论及证据边界
 
@@ -9,13 +9,13 @@
 | T19 | 未选／只展示未回答／明确不知道都不确认本机；只有明确接受才进入本机 | 默认建议、主动选择、只展开所选路线一致 | 可作为原 L+C 行的验收候选 |
 | T20 | L0 的明确 VM 选择进入独立 VM 提问序列，保留逐步说明偏好 | VM 入门解释及 V1→V2→V3 的准备、接入、配置、日常、故障与恢复逐步卡片均经下述语义审阅 | 可作为原 L+C 行的验收候选 |
 | T21 | 已有／新建两种 VPS 输入都保持 VPS，保存不同服务器事实，进入同一有条件的独立路线 | P1 明确分开已有服务器接入与新服务器比较；P2—P5 提供后续完整路线 | 可作为原 L+C 行的验收候选 |
-| T24 | VM/VPS 的同任务选择保留和宿主显式失效机制可重现；恢复本身不要求核实变化 | 通用失效要求存在，但当前续接入口没有强制先核实相关变化 | **pending_revalidation，不能整行通过** |
+| T24 | 显式中断续接保留选择，先输出完整相关变化核实；未答阻止 G2，没变保留原时点，变化只失效指定字段 | SKILL 入口、intake 续接契约、接触指导与 API/兼容说明已逐句对照原条件 | **本页提供 L+C 候选证据，最终状态见 ledger** |
 
-L、C 是原 `verification_layer=L+C` 的含义，不是交付依赖字母。未编辑原行、原规格、运行时代码或验收 ledger。T19/T20/T21 的候选结论同时依赖行为回放和内容审阅，不能只运行测试就自动更新它们的状态。
+L、C 是原 `verification_layer=L+C` 的含义，不是交付依赖字母。原行和原规格未编辑；本批只增加有界续接契约及其 CLI/指导/测试。既有 T19/T20/T21 的 evidence hash 在本次完整复核后更新，不提前改变 T24 状态。T19/T20/T21 的候选结论同时依赖行为回放和内容审阅，不能只运行测试就自动更新它们的状态。
 
 本次 L 证据为 `interview_flow` 的内存状态及调度器回放；C 是随包、当前实际生效指导的人工语义审阅。没有调用模型、没有验证自由文本提取、没有测 Codex UI 的显示与点击、没有创建或运行 VM/VPS、没有访问网络、修改系统或验证真实设备权限。`dialogue_inputs` 是虚构场景说明，输入代码的是明确列出的归一化事实，不宣称已经测过这些中文句子的自然语言解析。
 
-`G1=complete`／`G2=pass` 只表示此模块把已提供的 reported 答案视为访谈覆盖／规划输入；本夹具的 `not_tested`、`pending_verification` 不能成为兼容性、实际配置、PC-G1 或部署成功证明。全程 G3 blocked、PC0、保存同意均关闭。内容中要求以后核验的价格、许可证、客户端兼容性仍未实测；教程存在不代表生产适配器开放。**这不是全项目完成声明。**
+`G1=complete`／`G2=pass` 只表示此模块把已提供的 reported 答案视为访谈覆盖／规划输入；本夹具的 `not_tested`、`pending_verification` 不能成为兼容性、实际配置、PC-G1 或部署成功证明。本页固定路线回放全程 G3 blocked、PC0、保存同意均关闭；补充状态测试也验证已发生的 PC2 历史不会因续接重置。内容中要求以后核验的价格、许可证、客户端兼容性仍未实测；教程存在不代表生产适配器开放。**这不是全项目完成声明。**
 
 ## 原文、设计依据和可复现材料
 
@@ -36,6 +36,8 @@ L、C 是原 `verification_layer=L+C` 的含义，不是交付依赖字母。未
 - `tests/test_acceptance_routes_rebuild.py`：独立手写的完整中文预期题目及结构化预期；没有从运行时问题常量生成预期，没有通过“包含若干词”或测试数量判断内容正确
 - `project()`：明确列出被断言的完整边界，包括 task/target/account、route/basis、全部路线题 ID、完整下一题、完整 assessment、PC0 和保存权限；服务器答案还检查完整事实信封
 - `replay()`：输出本次实际回放的完整投影，供逐字段复核；不会反过来自动生成预期断言
+- `tests/test_interview_resume.py`：额外的宿主 API、条件分支、重试/购买组合、CLI 和错误路径矩阵
+- `docs/interview-resume.md`：明确 API、可选保存状态扩展、当前回复/历史导入界限、迁移与回滚
 
 复现命令：
 
@@ -44,9 +46,9 @@ python -m unittest discover -s tests -p test_acceptance_routes_rebuild.py -v
 python tests/test_acceptance_routes_rebuild.py --replay > /tmp/guardian-route-rebuild-actual.json
 ```
 
-本次实际结果：6 个测试方法连续两次全部通过，0 skipped；两次完整 replay 输出逐字相同。另运行 `python -m unittest discover -s tests -p 'test_interview*.py' -v`，112 项全部通过；`python -m py_compile tests/test_acceptance_routes_rebuild.py` 通过。每个方法内的具体轨迹及 C 审阅才构成证据；6 不等于 6 个原案例通过。T24 的缺口测试通过表示成功复现缺口，**不是**通过 T24。
+本次实际结果：6 个规范路线测试方法全部通过，0 skipped；两次完整 replay 输出逐字相同。另运行 `python -m unittest discover -s tests -p 'test_interview*.py' -v`，145 项全部通过，其中 33 项为新增续接 API/CLI 定向方法；`python -m py_compile skills/claude-guardian/scripts/interview_cli.py tests/test_interview_resume.py tests/test_acceptance_routes_rebuild.py` 通过。原 T24 缺口断言已替换为更强的规范预期，没有删除条件或放松断言；T19/T20/T21 的手写完整预期未改。测试数量不等于原案例验收数量，最终判定还依赖下述完整 C 审阅。
 
-完整 `--replay` 标准输出 SHA-256：`8732f875db1bb0bf29ff47503bddd9e752cd0c825501c825ed2fd09b3f16c05b`。时间固定为 `2026-10-18T04:00:00Z`，来源为 `synthetic:route-case`。回放不随机、不会联网；单元回放期间文件打开、socket、Popen、os.system 均由拒绝式哨兵阻断。
+完整 `--replay` 标准输出 SHA-256：`8e2a95d358a8fb9ca27a95f72f9788598e2337ed0498a5e22936142767727a84`。原事实时间固定为 `2026-10-18T04:00:00Z`、来源 `synthetic:route-case`；本次变化复核时间为 `2026-10-18T04:30:00Z`、来源 `synthetic:current-review`。回放不随机、不会联网；单元回放期间文件打开、socket、Popen、os.system 均由拒绝式哨兵阻断。
 
 ## T19：未指定路线
 
@@ -171,36 +173,68 @@ python tests/test_acceptance_routes_rebuild.py --replay > /tmp/guardian-route-re
 
 T21 的完整路线指“选择后有独立、从准备至恢复的指导”，不是此测试已替用户实际部署。已有／新建原句所需的具体差异有 S02 输入和 P1 内容同时支持。
 
-## T24：保留选择成立，但恢复前核实变化缺失
+## T24：同任务选择保留，并在真正续接时先核实相关变化
 
-### 固定输入、完整预期、实际差异
+### 修复前的精确反例
 
-分别取已答完的 VM 和 VPS 同任务状态（task_id=`route-task`，目标和账户别名不变），设置 paused=true，在内存以本次显式保存许可序列化，再 loads_state；未进行真实文件保存。之后宿主只清除 paused。
+旧 `interview_flow.py` SHA-256 为 `b4f031b735073e07352fc4849bbf343a50a6a57239f08513e965eb0c889c35ac`，旧完整 replay SHA-256 为 `8732f875db1bb0bf29ff47503bddd9e752cd0c825501c825ed2fd09b3f16c05b`。对本页不变 fixture 的完整 VM/VPS，执行 `set_context(paused=True)` → `dumps_state(host_opt_in=True)` → `loads_state` → `set_context(paused=False)`。两条路线都输出 route 原值、basis=explicit_choice、question=null、G1 complete、G2 `{status:pass, conditional_plan_only:false}`，没有相关变化核实；事实仍来自原时点。旧辅助 `invalidate_facts` 只有宿主另行调用才生效，不能补足入口缺口。本次已再次用相同旧源码 hash 的冻结第五工作树只读回放核对该反例，没有修改旧树。
 
-原要求的完整预期：当前任务路线和已答问题保留；继续前先核实相关环境是否变化，变化事实失效并只刷新受影响分支；不能默默回本机，也不能把旧事实直接当成仍有效。
+### 固定输入、完整预期、实际
 
-实际两条路线都相同：
+任务仍为 `route-task`，目标/账号仍为 `route-device` / `route-account`，同一原 fixture。新的规范路径为：暂停 → 明确保存/加载 → `resume_interview(resume_id='route-resume')` → 当前用户变化报告。普通读档不产生中断事件，直接 true→false 清除暂停的旧绕过路径现在精确报 `InterviewError: Use resume_interview for an interrupted session`。
 
-| 检查点 | 路线／选择依据 | 下一题 | G1 | G2 | 保存许可 |
+| 检查点 | 路线 / 选择依据 | 原题 / 复核提示 | G1 | G2 | 原事实 |
 |---|---|---|---|---|---|
-| 暂停前 | vm 或 vps / explicit_choice | null | complete | pass | 全 false |
-| paused=true | 原路线不变 | null | paused | blocked | 全 false |
-| loads_state 后 | 原路线、原 task、原 facts 均不变 | null | paused | blocked | 重置为全 false |
-| 只清除 paused | 原路线不变 | **null** | **complete** | **pass** | 全 false |
+| 暂停并加载后 | 原 vm/vps / explicit_choice | 都 null | paused | blocked，条件建议 | 全部保留 |
+| 显式续接，尚未回答 | 原 vm/vps / explicit_choice | 原题 null；独立 resume_review 提示如下 | complete | blocked / conditional_plan_only=true / reason=resume_review_required | 全部保留 |
+| 当前回答 unchanged | 原 vm/vps / explicit_choice | 原题及复核提示均 null | complete | pass / conditional_plan_only=false | 值、来源及原 observation time 全部逐字相同；另记当前 reported 复核 |
+| 当前回答 changed，VM V04 | vm / explicit_choice | Q-V04，clarification=true | partial，唯一 gap 为 Q-V04/stale | blocked，条件建议 | 仅 V04 stale，其他事实逐字相同 |
+| 当前回答 changed，VPS S03 | vps / explicit_choice | Q-S03，clarification=true | partial，唯一 gap 为 Q-S03/stale | blocked，条件建议 | 仅 S03 stale，其他事实逐字相同 |
 
-最后一步没有输出任何相关环境变化核实；`loads_state` 仅验证结构、规范化 incident 和重置保存许可。它不选择失效字段，也不要求宿主完成一次相关变化审查。相同来源／时点的旧事实直接再次支撑 G2。原 T24 因而缺失“核实环境变化”条件。
+共同精确 scope 为 `[Q-C02,Q-C04,Q-C06,Q-C09,Q-N01,Q-N02,Q-N03,Q-N04,Q-N06,Q-OS03]`；VM 再加 V01–V06，VPS 再加 S01–S07。全部按此顺序固定。输出还精确包含 `kind=resume_review`、`event_id=route-resume`、六个 outcome `[unchanged,changed,unknown,declined,deferred,target_changed]`、`requires_action_authorization=false`，不是注册新问题 ID。
 
-正向子证据：宿主另行明确调用 `invalidate_facts`，VM 只失效 Q-V04，VPS 只失效 Q-S03 后，实际 G1 partial/G2 blocked，完整下一题是该原题且 clarification=true，原因 stale；route/basis 与所有未受影响事实逐字保持。函数注释也明确由 host 选择受影响字段，不能把此辅助函数的存在说成恢复入口已经自动执行。
+VM 完整实际提示，与手写预期逐字相同：
 
-### C 逐句核对及缺口归因
+> 继续上次的虚拟机任务：还是原来的目标设备和账号吗；上次记录的系统/版本、语言和时间设置、网络/代理及此前测试、虚拟机资源、网络、共享和恢复条件、账号登录情况、使用地区/跨地区安排（无需详细地址）（含本路线已记录但尚未展开的条件项）有没有变化？可以说没变、具体变化、不确定、暂不回答或稍后再说；换了目标请先说明。
 
-1. D-SPEC §5.0 路由约束 2、§7.4 最后段要求同任务沿用原选择。实际序列化和加载满足；不是跨设备永久偏好。
-2. D-SPEC §7.4 同一句要求“只检查相关环境/版本和订阅事实是否变化，再继续”。当前 SKILL 完整访谈入口只说明保存后用 `--input` 续接，没有这个必经检查动作。
-3. `contact-and-safety.md` Persistence 的“Resume only relevant missing items”要求只补缺口、不能把旧计划应用给变化目标，但没有在原 facts 都 reported 的恢复状态下要求先确认是否变化。Permissions 的“Changed targets/configuration/network/profile/version invalidate ...”说明变化后的处理，不能证明变化已经主动核实。
-4. routes 共用交接单第 6 项同样规定变化失效；V3.3 针对的是 VM 暂停／网络变化后的运行复验，P5.2 针对远端 tmux 任务恢复。它们不是 `interview_cli --input` 的通用访谈恢复审查，不足以补上当前入口缺口。
-5. `interview_cli.py` 的 input 路径只 loads_state、核对显式 target/account、应用额外 context/answers，再输出 question/assessment，没有环境审查的前置环节。
+VPS 完整实际提示，与手写预期逐字相同：
 
-建议后续独立小批修复：保留同任务路线和既有事实，明确新增“恢复后先核对相关变更”的宿主交接契约及不可被旧 JSON 当作新权限的状态；获得当前回答后仅失效受影响字段，未知时保留条件规划。不得为此新增 Q-C07、重跑全部问卷、重置本机、恢复保存许可或自动联网。当前批次不实施此方案；需先确定与现有 schema/CLI 的兼容做法，再加入规范预期的正向回归，替换本页明确标记的缺口证明。**T24 保持 pending_revalidation。**
+> 继续上次的VPS任务：还是原来的目标设备和账号吗；上次记录的系统/版本、语言和时间设置、网络/代理及此前测试、服务器、SSH/救援、数据、费用和使用方式、账号登录情况、使用地区/跨地区安排（无需详细地址）（含本路线已记录但尚未展开的条件项）有没有变化？可以说没变、具体变化、不确定、暂不回答或稍后再说；换了目标请先说明。
+
+变化后的完整原题分别为“虚拟机怎样联网，代理在宿主还是客机？”与“是否能正常 SSH？有没有独立的控制台/救援入口？”。完整题信封为原 ID/branch、stage=I5、postcontact=false、clarification=true、四个原 outcome 和 requires_action_authorization=false；完整 assessment 由 `expected_resumed` 手写断言。受影响事实仍保留旧值、source 和 `04:00:00Z`，只改 state=stale、blocker_reason=`Reported change since interview interruption`、clarification_count=0。原问卷 ID、route、basis、目标和未受影响事实不变。
+
+### 组合、边界和错误路径的具体证据
+
+`test_interview_resume.py` 的定向轨迹实际验证：
+
+1. 普通 loads/连续 CLI `--input` 不产生 review 或改变下一题；真正 resume 在当前回复之前执行。未答时 G2 阻塞，G3 始终阻塞。既有 PC2 和独立 blocker 保留，不恢复保存许可。
+2. pending/current unchanged/current changed/unknown/declined/deferred/target_changed 分开；后三类不自动重复复核，仍允许有限指导；目标变化须重新绑定或用户当前明确更正。重复相同 event/复核结果不使已刷新的字段再次 stale；新暂停不能重用已完成 event。
+3. 已存的 N05、L02、L03、OS09、Z04 在后来激活条件时仍属于已展示的分组范围；C09 地区变化可选失效，无需详细地址。保护、权限、方案和目标套餐不在 changed_keys 白名单。
+4. 空相关 scope 不增加门槛；空事件后新回答 common/route facts 可正常规划。旧 off-route V04 后来被选择时必须核实；真正当前回复与仅导入历史观测不同。Oct-1 旧观察被 Oct-2 历史观察替换，仍不能绕过 Oct-18 的续接核实；没有相对日期或 TTL 放行。
+5. 完成购买不制造当前路线的新中断。原任务 reviewed 后若仍有从未纳入复核的旧 off-route S03，保存原复核来源/时间及该义务；两次 purchase completion 后改选 VPS，S03 仍触发 review。pending/unresolved 只剩过时 billing scope 时也保留 off-route 义务，target_changed 不被抹除；没有 off-route 义务的正常购买路径仍可继续。
+6. 紧急停用报告先问 H01，暂不输出 resume prompt，处置后恢复；不得让复核阻止保护性分流。换 task/target/account 不继承他者的已复核状态，路线切换只核实仍待复用的相关旧事实。
+7. CLI 输入缺 event、目标不匹配、无 input、坏 key/日期/来源/权限字段均清洁失败且不保存部分状态；changed review 后同轮当前答案可刷新该字段。拒答/延期重试没有循环；取消在保存前停止；source 不出现在 stdout；普通输出及保存语义保持。
+
+这些是固定输入与结果断言，不是执行权限、真实用户当前身份或任意模型遵守契约的证明。宿主仍负责识别真正中断、取得当前用户报告、把历史证据送到正确接口。事件标签只去重，不是安全令牌。
+
+### C：当前有效入口及每句契约的语义复核
+
+| 实际指导句子 / 分句 | 与原 T24 的对应和本次判断 |
+|---|---|
+| D-SPEC §7.4 的同任务保留选择及相关变化句 | 原完整条件未改；本次 API 保留 vm/vps，不重问套餐或重置本机，只复核相关环境/版本和本次相关订阅 |
+| SKILL 完整访谈入口新增句 | 清楚区分普通 `--input` 与真正中断 `--resume`，直接链接活动 intake 规则；不再把反序列化错误说成已完成续接核实 |
+| intake 第 1 段三句 | 明确 Agent 必须调用入口、普通轮次不重复事件、禁止直接解除已暂停状态；与 CLI 实际顺序一致 |
+| intake 第 2 段三句 | 保留事实时间、保护与接触历史，未接受本机仍未确认；事件标签不是授权/身份，新的中断有新标签 |
+| intake 第 3 段四个分句 | 一次相关分组提示含已存条件项，不逐条审问 dormant 字段；只有相关订阅入 scope；不问地址/凭据；空 scope 无额外门槛 |
+| intake 第 4 段的 unchanged/changed 句 | 当前报告与原观测分开，没变不改旧时点；变化只失效指定范围稳定 ID；路线、套餐、保护及权限不因环境变化被擦除 |
+| intake 第 4 段未知/拒答/延期及目标句 | 不重复催问；有限建议仍可给；新目标需重绑，目标更正必须来自新鲜明确用户报告，不能静默当成恢复成功 |
+| intake 第 5 段四句 | G2 与 G3/PC 分开；紧急分流优先；完成购买是同会话转换，仍保留未解决环境/目标义务；选择与复核不给操作许可 |
+| intake 第 6 段各句 | 明确当前批次/无 observed_at 与历史导入接口边界；日期较新不是当前报告；渲染/读档/事件与复核重试不更新时间，无 TTL；CLI 先复核后当前答案且失败不部分保存 |
+| contact-and-safety 新段逐句 | 真正中断先检查再规划，普通反序列化不重开；保留路线/PC2，保存不是授权；用户报告不升级原生证据；未知可有限指导且紧急优先；目标变化不能被购买清除；标签仅去重 |
+| docs/interview-resume.md Boundary/API/Scope/Record/CLI/Rollback | 每个可选字段有必要性说明；旧 schema-1 无 marker 可读，旧 reader 拒新字段的兼容限制明确；历史导入不伪装当前回复；购买保留 off-route 义务与重复语义写明；回滚不能删除未解决 marker 来绕过规划边界 |
+| routes 共用交接单 6、V3.3、P5.2 | 原变化失效、VM 暂停后复验、远端任务接入指导仍成立；它们继续作为后续操作指导，不被冒称通用访谈入口本身的核实证据 |
+
+本页作者已重新阅读全文与上述分句，并且 T19/T20/T21 的原 C 表逐项仍与当前有效 SKILL/on-demand 链接、V1–V3、P1–P5 内容一致。该结论是完整语义复核，不以标题、关键词或方法数量替代。独立审阅已经检查 core/CLI/指导并纠正条件范围、旧时间导入及购买组合反例；最终原行验收由集成后的独立裁定完成，**本页不自行改变 T24 状态**。
 
 ## C 来源审阅：不让旧教程覆盖现行路线
 
@@ -220,17 +254,19 @@ T21 的完整路线指“选择后有独立、从准备至恢复的指导”，�
 
 | 文件 | SHA-256 |
 |---|---|
-| `skills/claude-guardian/SKILL.md` | `0c209c5c627a099d218cd55589c77f711f9d2d1a3da216fdc7468f9643f0261c` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `b4f031b735073e07352fc4849bbf343a50a6a57239f08513e965eb0c889c35ac` |
-| `skills/claude-guardian/scripts/interview_cli.py` | `66d006c5ad4d74c38c21fbba703a468c23c90756b3a5ffe164ce1fb0d1c28774` |
-| `skills/claude-guardian/references/intake.md` | `fa35517960871a08b1f3962dff69e89cfc7aa9c8d7684950732239eafdbe6b7c` |
+| `skills/claude-guardian/SKILL.md` | `48d069050add99b808af823231152c2caba8b93250708570e3710b8bc5be212c` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `9a19073d243adc2f252c4fbfb8383bb95fa605d829400798189571ad59e6109a` |
+| `skills/claude-guardian/scripts/interview_cli.py` | `62cd96d848f896889ed3142e51f86412d771907b012955c051aa768e101bf8d3` |
+| `skills/claude-guardian/references/intake.md` | `5ceebc3632bf19447561e5bb8a43b3591015bf699a60d3498e395066e769f02e` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
-| `skills/claude-guardian/references/contact-and-safety.md` | `153314d713d9999a035de9aa1f2e3781eb215fb866c28decd75b999169514108` |
+| `skills/claude-guardian/references/contact-and-safety.md` | `c7952481728e2c7d6f8d294c1835c73eafc209f954ac39d7a7cfe7887d0dad12` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/S01-server-glossary.md` | `e2660c1b049d73e7a927594743f079cb0a5f10be9f72bad7928f10a5838bb68b` |
 | `skills/claude-guardian/sources/S04-claude-guide.md` | `281b2881c5a016b5188aa71c1e7162e1742c98170d9685f2a4e24503ee7a5992` |
 | `tests/fixtures/acceptance-routes-rebuild.json` | `073ad74ba195fd1c72bcab61887f24f1ce5cbeaef6ff6036d9ff76a713154a80` |
-| `tests/test_acceptance_routes_rebuild.py` | `698d9d8ada7651929d501fe32e50147a8c7192c3c9d7fadd333a9b923207dbcf` |
+| `tests/test_acceptance_routes_rebuild.py` | `45ba80b530497c2ccfa295a19d7f0fac8e4336208928fef96e0ead8d07f79153` |
+| `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
+| `docs/interview-resume.md` | `2261f306dcbd357544bcf3261c98e4544be3bc0d3324364936501db89e7e7cfd` |
 
-本次仅新增此页、回放测试和一份小型合成输入 fixture。回滚仅移除这三个新增文件，不修改运行时、用户保存状态、源资料或原验收条件。发布、完整套件及打包由合并批次另外执行；本页不以定向测试结果代替它们。
+本批修改 interview_flow/CLI、SKILL 一句、intake/contact 指导、原 route 回放测试、本页及三个既有验收行的 evidence hash；新增 focused resume 测试和 API/兼容说明。原 fixture、来源原文、原验收条件均未改。代码与指导须一起回滚，并同步恢复准确证据 pins/hash；旧 reader 不认识可选 resume_review，不能通过删掉未解决状态绕过核实，详见 docs/interview-resume.md。完整套件、Node、编译与打包另附集成记录，本页不以定向结果代替它们。
