@@ -303,7 +303,7 @@ updating hashes alone does not renew acceptance.
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/network-and-remedies.md` | `fd65f7c88263a1ba83496f915d28623a93ef826ef1f1cebee55c43b83cd60b4c` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
-| `skills/claude-guardian/references/agent-remediation.md` | `e9cf0aad0908ad98d4864d884a6f0a4301c06eb057a8f89738d0a98f338d84eb` |
+| `skills/claude-guardian/references/agent-remediation.md` | `363fdee6fa226545f0b03ebd14e6c311ac7582211800e78f94ffd6f3ad173fb1` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `docs/implementation-tracker.md` | `8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50` |
@@ -318,3 +318,16 @@ unchanged exact fixtures pass and their full replay remains
 The 98 combined checks passed. Only the reviewed workflow implementation pin is
 refreshed; offline-domain semantics, executes=false, workflow_guard enforcement
 and absence of native/OS isolation proof are unchanged.
+
+
+### Fourteenth-batch preservation review
+
+The explicit package addition and bounded pure policy-conversion guidance were
+independently reviewed against the original conditions on this page. All 23
+source/package checks, nine installed-package checks, eight ENV-T79/90 exact
+fixtures and 26 conversion tests passed. The guide example also ran from the
+extracted ZIP with exact expected output and unused I/O sentinels. Existing
+source evidence code and fixtures are unchanged; the ENV-T79/90 replay remains
+`b014fc2e16015a9ecd07b2f95460ab5fead21b625fd882eb01d8031042325581`.
+Only the reviewed file pin is refreshed; no native or automatic execution claim
+is introduced, and full ENV-T40 remains pending.

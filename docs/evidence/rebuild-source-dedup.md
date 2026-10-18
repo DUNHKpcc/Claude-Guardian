@@ -158,7 +158,7 @@ Reviewed file SHA-256 values:
 | `skills/claude-guardian/scripts/source_evidence.py` | `a1754f0445012e717dddfb9ed28245d94cb760f9d421fb47b0027a90e6f0feaf` |
 | `skills/claude-guardian/references/evidence-policy.md` | `8afb262a1d85050a897c6c9a89f54afbc96a653874b7308472dbeec4c3ea1838` |
 | `tests/test_source_evidence.py` | `cd9804d062f0226dcd25f7efc204c2fb4d43005be828b79dbeeb6df0ded8b86d` |
-| `tools/package_skill.py` | `0bc45f2776cea0ceb388e7d2357959b1eaa0d375e0388413c4d6472d3b72c47b` |
+| `tools/package_skill.py` | `627e8be657eb72852751555f57ab5efb14431fe0a8aa9fa7c91d4573ca5ab102` |
 
 Disposition: the exact original two-identical-tutorial scenario now has executable
 L evidence and a full active-guidance C review, ready for independent integration
@@ -189,3 +189,16 @@ reran all 23 source/package tests after this addition. The package pin is update
 for that reviewed allowlist entry; T09's exact L+C claim and the five accepted
 original cases are unchanged. Conversion and temporary-file transaction tests
 do not close the full ENV-T40 requirement.
+
+
+### Fourteenth-batch preservation review
+
+The explicit package addition and bounded pure policy-conversion guidance were
+independently reviewed against the original conditions on this page. All 23
+source/package checks, nine installed-package checks, eight ENV-T79/90 exact
+fixtures and 26 conversion tests passed. The guide example also ran from the
+extracted ZIP with exact expected output and unused I/O sentinels. Existing
+source evidence code and fixtures are unchanged; the ENV-T79/90 replay remains
+`b014fc2e16015a9ecd07b2f95460ab5fead21b625fd882eb01d8031042325581`.
+Only the reviewed file pin is refreshed; no native or automatic execution claim
+is introduced, and full ENV-T40 remains pending.

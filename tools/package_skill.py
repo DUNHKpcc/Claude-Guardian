@@ -16,7 +16,7 @@ def main():
     release_paths = [
         "SKILL.md", "scripts/guardian.py", "scripts/agent_remediation.py", "scripts/interview_flow.py", "scripts/interview_cli.py", "scripts/interview_migration.py", "scripts/source_evidence.py",
         "scripts/native_context.py", "scripts/windows_native_context.py", "scripts/diagnostic_session.py", "scripts/status_dashboard.py", "scripts/probe_evidence.py", "scripts/dns_probe.py", "scripts/mihomo_dns_probe.py", "scripts/os_dns_probe.py", "scripts/windows_dns_probe.py", "scripts/inventory_cli.py", "scripts/clash_inventory.py", "scripts/controller_inventory.py",
-        "scripts/windows_listener_binding.py", "scripts/windows_transactions.py", "scripts/workflow_guard.py", "scripts/remedy_plans.py", "scripts/config_edit_plan.py", "scripts/rules_extension_plan.py", "scripts/rule_source_import.py", "scripts/rule_format_conversion.py",
+        "scripts/windows_listener_binding.py", "scripts/windows_transactions.py", "scripts/workflow_guard.py", "scripts/remedy_plans.py", "scripts/config_edit_plan.py", "scripts/rules_extension_plan.py", "scripts/rule_source_import.py", "scripts/rule_format_conversion.py", "scripts/rule_policy_conversion.py",
         "scripts/recovery_cli.py", "scripts/repair_cli.py", "scripts/repair_execution.py", "scripts/clash_verge_258.py", "scripts/stun_probe.py", "scripts/network_probes.py", "scripts/transactions.py", "scripts/serve_webrtc.py", "assets/webrtc-probe.html",
         "references/agent-remediation.md", "references/intake.md", "references/contact-and-safety.md",
         "references/routes-and-platforms.md", "references/network-and-remedies.md",

@@ -89,7 +89,7 @@ Agent将`components`用于既有`rules-prepend` binding的`rules`、`rule_order`
 
 默认上限：1 MiB完整来源、256条记录、16个客户端别名、5秒（最多60秒）的原始调用预算；保持取消回调。超限、不可读、格式未知或解析器缺失时说明准确缺口，不跳过坏记录、不扩大读取范围、不静默安装依赖。精确域名格式不依赖PyYAML；YAML片段缺解析器时返回固定`PARSER_UNAVAILABLE`。
 
-这个导入接口只补原ENV-T40的一小段来源到现有绑定的能力。下面的独立转换器补充有限provider/JSON谓词转换；ASN、动作转换、完整版本适配和原ENV-T40的L+R验收仍未完成。继续扩展须先核对有日期/版本的官方语法，不依赖遗失代码或猜测字段。
+这个导入接口只补原ENV-T40的一小段来源到现有绑定的能力。下面的独立转换器补充有限provider/JSON谓词转换；ASN、任意动作转换、完整版本适配和原ENV-T40的L+R验收仍未完成。继续扩展须先核对有日期/版本的官方语法，不依赖遗失代码或猜测字段。
 
 ## ENV-06：固定兼容版本的纯谓词格式转换
 
@@ -138,6 +138,42 @@ private_output = converted.private_material()["output_bytes"]
 默认完整输入及输出各≤1 MiB、≤256条谓词、≤16个客户端别名、5秒原始预算（最多60秒），保留取消回调；JSON另限48层/20,000结构token，YAML复用既有安全有界解析器。超限、取消、超时、缺解析器或任何错误都不返回部分输出。时间/取消是合作式检查，不保证中断正在运行的解析器。精确文本与JSON不依赖PyYAML；provider YAML缺失时固定`PARSER_UNAVAILABLE`，不自动安装。
 
 这提供原ENV-T40的有限L逻辑证据。独立临时文件写回/恢复测试即使通过，也不代表用户设备、引擎加载、GUI持久化、实际路由或完整R通过。完整L+R仍待逐条件审阅。详细API、版本来源和反例见仓库`docs/evidence/rebuild-rule-format-conversion.md`。
+
+## ENV-06：受限主规则动作与顺序转换
+
+`rule_policy_conversion.convert_policy_rules` 是另一套纯内存接口，不改变上面的无动作转换器。只支持显式 `mihomo/1.19.32/main-rules-yaml` 与 `sing-box/1.12.0/route-rules-json` 片段互转。前者只有 rules，后者是 route.rules 的 JSON 数组片段，不是完整配置；固定版本是兼容性目标，不是最新或已安装版本。
+
+只接收规范小写 ASCII 精确域名/包含根域的后缀匹配，以及显式一一对应的普通出站标签。按原顺序保留重复项；同一个 JSON 规则内的域名族 OR 展开为连续、同动作条目，并保留每个出现位置的来源关联。不会排序去重，也不会把动作剥掉再导入无动作集合。
+
+每对出站都必须声明两侧为 ordinary_outbound，且 TCP/UDP 均为 terminal_for_tcp_udp；这些声明不是程序已核实的事实。不能凭组名认定终结行为，必须先审阅组成员、特殊处理和协议。DIRECT、REJECT、REJECT-DROP、COMPATIBLE、PASS、PASS-RULE、GLOBAL 七个精确保留标签均拒绝；其他不受支持动作、ASN/额外条件/全局 MATCH/final、未知格式、歧义映射及混合坏项整批报错，不返回部分结果。
+
+no-match 仅声明片段继续交给外层配置处理，两侧必须保留 defer_to_enclosing_configuration。转换不发现或验证实际外层 fallback、命中优先级、最终出口或引擎运行行为，不自动生成默认动作。不能把其有限标签选择结果说成完整配置等价。
+
+宿主示例（全部虚构；只转换已获准读取的字节）：
+
+```python
+import hashlib
+from rule_policy_conversion import convert_policy_rules, MIHOMO, SING_BOX
+
+raw = b"rules:\n  - 'DOMAIN,api.example.invalid,egress-a'\n"
+source = {
+    "schema_version": "guardian-rule-source-binding/0.1",
+    "source_ref": "source-a", "expected_sha256": hashlib.sha256(raw).hexdigest(),
+    "evidence_kind": "user_supplied", "verified_at": "2026-10-18",
+    "version_scope": "reviewed-source-v1", "purpose": "selected-dependencies",
+    "client_scope": ["client-a"], "feature_gate": "selected-feature",
+    "shared_service": False, "activation_state": "candidate",
+}
+bindings = [{"source_label": "egress-a", "target_label": "out-a",
+             "source_kind": "ordinary_outbound", "target_kind": "ordinary_outbound",
+             "source_finality": "terminal_for_tcp_udp",
+             "target_finality": "terminal_for_tcp_udp"}]
+result = convert_policy_rules(raw, MIHOMO, SING_BOX, ["rule-a"], source, bindings)
+public_summary = result.preview()
+private_output = result.private_material()["output_bytes"]
+```
+
+公开摘要不带来源字节、域名、策略标签或元数据；私有结果保持来源、输出、顺序与映射证据。上限与取消遵循接口常量/参数；解析缺依赖不自行安装。此接口没有读写、探测、引擎调用或执行授权。把输出写入哪份配置仍须独立校验完整上下文、精确差异、许可、恢复、读回与实际效果；原 ENV-T40 的完整 L+R 验收仍待逐条件核对。详见仓库 `docs/evidence/rebuild-policy-conversion.md`。
 
 <a id="prepared-recovery"></a>
 ## 已替换但回执未完成：精确文件恢复

@@ -104,7 +104,7 @@
       "dependencies": "A、P",
       "evidence": {
         "path": "docs/evidence/rebuild-source-dedup.md",
-        "sha256": "ea78badc3be23fc5e1346c8da3413afcd6b87d99709a880d14f1e52a3aabce47",
+        "sha256": "0918a1d14e31ca900dd6735491eba9dd7d3610326fd13ff418aa48864308ed87",
         "layers": [
           "L",
           "C"
@@ -1857,7 +1857,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-enforcement-cases.md",
-        "sha256": "779f0658a787decd963d11b5c50c8a1e74582242ed84e936a4ab11574b2d4703",
+        "sha256": "d6b128604dd3032455ef4935b22938421539607d0e1821bed8dfc948635b5931",
         "layers": [
           "L"
         ],
@@ -1985,7 +1985,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-enforcement-cases.md",
-        "sha256": "779f0658a787decd963d11b5c50c8a1e74582242ed84e936a4ab11574b2d4703",
+        "sha256": "d6b128604dd3032455ef4935b22938421539607d0e1821bed8dfc948635b5931",
         "layers": [
           "L",
           "C"

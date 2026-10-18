@@ -799,3 +799,34 @@ Of 1,461 tests: Linux 1,453 passed/8 skipped; macOS 1,450/11; Windows 1,208/253;
 Python 3.10 Linux 1,453/8. Preview 27/27 and detached runtime 9/9 passed.
 The exact 15-file remote delta, parent, hashes and modes were verified. Skip counts
 and native-context boundaries were unchanged; CI is not user-device acceptance.
+
+## Fourteenth rebuild batch: bounded ordered policy conversion
+
+The pinned Mihomo 1.19.32 main-rules and sing-box 1.12.0 route-rules fragment
+converter preserves ordered exact/suffix predicates, duplicates and explicit
+bijective ordinary terminal-outbound mappings. Unsupported semantics reject
+atomically. Mapping/finality are caller declarations, not independently verified
+engine behavior. No engine, network, host configuration or native repair ran.
+Full ENV-T40 and controlled recovery composition remain pending. Original
+acceptance remains 15 of 218 cases; all original conditions/layers are retained.
+
+Independent review passed 118 committed checks and 183 adversarial cases.
+Packaging/guidance preservation passed 66 focused checks, including the example
+from the extracted release and unchanged ENV-T79/90 boundary replay. T09 and
+ENV-T79/90 evidence pins were refreshed only after explicit independent review.
+The integrated aggregate ran 1,508 tests in 30.195 seconds: 1,500 passed and eight
+skipped. Both Node synthetic suites, compilation and diff checks passed. Two
+release archives are byte-identical, SHA-256
+`4bb4aad11cdc5986454af3a4f5055372c32b3d2695d089bbbaab1ba76851e4f6`.
+The initial missing-module failing-first result was not separately logged; later
+focused, importer, compilation and independent probes have retained logs.
+
+The preceding thirteenth batch was published as
+`8b0b2a8a877e6403d6c5ef163f52215c3d1a707f`, parent
+`f57bfc825566ffe6a94874ebd662cc3fe6dac240`. Both push workflows succeeded:
+[tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39104718029)
+and [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39104718047).
+Linux and Python 3.10 Linux: 1,474 passed/8 skipped; macOS: 1,471/11;
+Windows: 1,229/253. Preview 27/27 and detached runtime 9/9 passed.
+Remote seven-file scope, parent, hashes and modes were verified. CI does not
+substitute for user-device acceptance.
