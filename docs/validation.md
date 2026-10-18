@@ -591,3 +591,39 @@ Second full aggregate: 1,285 tests in 18.385 seconds, 1,277 passed and eight ski
 Both Node synthetic suites, compilation and whitespace checks passed. Two packages
 matched SHA-256 `8ccd1e7ec763445ffdbace66f9b73f5618fe8408d2b1d707e4e879de8ac18692`.
 Independent review reran 144 focused checks and the exact before/after reproducer.
+
+
+Eighth batch was published as `1390be90bf45f58b65eebeee8ef245b6a1aea5b7`,
+parent `b64c159f6448cf3995fb62c4075d970ed5f1beeb`. Both push workflows reached
+success: [tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39099770079)
+and [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39099770047).
+Linux 1,277 passed/8 skipped, macOS 1,276/9, Windows 1,099/186, Python 3.10 Linux
+1,277/8; preview 27/27 and detached runtime 9/9. Native-context skips remain and
+do not establish user-device acceptance. All nine remote changed paths and their
+exact bytes/modes were verified.
+
+
+## 2026-10-18 ninth reconstruction batch
+
+A pure fixed-profile converter now translates exact and apex-inclusive suffix
+predicates between explicit domain lines, Mihomo v1.19.32 domain/classical YAML
+providers and sing-box v1.12.0 source-rule-set JSON schema v1. These are selected
+compatibility targets, not latest-version claims. Actions, extra conditions and
+unsupported versions fail atomically. The explicit canonical lowercase ASCII
+host model is a conditional matching boundary, not runtime equivalence.
+See [conversion evidence](evidence/rebuild-rule-format-conversion.md).
+
+[Controlled transaction evidence](evidence/rebuild-rule-conversion-transaction.md)
+composes the unchanged POSIX API with synthetic whole-artifact temp files. Ten
+integration tests include exact readback, independently approved rollback, stale
+target/source rejection and conflict preservation. Post-replace receipt failure
+retains prepared evidence but still requires reconciliation; it is not reported
+as unchanged or successfully rolled back. This does not establish production
+configuration, GUI, native-device or full ENV-T40 acceptance.
+
+The first full suite ran 1,342 tests in 19.469 seconds: 1,334 passed and eight
+skipped. The implementation worker independently repeated the same aggregate in
+19.411 seconds. Both synthetic Node suites, compilation and reproducible package
+checks passed; the package SHA-256 is
+`574e4334b003794752103cdb4121c36a237a48b60a7e9306f0f04cea1940eb4b`.
+The original 218 rows are unchanged; five exact original L+C cases remain accepted.

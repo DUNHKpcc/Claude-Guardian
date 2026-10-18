@@ -89,7 +89,55 @@ Agent将`components`用于既有`rules-prepend` binding的`rules`、`rule_order`
 
 默认上限：1 MiB完整来源、256条记录、16个客户端别名、5秒（最多60秒）的原始调用预算；保持取消回调。超限、不可读、格式未知或解析器缺失时说明准确缺口，不跳过坏记录、不扩大读取范围、不静默安装依赖。精确域名格式不依赖PyYAML；YAML片段缺解析器时返回固定`PARSER_UNAVAILABLE`。
 
-这只补原ENV-T40的一小段格式导入能力。provider/其他JSON引擎及ASN等语义转换、版本化多引擎适配和完整L+R验收仍未完成；要扩展前先核对有日期/版本的官方语法，不依赖遗失代码或猜测字段。
+这个导入接口只补原ENV-T40的一小段来源到现有绑定的能力。下面的独立转换器补充有限provider/JSON谓词转换；ASN、动作转换、完整版本适配和原ENV-T40的L+R验收仍未完成。继续扩展须先核对有日期/版本的官方语法，不依赖遗失代码或猜测字段。
+
+## ENV-06：固定兼容版本的纯谓词格式转换
+
+Agent可调用纯内存`rule_format_conversion.convert_rule_format`，把已经获准读取的完整来源转换为另一种**无动作谓词集合**。它不写文件、不安装或调用引擎、不获取provider，也不是修复执行入口。用途是把明确格式的依赖集合整理成可供下一步私有审阅的完整字节；普通离线转换无需等待原生执行门禁。
+
+支持profile固定如下，必须显式传入，不能按文件扩展名猜测：
+
+| 常量 | profile | 受限语义 |
+|---|---|---|
+| `EXACT` | `exact-domain-lines/0.1` | 每行一个精确主机，无动作 |
+| `MIHOMO_DOMAIN` | `mihomo/1.19.32/provider-domain-yaml` | sole `payload` block sequence；裸域名=精确，`+.域名`=包含本身及标签边界子域 |
+| `MIHOMO_CLASSICAL` | `mihomo/1.19.32/provider-classical-yaml` | sole `payload` block sequence；仅二字段`DOMAIN,域名`、`DOMAIN-SUFFIX,域名`，无第三动作字段 |
+| `SING_BOX` | `sing-box/1.12.0/source-rule-set-json-v1` | 严格`version: 1`＋`rules`；每项只允许非空`domain`/`domain_suffix`字符串数组，无动作/其他条件 |
+
+这些是选定的兼容性审阅目标，不代表最新版本或当前设备已装版本。只接受实际整数schema 1；2/3/5、布尔/字符串/浮点形式均不当作1。原始域名必须是小写ASCII DNS标签；不自动改大小写、去根点、转Unicode/IDNA或修复空标签。已有小写`xn--`字符串仅按不透明ASCII处理，不宣称与Unicode名称等价。所有数字标签的歧义主机也拒绝。此接口的主机契约比前面的大小写保留导入器更窄，不能为了通过而静默预处理来源。
+
+`DOMAIN-SUFFIX`、domain provider的`+.`及无前导点的sing-box `domain_suffix`都保留apex及子域。provider的`.域名`、`*.域名`与sing-box前导点后缀不同，当前不支持，不可剥掉前缀。后缀不能导出成精确列表。匹配等价范围只覆盖同样满足小写ASCII契约的候选主机；外部流量的大小写、根点和Unicode如何进入各引擎仍未验证，不能报告普遍运行时等价。
+
+来源是谓词OR集合，记录顺序保留用于溯源，不证明最终策略优先级。JSON规则中的字段和数组按原始出现顺序展开；输出一条谓词对应一项，保留源引用、索引、路径、原值及完整源字节，不排序、合并或去重。不同类型的重叠选择器保留；相同类型的重复选择器整批拒绝。相同JSON键、未知字段、port/network/invert/logical条件、ASN/CIDR/keyword/regex/no-resolve/嵌套rule-set、不支持语法或任意混合坏项均整批报错。
+
+带动作的主`rules`或route配置不能变成无动作来源；REJECT/DIRECT/其他组、第三字段或action/outbound都不会被丢弃。provider的获取代理与引用处的出站策略是不同概念；转换结果不创建RULE-SET引用，不设置provider下载路径或业务出站。后续选择策略、所在配置、组织保护、版本/归属、精确差异、操作许可与读回仍由独立流程处理。
+
+宿主调用示例（全部虚构，不写入配置）：
+
+```python
+import hashlib
+from rule_format_conversion import convert_rule_format, MIHOMO_CLASSICAL, SING_BOX
+
+raw = b"payload:\n  - 'DOMAIN,api.example.invalid'\n  - 'DOMAIN-SUFFIX,example.invalid'\n"
+source = {
+    "schema_version": "guardian-rule-source-binding/0.1",
+    "source_ref": "source-a", "expected_sha256": hashlib.sha256(raw).hexdigest(),
+    "evidence_kind": "user_supplied", "verified_at": "2026-10-18",
+    "version_scope": "reviewed-source-v1", "purpose": "selected-dependencies",
+    "client_scope": ["client-a"], "feature_gate": "selected-feature",
+    "shared_service": False, "activation_state": "candidate",
+}
+converted = convert_rule_format(raw, MIHOMO_CLASSICAL, SING_BOX,
+                                ["rule-exact", "rule-suffix"], source)
+public_summary = converted.preview()
+private_output = converted.private_material()["output_bytes"]
+```
+
+公开摘要仅含固定状态及有界计数，保持`apply_supported=false`、`native_acceptance=not_run`；无域名、源hash或调用者元数据。私有结果不可变，`repr`固定脱敏，默认JSON/pickle序列化拒绝；仅在获准私有审阅中访问输出与来源证据。沿用前述来源声明及实际SHA校验，不据日期/类别/版本别名确认真实性、新鲜度、独立性或权限。
+
+默认完整输入及输出各≤1 MiB、≤256条谓词、≤16个客户端别名、5秒原始预算（最多60秒），保留取消回调；JSON另限48层/20,000结构token，YAML复用既有安全有界解析器。超限、取消、超时、缺解析器或任何错误都不返回部分输出。时间/取消是合作式检查，不保证中断正在运行的解析器。精确文本与JSON不依赖PyYAML；provider YAML缺失时固定`PARSER_UNAVAILABLE`，不自动安装。
+
+这提供原ENV-T40的有限L逻辑证据。独立临时文件写回/恢复测试即使通过，也不代表用户设备、引擎加载、GUI持久化、实际路由或完整R通过。完整L+R仍待逐条件审阅。详细API、版本来源和反例见仓库`docs/evidence/rebuild-rule-format-conversion.md`。
 
 ## 下一项真正可执行修复：窄范围系统代理端口适配（尚未实现）
 

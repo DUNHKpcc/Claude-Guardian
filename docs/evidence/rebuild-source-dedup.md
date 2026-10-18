@@ -158,7 +158,7 @@ Reviewed file SHA-256 values:
 | `skills/claude-guardian/scripts/source_evidence.py` | `a1754f0445012e717dddfb9ed28245d94cb760f9d421fb47b0027a90e6f0feaf` |
 | `skills/claude-guardian/references/evidence-policy.md` | `8afb262a1d85050a897c6c9a89f54afbc96a653874b7308472dbeec4c3ea1838` |
 | `tests/test_source_evidence.py` | `cd9804d062f0226dcd25f7efc204c2fb4d43005be828b79dbeeb6df0ded8b86d` |
-| `tools/package_skill.py` | `e4db77058bfce6e9451cc893ec48b8e7cf7fd57977eb5f541d3781714813e7c2` |
+| `tools/package_skill.py` | `0bc45f2776cea0ceb388e7d2357959b1eaa0d375e0388413c4d6472d3b72c47b` |
 
 Disposition: the exact original two-identical-tutorial scenario now has executable
 L evidence and a full active-guidance C review, ready for independent integration
@@ -178,3 +178,14 @@ Independent review reran all 23 source/inventory/package tests and checked that
 this is the only packager delta; T09 retains its exact L+C boundary. The reviewed
 package-file pin above is refreshed for that addition, not a new provenance or
 independence claim. ENV-T40 remains pending in the original-case ledger.
+
+
+## Package allowlist re-review (ninth batch)
+
+The only packager delta adds the pure fixed-profile predicate converter to the
+explicit file list. The source identity helper, active evidence policy/library
+and all three source suites are byte-identical to eighth. Independent review
+reran all 23 source/package tests after this addition. The package pin is updated
+for that reviewed allowlist entry; T09's exact L+C claim and the five accepted
+original cases are unchanged. Conversion and temporary-file transaction tests
+do not close the full ENV-T40 requirement.
