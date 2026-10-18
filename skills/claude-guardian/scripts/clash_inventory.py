@@ -67,8 +67,17 @@ def _fail(code='INPUT_OR_RESPONSE_INVALID'):
     raise InventoryError(code)
 
 
+# Keep this small alias screen aligned with guardian.KNOWN_CREDENTIAL_VALUE.
+# This standalone collector must not depend on sibling import-path setup.
+KNOWN_CREDENTIAL_VALUE = re.compile(
+    r"(?i)(?:(?<![A-Za-z0-9])sk-(?:ant-)?[A-Za-z0-9_-]{12,}"
+    r"|(?<![A-Za-z0-9])(?:ghp_|github_pat_)[A-Za-z0-9_-]{12,}"
+    r"|bearer\s+\S+|(?:password|secret|token|api[_-]?key|authorization)\s*[:=]\s*\S+)")
+
+
 def _alias(value):
-    if not isinstance(value, str) or not ALIAS.fullmatch(value):
+    if (not isinstance(value, str) or not ALIAS.fullmatch(value)
+            or KNOWN_CREDENTIAL_VALUE.search(value)):
         _fail()
     return value
 
@@ -267,6 +276,18 @@ def audit_inventory(request, expected_target_ref, cancel_check=None):
             _fail('BUDGET_EXCEEDED')
 
     try:
+        # Reject unknown typed envelope fields before invoking host callbacks or
+        # reading any source. Raw configuration keys remain parser inputs below.
+        nested_keys = {
+            'target_binding': {'target_ref', 'binding_state', 'declared_os',
+                               'execution_location', 'desktop_user_relation', 'filesystem_namespace'},
+            'authorization': {'approved_paths', 'local_hydrated_files'},
+            'application': {'product', 'gui_version', 'core_version'},
+        }
+        if isinstance(request, dict):
+            for key, allowed_keys in nested_keys.items():
+                if key in request and (type(request[key]) is not dict or set(request[key]) - allowed_keys):
+                    _fail()
         check_budget()
         if not isinstance(request, dict):
             _fail()

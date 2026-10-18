@@ -233,12 +233,15 @@ def validate_offline(obj, target):
         raise GuardianError("INPUT_OR_RESPONSE_INVALID")
     if obj.get("target_ref") != target:
         raise GuardianError("TARGET_NOT_BOUND", 3)
-    if obj.get("record_kind") not in {"synthetic_example", "user_supplied_observation"}:
+    if (type(obj.get("record_kind")) is not str
+            or obj["record_kind"] not in {"synthetic_example", "user_supplied_observation"}):
         raise GuardianError("INPUT_OR_RESPONSE_INVALID")
     binding = obj.get("target_binding", {})
     if not isinstance(binding, dict) or set(binding) - {"declared_os", "desktop_user_relation", "filesystem_namespace", "execution_location"}:
         raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-    if binding.get("declared_os") not in {"macos", "windows"}:
+    if type(binding.get("declared_os")) is not str:
+        raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+    if binding["declared_os"] not in {"macos", "windows"}:
         raise GuardianError("UNSUPPORTED_PRODUCT_OR_VERSION")
     if binding.get("desktop_user_relation") != "same" or binding.get("filesystem_namespace") != "host_desktop" or binding.get("execution_location") != "native_local":
         raise GuardianError("TARGET_USER_CONTEXT_MISMATCH", 3)
@@ -251,12 +254,14 @@ def validate_offline(obj, target):
     for fact in facts:
         if not isinstance(fact, dict) or set(fact) - {"id", "value", "state", "context_ref", "observed_at", "layer", "source_ref", "reason_code", "coverage"}:
             raise GuardianError("INPUT_OR_RESPONSE_INVALID")
-        if fact.get("id") not in FACT_IDS or fact["id"] in seen or fact.get("state") not in STATES:
+        if (type(fact.get("id")) is not str or type(fact.get("state")) is not str
+                or fact["id"] not in FACT_IDS or fact["id"] in seen or fact["state"] not in STATES):
             raise GuardianError("INPUT_OR_RESPONSE_INVALID")
         seen.add(fact["id"])
         if fact.get("context_ref") != target:
             raise GuardianError("TARGET_NOT_BOUND", 3)
-        if fact.get("layer") not in {"reported", "os_query", "static_file", "runtime", "derived"}:
+        if (type(fact.get("layer")) is not str
+                or fact["layer"] not in {"reported", "os_query", "static_file", "runtime", "derived"}):
             raise GuardianError("INPUT_OR_RESPONSE_INVALID")
         alias(fact.get("source_ref"))
         for qualifier, allowed_values in (("reason_code", FACT_REASON_CODES), ("coverage", FACT_COVERAGES)):
@@ -275,8 +280,103 @@ def validate_offline(obj, target):
     return obj
 
 
+def _report_shape(value, template):
+    if type(template) is dict:
+        if type(value) is not dict or set(value) != set(template):
+            raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+        for key in template:
+            _report_shape(value[key], template[key])
+    elif type(template) is list:
+        if type(value) is not list or len(value) > 128:
+            raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+        for item in value:
+            if not template:
+                raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+            _report_shape(item, template[0])
+    elif type(value) is not type(template):
+        raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+    elif type(value) is str:
+        if len(value) > 2048 or KNOWN_CREDENTIAL_VALUE.search(value):
+            raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+
+
+def validate_inventory_envelope(obj):
+    """Validate this release's public inventory shape before lossy projection.
+
+    Only native_check/base-derived envelopes are supported, not the historical
+    contract ZIP. Metadata is not host provenance. Every source reference is
+    checked even though the compact offline model retains only its first one.
+    """
+    def invalid():
+        raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+
+    shape = _report_shape
+
+    template = base("audit", "device-1")
+    if type(obj) is not dict or set(obj) != set(template):
+        invalid()
+    if obj["schema_version"] != "env-inventory/0.2":
+        invalid()
+    if (type(obj["record_kind"]) is not str or obj["record_kind"] not in {
+            "synthetic_example", "device_observation", "offline_analysis", "user_supplied_observation"}):
+        invalid()
+    alias(obj["target_ref"])
+    contact = obj["contact_control"]
+    if type(contact) is not dict:
+        invalid()
+    shape(contact, template["contact_control"])
+    contact_guard(contact)
+    binding = obj["target_binding"]
+    required = {"declared_os", "desktop_user_relation", "filesystem_namespace", "execution_location"}
+    optional = {"binding_state": {"bound_by_explicit_operator_attestation"},
+                "requested_role": {"local_desktop"}, "network_namespace": {"not_verified"}}
+    if type(binding) is not dict or not required <= set(binding) or set(binding) - required - set(optional):
+        invalid()
+    for key, values in optional.items():
+        if key in binding and (type(binding[key]) is not str or binding[key] not in values):
+            invalid()
+    # Required binding values are validated by validate_offline after projection.
+    for key in required:
+        if type(binding[key]) is not str:
+            invalid()
+    facts = obj["facts"]
+    if type(facts) is not list or len(facts) > 64:
+        invalid()
+    required_fact = {"id", "value", "state", "context_ref", "observed_at", "layer", "source_refs"}
+    for fact in facts:
+        if (type(fact) is not dict or not required_fact <= set(fact)
+                or set(fact) - required_fact - {"reason_code", "coverage"}):
+            invalid()
+        sources = fact["source_refs"]
+        if type(sources) is not list or not 1 <= len(sources) <= 64:
+            invalid()
+        for source in sources:
+            alias(source)
+    shape(obj["privacy"], template["privacy"])
+    shape(obj["snapshot"], template["snapshot"])
+    limits = obj["limits"]
+    optional_limits = {"command_timeout_seconds": COMMAND_TIMEOUT,
+                       "command_stdout_max_bytes": COMMAND_MAX_BYTES}
+    if type(limits) is not dict or set(limits) - set(template["limits"]) - set(optional_limits):
+        invalid()
+    shape({k: v for k, v in limits.items() if k not in optional_limits}, template["limits"])
+    for key, expected in optional_limits.items():
+        if key in limits and (type(limits[key]) is not type(expected) or limits[key] != expected):
+            invalid()
+    for key in ("evidence", "changes"):
+        if obj[key] != []:
+            invalid()
+    shape(obj["findings"], [{"code": "", "module_id": ""}])
+    for key in ("module_ids", "missing_fields", "not_tested", "next_actions"):
+        shape(obj[key], [""])
+    for key in ("runtime_version", "contract_provenance", "run_ref", "operation",
+                "execution_status", "check_status", "inventory_readiness"):
+        shape(obj[key], "")
+
+
 def inventory_to_offline(obj):
     """Accept this release's minimal native audit as offline evidence, never a gate pass."""
+    validate_inventory_envelope(obj)
     if obj.get("operation") != "audit" or obj.get("changes") != [] or obj.get("execution_status") != "completed":
         raise GuardianError("INPUT_OR_RESPONSE_INVALID")
     contact = obj.get("contact_control", {})
@@ -298,7 +398,7 @@ def inventory_to_offline(obj):
         for qualifier in ("reason_code", "coverage"):
             if qualifier in fact:
                 facts[-1][qualifier] = fact[qualifier]
-    return {"schema_version": INPUT_SCHEMA, "record_kind": "user_supplied_observation", "target_ref": obj.get("target_ref"), "target_binding": {key: binding.get(key) for key in ("declared_os", "desktop_user_relation", "filesystem_namespace", "execution_location")}, "contact_phase": "precontact", "gate_state": "closed", "snapshot_state": "unknown", "facts": facts}
+    return {"schema_version": INPUT_SCHEMA, "record_kind": "synthetic_example" if obj["record_kind"] == "synthetic_example" else "user_supplied_observation", "target_ref": obj.get("target_ref"), "target_binding": {key: binding.get(key) for key in ("declared_os", "desktop_user_relation", "filesystem_namespace", "execution_location")}, "contact_phase": "precontact", "gate_state": "closed", "snapshot_state": "unknown", "facts": facts}
 
 
 def analyze(obj, target, planning=False):
@@ -319,7 +419,8 @@ def analyze(obj, target, planning=False):
         report["missing_fields"].append("P06")
     if any(f["state"] == "stale" for f in report["facts"]):
         finding(report, "STALE_EVIDENCE_REAUDIT_REQUIRED")
-    if obj.get("snapshot_state", "unknown") not in {"stable", "unknown", "changed"}:
+    if (type(obj.get("snapshot_state", "unknown")) is not str
+            or obj.get("snapshot_state", "unknown") not in {"stable", "unknown", "changed"}):
         raise GuardianError("INPUT_OR_RESPONSE_INVALID")
     if obj.get("snapshot_state") == "changed":
         finding(report, "SNAPSHOT_CHANGED_DURING_AUDIT")
@@ -662,8 +763,30 @@ QUESTIONS = [
 ]
 
 
+def validate_interview_envelope(obj):
+    """Accept only the current compact interview producer's report wrapper."""
+    template = base("interview")
+    required = set(template) | {"state"}
+    if type(obj) is not dict or not required <= set(obj) or set(obj) - required - {"question"}:
+        raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+    for key in template:
+        if key == "findings":
+            _report_shape(obj[key], [{"code": "", "module_id": ""}])
+        elif key in {"module_ids", "not_tested", "next_actions", "missing_fields"}:
+            _report_shape(obj[key], [""])
+        else:
+            _report_shape(obj[key], template[key])
+    if "question" in obj:
+        if type(obj["question"]) is not dict:
+            raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+        _report_shape(obj["question"], {"id": "", "field": "", "text": "", "choices": None}
+                      if obj["question"].get("choices") is None else
+                      {"id": "", "field": "", "text": "", "choices": [""]})
+
+
 def interview(obj):
     if obj.get("schema_version") == "guardian-report/0.1":
+        validate_interview_envelope(obj)
         contact = obj.get("contact_control")
         if obj.get("operation") != "interview" or not isinstance(contact, dict) or not isinstance(obj.get("state"), dict):
             raise GuardianError("INPUT_OR_RESPONSE_INVALID")
@@ -709,8 +832,16 @@ def interview(obj):
     return report
 
 
+class PrivateArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        # argparse messages may embed arbitrary choices, option names or values.
+        # Keep useful static usage and a fixed code, never the untrusted message.
+        self.print_usage(sys.stderr)
+        self.exit(2, "INPUT_OR_RESPONSE_INVALID\n")
+
+
 def parser():
-    root = argparse.ArgumentParser(description=__doc__)
+    root = PrivateArgumentParser(prog="guardian", description=__doc__)
     root.add_argument("--version", action="version", version=VERSION)
     subs = root.add_subparsers(dest="command", required=True)
     for command in ("interview", "check", "analyze", "plan"):

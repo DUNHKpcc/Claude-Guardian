@@ -82,3 +82,9 @@ python skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --a
 - `config_edit_plan.py` 只在内存中生成已有规则的私有字节差异，拒绝无效域名标签及可证明的前置规则覆盖；没有配置写入入口，也不证明完整分流或GUI合并结果
 - `diagnostic_session.py` 提供明确授权后的有限元数据流程，保持原60秒上下文期限与失败锁定；取消不保存面板。CLI没有DNS开关，真实查询仍缺独立可信宿主接入与逐次授权
 - 这些是ENV-02/06与ENV-01/04的部分实现；合成回归、CI和用户设备验收分别记录，详见[配置候选](docs/config-edit-plan.md)、[诊断会话](docs/diagnostic-session.md)与[验证记录](docs/validation.md)
+
+## 离线报告导入与隐私边界
+
+`guardian.py analyze/plan` 导入 `env-inventory/0.2` 时，只接受当前 `guardian.native_check` 生产的完整信封结构；不能手写一个同名 schema 的精简对象冒充完整报告。未知字段、未支持结构和已知凭据形式别名会在投影/输出前拒绝。需要制作离线样例时，使用明确的 `guardian-offline/0.1` 合约与仓库夹具，不补造原生观测。
+
+合成报告经过受支持的导入路径仍保留 `synthetic_example` 和面板合成标记。导入真实设备格式也只是未经本次认证的用户提供观察，不自动通过原生验收、接触或执行门禁。固定 CLI 错误码不回显无效参数；这是当前入口的局部加固，不是任意秘密识别保证。详细范围与未完成项见[导入与导出边界证据](docs/evidence/rebuild-inventory-export-boundaries.md)。

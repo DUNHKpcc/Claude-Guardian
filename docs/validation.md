@@ -763,3 +763,39 @@ Final integrated ledger/pin checks and publication evidence are recorded separat
 
 Final integrated rerun: 1,461 total in 29.649 seconds, 1,453 passed and eight skipped.
 All 75 underlying accepted-evidence pins and ledger integrity checks passed.
+
+
+## Thirteenth rebuild batch: explicit inventory/export input boundaries
+
+The four independently reviewed owned files were integrated onto the frozen
+twelfth source without changing their hashes. Complete supported inventory and
+compact interview envelopes now reject unknown fields before projection. Nested
+static request fields reject before callbacks/reads, and malformed typed inputs
+return fixed errors. CLI invalid arguments no longer echo through argparse;
+standalone module import is covered separately from discovery-order effects.
+Supported synthetic inventory retains its provenance and dashboard label. Imported
+device formats do not acquire native authenticity or an open gate.
+
+The original abbreviated provenance reproducer is now rejected by the complete
+current-producer schema; a complete supported synthetic envelope independently
+proves the before/after repair. No historical attachment replay is claimed.
+T11/ENV-T34/ENV-T121/ENV-T124 remain pending because this is a focused subset of
+public import/CLI/export surfaces, not universal secret detection or full-case
+closure. The original 15 accepted cases and all 218 conditions remain unchanged.
+
+Failing-first and independent review found projection, diagnostics, alias and
+isolated-import defects; exact counterexamples and fixes are retained. The final
+integrated aggregate ran 1,482 tests in 29.216 seconds: 1,474 passed, eight skipped.
+Both Node synthetic suites, compilation and diff checks passed. Two packages are
+byte-identical, SHA-256
+`87f981156ad78d90b737029d89cd79fac37310c8d08b9ac5b9c833ea5606d596`.
+
+The preceding twelfth batch was published as
+`f57bfc825566ffe6a94874ebd662cc3fe6dac240`, parent
+`ffc786c8e735f93d82900ff528029acfc8cb884b`. Both push workflows succeeded:
+[tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39104444341)
+and [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39104444260).
+Of 1,461 tests: Linux 1,453 passed/8 skipped; macOS 1,450/11; Windows 1,208/253;
+Python 3.10 Linux 1,453/8. Preview 27/27 and detached runtime 9/9 passed.
+The exact 15-file remote delta, parent, hashes and modes were verified. Skip counts
+and native-context boundaries were unchanged; CI is not user-device acceptance.
