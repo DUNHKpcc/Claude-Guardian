@@ -81,10 +81,10 @@ class RecoveryCLI(unittest.TestCase):
         return {str(p.relative_to(self.root)): (p.stat().st_mode, p.read_bytes())
                 for p in self.root.rglob('*') if p.is_file()}
 
-    def terminal(self, responses, on_prompt=None, extra=(), queued_input=None):
+    def terminal(self, responses, on_prompt=None, extra=(), queued_input=None, command='rollback'):
         import pty
         master, slave = pty.openpty()
-        proc = subprocess.Popen(self.args('rollback') + list(extra), stdin=slave,
+        proc = subprocess.Popen(self.args(command) + list(extra), stdin=slave,
                                 stdout=slave, stderr=slave, close_fds=True)
         os.close(slave)
         self.addCleanup(lambda: proc.kill() if proc.poll() is None else None)

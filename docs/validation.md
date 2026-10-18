@@ -627,3 +627,55 @@ skipped. The implementation worker independently repeated the same aggregate in
 checks passed; the package SHA-256 is
 `574e4334b003794752103cdb4121c36a237a48b60a7e9306f0f04cea1940eb4b`.
 The original 218 rows are unchanged; five exact original L+C cases remain accepted.
+
+
+Ninth batch was published as `293d85644d3b26c8319247f1724ece17915e129d`,
+parent `1390be90bf45f58b65eebeee8ef245b6a1aea5b7`. Both push workflows reached
+success: [tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39100587276)
+and [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39100587322).
+Linux 1,334 passed/8 skipped, macOS 1,333/9, Windows 1,146/196, Python 3.10 Linux
+1,334/8; preview 27/27 and detached runtime 9/9. Windows gained ten explicitly
+POSIX-only temporary transaction skips; these are not Windows write coverage.
+Native-context capture skips remain. All eleven remote changed paths and exact
+bytes/modes were verified; five accepted original cases remain unchanged.
+
+
+## 2026-10-18 tenth reconstruction batch
+
+New v2 pre-replace identity witnesses support read-only reconciliation and a
+separately authorized restoration of an observed prepared candidate. New rollback
+operations also persist a restore witness before replacement. Legacy prepared
+records remain non-mutating; current observations never manufacture a historical
+applied receipt. See [core evidence](evidence/rebuild-prepared-recovery.md) and
+[CLI evidence](evidence/rebuild-prepared-recovery-cli.md).
+
+The CLI binds independent target/batch/receipt and complete reconciliation digests,
+then requires fresh terminal confirmations. Agent host calls require their own
+trusted approval callbacks. Stage/backup/receipt/parent identity and generated-path
+budgets are rechecked; primary errors and fixed cleanup context remain visible.
+The scope is synthetic POSIX regular files under exclusion, not power-loss
+certification, native configuration/application effectiveness, or Windows writes.
+
+The final aggregate ran 1,400 tests in 27.996 seconds: 1,392 passed and eight skipped.
+Earlier aggregates exposed new guard classification and a stale accepted-guidance
+pin; both were explicitly corrected and re-reviewed, without weakening assertions.
+Independent composed checks passed 162 tests, with 39 route/resume replays for the
+recovery-only SKILL paragraph. The five original accepted cases are unchanged.
+Both Node synthetic suites, compilation and diff checks passed. Two final packages
+are byte-identical, SHA-256
+`56876940c43f8229846df06902de98bd447b972696e2b46e035088524053dd44`.
+
+This supersedes ninth's missing prepared recovery path only for supported new v2
+witnesses. It does not retroactively make old prepared receipts recoverable or
+close full ENV-T40/native acceptance. Historical ninth pins describe that fixed
+published version; current core and CLI pins are in their tenth evidence pages.
+
+
+Final independent review also found and closed three pre-publication defects:
+backup/receipt tampering during approval, generated journal-path overflow, and
+legal Unicode paths plus near-limit content yielding an unreadable applied record.
+Each has an executed failing/fixed reproduction. Recovery envelopes are now
+reserved before mutation and journal encoding uses the bounded canonical form;
+the document ceiling is unchanged. The last boundary case rejects before any
+approval or target write, while normal 4-MiB proposals still restore. These
+reproductions do not establish protection against malicious local callers.

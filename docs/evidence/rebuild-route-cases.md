@@ -254,7 +254,7 @@ VPS 完整实际提示，与手写预期逐字相同：
 
 | 文件 | SHA-256 |
 |---|---|
-| `skills/claude-guardian/SKILL.md` | `48d069050add99b808af823231152c2caba8b93250708570e3710b8bc5be212c` |
+| `skills/claude-guardian/SKILL.md` | `958c27324e41d46dc2977d60db285b26994bcd5aa6691ae61263be7469765d6e` |
 | `skills/claude-guardian/scripts/interview_flow.py` | `9a19073d243adc2f252c4fbfb8383bb95fa605d829400798189571ad59e6109a` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `62cd96d848f896889ed3142e51f86412d771907b012955c051aa768e101bf8d3` |
 | `skills/claude-guardian/references/intake.md` | `5ceebc3632bf19447561e5bb8a43b3591015bf699a60d3498e395066e769f02e` |
@@ -270,3 +270,16 @@ VPS 完整实际提示，与手写预期逐字相同：
 | `docs/interview-resume.md` | `2261f306dcbd357544bcf3261c98e4544be3bc0d3324364936501db89e7e7cfd` |
 
 本批修改 interview_flow/CLI、SKILL 一句、intake/contact 指导、原 route 回放测试、本页及三个既有验收行的 evidence hash；新增 focused resume 测试和 API/兼容说明。原 fixture、来源原文、原验收条件均未改。代码与指导须一起回滚，并同步恢复准确证据 pins/hash；旧 reader 不认识可选 resume_review，不能通过删掉未解决状态绕过核实，详见 docs/interview-resume.md。完整套件、Node、编译与打包另附集成记录，本页不以定向结果代替它们。
+
+
+## Tenth-batch active recovery guidance re-review
+
+The SKILL entry changes only its independent POSIX recovery paragraph: v2
+witnessed prepared reconciliation/restoration is separately authorized, legacy
+prepared and conflicts remain non-mutating, and production native admission
+stays closed. Independent content review compared this exact delta against
+T19/T20/T21/T24 and found no change to route selection, staged presentation,
+retained facts or resume review. All six exact route replays and 33 resume tests
+passed again. The route implementation and fixtures are byte-identical to ninth.
+Only the reviewed SKILL pin is refreshed; the original L+C acceptance limits and
+five accepted original cases are unchanged.

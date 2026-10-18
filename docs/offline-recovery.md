@@ -3,7 +3,8 @@
 ## Implemented scope and prerequisites
 
 `skills/claude-guardian/scripts/recovery_cli.py` is a standalone Python-standard-library
-entrypoint for POSIX `transactions.py` applied receipts. It needs neither an Agent,
+entrypoint for POSIX `transactions.py` applied receipts and witness-backed prepared
+recovery. It needs neither an Agent,
 Claude, a network connection, nor additional packages. Keep the script and its
 sibling `transactions.py` available locally **before** a disruption. It does not
 install anything, contact services, launch applications, scan for receipts, infer
@@ -101,8 +102,86 @@ this. Empty input, any nonmatching response, EOF, Ctrl-C, or deadline expiry sto
 approval. The engine may report callback cancellation as `AUTHORIZATION_CANCELLED`.
 These are input deadlines, **not hard filesystem I/O timeouts**. Hung storage or
 filesystem calls may block; use a trusted local filesystem. No automatic retries
-or receipt search occur. There are no default log/export files; rollback alone
-creates the engine's staging file and retained private result.
+or receipt search occur. There are no default log/export files; the two restoration
+verbs create only the engine's staging file and retained private recovery records.
+
+## Selected prepared receipt: observe, then separately authorize
+
+When an apply stopped after replacing the target but before writing `applied.json`,
+keep the exact private batch. `inspect` remains selected-receipt-only. The new
+`reconcile` verb requires the same independently established scope as `preview`:
+
+```sh
+python3 /trusted/guardian/skills/claude-guardian/scripts/recovery_cli.py reconcile \
+  --receipt /private/recovery/0123456789abcdef0123456789abcdef/prepared.json \
+  --receipt-digest FULL_64_CHARACTER_CANONICAL_RECEIPT_DIGEST \
+  --target-ref YOUR_ORIGINAL_TARGET_REFERENCE \
+  --target-path /private/config/exact-file \
+  --backup-batch /private/recovery/0123456789abcdef0123456789abcdef
+```
+
+This performs no writes. It checks the exact selected journal, private original
+backup, batch identity, target parent and target snapshot. Its private summary
+includes a `classification`, byte hashes, mode and `reconciliation_digest`, without
+original/proposed content or base64. A successful observation is not proof of a
+successful historical apply. In particular:
+
+- `prepared_candidate_observed`: a version-2 prepared receipt's staged-file
+  identity matches the current candidate within the core's documented rename
+  limits; this is the sole candidate eligible for separately authorized restoration
+- `original_observed`: the original full snapshot is still present; no restoration
+  is needed through this path
+- `legacy_identity_unproven`: a version-1 prepared receipt cannot establish the
+  candidate's identity; restoration through this path is refused
+- `applied_observed`: use the existing applied-receipt preview/rollback workflow
+- `restore_not_committed` / `restored_candidate_observed`: a selected
+  `restore-<32 lowercase hex>.prepared.json` witness describes the observed state
+  of a restoration attempt; neither permits replaying that attempt
+- `conflict`: preserve the current target and investigate the exact mismatch;
+  do not regenerate evidence to force an overwrite
+
+Initial candidate recognition tolerates rename's ctime change while matching the
+staged identity and supported content/metadata. It does not prove uninterrupted
+history or defeat inode reuse under arbitrary interference. Writer exclusion is
+still a real host prerequisite; the complete observation after reconciliation is
+then bound and rechecked without that historical ambiguity being called success.
+
+Keep the observed digest in the same private review. To restore an eligible
+candidate, use `restore-prepared` with all the exact flags above and
+`--reconciliation-digest FULL_64_CHARACTER_RECONCILIATION_DIGEST`. It recomputes
+the observation and requires an exact match **before** asking for approval. This
+digest is the canonical digest of `{"recovery_digest": <receipt digest>,
+"observation": <complete core observation>}`, including receipt/backup/target
+snapshots and batch identity; it is not merely a hash of the displayed subset.
+It is integrity data, never authorization. No saved approval is loaded.
+
+The real-terminal workflow then asks for `EXCLUSIVE ACCESS ESTABLISHED` and twice
+for `RESTORE_PREPARED <full reconciliation digest>`, each with its own fresh random
+challenge. The separate operation and complete snapshot binding are rechecked
+before and after each approval and immediately before replacement. Receipt,
+backup or target changes, including same-content inode substitutions, stop the
+operation. A changed digest requires renewed investigation and review; do not
+automatically substitute a new digest into a retry. This restores original bytes
+and mode only, retains the original prepared receipt, and creates a restoration
+witness/result. It never manufactures an `applied.json` receipt or retries apply.
+
+Version-1 applied receipts remain compatible with `preview`/`rollback`. Version-1
+prepared receipts remain read-only and cannot be upgraded by editing their schema.
+Existing `preview`/`rollback` still reject every prepared receipt. Noncandidate
+`restore-prepared` requests return a blocked result without terminal prompts or
+target writes. Exit 0 from `reconcile` means observation completed, even when the
+classification is `conflict`; it does not imply permission or readiness.
+
+For Agent orchestration, the matching library calls are `reconcile(recovery,
+receipt_path=..., target_ref=..., target_path=..., backup_batch=...)` and
+`restore_prepared(recovery, observation, target_ref=..., authorize=...,
+exclusive_access=True)`. The trusted host must obtain the actual, current,
+specific user authorization and verify real writer exclusion. Its callback must
+bind operation `restore_prepared`, the exact operation digest above, and target
+on both checks. Arbitrary true callbacks, saved JSON grants, a digest, or terminal
+automation are not user authorization. No production native repair adapter is
+opened by this API; the ordinary terminal is the independent fallback when the
+Agent is unavailable. Prepare and verify that local route before any disruption.
 
 ## Failures and crash reconciliation
 
@@ -110,19 +189,29 @@ creates the engine's staging file and retained private result.
   recover, but only with a fresh rollback confirmation and matching current state
 - Later edits, replaced inodes, parent changes and corrupt backups block recovery;
   do not force overwrite or regenerate snapshots to bypass a conflict
-- `prepared.json` means **manual reconciliation required**, including a crash
-  after replacement but before `applied.json` is written. The tool never guesses
-  whether a commit happened and never replays a prepared receipt
+- `prepared.json` requires explicit reconciliation. Only a version-2
+  `prepared_candidate_observed` result can enter the separately authorized
+  `restore-prepared` path above; legacy/ambiguous/conflicting states stay read-only
 - A write-phase failure/cancellation/crash may occur after the target was restored
   but before a result was persisted. A failure status does not promise no mutation.
   Keep the private batch, inspect the exact target locally and reconcile before
   retrying; never infer safety from the absence of a result file
+- On a write-phase error, validated opaque `recovery_id` and `attempt_id` may
+  identify the retained batch and `restore-<attempt_id>.prepared.json`. A failed
+  witness write can leave no such witness; an ID alone is not proof it exists.
+  Inspect the exact selected file if retained, then use independently established
+  scope for `reconcile`. A `restored_candidate_observed` result is an observation,
+  not a retroactive success receipt and not permission to write again
+- A fixed `cleanup_code` of `STAGING_RETAINED`, `STAGING_CLEANUP_FAILED` or
+  `DESCRIPTOR_CLOSE_FAILED` accompanies the primary error when applicable.
+  Retained staging material may contain private bytes; preserve it for scoped
+  investigation rather than assuming cleanup completed or automatically deleting it
 - Credentials that were revoked, deletions, registry changes, ACLs/xattrs,
   multi-file atomicity and application-effective recovery are outside this scope
 - Backups/receipts are never automatically deleted; cleanup requires its own
   explicit approval. Do not send their contents to obtain help
 
-Exit status: 0 for successful inspect/preview/restoration, 2 for blocked/error or
+Exit status: 0 for completed inspect/preview/reconcile or successful restoration, 2 for blocked/error or
 invalid arguments, 130 for an uncaught terminal interrupt. Errors use stable codes
 without raw exception messages or file contents.
 
@@ -130,6 +219,7 @@ without raw exception messages or file contents.
 
 ```sh
 python -B -m unittest discover -s tests -p test_recovery_cli.py -v
+python -B -m unittest discover -s tests -p test_prepared_recovery_cli.py -v
 ```
 
 Tests generate transactions in a separate producer process inside dedicated
@@ -143,3 +233,12 @@ same-byte inode replacement, edits during final approval, expired plans,
 write failure, and real producer crashes before and after target replacement
 with only prepared state retained. The unsupported-Windows gate is a synthetic
 branch test, not Windows certification. Actual user configuration is untouched.
+
+The prepared CLI suite additionally exercises explicit read-only reconciliation,
+exact operation-digest binding, legacy refusal, two separately approved restore
+checks, same-content receipt/backup/target replacement, edits at every prompt,
+precommit witness failure, and post-replacement result-journal failure. These
+failure injections keep real terminal confirmation intact. The last case verifies
+restored bytes despite the error, retains a selected witness, and only observes
+it on the next invocation. See `docs/evidence/rebuild-prepared-recovery-cli.md`
+for the frozen scope, receipts and source pins.

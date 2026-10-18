@@ -107,6 +107,34 @@ class SelectionTests(unittest.TestCase):
                         self.assertIn(out['next_phase'], {'stop', 'resolve_prerequisites'})
                         self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
 
+    def test_prepared_recovery_guards_never_trigger_alternate_mutation(self):
+        codes = (
+            'BACKUP_CHANGED',
+            'BACKUP_DIRECTORY_CHANGED',
+            'BACKUP_NOT_PRIVATE',
+            'INVALID_RECONCILIATION',
+            'LEGACY_RECOVERY_IDENTITY_UNPROVEN',
+            'PREPARED_RECOVERY_REQUIRED',
+            'RECONCILIATION_STALE',
+            'RECOVERY_WITNESS_MISMATCH',
+            'STAGING_CHANGED',
+            'EXPECTED_RECONCILIATION_REQUIRED',
+            'STAGING_RETAINED',
+            'STAGING_CLEANUP_FAILED',
+            'DESCRIPTOR_CLOSE_FAILED',
+        )
+        for code in codes:
+            for inp in (report(code, 'DNS_PATH_CONFLICT'),
+                        report('NATIVE_REPAIR_ADAPTER_UNAVAILABLE', code),
+                        dict(report(), errors=[code])):
+                with self.subTest(code=code, inp=inp):
+                    out = ar.select(inp, 'device-1')
+                    self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+                    self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+                    self.assertTrue(all(a['command_template'] is None for a in out['actions']))
+                    self.assertEqual(out['authority'], 'none')
+                    self.assertEqual(out['changes'], [])
+
     def test_no_change_transport_codes_stop_without_fallback_or_native_claims(self):
         for code in ('NO_CHANGE_TO_RETAIN', 'NO_CHANGE_TO_EXECUTE'):
             for inp in (report(code), report(code, 'DNS_PATH_CONFLICT'),

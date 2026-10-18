@@ -51,7 +51,7 @@ Windows监听者核对库 `scripts/windows_listener_binding.py` 仅供可信宿�
 
 独立STUN库 `scripts/stun_probe.py` 仅在可信宿主提供当前精确范围授权、目标和取消检查后使用。没有CLI或自动触发，名称到固定数值地址的绑定由宿主另行核验；本模块不解析DNS。Cloudflare候选选择不等于任何一次公网执行授权，映射响应不认证提供方，也不证明浏览器或Claude路径。
 
-POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 预先保留在可信本地位置。inspect只读用户选定回执，输出未验证候选摘要；preview/rollback要求独立确认的目标、备份批次与摘要。rollback仅从真实终端逐阶段重新确认，并要求实际排除其他写入者。不得把回执作为授权；prepared状态不自动重放，Windows不支持。仅在精确文件事务范围内恢复，不代表应用/网络效果已恢复。
+POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 预先保留在可信本地位置。inspect只读用户选定回执；preview/rollback仍只接纳已应用回执。reconcile须绑定独立确认的目标、备份批次与回执摘要，只读观察选定记录；仅v2 prepared的候选匹配状态可用restore-prepared另行恢复，并要求上次私有观察的完整摘要、实际排除其他写入者及真实终端逐阶段新确认。旧prepared或冲突状态不写入，不重放apply；摘要和回执不是授权，Windows不支持。Agent宿主的对应调用及失败处理见 [agent-remediation.md](references/agent-remediation.md#prepared-recovery)。仅验证精确文件字节，不代表应用/网络效果已恢复；生产原生修复门禁不因此开放。
 
 单轮多个已明确事实可通过 `--answer-file` 的 `{"answers":[...]}` 批量提交；每项沿用 `question_id/value/state/source` 格式，旧单项格式仍支持。宿主负责从自然语言提取事实，CLI不做自由文本解析或猜测未给出的套餐。整批验证失败不保存部分状态；重复/别名冲突、订阅阶段与老用户任务矛盾须澄清。当前本机默认建议可用Q-C05值 `accepted_default` 接受，不再重复确认路线；不会覆盖已选VM/VPS，也不构成动作或保存许可。
 

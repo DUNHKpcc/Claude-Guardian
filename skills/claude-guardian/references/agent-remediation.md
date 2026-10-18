@@ -139,6 +139,21 @@ private_output = converted.private_material()["output_bytes"]
 
 这提供原ENV-T40的有限L逻辑证据。独立临时文件写回/恢复测试即使通过，也不代表用户设备、引擎加载、GUI持久化、实际路由或完整R通过。完整L+R仍待逐条件审阅。详细API、版本来源和反例见仓库`docs/evidence/rebuild-rule-format-conversion.md`。
 
+<a id="prepared-recovery"></a>
+## 已替换但回执未完成：精确文件恢复
+
+仅针对`transactions.py`既有POSIX精确文件范围，不处理系统设置、凭据撤销、删除、Windows或应用有效状态。实际变更前须把可信`recovery_cli.py`及`transactions.py`、原始备份和步骤保留在获准私有位置，并核实目标上的独立终端能运行；不能等Agent失联后再要求在线取得步骤。完整命令见仓库`docs/offline-recovery.md`。
+
+1. 写入失败或中间状态不明，先停止自动重试。保留当前文件和私有批次，独立核对目标别名、精确目标路径、批次及选定回执来源；不扫描其他位置，不把备份、base64、完整文件或敏感摘要发到公开报告
+2. `inspect --receipt`只读指定回执，摘要仅为未验证候选。经确认精确读取范围后，`reconcile`加`--receipt-digest / --target-ref / --target-path / --backup-batch`读取该范围；宿主库入口是`reconcile(recovery, receipt_path=..., target_ref=..., target_path=..., backup_batch=...)`。分类是当前观察，不是历史apply成功或恢复许可
+3. 只有v2 prepared的`prepared_candidate_observed`能进入单独恢复。展示原字节/模式将覆盖的确切当前候选、经审阅语义影响、保留项和恢复风险；保留该完整观察的操作摘要。旧v1 prepared、原文件仍在、已恢复候选和冲突均不走此写入口；不能改schema、伪造applied回执或重建快照消除冲突
+4. 可信宿主取得本次具体恢复许可并实际排除所有写入者后，调用`restore_prepared(recovery, observation, target_ref=..., authorize=..., exclusive_access=True)`。两次授权核对必须绑定`restore_prepared`、`digest({'recovery_digest': digest(recovery), 'observation': observation})`及目标；脚本复核回执、原备份、批次和完整当前快照。不能自行返回True、使用保存的JSON权限或模拟终端确认。独立普通终端用`restore-prepared`及`--reconciliation-digest`，要求真实用户分别完成排他条件和两次新的随机挑战确认
+5. 观察摘要或任一快照变化就停止，重新调查并展示受影响差异；不自动换摘要重试。成功仅表示本次原字节/模式恢复，保留prepared及恢复结果，不补造历史applied。错误可能发生在已恢复后、结果日志落盘前；用返回的有界批次/尝试别名定位确切`restore-<attempt_id>.prepared.json`，存在时先inspect再按独立范围reconcile。没有日志不等于没有修改；`restored_candidate_observed`只读报告，不重复写入，别名也不证明日志必然存在
+
+固定`cleanup_code`为`STAGING_RETAINED / STAGING_CLEANUP_FAILED / DESCRIPTOR_CLOSE_FAILED`时，主错误之外还存在保留材料或清理失败；按精确范围调查，不宣称没有残留或自动删除可能含秘密的暂存文件。
+
+这使限定恢复路径可由可信宿主调用，并保留Agent不可用时的独立入口；不是内置生产配置写入适配器，`NATIVE_REPAIR_ADAPTER_UNAVAILABLE`不改变。独立读取/恢复也不能绕过目标权限、PC0或操作系统拒绝。Linux合成临时文件/终端测试不代表Mac/Windows设备、实际断网、应用重载或规则命中通过。
+
 ## 下一项真正可执行修复：窄范围系统代理端口适配（尚未实现）
 
 建议优先 macOS 的“已启用手动代理、同一活动网络服务、同一代理类型，仅端口修正”。它直接对应当前已实现 PROXY_PORT_ASSOCIATION_CONFLICT 检测，不需要 Clash 文件候选的完整合并/扩展归属证明，但必须有它自身的保护：
