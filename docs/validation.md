@@ -1355,3 +1355,32 @@ both succeeded. All four test jobs ran 1,767 tests: Python 3.10/Ubuntu each
 3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a was reproduced.
 These results establish the preceding bridge CI, not user-device cleanup or the
 forthcoming twenty-fifth publication result.
+
+## Twenty-sixth reconstruction: entry order and bounded OS question
+
+Original T29/T57 complete L+C clauses are exercised with seven new deterministic
+regressions and substantive review of the current intake guidance. Fresh intake
+asks subscription stage before the bounded Mac/Windows question; supplied facts
+are reused and unknown/refused/mobile-only exits remain limited. No new purchase
+or installation tutorial is inferred from missing information, and prior paid
+entitlements are not presumed. Model dialogue exercises remain explicitly unrun.
+
+The local aggregate ran 1,780 tests in 43.172 seconds: 1,772 passed and eight
+skipped. Only T29/T57 are promoted, yielding 30/218 accepted and 188 pending.
+Original clauses/layers/scheduling and runtime bytes remain unchanged. Final
+independent checks and preceding publication results are recorded below.
+
+Independent integrated verification ran the same 1,780 tests in 43.611 seconds:
+1,772 passed and eight skipped. Detached release tests passed 9/9, portability
+checks 2/2, forced cp1252 candidate checks 7/7; both Node suites, compilation,
+diff checks and exact UTF-8 replay passed. Two packages remain byte-identical at
+3345ff8dab7b0edbfbb7c89154a7fced535ed295d69b36c5ad4205788ef5a21a.
+
+The preceding mobile-route batch published as
+`d9d83a135d747795d9d7d5e56c1e4b686a6c8bec`, tree
+`54fa35c540b0d4b5b1b0ffdd7cb93f8467be653d`.
+[Push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39115784630)
+succeeded on all four jobs: Python 3.10/Ubuntu each 1,765 passed/eight skipped,
+macOS 1,761/12, Windows 1,381/392, from 1,773 tests per job. The unchanged package
+hash was reproduced. These prior-commit results do not substitute for the
+forthcoming twenty-sixth CI or user-device acceptance.

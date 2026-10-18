@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: twenty-fifth rebuild, 2026-10-18
+## Current checkpoint: twenty-sixth rebuild, 2026-10-18
 
-The current ledger records 28 freshly accepted original cases and 190 pending:
-T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 30 freshly accepted original cases and 188 pending:
+T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
@@ -147,3 +147,7 @@ first-subscription Apple/Google checks under their original L+C clauses. Supplie
 host facts and deterministic replays do not establish payment eligibility or
 actual device/account state. Adjacent T36/T38 remain pending actual host-response
 evidence; their negative prerequisite facts are not erased into unknown.
+
+The twenty-sixth revalidates subscription-first intake and the bounded Mac/Windows
+OS question with unknown/refused/mobile exits. Normalized-host replay and active
+guidance review do not claim arbitrary model utterances or native platform tests.
