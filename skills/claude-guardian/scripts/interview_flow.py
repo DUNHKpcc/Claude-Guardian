@@ -130,6 +130,7 @@ QUESTION_PROMPTS[RETIRED] = "Retired; never collect account ownership"
 # from expertise, equipment ownership, IP geolocation or a default proposal.
 CONTEXT_DEFAULTS = {
     "task": "subscription_preparation", "incident": "none", "incident_resolved": False,
+    "incident_origin": "host", "account_incident_resolved": False,
     "ambiguous_experience": False, "subscription_conflict": False,
     "billing_channel": "unselected", "route": "local",
     "route_selection_basis": "default_proposal", "contact_phase": "PC0",
@@ -142,11 +143,14 @@ CONTEXT_DEFAULTS = {
     "persistence_requested": False, "purchase_completed": False,
     "paused": False, "blocked_reason": None,
 }
+# Optional additive fields preserve the published schema-1 input contract.
+INCIDENT_CONTEXT_FIELDS = {"incident_origin", "account_incident_resolved"}
 ENUM_CONTEXT = {
     "task": {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue",
              "environment", "network", "incident", "api", "enterprise", "compare"},
     "incident": {"none", "credential_exposure", "data_risk", "suspension", "identity_review",
                  "duplicate_charge", "unknown_error"},
+    "incident_origin": {"host", "legacy_unverified"},
     "billing_channel": {"unselected", "apple", "google", "web", "api", "enterprise", "compare"},
     "route": {"local", "vm", "vps", "compare"},
     "route_selection_basis": {"default_proposal", "explicit_choice", "task_context", "accepted_default"},
@@ -159,6 +163,13 @@ POSTCONTACT = {"Q-A04", "Q-A05", "Q-A08", "Q-G03", "Q-G04", "Q-W04"}
 RESOLVED = {"reported", "observed", "not_applicable"}
 BILLING_TASKS = {"renew", "upgrade", "change_channel", "billing_issue"}
 PURCHASE_TASKS = {"subscription_preparation", "renew", "upgrade", "change_channel", "compare"}
+# Only these explicit current-account categories establish an incident. Historical,
+# stale, inferred and refused answers are not evidence of a current emergency.
+ACCOUNT_INCIDENT_VALUES = {
+    "Q-C03": {"current_suspension": "suspension"},
+    "Q-C04": {"suspended": "suspension", "current_suspension": "suspension",
+              "identity_review": "identity_review", "unknown_error": "unknown_error"},
+}
 
 class InterviewError(ValueError):
     """Invalid or unsafe interview data."""
@@ -236,9 +247,12 @@ def validate_state(state):
         if not isinstance(state[name], str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", state[name]):
             raise InterviewError("Use short non-identifying aliases")
     ctx = state["context"]
-    if not isinstance(ctx, dict) or set(ctx) != set(CONTEXT_DEFAULTS):
+    if (not isinstance(ctx, dict) or set(ctx) - set(CONTEXT_DEFAULTS)
+            or set(CONTEXT_DEFAULTS) - set(ctx) - INCIDENT_CONTEXT_FIELDS):
         raise InterviewError("Invalid routing context")
     for name, default in CONTEXT_DEFAULTS.items():
+        if name not in ctx:
+            continue
         if name in ENUM_CONTEXT and (not isinstance(ctx[name], str) or ctx[name] not in ENUM_CONTEXT[name]):
             raise InterviewError("Invalid context enum: " + name)
         if isinstance(default, bool) and type(ctx[name]) is not bool:
@@ -319,6 +333,7 @@ def record_fact(state, question_id, value=None, *, state_name="reported", source
     validate_state(state)
     qid = canonical(question_id)
     result = deepcopy(state)
+    _normalize_incident_context(result)
     if qid in {"Q-J01", "Q-J02", "Q-C02", "Q-C03", "Q-C04", "Q-C05", "Q-C08", "Q-C11", "Q-P06"} and value is not None and not isinstance(value, str):
         raise InterviewError("This routing fact requires a categorical string")
     old = result["facts"].get(qid, {})
@@ -357,8 +372,20 @@ def record_fact(state, question_id, value=None, *, state_name="reported", source
         result["payment_intent"] = value if value in {"renew", "upgrade", "change_channel"} else "none"
     if qid == "Q-P06" and state_name in {"reported", "observed"} and value in ENUM_CONTEXT["billing_channel"]:
         result["context"]["billing_channel"] = value
-    if qid == "Q-C03" and value == "current_suspension" and state_name in {"reported", "observed"}:
-        result["context"]["incident"] = "suspension"
+    if qid in ACCOUNT_INCIDENT_VALUES and state_name in {"reported", "observed"}:
+        if result["context"]["incident_origin"] == "legacy_unverified":
+            # This fresh account correction replaces an unattributed old cache,
+            # not a separately identified host incident.
+            result["context"].update(incident="none", incident_origin="host")
+    if (qid in ACCOUNT_INCIDENT_VALUES and state_name in {"reported", "observed"}
+            and value in ACCOUNT_INCIDENT_VALUES[qid]):
+        # A fresh current report reopens triage. Do not cache the derived incident
+        # in host context: corrections/staleness must not leave it stuck there or
+        # overwrite a separately reported credential/data emergency.
+        if (_account_incident(state) != ACCOUNT_INCIDENT_VALUES[qid][value]
+                or _account_incident_resolved(state)):
+            _refresh_incident_answers(result)
+        result["context"]["account_incident_resolved"] = False
     validate_state(result)
     return result
 
@@ -393,7 +420,8 @@ def record_facts(state, answers, *, source=None):
         seen.add(identity)
     result = deepcopy(state)
     observed_at = _now()
-    ordered = sorted(answers, key=lambda item: item["question_id"] not in {"Q-J01", "Q-J02"})
+    ordered = sorted(answers, key=lambda item: 0 if item["question_id"] in {"Q-J01", "Q-J02"}
+                     else 1 if item["question_id"] in ACCOUNT_INCIDENT_VALUES else 2)
     for item in ordered:
         if (item["question_id"] == "Q-C11" and item.get("state", "reported") in {"reported", "observed"}
                 and journey(result) in {"first_subscription", "returning_subscription"}):
@@ -405,10 +433,34 @@ def record_facts(state, answers, *, source=None):
 
 
 def set_context(state, **changes):
-    """Set explicit routing facts, not permissions. Context never opens G3."""
+    """Set explicit routing facts, not permissions. Context never opens G3.
+
+    incident_resolved alone resolves the currently presented incidents for legacy
+    callers. With an explicit incident it applies only to that host incident;
+    account_incident_resolved can independently resolve current account evidence.
+    Reporting an incident again after resolution starts a fresh episode unless
+    the caller explicitly includes incident_resolved=True in the same update.
+    """
     validate_state(state)
     result = deepcopy(state)
+    _normalize_incident_context(result)
     result["context"].update(changes)
+    if "incident" in changes:
+        result["context"]["incident_origin"] = "host"
+    if ("incident" in changes and changes["incident"] != "none"
+            and (changes["incident"] != state["context"]["incident"]
+                 or state["context"]["incident_resolved"])
+            and "incident_resolved" not in changes):
+        result["context"]["incident_resolved"] = False
+    if ("incident_resolved" in changes and "incident" not in changes
+            and "account_incident_resolved" not in changes):
+        # Existing callers use this to resolve the incidents currently presented.
+        result["context"]["account_incident_resolved"] = changes["incident_resolved"]
+    if ("incident" in changes and result["context"]["incident"] != "none"
+            and not result["context"]["incident_resolved"]
+            and (state["context"]["incident"] != changes["incident"]
+                 or state["context"]["incident_resolved"] or _legacy_incident_review(state))):
+        _refresh_incident_answers(result)
     validate_state(result)
     return result
 
@@ -426,6 +478,63 @@ def _value(state, qid):
     return fact.get("value") if fact.get("state") in {"reported", "observed"} else None
 
 
+def _account_incident(state):
+    """Derive account triage from current evidence, never from persisted caches."""
+    for qid, categories in ACCOUNT_INCIDENT_VALUES.items():
+        if qid == "Q-C03" and _legacy_incident_review(state):
+            continue
+        value = _value(state, qid)
+        if isinstance(value, str) and value in categories:
+            return categories[value]
+    return "none"
+
+
+def _urgent_incident(state):
+    context = state["context"]
+    return ((not context["incident_resolved"] and not _legacy_incident_review(state)
+             and context["incident"] != "none")
+            or (not _account_incident_resolved(state) and _account_incident(state) != "none"))
+
+
+def _account_incident_resolved(state):
+    return state["context"].get("account_incident_resolved", state["context"]["incident_resolved"])
+
+
+def _legacy_incident_review(state):
+    context = state["context"]
+    origin = context.get("incident_origin")
+    return (origin == "legacy_unverified" or
+            (origin is None and context["incident"] == "suspension" and "Q-C03" in state["facts"]))
+
+
+def _normalize_incident_context(state):
+    """Upgrade only missing lifecycle metadata in an already validated copy.
+
+    Published schema-1 cached Q-C03 suspension without provenance. It cannot be
+    distinguished from an explicit host incident, so require fresh clarification
+    rather than asserting either current suspension or resolution.
+    """
+    context = state["context"]
+    if "incident_origin" not in context:
+        legacy = _legacy_incident_review(state)
+        context["incident_origin"] = "legacy_unverified" if legacy else "host"
+        if legacy:
+            fact = state["facts"]["Q-C03"]
+            fact.update(state="stale", clarification_count=0,
+                        blocker_reason="Legacy incident attribution and current status require confirmation")
+            state["asked_question_ids"] = [qid for qid in state["asked_question_ids"] if qid != "Q-C03"]
+    context.setdefault("account_incident_resolved", context["incident_resolved"])
+
+
+def _refresh_incident_answers(state):
+    """A new incident cannot reuse another episode's object, notice or recovery."""
+    incident_ids = set(_ids("H", 1, 8))
+    for qid in incident_ids & state["facts"].keys():
+        state["facts"][qid].update(state="stale", clarification_count=0,
+                                   blocker_reason="New incident requires current episode evidence")
+    state["asked_question_ids"] = [qid for qid in state["asked_question_ids"] if qid not in incident_ids]
+
+
 def _ids(prefix, start, end):
     return ["Q-%s%02d" % (prefix, i) for i in range(start, end + 1)]
 
@@ -441,10 +550,13 @@ def applicable_questions(state):
             if not any(x["id"] == qid for x in requirements):
                 requirements.append({"id": qid, "branch": branch, "stage": stage,
                                      "postcontact": qid in POSTCONTACT})
-    urgent = c["incident"] != "none" and not c["incident_resolved"]
+    urgent = _urgent_incident(state)
     if urgent:
         add("incident", "I0", _ids("H", 1, 7))
         # Do not delay protective/official incident handling with purchasing.
+        return requirements
+    if _legacy_incident_review(state):
+        add("incident", "I0", ["Q-C03"])
         return requirements
     add("core", "I1", ["Q-J02" if (c["ambiguous_experience"] and journey(state) == "unknown") or _value(state, "Q-J02") in JOURNEYS - {"unknown"} else "Q-J01"])
     j = journey(state)
@@ -478,7 +590,9 @@ def applicable_questions(state):
         add("core", "I3", ["Q-C05"])
     if _value(state, "Q-C04") not in (None, "unregistered"):
         add("core", "I3", ["Q-C06"])
-    if _value(state, "Q-C03") in {"past_suspension", "past_incident"}:
+    if (_value(state, "Q-C03") in {"past_suspension", "past_incident"}
+            or (c["incident_resolved"] and c["incident"] != "none")
+            or (_account_incident_resolved(state) and _account_incident(state) != "none")):
         add("incident", "I3", _ids("H", 1, 8))
     add("network", "I4", ["Q-C09", "Q-N01", "Q-N02", "Q-N03", "Q-N04", "Q-N06"])
     if c["existing_test"]:
@@ -552,6 +666,8 @@ def next_question(state):
             continue
         fact = state["facts"].get(item["id"], {})
         status = fact.get("state", "unasked")
+        if item["id"] == "Q-C03" and _legacy_incident_review(state) and status in RESOLVED:
+            status = "stale"
         clarification = status in {"conflict", "stale"}
         if status != "unasked" and not (clarification and fact.get("clarification_count", 0) == 0):
             continue
@@ -572,7 +688,8 @@ def mark_asked(state, question_id):
     if qid not in result["asked_question_ids"]:
         result["asked_question_ids"].append(qid)
     fact = result["facts"].get(qid)
-    if fact and fact["state"] in {"conflict", "stale"}:
+    if fact and (fact["state"] in {"conflict", "stale"} or
+                 (qid == "Q-C03" and _legacy_incident_review(state))):
         fact["clarification_count"] = 1
     validate_state(result)
     return result
@@ -603,6 +720,8 @@ def assessment(state):
         reason = None
         if item["branch"] in state["deferred_branches"]:
             reason = "branch_deferred"
+        elif item["id"] == "Q-C03" and _legacy_incident_review(state):
+            reason = "legacy_incident_unverified"
         elif item["postcontact"] and state["context"]["contact_phase"] == "PC0":
             reason = "requires_contact_gate"
         elif fact.get("state", "unasked") not in RESOLVED:
@@ -614,7 +733,7 @@ def assessment(state):
         unresolved.append({"id": "Q-C05", "reason": "route_unconfirmed"})
     if journey(state) == "unknown" and not any(x["id"] in {"Q-J01", "Q-J02"} for x in unresolved):
         unresolved.append({"id": "Q-J01", "reason": "journey_unknown"})
-    urgent = c["incident"] != "none" and not c["incident_resolved"]
+    urgent = _urgent_incident(state)
     outcome = "complete" if not unresolved else "partial"
     if urgent:
         outcome = "emergency_deferred"
@@ -654,6 +773,7 @@ def dumps_state(state, *, host_opt_in=False, scope="private_save"):
     Public publication requires a separate manually reviewed artifact, not this state.
     """
     result = deepcopy(validate_state(state))
+    _normalize_incident_context(result)
     if scope == "public_export":
         raise InterviewError("Public export requires a separately reviewed redacted artifact")
     if scope not in result["persistence_consent"] or host_opt_in is not True:
@@ -679,6 +799,7 @@ def loads_state(serialized):
     except (ValueError, TypeError, RecursionError) as exc:
         raise InterviewError("Invalid saved interview: " + str(exc)) from None
     validate_state(result)
+    _normalize_incident_context(result)
     # Saved permission is historical evidence, not new permission to save/export.
     result["persistence_consent"] = {key: False for key in result["persistence_consent"]}
     return result
@@ -740,6 +861,13 @@ def begin_task(state, *, task_id, task, target_alias=None, account_alias=None):
             result["facts"] = {qid: deepcopy(fact) for qid, fact in state["facts"].items()
                                if qid in keep and fact["subject_ref"] == account_alias}
             result["current_subscription"] = deepcopy(state["current_subscription"])
+            if _legacy_incident_review(state):
+                result["context"].update(incident=state["context"]["incident"],
+                                         incident_origin="legacy_unverified")
+            if _account_incident(state) != "none":
+                # A device change does not create a new account incident or undo
+                # the host's explicit resolution of the retained account facts.
+                result["context"]["account_incident_resolved"] = _account_incident_resolved(state)
     else:
         result = deepcopy(state)
         old_task = result["task_id"]
@@ -781,7 +909,8 @@ STATE_SCHEMA["properties"]["facts"] = {
     "properties": {qid: FACT_SCHEMA for qid in QUESTION_PROMPTS if qid != RETIRED and qid not in ALIASES},
 }
 STATE_SCHEMA["properties"]["context"] = {
-    "type": "object", "additionalProperties": False, "required": list(CONTEXT_DEFAULTS),
+    "type": "object", "additionalProperties": False,
+    "required": [key for key in CONTEXT_DEFAULTS if key not in INCIDENT_CONTEXT_FIELDS],
     "properties": {key: {"enum": sorted(ENUM_CONTEXT[key])} if key in ENUM_CONTEXT else
                    {"type": "boolean"} if type(value) is bool else {"type": ["string", "null"]}
                    for key, value in CONTEXT_DEFAULTS.items()},

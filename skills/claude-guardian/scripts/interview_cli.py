@@ -8,17 +8,17 @@ import interview_flow as flow
 
 
 def main(argv=None):
-    if hasattr(sys.stdout, 'reconfigure'):
-        sys.stdout.reconfigure(encoding='utf-8', errors='strict')
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--input', help='Previously explicitly saved private state JSON')
-    parser.add_argument('--target-ref', help='Target alias; must match when resuming')
-    parser.add_argument('--account-ref', help='Account alias; must match when resuming')
-    parser.add_argument('--answer-file', help='Local JSON: one question_id/value/state/source answer, or {"answers": [same answer objects]} from one reply')
-    parser.add_argument('--context-file', help='Explicit host routing facts; not action permission')
-    parser.add_argument('--output', help='Opt-in private state file; never overwrites')
-    args=parser.parse_args(argv)
     try:
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8', errors='strict')
+        parser=argparse.ArgumentParser(description=__doc__)
+        parser.add_argument('--input', help='Previously explicitly saved private state JSON')
+        parser.add_argument('--target-ref', help='Target alias; must match when resuming')
+        parser.add_argument('--account-ref', help='Account alias; must match when resuming')
+        parser.add_argument('--answer-file', help='Local JSON: one question_id/value/state/source answer, or {"answers": [same answer objects]} from one reply')
+        parser.add_argument('--context-file', help='Explicit host routing facts; not action permission')
+        parser.add_argument('--output', help='Opt-in private state file; never overwrites')
+        args=parser.parse_args(argv)
         if args.input:
             state=flow.loads_state(json.dumps(guardian.load_json(args.input)))
             if ((args.target_ref is not None and args.target_ref != state['target_alias']) or

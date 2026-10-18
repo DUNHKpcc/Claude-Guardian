@@ -13,6 +13,7 @@ SCRIPTS = ROOT / 'skills/claude-guardian/scripts'
 sys.path.insert(0, str(SCRIPTS))
 import agent_remediation as ar
 import clash_inventory
+import controller_inventory
 
 
 def report(*codes):
@@ -34,6 +35,156 @@ class SelectionTests(unittest.TestCase):
         self.assertTrue(codes)
         self.assertFalse(codes - ar.FINDING_ACTIONS.keys())
         self.assertFalse(clash_inventory.PUBLIC_ERROR_CODES - ar.FINDING_ACTIONS.keys())
+        self.assertFalse(controller_inventory.PUBLIC_ERROR_CODES - ar.FINDING_ACTIONS.keys())
+
+    def test_transaction_and_controller_gates_do_not_become_missing_adapters(self):
+        for code in ['AUTHORIZATION_DENIED', 'AUTHORIZATION_REQUIRED',
+                     'AUTHENTICATION_HANDOFF_REQUIRED', 'CONTROLLER_AUTH_FAILED',
+                     'CONTROLLER_NOT_BOUND', 'RESPONSE_CONTEXT_MISMATCH',
+                     'HOST_APPROVAL_UNAVAILABLE', 'HOST_APPROVAL_FAILED',
+                     'CURRENT_EXACT_APPROVAL_REQUIRED', 'APPROVAL_CONTEXT_CHANGED',
+                     'APPROVAL_CLOCK_INVALID', 'INVALID_APPROVAL_TIMEOUT',
+                     'INTERACTIVE_TERMINAL_REQUIRED', 'INVALID_CONTEXT',
+                     'NATIVE_CONTEXT_NOT_BOUND', 'CANCELLATION_CHECK_FAILED',
+                     'INVALID_CANCELLATION_CALLBACK']:
+            with self.subTest(code=code):
+                out = ar.select(report(code, 'NATIVE_REPAIR_ADAPTER_UNAVAILABLE'), 'device-1')
+                self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+                self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+
+    def test_transaction_and_recovery_cancellation_overrides_repairs(self):
+        for code in ['AUTHORIZATION_CANCELLED', 'APPROVAL_CANCELLED', 'APPROVAL_TIMEOUT']:
+            with self.subTest(code=code):
+                out = ar.select(report(code, 'DNS_PATH_CONFLICT'), 'device-1')
+                self.assertEqual([a['action_id'] for a in out['actions']], ['stop'])
+                self.assertEqual(out['next_phase'], 'stop')
+
+    def test_transaction_and_recovery_prerequisites_cannot_be_worked_around(self):
+        for code in ['INVALID_OR_EXPIRED_PLAN', 'ROLLBACK_CONFLICT',
+                     'RECOVERY_REQUIRES_RECONCILIATION', 'EXCLUSIVE_ACCESS_REQUIRED',
+                     'IO_FAILURE', 'DEADLINE_EXCEEDED', 'EXACT_RETAINED_PLAN_REQUIRED',
+                     'BASE_PROFILE_FILE_MISMATCH', 'PROFILE_DIRECTORY_SCOPE_MISMATCH',
+                     'INVALID_REPAIR_REQUEST', 'SELECTED_EXTENSION_NOT_ACTIVE_MERGE',
+                     'SELECTED_EXTENSION_NOT_ACTIVE_RULES']:
+            with self.subTest(code=code):
+                out = ar.select(report(code, 'DNS_PATH_CONFLICT'), 'device-1')
+                self.assertIn(code, out['prerequisite_blockers'])
+                self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+                self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+
+    def test_emitted_transaction_guards_have_explicit_non_fallback_classification(self):
+        capability_gaps = {'PLATFORM_UNSUPPORTED', 'WINDOWS_API_UNAVAILABLE',
+                           'UNSUPPORTED_CANDIDATE_KIND', 'NATIVE_REPAIR_ADAPTER_UNAVAILABLE',
+                           'UNSUPPORTED_PRODUCT_OR_VERSION', 'UNSUPPORTED_REMEDY',
+                           'UNSUPPORTED_EXTENSION_TYPE', 'UNSUPPORTED_ACTIVE_PROFILE_TYPE'}
+        for filename in ['transactions.py', 'windows_transactions.py',
+                         'recovery_cli.py', 'repair_execution.py', 'repair_cli.py',
+                         'config_edit_plan.py', 'rules_extension_plan.py', 'clash_verge_258.py']:
+            codes = set()
+            tree = ast.parse((SCRIPTS / filename).read_text(encoding='utf-8'))
+            for node in ast.walk(tree):
+                if (isinstance(node, ast.Call) and node.args
+                        and (getattr(node.func, 'id', '') in {'_fail', 'fail', 'TransactionError',
+                                                            'RepairError', 'EditPlanError',
+                                                            'RulesPlanError', 'OwnershipError'}
+                             or getattr(node.func, 'attr', '') == 'TransactionError')):
+                    value = node.args[0]
+                    if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                        codes.add(value.value)
+            self.assertTrue(codes, filename)
+            for code in sorted(codes):
+                with self.subTest(filename=filename, code=code):
+                    out = ar.select(report(code, 'DNS_PATH_CONFLICT'), 'device-1')
+                    if code in capability_gaps:
+                        self.assertEqual(out['actions'][0]['action_id'], 'unsupported')
+                        self.assertEqual(out['actions'][0]['agent_fallback'], 'investigate_scoped_repair')
+                    elif code == 'PARSER_UNAVAILABLE':
+                        self.assertEqual(out['actions'][0]['action_id'], 'dependency')
+                    elif code == 'NO_CHANGE':
+                        self.assertEqual(out['actions'][0]['action_id'], 'keep')
+                        self.assertEqual(out['actions'][0]['agent_fallback'], 'none')
+                    else:
+                        self.assertIn(out['next_phase'], {'stop', 'resolve_prerequisites'})
+                        self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+
+    def test_structured_errors_and_codes_preserve_gates(self):
+        for diagnostic in [{'errors': ['PERMISSION_DENIED']},
+                           {'errors': [{'code': 'PERMISSION_DENIED', 'detail': 'SECRET'}]},
+                           {'code': 'PERMISSION_DENIED'}, {'error_code': 'PERMISSION_DENIED'}]:
+            with self.subTest(diagnostic=diagnostic):
+                out = ar.select(dict(report('DNS_PATH_CONFLICT'), **diagnostic), 'device-1')
+                self.assertIn('PERMISSION_DENIED', out['prerequisite_blockers'])
+                self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+                self.assertNotIn('SECRET', json.dumps(out))
+
+    def test_structured_cancellation_overrides_repairs(self):
+        for diagnostic in [{'errors': ['CANCELLED']}, {'errors': [{'code': 'USER_CANCELLED'}]},
+                           {'code': 'APPROVAL_CANCELLED'}, {'error_code': 'AUTHORIZATION_CANCELLED'},
+                           {'execution_status': 'interrupted'}, {'status': 'cancelled'},
+                           {'inventory_readiness': 'interrupted'}, {'cancelled': True}]:
+            with self.subTest(diagnostic=diagnostic):
+                out = ar.select(dict(report('DNS_PATH_CONFLICT'), **diagnostic), 'device-1')
+                self.assertEqual([a['action_id'] for a in out['actions']], ['stop'])
+
+    def test_unexplained_blocked_or_failed_report_does_not_offer_repair(self):
+        for key, value in [('execution_status', 'blocked'), ('execution_status', 'failed'),
+                           ('status', 'blocked'), ('status', 'failed'),
+                           ('inventory_readiness', 'blocked')]:
+            with self.subTest(key=key, value=value):
+                out = ar.select(dict(report('DNS_PATH_CONFLICT'), **{key: value}), 'device-1')
+                self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+                self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+
+    def test_unknown_error_is_not_unknown_capability(self):
+        for diagnostic in [{'errors': ['PRIVATE_UNKNOWN_ERROR']},
+                           {'errors': [{'code': 'PRIVATE_UNKNOWN_ERROR'}]},
+                           {'code': 'PRIVATE_UNKNOWN_ERROR'}, {'error_code': 'PRIVATE_UNKNOWN_ERROR'}]:
+            with self.subTest(diagnostic=diagnostic):
+                out = ar.select(dict(report('DNS_PATH_CONFLICT'), **diagnostic), 'device-1')
+                self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+                self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+                self.assertNotIn('PRIVATE_UNKNOWN_ERROR', json.dumps(out))
+
+    def test_explicit_capability_only_diagnostic_still_allows_investigation(self):
+        for diagnostic in [{'errors': ['NATIVE_REPAIR_ADAPTER_UNAVAILABLE']},
+                           {'status': 'blocked', 'error_code': 'UNSUPPORTED_PRODUCT_OR_VERSION'}]:
+            with self.subTest(diagnostic=diagnostic):
+                out = ar.select(dict(report(), **diagnostic), 'device-1')
+                self.assertEqual(out['actions'][0]['agent_fallback'], 'investigate_scoped_repair')
+
+    def test_real_report_envelopes_keep_failure_gates_and_do_not_mutate_input(self):
+        for schema in ['guardian-report/0.1', 'env-inventory/0.2']:
+            with self.subTest(schema=schema):
+                inp = ar.guardian.base('audit', 'device-1')
+                inp['schema_version'] = schema
+                inp['findings'] = [{'code': 'NATIVE_REPAIR_ADAPTER_UNAVAILABLE'}]
+                inp['errors'] = [{'code': 'PERMISSION_DENIED'}]
+                before = json.dumps(inp, sort_keys=True)
+                out = ar.select(inp, 'device-1')
+                self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+                self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+                self.assertEqual(json.dumps(inp, sort_keys=True), before)
+
+    def test_failed_or_mixed_blocked_reports_cannot_claim_capability_only(self):
+        for inp in [dict(report('NATIVE_REPAIR_ADAPTER_UNAVAILABLE'), status='failed'),
+                    dict(report('NATIVE_REPAIR_ADAPTER_UNAVAILABLE', 'DNS_PATH_CONFLICT'), status='blocked'),
+                    dict(report('PRIVATE_UNKNOWN_DETAIL'), status='blocked'),
+                    dict(report('NATIVE_REPAIR_ADAPTER_UNAVAILABLE'), errors=['PRIVATE_UNKNOWN_ERROR'])]:
+            with self.subTest(inp=inp):
+                out = ar.select(inp, 'device-1')
+                self.assertEqual(out['next_phase'], 'resolve_prerequisites')
+                self.assertTrue(all(a['agent_fallback'] == 'none' for a in out['actions']))
+
+    def test_malformed_structured_diagnostics_fail_closed(self):
+        for diagnostic in [{'errors': 'PERMISSION_DENIED'}, {'errors': {}}, {'errors': None},
+                           {'errors': [None]}, {'errors': [{}]}, {'errors': [{'code': []}]},
+                           {'errors': ['TIMEOUT'] * 129}, {'error_code': []}, {'code': False},
+                           {'status': []}, {'status': 'PRIVATE_STATUS'},
+                           {'execution_status': {}}, {'inventory_readiness': False},
+                           {'cancelled': 'true'}, {'missing_fields': 'P06'}]:
+            with self.subTest(diagnostic=diagnostic):
+                with self.assertRaisesRegex(ar.guardian.GuardianError, 'INPUT_OR_RESPONSE_INVALID'):
+                    ar.select(dict(report('DNS_PATH_CONFLICT'), **diagnostic), 'device-1')
 
     def test_conflict_selects_port_not_rule_mutation(self):
         out = ar.select(report('PROXY_PORT_ASSOCIATION_CONFLICT'), 'device-1')

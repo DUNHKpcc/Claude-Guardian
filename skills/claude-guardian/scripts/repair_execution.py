@@ -29,8 +29,13 @@ def _native_session(document):
     yield  # Keeps the resource-lifetime contract explicit; never reached.
 
 
-def retain(prepared, *, plan_path, backup_directory):
-    """Explicit private artifact write; neither approval nor adapter admission."""
+def retain(prepared, *, plan_path, backup_directory, cancelled=None):
+    """Retain only freshly rechecked private material; never grant execution.
+
+    A change detected after the write leaves a private artifact, but no successful
+    retention result. Execution independently revalidates every retained binding.
+    """
+    prepared.recheck_review(cancelled=cancelled)
     tx._path(backup_directory)
     document = {'schema_version': SCHEMA, 'request_digest': prepared._request_digest,
                 'plan': prepared._plan, 'backup_directory': backup_directory,
@@ -45,9 +50,12 @@ def retain(prepared, *, plan_path, backup_directory):
         info = os.fstat(fd)
         if info.st_uid != os.geteuid() or stat.S_IMODE(info.st_mode) != 0o700:
             raise tx.TransactionError('PLAN_DIRECTORY_NOT_PRIVATE')
+        prepared.recheck_review(cancelled=cancelled)
         tx._write(fd, name, json.dumps(document, sort_keys=True).encode())
+    prepared.recheck_review(cancelled=cancelled)
     if tx.digest(recovery_cli.load_receipt(plan_path)) != tx.digest(document):
         raise tx.TransactionError('PLAN_READBACK_FAILED')
+    prepared.recheck_review(cancelled=cancelled)
     return tx.digest(document)
 
 

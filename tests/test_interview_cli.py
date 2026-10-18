@@ -1,16 +1,41 @@
 import json
+import io
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[1]
 CLI=ROOT/'skills/claude-guardian/scripts/interview_cli.py'
+sys.path.insert(0, str(CLI.parent))
+import interview_cli as cli
 
 class InterviewCLITests(unittest.TestCase):
     def run_cli(self,*args):
         return subprocess.run([sys.executable,str(CLI),*args],capture_output=True,encoding='utf-8',timeout=10)
+
+    def test_cancellation_during_argument_parsing_returns_sanitized_result(self):
+        output = io.StringIO()
+        with patch.object(cli.argparse.ArgumentParser, 'parse_args', side_effect=KeyboardInterrupt), \
+                patch.object(cli.sys, 'stdout', output), patch.object(cli.guardian, 'save_new') as save:
+            self.assertEqual(cli.main([]), 3)
+        self.assertEqual(json.loads(output.getvalue()), {'status': 'cancelled', 'action_executed': False})
+        save.assert_not_called()
+
+    def test_cancellation_before_save_never_persists_partial_answers(self):
+        for module, method in ((cli.guardian, 'load_json'), (cli.flow, 'record_facts'),
+                               (cli.flow, 'next_question')):
+            with self.subTest(method=method), tempfile.TemporaryDirectory() as tmp:
+                answer = Path(tmp).resolve() / 'answer.json'
+                answer.write_text(json.dumps({'question_id': 'Q-C04', 'value': 'suspended'}), encoding='utf-8')
+                output = io.StringIO()
+                with patch.object(module, method, side_effect=KeyboardInterrupt), \
+                        patch.object(cli.sys, 'stdout', output), patch.object(cli.guardian, 'save_new') as save:
+                    self.assertEqual(cli.main(['--answer-file', str(answer), '--output', str(answer.parent / 'new.json')]), 3)
+                self.assertEqual(json.loads(output.getvalue()), {'status': 'cancelled', 'action_executed': False})
+                save.assert_not_called()
 
     def test_multi_answer_turn_saves_all_facts_and_resumes_without_reasking(self):
         with tempfile.TemporaryDirectory() as tmp:

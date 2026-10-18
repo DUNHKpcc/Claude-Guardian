@@ -523,3 +523,13 @@ ENV-02/06、ENG/VAL：统一内部CLI提供精确preflight/plan/private diff及�
 当前窄修正：选择器JSON作ASCII转义，测试源码显式UTF-8；Mac测试改模块局部OS替身而不增加跳过，保留所有语义断言并检查关闭descriptor。新增强制cp1252回归能在原9caa42f脚本复现失败，修正通过。云端1034项（1026通过/8跳过），Node、编译和复现打包通过；本次修正尚未提交/推送，需要单独批次授权及新WindowsCI。
 
 证据补齐：重传的修正版Mac仅证据ZIP SHA-256为6511463d741d4fdb5463917462b4080f1670cafa59e3cc5110a11a760e0f102d，已下载并核对manifest中的两份JSON大小/哈希。两次正例前contents/mode/group/xattrs/ACL差异为真，之后各项相等且original_unchanged为真；owner/provenance前差异为假。第27节回调-only限制已由本次文件核验取代，不代表重新执行实验、不同provenance恢复或完整应用验收。用户Mac原完整套件91失败/错误与hosted Mac干净CI结果分别保留。
+
+## 29. 丢失工作树后的重新验收（2026-10-18）
+
+从已发布 `584064fc` 重建。新增 [218例重建台账](acceptance-rebuild-ledger.json) 和
+[重建状态](rebuild-status.md)，逐字保留 §8 全部原 ID、场景、条件及验证层。
+历史云端23批的源码/补丁不在恢复基线中，不能将其67例完成标签转成当前通过。
+本次按可复现缺陷重新实现和实跑，原平台子证据继续保留各自限定范围。
+
+用户要求先跳过 Mac/Windows 真机验收，台账保留113原生延期、30条件式原生及75云端调度行；
+所有116个原生层N案例仍有后续步骤和依赖。此分类不是通过率、失败数或权限。

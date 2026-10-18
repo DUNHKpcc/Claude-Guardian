@@ -238,6 +238,170 @@ class InterviewTests(unittest.TestCase):
         s = f.set_context(s, incident_resolved=True)
         self.assertIn("Q-C08", ids(s))
 
+    def test_current_account_incidents_preempt_intake_from_either_answer(self):
+        for qid, value in (("Q-C03", "current_suspension"),
+                           ("Q-C04", "suspended"),
+                           ("Q-C04", "identity_review"),
+                           ("Q-C04", "unknown_error")):
+            for status in ("reported", "observed"):
+                with self.subTest(qid=qid, value=value, status=status):
+                    s = f.record_fact(state(), qid, value, state_name=status, source="user:incident")
+                    self.assertEqual(f.next_question(s)["id"], "Q-H01")
+                    self.assertTrue(all(q.startswith("Q-H") for q in ids(s)))
+                    self.assertEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+                    self.assertEqual(f.assessment(s)["G3"]["status"], "blocked")
+                    resumed = f.loads_state(f.dumps_state(s, host_opt_in=True))
+                    self.assertEqual(f.next_question(resumed)["id"], "Q-H01")
+
+    def test_incident_correction_and_staleness_do_not_leave_cached_emergency(self):
+        for qid, value, correction in (("Q-C03", "current_suspension", "past_suspension"),
+                                        ("Q-C04", "suspended", "active")):
+            s = f.record_fact(state(), qid, value, source="user:incident")
+            before = json.dumps(s, sort_keys=True)
+            for changed in (f.record_fact(s, qid, correction, source="user:correction"),
+                            f.invalidate_facts(s, [qid], reason="Current account report needs refresh")):
+                with self.subTest(qid=qid, status=changed["facts"][qid]["state"]):
+                    self.assertNotEqual(f.assessment(changed)["G1"]["status"], "emergency_deferred")
+                    self.assertIn("Q-C08", ids(changed))
+                    self.assertEqual(changed["context"]["incident"], "none")
+            self.assertEqual(json.dumps(s, sort_keys=True), before)
+
+    def test_history_and_unverified_current_values_do_not_assert_an_emergency(self):
+        for qid, value in (("Q-C03", "past_suspension"), ("Q-C03", "past_incident"),
+                           ("Q-C04", "active")):
+            s = f.record_fact(state(), qid, value, source="user:history")
+            self.assertNotEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+            self.assertIn("Q-C08", ids(s))
+        for status in ("stale", "conflict", "inferred", "not_applicable"):
+            s = f.record_fact(state(), "Q-C04", "suspended", state_name=status, source="host:unverified")
+            self.assertNotEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+
+    def test_incident_categories_reject_objects_and_do_not_parse_arbitrary_text(self):
+        for qid in ("Q-C03", "Q-C04"):
+            for value in ([], {}, {"status": "suspended"}):
+                with self.subTest(qid=qid, value=value), self.assertRaises(f.InterviewError):
+                    f.record_fact(state(), qid, value, source="user:invalid")
+            s = f.record_fact(state(), qid, "A historical suspension was resolved", source="user:text")
+            self.assertNotEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+
+    def test_fresh_incident_reopens_resolution_without_losing_resolved_history(self):
+        for qid, value in (("Q-C03", "current_suspension"), ("Q-C04", "suspended")):
+            s = f.record_fact(state(), qid, value, source="user:first")
+            resolved = f.set_context(s, incident_resolved=True)
+            self.assertIn("Q-H08", ids(resolved))
+            self.assertIn("Q-C08", ids(resolved))
+            reopened = f.record_fact(resolved, qid, value, source="user:new-incident")
+            self.assertFalse(reopened["context"]["account_incident_resolved"])
+            self.assertEqual(f.assessment(reopened)["G1"]["status"], "emergency_deferred")
+            self.assertTrue(resolved["context"]["incident_resolved"])
+
+    def test_account_incident_updates_preserve_independent_host_emergency(self):
+        s = f.record_fact(state(incident="data_risk"), "Q-C03", "current_suspension", source="user:1")
+        self.assertEqual(s["context"]["incident"], "data_risk")
+        s = f.record_fact(s, "Q-C03", "past_suspension", source="user:2")
+        self.assertEqual(s["context"]["incident"], "data_risk")
+        self.assertEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+        s = f.set_context(s, incident_resolved=True)
+        s = f.set_context(s, incident="credential_exposure")
+        self.assertFalse(s["context"]["incident_resolved"])
+        self.assertEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+
+    def test_account_incident_and_resolution_follow_account_not_device(self):
+        for resolved in (False, True):
+            s = f.record_fact(state(), "Q-C04", "suspended", source="user:account")
+            s = f.set_context(s, incident_resolved=resolved)
+            changed = f.begin_task(s, task_id="other-device", task="environment", target_alias="device-b")
+            self.assertEqual(changed["context"]["account_incident_resolved"], resolved)
+            self.assertEqual(f.assessment(changed)["G1"]["status"] == "emergency_deferred", not resolved)
+            other = f.begin_task(s, task_id="other-account", task="environment", account_alias="account-b")
+            self.assertNotEqual(f.assessment(other)["G1"]["status"], "emergency_deferred")
+
+    def test_resolved_host_event_stays_resolved_after_account_incident_correction(self):
+        s = state(incident="data_risk", incident_resolved=True)
+        s = f.record_fact(s, "Q-C04", "suspended", source="user:account")
+        self.assertTrue(s["context"]["incident_resolved"])
+        self.assertEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+        s = f.record_fact(s, "Q-C04", "active", source="user:corrected")
+        self.assertTrue(s["context"]["incident_resolved"])
+        self.assertNotEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+        s = f.record_fact(s, "Q-C04", "suspended", source="user:next")
+        s = f.set_context(s, incident="data_risk", incident_resolved=True)
+        self.assertEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+
+    def test_new_incident_refreshes_prior_episode_answers_without_losing_provenance(self):
+        s = f.record_fact(state(), "Q-C04", "suspended", source="user:first")
+        for number in range(1, 8):
+            qid = "Q-H%02d" % number
+            s = f.mark_asked(s, qid)
+            s = f.record_fact(s, qid, "previous episode", source="user:first-episode")
+        s = f.set_context(s, incident_resolved=True)
+        before = json.dumps(s, sort_keys=True)
+        reopened = f.record_fact(s, "Q-C04", "suspended", source="user:second")
+        question = f.next_question(reopened)
+        self.assertEqual(question["id"], "Q-H01")
+        self.assertTrue(question["clarification"])
+        for number in range(1, 8):
+            qid = "Q-H%02d" % number
+            self.assertEqual(reopened["facts"][qid]["state"], "stale")
+            self.assertEqual(reopened["facts"][qid]["source"], "user:first-episode")
+            self.assertNotIn(qid, reopened["asked_question_ids"])
+        self.assertEqual(json.dumps(s, sort_keys=True), before)
+        # A single reply's new incident details survive regardless of answer order.
+        answers = [{"question_id": "Q-C04", "value": "suspended"},
+                   {"question_id": "Q-H01", "value": "current account"}]
+        for order in (answers, list(reversed(answers))):
+            updated = f.record_facts(s, order, source="user:second-episode")
+            self.assertEqual(updated["facts"]["Q-H01"]["state"], "reported")
+            self.assertEqual(f.next_question(updated)["id"], "Q-H02")
+
+    def test_published_schema1_cached_incident_requires_review_before_correction(self):
+        # Exact schema/context shape emitted by 584064fc for current_suspension.
+        legacy = f.record_fact(state(), "Q-C03", "current_suspension", source="user:legacy")
+        for field in f.INCIDENT_CONTEXT_FIELDS:
+            legacy["context"].pop(field)
+        legacy["context"]["incident"] = "suspension"
+        encoded = json.dumps(legacy, sort_keys=True)
+        resumed = f.loads_state(encoded)
+        self.assertEqual(resumed["context"]["incident_origin"], "legacy_unverified")
+        self.assertEqual(resumed["facts"]["Q-C03"]["state"], "stale")
+        self.assertEqual(resumed["facts"]["Q-C03"]["source"], "user:legacy")
+        self.assertEqual(f.next_question(resumed)["id"], "Q-C03")
+        self.assertTrue(f.next_question(resumed)["clarification"])
+        self.assertNotEqual(f.assessment(resumed)["G1"]["status"], "emergency_deferred")
+        self.assertEqual(f.assessment(resumed)["G2"]["status"], "blocked")
+        historical = f.record_fact(resumed, "Q-C03", "past_suspension", source="user:correction")
+        self.assertEqual(historical["context"]["incident"], "none")
+        self.assertNotEqual(f.assessment(historical)["G1"]["status"], "emergency_deferred")
+        current = f.record_fact(resumed, "Q-C03", "current_suspension", source="user:confirmed")
+        self.assertEqual(f.next_question(current)["id"], "Q-H01")
+        pending = f.record_fact(resumed, "Q-C03", state_name="unknown", source="user:unknown")
+        self.assertIsNone(f.next_question(pending))
+        self.assertEqual(f.assessment(pending)["G2"]["status"], "blocked")
+        changed = f.begin_task(resumed, task_id="device-b", task="environment", target_alias="device-b")
+        self.assertEqual(f.next_question(changed)["id"], "Q-C03")
+        self.assertEqual(json.dumps(legacy, sort_keys=True), encoded)
+
+    def test_explicit_host_incident_provenance_survives_account_correction(self):
+        s = f.record_fact(state(incident="suspension"), "Q-C03", "current_suspension", source="user:1")
+        s = f.loads_state(f.dumps_state(s, host_opt_in=True))
+        self.assertEqual(s["context"]["incident_origin"], "host")
+        s = f.record_fact(s, "Q-C03", "past_suspension", source="user:2")
+        self.assertEqual(s["context"]["incident"], "suspension")
+        self.assertEqual(f.assessment(s)["G1"]["status"], "emergency_deferred")
+
+    def test_same_host_incident_report_after_resolution_starts_fresh_episode(self):
+        s = state(incident="data_risk")
+        for number in range(1, 8):
+            s = f.record_fact(s, "Q-H%02d" % number, "first episode", source="user:first")
+        s = f.set_context(s, incident_resolved=True)
+        reopened = f.set_context(s, incident="data_risk")
+        self.assertFalse(reopened["context"]["incident_resolved"])
+        self.assertEqual(f.assessment(reopened)["G1"]["status"], "emergency_deferred")
+        self.assertEqual(f.next_question(reopened)["id"], "Q-H01")
+        self.assertTrue(f.next_question(reopened)["clarification"])
+        historical = f.set_context(s, incident="data_risk", incident_resolved=True)
+        self.assertNotEqual(f.assessment(historical)["G1"]["status"], "emergency_deferred")
+
     def test_aliases_do_not_repeat(self):
         s = f.record_fact(state(), "Q-OS01", "macos", source="user:1")
         self.assertIn("Q-C02", s["facts"])

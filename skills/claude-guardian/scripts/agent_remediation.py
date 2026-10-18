@@ -129,8 +129,8 @@ CATALOG['plan-prepend']['command_template'] += [
     '--base-path', '<authorized-base-profile>']
 
 GROUPS = {
-    'stop': 'USER_CANCELLED CANCELLED DECLINED CONSENT_TIMEOUT',
-    'bind-target': 'TARGET_NOT_BOUND TARGET_USER_CONTEXT_MISMATCH ROUTE_OR_TARGET_NEEDS_CLARIFICATION CONTEXT_CHANGED CONTEXT_EXPIRED CONTEXT_FOREIGN CONTEXT_INACTIVE CONTEXT_INACTIVE_OR_REMOTE CONTEXT_UNKNOWN CONSOLE_ACCOUNT_EQUALITY_UNPROVEN',
+    'stop': 'USER_CANCELLED CANCELLED DECLINED CONSENT_TIMEOUT AUTHORIZATION_CANCELLED APPROVAL_CANCELLED APPROVAL_TIMEOUT',
+    'bind-target': 'TARGET_NOT_BOUND TARGET_USER_CONTEXT_MISMATCH ROUTE_OR_TARGET_NEEDS_CLARIFICATION CONTEXT_CHANGED CONTEXT_EXPIRED CONTEXT_FOREIGN CONTEXT_INACTIVE CONTEXT_INACTIVE_OR_REMOTE CONTEXT_UNKNOWN CONSOLE_ACCOUNT_EQUALITY_UNPROVEN CONTROLLER_NOT_BOUND RESPONSE_CONTEXT_MISMATCH APPROVAL_CONTEXT_CHANGED INVALID_CONTEXT NATIVE_CONTEXT_NOT_BOUND',
     'reaudit': 'STALE_EVIDENCE_REAUDIT_REQUIRED SNAPSHOT_CHANGED_DURING_AUDIT PLAN_REQUIRES_STABLE_SNAPSHOT_AND_ROUTE_FACTS',
     'collect-proxy': 'LIMITED_METADATA_ONLY MINIMAL_METADATA_ONLY MISSING_ENVIRONMENT_EVIDENCE',
     'proxy-port': 'PROXY_PORT_ASSOCIATION_CONFLICT',
@@ -145,13 +145,13 @@ GROUPS = {
     'clock': 'CLOCK_SETTING_REQUESTED TIMEZONE_LANGUAGE_GOAL',
     'cleanup': 'CLEANUP_REQUESTED',
     'fault': 'FAIL_CLOSED_UNVERIFIED',
-    'dependency': 'RUNTIME_OR_PARSER_UNAVAILABLE',
-    'permission': 'AUTHORIZATION_MISSING PERMISSION_DENIED PRECONTACT_ACTION_REJECTED LIVE_TERMINAL_REQUIRED PC0_TARGET_FORBIDDEN ENDPOINT_NEUTRALITY_UNVERIFIED RUNTIME_NOT_TRUSTED HOST_INTEGRATION_INVALID',
-    'unsupported': 'HOST_CAPABILITY_UNAVAILABLE UNSUPPORTED_PRODUCT_OR_VERSION NATIVE_REPAIR_ADAPTER_UNAVAILABLE NATIVE_CONTROLLER_HOST_ADAPTER_UNAVAILABLE DNS_HOST_INTEGRATION_REQUIRED WINDOWS_SESSION_DNS_UNAVAILABLE UNSUPPORTED_PLATFORM',
-    'input': 'INPUT_OR_RESPONSE_INVALID UNSAFE_OR_OFFLINE_PATH BUDGET_EXCEEDED FILE_NOT_FOUND_IN_APPROVED_SCOPE INVENTORY_CALLBACK_FAILED OS_QUERY_FAILED OUTPUT_SAVE_FAILED COLLECTOR_INTERNAL_FAILURE INPUT_INVALID INVALID_ARGUMENTS_OR_SAVE_FAILED SESSION_FAILED TIMEOUT CLEANUP_FAILED',
+    'dependency': 'RUNTIME_OR_PARSER_UNAVAILABLE PARSER_UNAVAILABLE',
+    'permission': 'AUTHORIZATION_MISSING PERMISSION_DENIED PRECONTACT_ACTION_REJECTED LIVE_TERMINAL_REQUIRED PC0_TARGET_FORBIDDEN ENDPOINT_NEUTRALITY_UNVERIFIED RUNTIME_NOT_TRUSTED HOST_INTEGRATION_INVALID AUTHORIZATION_DENIED AUTHORIZATION_REQUIRED AUTHENTICATION_HANDOFF_REQUIRED CONTROLLER_AUTH_FAILED INTERACTIVE_TERMINAL_REQUIRED HOST_APPROVAL_UNAVAILABLE HOST_APPROVAL_FAILED CURRENT_EXACT_APPROVAL_REQUIRED',
+    'unsupported': 'HOST_CAPABILITY_UNAVAILABLE UNSUPPORTED_PRODUCT_OR_VERSION NATIVE_REPAIR_ADAPTER_UNAVAILABLE NATIVE_CONTROLLER_HOST_ADAPTER_UNAVAILABLE DNS_HOST_INTEGRATION_REQUIRED WINDOWS_SESSION_DNS_UNAVAILABLE UNSUPPORTED_PLATFORM PLATFORM_UNSUPPORTED WINDOWS_API_UNAVAILABLE UNSUPPORTED_CANDIDATE_KIND UNSUPPORTED_REMEDY UNSUPPORTED_EXTENSION_TYPE UNSUPPORTED_ACTIVE_PROFILE_TYPE',
+    'input': 'INPUT_OR_RESPONSE_INVALID UNSAFE_OR_OFFLINE_PATH BUDGET_EXCEEDED FILE_NOT_FOUND_IN_APPROVED_SCOPE INVENTORY_CALLBACK_FAILED OS_QUERY_FAILED OUTPUT_SAVE_FAILED COLLECTOR_INTERNAL_FAILURE INPUT_INVALID INVALID_ARGUMENTS_OR_SAVE_FAILED SESSION_FAILED TIMEOUT CLEANUP_FAILED CONTROLLER_RESPONSE_REJECTED APPROVAL_CLOCK_INVALID INVALID_APPROVAL_TIMEOUT CANCELLATION_CHECK_FAILED INVALID_CANCELLATION_CALLBACK DIAGNOSTIC_PREREQUISITES_UNRESOLVED TERMINAL_FLUSH_FAILED',
     'incident': 'INCIDENT_PRIORITY',
     'runtime': 'RUNTIME_PATH_INVALID',
-    'keep': 'FAKE_IP_WITH_WORKING_HTTPS IPV6_TIMEOUT_ONLY EGRESS_TIMEZONE_DIFFERENCE',
+    'keep': 'FAKE_IP_WITH_WORKING_HTTPS IPV6_TIMEOUT_ONLY EGRESS_TIMEZONE_DIFFERENCE NO_CHANGE',
 }
 REPAIR_PREREQUISITES = {
     'AUTHORIZATION_SCOPE_MISMATCH', 'ACTION_AUTHORIZATION_PENDING', 'CONTEXT_MISMATCH',
@@ -161,6 +161,49 @@ REPAIR_PREREQUISITES = {
     'PLAN_DIRECTORY_NOT_PRIVATE', 'PLAN_READBACK_FAILED', 'POST_WRITE_VERIFY_FAILED',
     'REQUEST_CHANGED', 'SOURCE_SCOPE_MISMATCH', 'SOURCE_SNAPSHOT_CHANGED', 'STALE_FILE',
     'TARGET_MISMATCH', 'NATIVE_ADAPTER_FAILURE',
+    'BACKUP_CORRUPT', 'BACKUP_VERIFY_FAILED', 'CONCURRENT_CHANGE',
+    'EXCLUSIVE_ACCESS_REQUIRED', 'EXPLICIT_SCOPE_REQUIRED', 'INVALID_DOCUMENT',
+    'INVALID_EXPIRY', 'INVALID_OR_EXPIRED_PLAN', 'INVALID_PLAN',
+    'INVALID_PROPOSED_BYTES', 'INVALID_RECEIPT_JSON', 'INVALID_RECOVERY',
+    'INVALID_SNAPSHOT', 'INVALID_TARGET', 'PARENT_CHANGED', 'RECEIPT_CHANGED',
+    'RECEIPT_DIGEST_MISMATCH', 'RECEIPT_DIRECTORY_NOT_PRIVATE',
+    'RECEIPT_PATH_MISMATCH', 'RECEIPT_TOO_LARGE', 'RECOVERY_REQUIRES_RECONCILIATION',
+    'ROLLBACK_CONFLICT', 'ROOT_TARGET_UNSUPPORTED', 'STAGING_VERIFY_FAILED',
+    'UNSAFE_OR_UNAVAILABLE_DIRECTORY', 'UNSAFE_OR_UNAVAILABLE_FILE', 'UNSAFE_PATH',
+    'UNSAFE_RECEIPT_FILE', 'UNSUPPORTED_FILE_METADATA', 'UNSUPPORTED_FILE_SIZE_OR_OWNER',
+    'UNSUPPORTED_FILE_TYPE', 'WRITE_FAILED', 'XATTR_CHECK_FAILED', 'IO_FAILURE',
+    'ALTERNATE_OR_UNKNOWN_STREAMS_UNSUPPORTED', 'ANCESTOR_CHANGED', 'BACKUP_DATA_MISMATCH',
+    'FILESYSTEM_UNSUPPORTED', 'FILE_METADATA_UNAVAILABLE', 'HANDLE_CLOSE_FAILED',
+    'INVALID_BACKUP_EXPECTATION', 'INVALID_BACKUP_STREAM', 'INVALID_BACKUP_STREAM_INPUT',
+    'INVALID_BUDGET', 'LOCAL_VOLUME_GUID_PATH_REQUIRED', 'NONLOCAL_OR_UNSUPPORTED_VOLUME',
+    'READ_FAILED', 'REPARSE_RECALL_OR_METADATA_UNSUPPORTED', 'SECURITY_METADATA_UNAVAILABLE',
+    'UNSUPPORTED_FILE_SIZE', 'UNSUPPORTED_LINK_OR_DELETE_STATE', 'UNSUPPORTED_METADATA',
+    'UNSUPPORTED_PATH', 'VOLUME_METADATA_UNAVAILABLE',
+    'BASE_PROFILE_FILE_MISMATCH', 'DEADLINE_EXCEEDED', 'EXACT_RETAINED_PLAN_REQUIRED',
+    'INVALID_ARGUMENTS', 'INVALID_DEADLINE', 'INVALID_REPAIR_REQUEST',
+    'PROFILE_DIRECTORY_SCOPE_MISMATCH', 'AMBIGUOUS_MAPPING', 'AMBIGUOUS_OR_UNSUPPORTED_RULE',
+    'AMBIGUOUS_RULE_SELECTION', 'EGRESS_BINDING_MISMATCH', 'EGRESS_GROUP_MISSING_OR_AMBIGUOUS',
+    'INVALID_BINDING', 'INVALID_OR_OVERSIZED_SNAPSHOT', 'INVALID_REMEDY_REQUEST',
+    'INVALID_RULE_BINDING', 'INVALID_YAML', 'OVERLAPPING_EDITS', 'REVISION_BINDING_MISSING',
+    'SELECTED_RULE_SHADOWED', 'SEMANTIC_PLAN_BLOCKED', 'SNAPSHOT_REVISION_MISMATCH',
+    'TARGET_OR_SCOPE_MISMATCH', 'UNEXPECTED_SEMANTIC_DELTA', 'UNSUPPORTED_BINDING',
+    'UNSUPPORTED_OR_CHANGED_RULE', 'UNSUPPORTED_SCALAR_ENCODING', 'UNSUPPORTED_STRUCTURE',
+    'UNSUPPORTED_YAML', 'YAML_BUDGET_EXCEEDED', 'BASE_GROUPS_REQUIRED', 'CANDIDATE_TOO_LARGE',
+    'DELETE_SEQUENCE_UNSUPPORTED', 'EMPTY_INLINE_PREPEND_REQUIRED', 'EXPECTED_RULE_SEQUENCE',
+    'EXPLICIT_PREPEND_OPERATION_REQUIRED', 'INVALID_BASE_GROUP', 'INVALID_PROTECTED_RULE_INDEXES',
+    'INVALID_RULE_SELECTION', 'INVALID_SELECTED_RULE', 'NONEMPTY_PREPEND_UNSUPPORTED',
+    'OVERLAPPING_SELECTED_RULES', 'PRIORITY_ANALYSIS_BUDGET_EXCEEDED',
+    'PROTECTED_RULE_PRIORITY_CONFLICT', 'PROTECTED_RULE_TYPE_UNSUPPORTED',
+    'RULE_SELECTOR_ALREADY_PRESENT', 'UNSUPPORTED_RULE_VALUE', 'AMBIGUOUS_EXTENSION_FILE_OWNER',
+    'AMBIGUOUS_OR_UNSUPPORTED_BASE_PROFILE_FILE', 'APP_METADATA_BUDGET_EXCEEDED',
+    'DUPLICATE_OR_INVALID_APP_METADATA_KEY', 'DUPLICATE_OR_INVALID_PROFILE_UID',
+    'EXTENSION_FILE_MISMATCH', 'GLOBAL_OR_DEFAULT_EXTENSION_SCOPE_UNSUPPORTED',
+    'INVALID_APP_METADATA', 'INVALID_EXTENSION_SELECTION', 'INVALID_OR_UNSUPPORTED_YAML',
+    'INVALID_PROFILE_INDEX', 'MERGE_FORMAT_NOT_RULES_EXTENSION', 'PROFILE_LINK_MISSING',
+    'RULES_EXTENSION_FORMAT_NOT_MERGE', 'SHARED_EXTENSION_SCOPE_UNSUPPORTED',
+    'UNSAFE_PROFILE_FILE_REFERENCE', 'UNSUPPORTED_EXISTING_MERGE_FORMAT',
+    'UNSUPPORTED_RULES_SEQMAP_FORMAT', 'UNSUPPORTED_RULES_SEQMAP_VALUE',
+    'SELECTED_EXTENSION_NOT_ACTIVE_MERGE', 'SELECTED_EXTENSION_NOT_ACTIVE_RULES',
 }
 CATALOG['repair-prerequisites'] = action('clarify', 'ENV-06',
     '修复授权、快照或恢复前提不成立，先检查当前状态',
@@ -170,6 +213,71 @@ CATALOG['repair-prerequisites'] = action('clarify', 'ENV-06',
     ['当前目标与修复状态', '精确范围许可', '可用备份恢复'], ['前提解决后重新计划与复测'])
 GROUPS['repair-prerequisites'] = ' '.join(sorted(REPAIR_PREREQUISITES))
 FINDING_ACTIONS = {code: key for key, codes in GROUPS.items() for code in codes.split()}
+PREREQUISITE_CODES = frozenset(code for key in (
+    'stop', 'bind-target', 'reaudit', 'permission', 'input', 'repair-prerequisites')
+    for code in GROUPS[key].split())
+
+
+def diagnostic_codes(report):
+    """Read fixed diagnostic fields without guessing from text or restoring authority.
+
+    Unknown findings may warrant investigation; an unknown error cannot establish
+    that a failed operation was merely unsupported. Never recursively scan or echo
+    untrusted diagnostics, paths, messages, or arbitrary nested reports.
+    """
+    def checked_code(value):
+        if type(value) is not str or not re.fullmatch('[A-Z][A-Z0-9_]{0,95}', value):
+            raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
+        return value
+
+    findings = report.get('findings', [])
+    if type(findings) is not list or len(findings) > 128:
+        raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
+    codes = [checked_code(item.get('code') if type(item) is dict else None)
+             for item in findings]
+    errors = report.get('errors', [])
+    if type(errors) is not list or len(errors) > 128:
+        raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
+    diagnostics = [checked_code(item.get('code') if type(item) is dict else item)
+                   for item in errors]
+    for key in ('code', 'error_code'):
+        if key in report and report[key] is not None:
+            diagnostics.append(checked_code(report[key]))
+    codes.extend(code if code in FINDING_ACTIONS else 'INPUT_OR_RESPONSE_INVALID'
+                 for code in diagnostics)
+
+    missing = report.get('missing_fields', [])
+    if (type(missing) is not list or len(missing) > 128
+            or any(type(field) is not str or len(field) > 128 for field in missing)):
+        raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
+    if missing:
+        codes.append('MISSING_ENVIRONMENT_EVIDENCE')
+    if 'cancelled' in report and type(report['cancelled']) is not bool:
+        raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
+    if report.get('cancelled'):
+        codes.append('USER_CANCELLED')
+
+    states = {
+        'execution_status': {'completed', 'blocked', 'failed', 'interrupted'},
+        'status': {'completed', 'partial', 'blocked', 'failed', 'cancelled', 'interrupted', 'stopped'},
+        'inventory_readiness': {'ready_for_probe_plan', 'ready_for_configuration_plan',
+                                'needs_input', 'partial', 'blocked', 'interrupted'},
+    }
+    for key, allowed in states.items():
+        if key not in report:
+            continue
+        value = report[key]
+        if type(value) is not str or value not in allowed:
+            raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
+        if value in {'cancelled', 'interrupted', 'stopped'}:
+            codes.append('USER_CANCELLED')
+        elif value in {'blocked', 'failed'}:
+            # A stated capability gap can still be investigated. An unexplained
+            # failed/blocked report cannot lend its old findings to a repair.
+            capability_only = codes and all(FINDING_ACTIONS.get(code) == 'unsupported' for code in codes)
+            if value == 'failed' or not capability_only:
+                codes.append('DIAGNOSTIC_PREREQUISITES_UNRESOLVED')
+    return codes
 
 
 def select(report, target_ref):
@@ -180,19 +288,7 @@ def select(report, target_ref):
         raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
     if report.get('target_ref') != target_ref:
         raise guardian.GuardianError('TARGET_NOT_BOUND')
-    findings = report.get('findings', [])
-    if type(findings) is not list or len(findings) > 128:
-        raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
-    codes = []
-    for item in findings:
-        code = item.get('code') if type(item) is dict else None
-        if type(code) is not str or not re.fullmatch('[A-Z][A-Z0-9_]{0,95}', code):
-            raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
-        codes.append(code)
-    if report.get('missing_fields'):
-        codes.append('MISSING_ENVIRONMENT_EVIDENCE')
-    if report.get('execution_status') == 'interrupted':
-        codes.append('USER_CANCELLED')
+    codes = diagnostic_codes(report)
     # Cancellation wins over every pending proposal, including modifications.
     if any(code in GROUPS['stop'].split() for code in codes):
         codes = ['USER_CANCELLED']
@@ -203,16 +299,7 @@ def select(report, target_ref):
             selected[key] = dict(action_id=key, **copy.deepcopy(CATALOG[key]), finding_codes=[])
         # Do not echo unrecognized codes: they may contain private data.
         selected[key]['finding_codes'].append(code if code in FINDING_ACTIONS else 'UNRECOGNIZED_FINDING')
-    barriers = sorted(set(codes) & ({
-        'AUTHORIZATION_MISSING', 'PERMISSION_DENIED', 'PRECONTACT_ACTION_REJECTED',
-        'TARGET_NOT_BOUND', 'TARGET_USER_CONTEXT_MISMATCH', 'UNSAFE_OR_OFFLINE_PATH',
-        'USER_CANCELLED', 'CANCELLED', 'DECLINED', 'CONSENT_TIMEOUT',
-        'PC0_TARGET_FORBIDDEN', 'ENDPOINT_NEUTRALITY_UNVERIFIED', 'RUNTIME_NOT_TRUSTED',
-        'HOST_INTEGRATION_INVALID', 'CONTEXT_CHANGED', 'CONTEXT_EXPIRED', 'CONTEXT_FOREIGN',
-        'CONTEXT_INACTIVE', 'CONTEXT_INACTIVE_OR_REMOTE', 'CONTEXT_UNKNOWN',
-        'CONSOLE_ACCOUNT_EQUALITY_UNPROVEN', 'LIVE_TERMINAL_REQUIRED',
-        'STALE_EVIDENCE_REAUDIT_REQUIRED', 'SNAPSHOT_CHANGED_DURING_AUDIT',
-        'PLAN_REQUIRES_STABLE_SNAPSHOT_AND_ROUTE_FACTS', 'ROUTE_OR_TARGET_NEEDS_CLARIFICATION'} | REPAIR_PREREQUISITES))
+    barriers = sorted(set(codes) & PREREQUISITE_CODES)
     for item in selected.values():
         item['builtin_execution'] = 'not_available_for_target_mutation'
         item['agent_fallback'] = ('investigate_scoped_repair' if not barriers and item['kind'] in {'agent_investigation', 'candidate_only', 'host_library_only'} else 'none')

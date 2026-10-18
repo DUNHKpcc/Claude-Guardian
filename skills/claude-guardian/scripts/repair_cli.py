@@ -142,16 +142,20 @@ def preflight(request_path, target_path, target_ref, *, max_seconds=30,
                    'after_policy': binding['group_name']}
                   for ref, item in binding['rules'].items()]
     return PrivatePreflight(candidate, plan, fingerprint, review, candidate_kind, base_source,
-                            metadata_sources, extension_uid, linkage, deadline)
+                            metadata_sources, extension_uid, linkage, deadline,
+                            request_path=request_path, cancelled=cancelled)
 
 
 class PrivatePreflight:
     __slots__ = ('_candidate', '_plan', '_request_digest', '_review', '_candidate_kind', '_base_source',
-                 '_metadata_sources', '_extension_uid', '_linkage', '_deadline')
+                 '_metadata_sources', '_extension_uid', '_linkage', '_deadline', '_request_path',
+                 '_cancelled')
 
     def __init__(self, candidate, plan, request_digest, review, candidate_kind='merge-policy', base_source=None,
-                 metadata_sources=None, extension_uid=None, linkage=None, deadline=None):
+                 metadata_sources=None, extension_uid=None, linkage=None, deadline=None, *,
+                 request_path=None, cancelled=lambda: False):
         self._deadline = deadline
+        self._request_path, self._cancelled = request_path, cancelled
         self._candidate_kind, self._base_source = candidate_kind, base_source
         self._metadata_sources = metadata_sources or {}
         self._extension_uid, self._linkage = extension_uid, linkage
@@ -189,10 +193,16 @@ class PrivatePreflight:
                 'unknown_base_or_append_rule_count', 'protected_index_coverage')}
         return result
 
-    def recheck_review(self, request_path, *, cancelled=lambda: False):
-        """Fresh explicit-input check before emitting the private approval review."""
+    def recheck_review(self, request_path=None, *, cancelled=None):
+        """Fresh explicit-input check within the original preflight's scope/budget."""
+        if self._request_path is None or self._deadline is None:
+            raise RepairError('INVALID_REPAIR_REQUEST')
+        if request_path is not None and request_path != self._request_path:
+            raise RepairError('REQUEST_CHANGED')
+        request_path = self._request_path
         def guard():
-            if self._deadline is not None:
+            _guard(self._cancelled, self._deadline)
+            if cancelled is not None:
                 _guard(cancelled, self._deadline)
         guard()
         tx._validate(self._plan, time.time())
