@@ -78,10 +78,21 @@ def main(argv=None):
                 answers=item['answers']
             else:
                 answers=[item]
-            state=flow.record_facts(state,answers,source='user:current-turn')
+            prior=state
+            pending=flow.next_question(prior)
+            state=flow.record_facts(prior,answers,source='user:current-turn')
+            if (pending is not None and pending['id']=='Q-C08' and pending['clarification']
+                    and prior['facts'].get('Q-C08',{}).get('state') in {'reported','observed'}
+                    and prior['facts'].get('Q-C08',{}).get('value')=='selected_unspecified'
+                    and any(answer['question_id']=='Q-C08' for answer in answers)):
+                # Validate the whole batch first. Then replay that pure update
+                # with the delivered identity question consumed; named/refused
+                # replies also retain the spent clarification. No partial save.
+                state=flow.record_facts(flow.mark_asked(prior,'Q-C08'),answers,
+                                        source='user:current-turn')
         question=flow.next_question(state)
-        # Asking is recorded only when a user response is absorbed. Merely rendering
-        # CLI output must not lose the question if the host failed to deliver it.
+        # The pending plan-identity clarification is consumed only by its matching
+        # valid reply. Rendering alone must not lose an undelivered question.
         output={'schema_version':'guardian-intake-result/1','question':question,
                 'assessment':flow.assessment(state),'contact_control':'host_authorization_required',
                 'action_executed':False,'saved':False}

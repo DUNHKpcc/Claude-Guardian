@@ -7,6 +7,17 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Explicit cases and original layer spellings; scheduling does not imply acceptance.
+ACCEPTED = {
+    'T09': ('docs/evidence/rebuild-source-dedup.md', 'L+C', ['L', 'C']),
+    **{case: ('docs/evidence/rebuild-route-cases.md', 'L+C', ['L', 'C'])
+       for case in ('T19', 'T20', 'T21', 'T24')},
+    **{case: ('docs/evidence/rebuild-intake-cases.md', 'L+C', ['L', 'C'])
+       for case in ('T53', 'T74', 'T81')},
+    'ENV-T79': ('docs/evidence/rebuild-enforcement-cases.md', 'L', ['L']),
+    'ENV-T90': ('docs/evidence/rebuild-enforcement-cases.md', 'L + C', ['L', 'C']),
+}
+
 
 class AcceptanceRebuildLedgerTests(unittest.TestCase):
     def test_all_original_conditions_and_layers_are_preserved(self):
@@ -27,6 +38,8 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         expected_counts = {
             'docs/evidence/rebuild-route-cases.md': 14,
             'docs/evidence/rebuild-source-dedup.md': 4,
+            'docs/evidence/rebuild-enforcement-cases.md': 15,
+            'docs/evidence/rebuild-intake-cases.md': 14,
         }
         for path, count in expected_counts.items():
             page = (ROOT / path).read_text(encoding='utf-8')
@@ -42,15 +55,14 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))
         counts = {}
         for case in ledger['cases']:
-            accepted = case['id'] in {'T09', 'T19', 'T20', 'T21', 'T24'}
+            accepted = case['id'] in ACCEPTED
             self.assertEqual(case['rebuild_acceptance'], 'accepted_revalidated' if accepted else 'pending_revalidation')
             if accepted:
-                self.assertEqual(case['verification_layer'], 'L+C')
+                expected_path, original_layer, reviewed_layers = ACCEPTED[case['id']]
+                self.assertEqual(case['verification_layer'], original_layer)
                 evidence = case['evidence']
-                expected_path = ('docs/evidence/rebuild-source-dedup.md' if case['id'] == 'T09'
-                                 else 'docs/evidence/rebuild-route-cases.md')
                 self.assertEqual(evidence['path'], expected_path)
-                self.assertEqual(evidence['layers'], ['L', 'C'])
+                self.assertEqual(evidence['layers'], reviewed_layers)
                 self.assertEqual(evidence['sha256'], hashlib.sha256((ROOT / expected_path).read_bytes()).hexdigest())
                 self.assertTrue(evidence['boundary'])
             else:

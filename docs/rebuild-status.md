@@ -1,5 +1,16 @@
 # Reconstruction and deferred acceptance
 
+## Current checkpoint: eleventh rebuild, 2026-10-18
+
+The current ledger records 10 freshly accepted original cases and 208 pending:
+T09, T19, T20, T21, T24, T53, T74, T81, ENV-T79 and ENV-T90. Their original
+conditions and layers are unchanged; each has independently reviewed, pinned
+evidence. Earlier numbered sections below describe historical checkpoints.
+Scheduling remains 75 cloud-only / 113 native-deferred / 30 conditional-native;
+these categories are not completion counts. Native/device work remains deferred.
+The eleventh aggregate ran 1,423 tests: 1,415 passed and eight skipped. This does
+not establish full-project or user-device acceptance.
+
 ## Basis
 
 On 2026-10-18 the working tree was rebuilt from published commit

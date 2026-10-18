@@ -679,3 +679,45 @@ reserved before mutation and journal encoding uses the bounded canonical form;
 the document ceiling is unchanged. The last boundary case rejects before any
 approval or target write, while normal 4-MiB proposals still restore. These
 reproductions do not establish protection against malicious local callers.
+
+
+Tenth batch was published as `84f8f732288a8f89ea8c528b85ca83974a02bc0f`,
+parent `293d85644d3b26c8319247f1724ece17915e129d`. Both push workflows reached
+success: [tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39101971520)
+and [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39101971525).
+Of 1,400 tests, Linux passed 1,392/8 skipped; macOS 1,389/11; Windows 1,147/253;
+Python 3.10 Linux 1,392/8. Windows added 57 explicitly POSIX-only recovery skips;
+macOS added two Linux-only long-path/budget fixtures. Preview 27/27 and detached
+runtime 9/9 passed. Native-context limits remain; CI is not user-device acceptance.
+The exact 16-file remote delta, byte hashes, modes and expected parent were verified.
+
+
+## Eleventh rebuild batch: exact intake and enforcement cases
+
+T53/T74/T81 were revalidated against every unchanged original L+C clause,
+including accepted defaults without redundant route confirmation, first-purchase
+Apple/Google/web wording, and the literal unnamed selected-plan input. The runtime
+retains that selection without inventing a plan identity; a genuine missing
+identity is asked once. Only a valid current CLI answer consumes that clarification;
+rendering, unrelated input and invalid batches do not. These are normalized-host
+offline and content results, not model NLP or current purchase/catalog proof.
+
+ENV-T79 (L) and ENV-T90 (L + C) were independently reviewed with literal-domain
+offline sentinels and full workflow output/guide coverage. Workflow guards are not
+OS isolation; observed native traffic, engine effects and unmediated tool calls
+remain outside these results. Evidence pages pin 14 intake and 15 enforcement
+files. Previous accepted route/resume cases were freshly re-reviewed after the
+relevant four-file changes; source/package checks preserve T09.
+
+All original 218 rows, conditions and literal layer spellings remain unchanged.
+The ledger now accepts 10 with current evidence and leaves 208 pending. Scheduling
+is still 75 cloud-only / 113 deferred-native / 30 conditional-native, not acceptance.
+Before final ledger integration the aggregate passed 1,415 of 1,423 tests with
+eight skips; final integrated validation and publication evidence follow below.
+
+Final integrated aggregate: 1,423 tests in 28.187 seconds, 1,415 passed and eight
+skipped. Both Node synthetic suites, compile and diff checks passed. Two final
+packages are byte-identical, SHA-256
+`457a1b48ccd35e370aae3f312e22d75d0b352c41019d91e2bcd4d5b7fcc1217b`.
+All 47 accepted-evidence underlying pins and original ledger invariants passed
+independent review. Cloud CI publication is recorded separately after it completes.

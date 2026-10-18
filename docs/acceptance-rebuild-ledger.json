@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Five original L+C cases T09/T19/T20/T21/T24 have freshly reviewed, pinned evidence; remaining 213 cases are pending_revalidation. Evidence must be re-reviewed after relevant changes."
+    "Ten original cases T09/T19/T20/T21/T24/T53/T74/T81/ENV-T79/ENV-T90 have freshly reviewed, pinned evidence under their unchanged original layers; remaining 208 cases are pending_revalidation. Evidence must be re-reviewed after relevant changes."
   ],
   "cases": [
     {
@@ -214,7 +214,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "61f6cc994891d9cb763e817c0136d284167cfb6678bf0c99f11353776e00bbf9",
+        "sha256": "644789c11c531e6241c17eacf8e5873accf6d6f0bd22c3e177d4b3427c40c81c",
         "layers": [
           "L",
           "C"
@@ -234,7 +234,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "61f6cc994891d9cb763e817c0136d284167cfb6678bf0c99f11353776e00bbf9",
+        "sha256": "644789c11c531e6241c17eacf8e5873accf6d6f0bd22c3e177d4b3427c40c81c",
         "layers": [
           "L",
           "C"
@@ -254,7 +254,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "61f6cc994891d9cb763e817c0136d284167cfb6678bf0c99f11353776e00bbf9",
+        "sha256": "644789c11c531e6241c17eacf8e5873accf6d6f0bd22c3e177d4b3427c40c81c",
         "layers": [
           "L",
           "C"
@@ -294,7 +294,7 @@
       "dependencies": "A、V、U",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "61f6cc994891d9cb763e817c0136d284167cfb6678bf0c99f11353776e00bbf9",
+        "sha256": "644789c11c531e6241c17eacf8e5873accf6d6f0bd22c3e177d4b3427c40c81c",
         "layers": [
           "L",
           "C"
@@ -589,9 +589,18 @@
       "requirement": "记录 `accepted_default`，不再增加一次无意义确认；执行授权仍单独处理",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "变更时重跑专页对应完整轨迹及语义审阅；实际执行仍另核授权",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Relevant runtime, guidance or evidence changes require exact replay and full original L+C review again.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-intake-cases.md",
+        "sha256": "305dbc5f790fc83511e74713b62b68bf7f3e572f059ddc548958ff39ead4bd60",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
+      }
     },
     {
       "id": "T54",
@@ -799,9 +808,18 @@
       "requirement": "问 Q-C08 目标套餐；不问 Q-C07、Q-P02、Q-A06 或旧套餐/旧购买渠道",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "变更时复核原条件、指导/来源路径及专页工作实例，重跑支持回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Relevant runtime, guidance or evidence changes require exact replay and full original L+C review again.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-intake-cases.md",
+        "sha256": "305dbc5f790fc83511e74713b62b68bf7f3e572f059ddc548958ff39ead4bd60",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
+      }
     },
     {
       "id": "T75",
@@ -869,9 +887,18 @@
       "requirement": "同时吸收订阅阶段/系统/方案/目标套餐；只问真正缺口，不顺序重问",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、宿主交接及调度器边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Relevant runtime, guidance or evidence changes require exact replay and full original L+C review again.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-intake-cases.md",
+        "sha256": "305dbc5f790fc83511e74713b62b68bf7f3e572f059ddc548958ff39ead4bd60",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
+      }
     },
     {
       "id": "T82",
@@ -1789,9 +1816,18 @@
       "requirement": "只做离线语法/匹配模拟，不为验证规则主动查询目标域名；实际命中仍标后验",
       "verification_layer": "L",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
+      "rebuild_acceptance": "accepted_revalidated",
       "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-enforcement-cases.md",
+        "sha256": "d92dabfd96d15c7d2453effa6ffe5ff693336cb109807bc58e620f84df029c67",
+        "layers": [
+          "L"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Executed offline literal-domain and complete workflow-output replays; content review where required. No actual network contact, OS isolation, user-device enforcement or effective-routing claim."
+      }
     },
     {
       "id": "ENV-T80",
@@ -1899,9 +1935,19 @@
       "requirement": "声明真实 enforcement 层级；搜索/MCP/浏览器等未覆盖范围不冒充 OS 级隔离",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
+      "rebuild_acceptance": "accepted_revalidated",
       "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-enforcement-cases.md",
+        "sha256": "d92dabfd96d15c7d2453effa6ffe5ff693336cb109807bc58e620f84df029c67",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Executed offline literal-domain and complete workflow-output replays; content review where required. No actual network contact, OS isolation, user-device enforcement or effective-routing claim."
+      }
     },
     {
       "id": "ENV-T91",

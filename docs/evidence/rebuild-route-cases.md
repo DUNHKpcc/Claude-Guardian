@@ -255,11 +255,11 @@ VPS 完整实际提示，与手写预期逐字相同：
 | 文件 | SHA-256 |
 |---|---|
 | `skills/claude-guardian/SKILL.md` | `958c27324e41d46dc2977d60db285b26994bcd5aa6691ae61263be7469765d6e` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `9a19073d243adc2f252c4fbfb8383bb95fa605d829400798189571ad59e6109a` |
-| `skills/claude-guardian/scripts/interview_cli.py` | `62cd96d848f896889ed3142e51f86412d771907b012955c051aa768e101bf8d3` |
-| `skills/claude-guardian/references/intake.md` | `5ceebc3632bf19447561e5bb8a43b3591015bf699a60d3498e395066e769f02e` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `d9eaa53b02787b2414ad1b0c204bb58fa31d9ff288f898b60dbc0af4c2df6298` |
+| `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
+| `skills/claude-guardian/references/intake.md` | `a871c5f9daec76a1e896fc95850f4a412719cd9ee0fa649747dc35e93bbeab6a` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
-| `skills/claude-guardian/references/contact-and-safety.md` | `c7952481728e2c7d6f8d294c1835c73eafc209f954ac39d7a7cfe7887d0dad12` |
+| `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/S01-server-glossary.md` | `e2660c1b049d73e7a927594743f079cb0a5f10be9f72bad7928f10a5838bb68b` |
@@ -283,3 +283,17 @@ retained facts or resume review. All six exact route replays and 33 resume tests
 passed again. The route implementation and fixtures are byte-identical to ninth.
 Only the reviewed SKILL pin is refreshed; the original L+C acceptance limits and
 five accepted original cases are unchanged.
+
+
+## Eleventh-batch route and resume preservation review
+
+Four relevant source pins changed for the bounded unnamed-plan identity repair
+and the scoped recovery capability correction. Independent review re-ran 166
+intake/interview/CLI/resume/migration/route tests, including all 33 resume cases.
+The complete prior route replay is byte-identical. T19/T20/T21/T24 retain their
+full original L+C conclusions: default-route acceptance, VM/VPS independence,
+novice lifecycle guidance and the resume contract are unchanged. The new CLI
+consumption rule is restricted to a genuinely pending identity clarification.
+The contact paragraph preserves phase/permission boundaries while distinguishing
+read-only reconciliation from separately authorized POSIX recovery writes.
+These reviewed pin updates do not accept the new intake cases by themselves.

@@ -10,6 +10,8 @@ Normal order: Q-J01 → OS/purpose/target plan → account history and route →
 
 `subscription_journey` is `first_subscription`, `returning_subscription`, `existing_subscriber`, or `unknown`. Explicit first/returning answers establish only reported absence of a current subscription; they do not verify billing. Current subscribers get Q-C11 only if their task is missing. First-time users are not asked whether they want a subscription. Q-C08 means the desired plan, never legacy entitlement. Q-P02/Q-A06 activate only for relevant existing-billing tasks or an actual contradiction. Pure technical diagnosis does not activate a payment survey.
 
+用户说“套餐已选好”但未提供名称时，宿主将Q-C08记录为`reported`、保留值`selected_unspecified`，同时吸收本轮其他明确事实；不得猜成Pro/Max，也不把已选误写成尚未决定。仅在目标套餐适用且身份仍缺失时，同一Q-C08最多澄清一次：“你已经选好套餐；具体是哪一个套餐？”这不是重问是否选好。该值保留选择事实但不能满足套餐身份或G2就绪。直接调用接口的宿主在实际送达后调用`mark_asked`消耗既有澄清次数；CLI在完整有效的当前回复确实回答正在等待的Q-C08身份澄清时消耗次数，普通套餐问题或无关回复不消耗这次身份澄清。仅输出/读档不消耗或重置次数，重复未命名回复也不重启循环。之后明确给出名称则正常替换；若明确未知、拒答或延期，沿用该字段的空值状态替换契约并停止追问，不声称还保留先前完整值。若名称早已在有效上下文中明确，复用其原来源/时间，不用这句未命名回复覆盖它。宿主负责上述自然语言归一化；脚本不解析自由文本、不验证套餐当前可售或授权购买。
+
 The local route is a proposal until accepted. Record `explicit_choice`, `task_context`, or `accepted_default`; an unaccepted default stays `default_proposal`. Do not infer a route from expertise or owned equipment.
 
 ## Fact states and gates

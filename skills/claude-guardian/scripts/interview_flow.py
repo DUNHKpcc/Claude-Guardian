@@ -735,6 +735,13 @@ def applicable_questions(state):
     return requirements
 
 
+def _plan_identity_missing(fact):
+    # A current reported selection is useful even when its name was not supplied.
+    # This reserved categorical value adds no field/schema or implied plan choice.
+    return (fact.get('state') in {'reported', 'observed'}
+            and fact.get('value') == 'selected_unspecified')
+
+
 def next_question(state):
     """Choose one unanswered relevant question, or None on pause/terminal coverage.
 
@@ -758,12 +765,14 @@ def next_question(state):
         status = fact.get("state", "unasked")
         if item["id"] == "Q-C03" and _legacy_incident_review(state) and status in RESOLVED:
             status = "stale"
-        clarification = status in {"conflict", "stale"}
+        unnamed_plan = item['id'] == 'Q-C08' and _plan_identity_missing(fact)
+        clarification = status in {"conflict", "stale"} or unnamed_plan
         if status != "unasked" and not (clarification and fact.get("clarification_count", 0) == 0):
             continue
         if item["id"] in state["asked_question_ids"] and not clarification:
             continue
-        return {**item, "prompt": QUESTION_PROMPTS[item["id"]], "clarification": clarification,
+        prompt = '你已经选好套餐；具体是哪一个套餐？' if unnamed_plan else QUESTION_PROMPTS[item['id']]
+        return {**item, "prompt": prompt, "clarification": clarification,
                 "allowed_outcomes": ["reported", "unknown", "declined", "deferred"],
                 "requires_action_authorization": False}
     return None
@@ -779,6 +788,7 @@ def mark_asked(state, question_id):
         result["asked_question_ids"].append(qid)
     fact = result["facts"].get(qid)
     if fact and (fact["state"] in {"conflict", "stale"} or
+                 (qid == 'Q-C08' and _plan_identity_missing(fact)) or
                  (qid == "Q-C03" and _legacy_incident_review(state))):
         fact["clarification_count"] = 1
     validate_state(result)
@@ -814,6 +824,8 @@ def assessment(state):
             reason = "legacy_incident_unverified"
         elif item["postcontact"] and state["context"]["contact_phase"] == "PC0":
             reason = "requires_contact_gate"
+        elif item['id'] == 'Q-C08' and _plan_identity_missing(fact):
+            reason = 'target_plan_identity_missing'
         elif fact.get("state", "unasked") not in RESOLVED:
             reason = fact.get("state", "unasked")
         if reason:
