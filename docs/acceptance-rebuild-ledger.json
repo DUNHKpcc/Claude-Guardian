@@ -1462,9 +1462,18 @@
       "requirement": "不可表达的 ASN/匹配/动作语义明确报错，不静默丢失",
       "verification_layer": "L + R",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
+      "rebuild_acceptance": "accepted_revalidated",
       "next_steps": "相关实现/支持测试变化后重新执行回执绑定的转换、拒绝、写入/读回/恢复与回调时序矩阵；不得仅改hash续认",
-      "dependencies": "A、P"
+      "dependencies": "A、P",
+      "evidence": {
+        "path": "docs/evidence/rebuild-env40-composition.md",
+        "sha256": "bfa5ba5babd96fe93f2d42602b01c2c5eee42c5595a6243430b5221c88d65d1c",
+        "layers": [
+          "L",
+          "R"
+        ],
+        "boundary": "Full original format/loss-refusal clause reviewed through pure logic and controlled POSIX temporary-artifact write/readback/restore. No live engine, enclosing configuration or user-device acceptance."
+      }
     },
     {
       "id": "ENV-T41",

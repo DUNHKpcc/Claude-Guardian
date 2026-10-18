@@ -1,10 +1,10 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: sixteenth rebuild, 2026-10-18
+## Current checkpoint: seventeenth rebuild, 2026-10-18
 
-The current ledger records 15 freshly accepted original cases and 203 pending:
+The current ledger records 16 freshly accepted original cases and 202 pending:
 T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
-ENV-T81 and ENV-T90. Original conditions and layers are unchanged; every accepted
+ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
 native-deferred / 30 conditional-native, not completion counts. Native/device
@@ -16,6 +16,9 @@ adds a separately dated Claude-scoped IPv4-only policy and private candidate-pla
 contract. Native enforcement, observed compliance and user-device changes are not
 established by that policy. Proxy outer transport and unrelated traffic are outside
 its scope.
+The seventeenth completes the original ENV-T40 L + R clause with independent
+bounded conversion and real temporary-artifact restoration evidence. Actual
+engine deployment and enclosing-configuration behavior remain unverified.
 This is not full-project or user-device acceptance.
 
 ## Basis

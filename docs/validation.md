@@ -896,3 +896,39 @@ pins were refreshed and five shared-policy pins added (80 total). Old replay
 members remain unchanged; the complete relevant objects have an additive fixed
 policy, so whole-object byte identity with the prior batch is not claimed.
 No native case or additional original case is accepted by this product change.
+
+## Seventeenth rebuild batch: ENV-T40 full original L + R review
+
+This test/evidence increment composes existing predicate and ordered-policy
+conversion with actual controlled temporary-file apply, byte readback, separate
+rollback and prepared-record reconciliation/restoration. The original ENV-T40
+condition and literal L + R layers remain unchanged. Unsupported ASN, matching
+and action semantics fail before planning/writing rather than silently dropping
+content. No runtime module changed in this increment.
+
+Independent review reran 200 supporting tests and exercised 32 additional real
+temporary-artifact apply/restore paths in both directions, eight prepared-journal
+gaps, 320 semantic/preservation checks and 30 atomic unsupported refusals. All
+17 underlying evidence pins match. The independently repeated synthetic replay
+matches `c1647c67598035d373dc6f9b92d89d34fc2338f3c89075f4a0c1a080931c0041`.
+These checks support bounded format/loss refusal and controlled POSIX artifact
+recovery; they do not establish live engine behavior, enclosing-config merge,
+GUI persistence, subscription refresh, user-device deployment or Windows R.
+
+After integrating only this reviewed original case, the ledger records 16/218
+accepted and 202 pending, with original scenarios, requirements, layers and
+75/113/30 scheduling unchanged. The full aggregate ran 1,561 tests in 33.338
+seconds: 1,553 passed and eight skipped. This is not a count of complete cases.
+Both Node suites, compilation, diff checks and repeated release packaging passed;
+the unchanged release package remains
+`c587b28cea400a7fa063da053b32856d3e4dfd2838c859dc09ec754f8d555909`.
+
+The preceding sixteenth batch was published as
+`fe30684801b39d49a7e7789e5437f7a68f574b04`, parent
+`5f027d0dd033159bff95e3814c10d2732943ba3e`. Exact 29-file delta and all 198
+source blobs were verified. Both push workflows passed:
+[tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39107153859)
+and [preview](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39107153909).
+Linux/Python 3.10: 1,535 passed/eight skipped; macOS: 1,532/11;
+Windows: 1,290/253. The release hash was identical across all four jobs.
+No skipped or hosted test is promoted to actual user-device acceptance.

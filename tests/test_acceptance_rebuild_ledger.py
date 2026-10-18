@@ -16,6 +16,7 @@ ACCEPTED = {
        for case in ('T53', 'T74', 'T81')},
     **{case: ('docs/evidence/rebuild-task-scope-cases.md', 'L+C', ['L', 'C'])
        for case in ('T34', 'T43', 'T48', 'T78')},
+    'ENV-T40': ('docs/evidence/rebuild-env40-composition.md', 'L + R', ['L', 'R']),
     'ENV-T79': ('docs/evidence/rebuild-enforcement-cases.md', 'L', ['L']),
     'ENV-T81': ('docs/evidence/rebuild-required-controls-case.md', 'L + C', ['L', 'C']),
     'ENV-T90': ('docs/evidence/rebuild-enforcement-cases.md', 'L + C', ['L', 'C']),
@@ -39,6 +40,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
     def test_accepted_evidence_underlying_pins_are_current(self):
         # Hashes are invalidation signals, not substitutes for L+C review.
         expected_counts = {
+            'docs/evidence/rebuild-env40-composition.md': 17,
             'docs/evidence/rebuild-route-cases.md': 15,
             'docs/evidence/rebuild-source-dedup.md': 4,
             'docs/evidence/rebuild-enforcement-cases.md': 16,
