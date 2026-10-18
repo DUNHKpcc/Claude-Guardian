@@ -70,8 +70,17 @@ def _unwrap(obj):
         return obj, False, 'compact'
     if obj.get('schema_version') != REPORT:
         _reject('UNSUPPORTED_LEGACY_VERSION')
-    if set(obj) not in (REPORT_KEYS, REPORT_KEYS | {'question'}):
+    # Only one additive fixed producer member is allowed; historical wrappers
+    # retain their exact shape. Policy data is never migrated as evidence/consent.
+    if set(obj) not in (REPORT_KEYS, REPORT_KEYS | {'question'},
+                        REPORT_KEYS | {'traffic_policy'}, REPORT_KEYS | {'question', 'traffic_policy'}):
         _reject('UNKNOWN_REPORT_SHAPE')
+    if 'traffic_policy' in obj:
+        value, expected = obj['traffic_policy'], flow.policy_projection()
+        if (type(value) is not dict or set(value) != set(expected)
+                or any(type(value[key]) is not type(want) or value[key] != want
+                       for key, want in expected.items())):
+            _reject('UNKNOWN_REPORT_SHAPE')
     if obj['operation'] != 'interview' or obj['module_ids'] != ['M00'] or obj['record_kind'] != 'offline_analysis':
         _reject('NOT_COMPACT_INTERVIEW_REPORT')
     for name, keys in NESTED_KEYS.items():

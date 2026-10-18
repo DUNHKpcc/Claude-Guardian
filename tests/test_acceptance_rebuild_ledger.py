@@ -39,12 +39,12 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
     def test_accepted_evidence_underlying_pins_are_current(self):
         # Hashes are invalidation signals, not substitutes for L+C review.
         expected_counts = {
-            'docs/evidence/rebuild-route-cases.md': 14,
+            'docs/evidence/rebuild-route-cases.md': 15,
             'docs/evidence/rebuild-source-dedup.md': 4,
-            'docs/evidence/rebuild-enforcement-cases.md': 15,
-            'docs/evidence/rebuild-intake-cases.md': 14,
-            'docs/evidence/rebuild-required-controls-case.md': 12,
-            'docs/evidence/rebuild-task-scope-cases.md': 16,
+            'docs/evidence/rebuild-enforcement-cases.md': 16,
+            'docs/evidence/rebuild-intake-cases.md': 15,
+            'docs/evidence/rebuild-required-controls-case.md': 13,
+            'docs/evidence/rebuild-task-scope-cases.md': 17,
         }
         for path, count in expected_counts.items():
             page = (ROOT / path).read_text(encoding='utf-8')

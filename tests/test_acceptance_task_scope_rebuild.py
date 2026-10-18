@@ -45,6 +45,19 @@ ENV_SEQUENCE = ['Q-C01','Q-OS03','Q-C03','Q-C04','Q-C06'] + prior.NETWORK + ['Q-
 ROUTE_REST = ['Q-C06'] + prior.NETWORK + prior.CHANNEL_CHOICE + prior.CHANNEL_PC0['web'] + ['Q-C12','Q-Z01','Q-C10']
 
 
+def expected_policy():
+    # Independently authored current product requirement; old assertions remain exact.
+    return {
+        'schema_version': 'guardian-traffic-policy/0.1',
+        'requirement_id': 'PRODUCT-IPV4-20261018', 'effective_from': '2026-10-18',
+        'policy': 'IPv4_ONLY', 'applies_to': 'claude_target_application_traffic',
+        'ipv6_fallback': 'forbidden', 'proxy_outer_transport': 'preserve_existing_independently',
+        'control_channels': 'preserve', 'other_applications': 'unchanged',
+        'enforcement_status': 'unknown', 'compliance': 'not_established',
+        'environment_pass': False, 'apply_supported': False, 'authorization': 'none',
+    }
+
+
 def new():
     return f.new_state('scope-device','scope-account',task_id='scope-task')
 
@@ -66,7 +79,7 @@ def snapshot(state):
 
 
 def expected_urgent(first_missing=1):
-    return {'stage':'I0' if first_missing<=7 else 'I6',
+    return {'traffic_policy': expected_policy(), 'stage':'I0' if first_missing<=7 else 'I6',
         'G1':{'status':'emergency_deferred','unresolved_fields':[
             {'id':f'Q-H{i:02d}','reason':'unasked'} for i in range(first_missing,8)]},
         'G2':{'status':'blocked','conditional_plan_only':True},'G3':G3,
@@ -123,7 +136,7 @@ class TaskScopeAcceptanceTests(unittest.TestCase):
             self.assertEqual(f.next_question(state),question('Q-C06'))
             state,trace=feed(state,ROUTE_REST)
             self.assertIsNone(f.next_question(state))
-            expected={'stage':'I3','G1':{'status':'partial','unresolved_fields':[
+            expected={'traffic_policy': expected_policy(), 'stage':'I3','G1':{'status':'partial','unresolved_fields':[
                 {'id':'Q-C05','reason':'unasked' if outcome=='unanswered' else 'route_unconfirmed' if outcome=='compare' else outcome},
                 {'id':'Q-W04','reason':'requires_contact_gate'}]},
                 'G2':{'status':'blocked','conditional_plan_only':True},'G3':G3,
@@ -204,7 +217,7 @@ class TaskScopeAcceptanceTests(unittest.TestCase):
         state,trace=feed(state,ENV_SEQUENCE)
         self.assertIsNone(f.next_question(state))
         self.assertEqual(f.assessment(state),{
-            'stage':'I6','G1':{'status':'complete','unresolved_fields':[]},
+            'traffic_policy': expected_policy(), 'stage':'I6','G1':{'status':'complete','unresolved_fields':[]},
             'G2':{'status':'pass','conditional_plan_only':False},'G3':G3,
             'active_branches':['core','os','network','local','protection'],
             'deferred_branches':[],'route_confirmation':'confirmed',

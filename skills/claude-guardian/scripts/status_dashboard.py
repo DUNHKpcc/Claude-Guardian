@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from html import escape
 import json
 import re
+
+from traffic_policy import policy_projection
 import sys
 
 from guardian import GuardianError, PROXY_SUMMARY, load_json, save_new
@@ -162,7 +164,7 @@ def project(report, now=None, probe_report=None):
     execution = report.get("execution_status")
     execution_text = {"completed": "报告生成完成（不代表环境通过）", "failed": "报告执行失败",
                       "blocked": "报告执行受阻", "interrupted": "报告执行中断"}.get(execution if isinstance(execution, str) else "", "执行状态未知")
-    return {"cards": cards, "observed_at": observed.isoformat() if observed else "未知",
+    return {"traffic_policy": policy_projection(), "cards": cards, "observed_at": observed.isoformat() if observed else "未知",
             "generated_at": now.isoformat(), "snapshot_fresh": snapshot_fresh,
             "synthetic": report.get("record_kind") == "synthetic_example", "execution": execution_text,
             "overall": "error" if execution == "failed" or any(c["state"] == "error" for c in cards) else "unknown"}
@@ -207,6 +209,7 @@ def render(report, now=None, probe_report=None):
 <meta name="referrer" content="no-referrer"><title>Claude-Guardian · 环境状态</title><style>''' + CSS + '''</style></head><body><main>
 <header><h1>环境状态</h1>''' + sample + '''<span class="brand">Claude-Guardian</span></header>
 <p class="meta">快照（UTC）：''' + escape(view["observed_at"]) + escape(freshness) + escape(execution_note) + '''</p>
+<p>当前策略：IPv4_ONLY（仅所选Claude目标应用流量，禁止IPv6回退）。执行能力与合规状态：未知，未通过验收。</p><p>保留代理外层IPv6、Codex控制通道与其他应用；不整机关闭IPv6。不支持应用作用域时说明具体方案并另行取得许可，不默认为双栈。AAAA为空、单次IPv4成功或IPv6超时均不是完整阻断证明。</p>
 <table><caption>检查结果</caption><colgroup><col class="item"><col class="state"><col></colgroup><thead><tr><th scope="col">项目</th><th scope="col">状态</th><th scope="col">关键事实 · 展开查看证据</th></tr></thead><tbody>''' + ''.join(rows) + '''</tbody></table>
 <details class="report-details"><summary>报告信息与限制</summary><p>''' + escape(sample_note) + escape(view["execution"]) + '''。</p><p>页面生成（UTC）：''' + escape(view["generated_at"]) + '''。快照及字段有效期为 24 小时；时钟未经外部核验，重新打开不会刷新。</p><p>当前报告缺少完整验收证据，不生成 verified（已验证）。unknown 为证据不足；not_run 为没有对应检测证据。采集完成、配置声明或网络成功均不代表环境就绪或平台许可。</p><p>仅显示白名单摘要；不含原始地址、路径或设备标识。支持 guardian-report/0.1 与 env-inventory/0.2；可附加 guardian-probe-evidence/0.1 离线样本，样本成功声明仍为 unknown，不覆盖其他检查。完整证据请查看本地原始报告，分享前人工复核。</p></details>
 <p class="authorization">操作权限：联网探测、修改配置或接触 Claude 须另行授权。</p>

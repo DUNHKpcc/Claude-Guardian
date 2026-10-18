@@ -158,7 +158,7 @@ Reviewed file SHA-256 values:
 | `skills/claude-guardian/scripts/source_evidence.py` | `a1754f0445012e717dddfb9ed28245d94cb760f9d421fb47b0027a90e6f0feaf` |
 | `skills/claude-guardian/references/evidence-policy.md` | `8afb262a1d85050a897c6c9a89f54afbc96a653874b7308472dbeec4c3ea1838` |
 | `tests/test_source_evidence.py` | `cd9804d062f0226dcd25f7efc204c2fb4d43005be828b79dbeeb6df0ded8b86d` |
-| `tools/package_skill.py` | `7458d47b612006451dd1f16218fda109f955eaaf9935934df1f1519750da9a8d` |
+| `tools/package_skill.py` | `6b81dc67f23f5e5df5061bc1fc5b898c628b268e045c62ed6bf4fe679381f119` |
 
 Disposition: the exact original two-identical-tutorial scenario now has executable
 L evidence and a full active-guidance C review, ready for independent integration
@@ -213,3 +213,11 @@ capability or authorization; historical single-device observations do not become
 current native evidence. Only reviewed affected file pins above were refreshed.
 The review reran 182 relevant offline tests and 145 interview tests with no skips,
 and compared five complete case replay outputs and both release archives.
+
+Sixteenth-batch preservation review (2026-10-18): the original case conditions
+and layers remain unchanged. Fresh replays preserve all prior members; relevant
+reports add only the exact fixed, non-authorizing traffic-policy projection.
+Complete objects are therefore not claimed byte-identical to the fifteenth
+batch. Shared policy, migration-consumer compatibility, static rendering and
+package dependencies were independently reviewed before these pins were updated.
+No native enforcement or new original-case acceptance is inferred.

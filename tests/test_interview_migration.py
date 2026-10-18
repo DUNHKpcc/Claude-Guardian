@@ -22,6 +22,49 @@ def migrate(obj, **kwargs):
 
 
 class MigrationTests(unittest.TestCase):
+    def test_current_and_legacy_policy_wrappers_migrate_without_enforcement_claim(self):
+        report = guardian.interview(compact(os='macos', usage='code'))
+        for value in [report, guardian.redact(report)]:
+            result = migrate(value)
+            self.assertEqual(result['status'], 'review_required')
+            self.assertFalse(result['action_executed'])
+            self.assertEqual(flow.assessment(result['state'])['traffic_policy']['compliance'], 'not_established')
+        legacy = copy.deepcopy(report)
+        legacy.pop('traffic_policy')
+        old = migrate(legacy)
+        current = migrate(report)
+        self.assertEqual(old, current)
+        for value in [legacy, report, guardian.redact(report)]:
+            stopped = copy.deepcopy(value)
+            stopped['execution_status'] = 'interrupted'
+            result = migrate(stopped)
+            self.assertEqual(result['status'], 'review_required')
+            self.assertTrue(result['state']['context']['paused'])
+            self.assertFalse(result['action_executed'])
+
+    def test_policy_wrapper_accepts_only_exact_fixed_member(self):
+        report = guardian.interview(compact(os='macos'))
+        changes = [('policy', 'dual_stack'), ('compliance', 'verified'),
+                   ('authorization', True), ('authorization', 'approved'),
+                   ('environment_pass', 0), ('apply_supported', 1)]
+        for key, value in changes:
+            forged = copy.deepcopy(report)
+            forged['traffic_policy'][key] = value
+            result = migrate(forged)
+            self.assertEqual(result['status'], 'blocked')
+            self.assertIsNone(result['state'])
+        for change in ['missing', 'extra', 'scalar']:
+            forged = copy.deepcopy(report)
+            if change == 'missing':
+                forged['traffic_policy'].pop('authorization')
+            elif change == 'extra':
+                forged['traffic_policy']['unexpected'] = 'private-sentinel'
+            else:
+                forged['traffic_policy'] = True
+            result = migrate(forged)
+            self.assertEqual(result['status'], 'blocked')
+            self.assertNotIn('private-sentinel', json.dumps(result))
+
     def test_actual_fixture_preserves_fields_provenance_without_freshness(self):
         source = json.loads((SCRIPTS.parents[2] / 'tests/fixtures/interview-first.json').read_text())
         result = migrate(source)

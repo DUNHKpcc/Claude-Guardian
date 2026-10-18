@@ -12,6 +12,23 @@ import os
 import ntpath
 from pathlib import Path
 import re
+
+try:
+    from traffic_policy import policy_projection
+except ModuleNotFoundError as _policy_import_error:
+    if _policy_import_error.name != 'traffic_policy':
+        raise
+    # Preserve the existing standalone file-path import API without changing
+    # sys.path or depending on another test/module having imported siblings.
+    import importlib.util as _policy_importlib
+    import sys as _policy_sys
+    from pathlib import Path as _PolicyPath
+    _policy_spec = _policy_importlib.spec_from_file_location(
+        '_guardian_traffic_policy', _PolicyPath(__file__).with_name('traffic_policy.py'))
+    _policy_module = _policy_importlib.module_from_spec(_policy_spec)
+    _policy_sys.modules[_policy_spec.name] = _policy_module
+    _policy_spec.loader.exec_module(_policy_module)
+    policy_projection = _policy_module.policy_projection
 import stat
 import sys
 import time
@@ -55,6 +72,14 @@ def alias(value):
 def redact(value):
     """Defense in depth. Raw configuration, credentials and addresses are never needed."""
     if isinstance(value, dict):
+        # Rebuild only the exact fixed product-policy object. Its authorization
+        # is the literal "none", not a credential or caller approval. Any extra
+        # member, different type or different value retains normal redaction.
+        fixed_policy = policy_projection()
+        if (type(value) is dict and set(value) == set(fixed_policy)
+                and all(type(value[k]) is type(v) and value[k] == v
+                        for k, v in fixed_policy.items())):
+            return fixed_policy
         return {k: ("[redacted]" if re.search(r"(?i)password|secret|token|authorization|cookie|credential|api.?key", k) else redact(v)) for k, v in value.items()}
     if isinstance(value, list):
         return [redact(v) for v in value]
@@ -126,6 +151,7 @@ def load_json(path):
 def base(operation, target_ref=None):
     return {
         "schema_version": "guardian-report/0.1", "runtime_version": VERSION,
+        "traffic_policy": policy_projection(),
         "contract_provenance": "reconstructed_from_spec_not_historical_zip",
         "record_kind": "offline_analysis", "operation": operation,
         "module_ids": ["M00"] if operation == "interview" else MODULES,
@@ -300,6 +326,17 @@ def _report_shape(value, template):
             raise GuardianError("INPUT_OR_RESPONSE_INVALID")
 
 
+def _validate_report_policy(obj):
+    """One additive fixed output member; legacy absence is unknown, never a pass."""
+    if 'traffic_policy' not in obj:
+        return
+    value, expected = obj['traffic_policy'], policy_projection()
+    if (type(value) is not dict or set(value) != set(expected)
+            or any(type(value[key]) is not type(want) or value[key] != want
+                   for key, want in expected.items())):
+        raise GuardianError('INPUT_OR_RESPONSE_INVALID')
+
+
 def validate_inventory_envelope(obj):
     """Validate this release's public inventory shape before lossy projection.
 
@@ -313,8 +350,10 @@ def validate_inventory_envelope(obj):
     shape = _report_shape
 
     template = base("audit", "device-1")
-    if type(obj) is not dict or set(obj) != set(template):
+    if (type(obj) is not dict or set(obj) not in
+            (set(template), set(template) - {'traffic_policy'})):
         invalid()
+    _validate_report_policy(obj)
     if obj["schema_version"] != "env-inventory/0.2":
         invalid()
     if (type(obj["record_kind"]) is not str or obj["record_kind"] not in {
@@ -766,10 +805,13 @@ QUESTIONS = [
 def validate_interview_envelope(obj):
     """Accept only the current compact interview producer's report wrapper."""
     template = base("interview")
-    required = set(template) | {"state"}
-    if type(obj) is not dict or not required <= set(obj) or set(obj) - required - {"question"}:
+    required = (set(template) - {"traffic_policy"}) | {"state"}
+    if type(obj) is not dict or not required <= set(obj) or set(obj) - required - {"question", "traffic_policy"}:
         raise GuardianError("INPUT_OR_RESPONSE_INVALID")
+    _validate_report_policy(obj)
     for key in template:
+        if key == "traffic_policy":
+            continue
         if key == "findings":
             _report_shape(obj[key], [{"code": "", "module_id": ""}])
         elif key in {"module_ids", "not_tested", "next_actions", "missing_fields"}:

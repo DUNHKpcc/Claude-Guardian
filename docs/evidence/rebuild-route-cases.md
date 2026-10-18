@@ -254,8 +254,8 @@ VPS 完整实际提示，与手写预期逐字相同：
 
 | 文件 | SHA-256 |
 |---|---|
-| `skills/claude-guardian/SKILL.md` | `8cdec703516570679f497c3b5f417dfcbc60ca8bcf14fbbde093afc506694490` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `53b69a72d86e7d6c4d1f569e26c70b3dbb73677a34f8cec57f0f5212a1936d1c` |
+| `skills/claude-guardian/SKILL.md` | `9fcf19d0b58f5f2d09c6c7251dea1601315763883c544a0c36ac82f99f86466e` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `f1779626ef5fca0fae9a16ab0d7c64781ebe696f7b63d92aba260238584b9b42` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
 | `skills/claude-guardian/references/intake.md` | `f736f42bf9f962ee1a945452ccf9c3497a849aaa08097ab261b8cdad4bc1e4a7` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
@@ -265,9 +265,10 @@ VPS 完整实际提示，与手写预期逐字相同：
 | `skills/claude-guardian/sources/S01-server-glossary.md` | `e2660c1b049d73e7a927594743f079cb0a5f10be9f72bad7928f10a5838bb68b` |
 | `skills/claude-guardian/sources/S04-claude-guide.md` | `281b2881c5a016b5188aa71c1e7162e1742c98170d9685f2a4e24503ee7a5992` |
 | `tests/fixtures/acceptance-routes-rebuild.json` | `073ad74ba195fd1c72bcab61887f24f1ce5cbeaef6ff6036d9ff76a713154a80` |
-| `tests/test_acceptance_routes_rebuild.py` | `45ba80b530497c2ccfa295a19d7f0fac8e4336208928fef96e0ead8d07f79153` |
+| `tests/test_acceptance_routes_rebuild.py` | `893329472b97152d69d41d3b352c90e9bddc8dd93d812d334edc1efbebc5428b` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
 | `docs/interview-resume.md` | `2261f306dcbd357544bcf3261c98e4544be3bc0d3324364936501db89e7e7cfd` |
+| `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 
 本批修改 interview_flow/CLI、SKILL 一句、intake/contact 指导、原 route 回放测试、本页及三个既有验收行的 evidence hash；新增 focused resume 测试和 API/兼容说明。原 fixture、来源原文、原验收条件均未改。代码与指导须一起回滚，并同步恢复准确证据 pins/hash；旧 reader 不认识可选 resume_review，不能通过删掉未解决状态绕过核实，详见 docs/interview-resume.md。完整套件、Node、编译与打包另附集成记录，本页不以定向结果代替它们。
 
@@ -319,3 +320,11 @@ capability or authorization; historical single-device observations do not become
 current native evidence. Only reviewed affected file pins above were refreshed.
 The review reran 182 relevant offline tests and 145 interview tests with no skips,
 and compared five complete case replay outputs and both release archives.
+
+Sixteenth-batch preservation review (2026-10-18): the original case conditions
+and layers remain unchanged. Fresh replays preserve all prior members; relevant
+reports add only the exact fixed, non-authorizing traffic-policy projection.
+Complete objects are therefore not claimed byte-identical to the fifteenth
+batch. Shared policy, migration-consumer compatibility, static rendering and
+package dependencies were independently reviewed before these pins were updated.
+No native enforcement or new original-case acceptance is inferred.

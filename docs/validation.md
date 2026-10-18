@@ -857,3 +857,42 @@ The preceding fourteenth batch was published as
 `230101be81d28149b9c27c99a7047c274bb5cec4`, with verified parent
 `8b0b2a8a877e6403d6c5ef163f52215c3d1a707f` and exact ten-file scope.
 Its terminal push CI result is recorded separately when available.
+
+
+## Fifteenth publication verification
+
+Published `5f027d0dd033159bff95e3814c10d2732943ba3e`, parent
+`230101be81d28149b9c27c99a7047c274bb5cec4`; exact 15-file scope verified.
+[Push tests](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39106155494)
+completed successfully: Linux/Python 3.10 1,506 passed and eight skipped;
+macOS 1,503/11; Windows 1,261/253. Detached runtime checks passed nine tests.
+The preview workflow did not trigger for this path scope; no preview CI run is
+claimed. Local Node synthetic checks passed as recorded above. These hosted
+results do not establish user-device acceptance.
+
+## Sixteenth rebuild batch: scoped IPv4-only product policy
+
+The separately dated policy defaults selected Claude application/target traffic
+to IPv4-only without IPv6 fallback. Proxy outer transport, control/recovery and
+other applications remain distinct. Typed private planning, Agent candidates,
+interview/report consumers and the fixed dashboard projection agree on that
+scope. No result reports actual enforcement, device-wide blocking or account
+safety from this pure policy. Native evidence and execution remain absent.
+
+Independent review found and reproduced three integration defects: inconsistent
+private-plan constructor status, unsupported static dashboard tags, and current
+report migration rejecting the additive fixed policy. Narrow fixes retain prior
+privacy, active-HTML and cancellation guards. The original failing logs remain.
+The fixed review passed 539 adversarial and 72 consumer checks, 27 policy tests,
+17 migration tests and 27 static-preview/interaction tests. Guidance and original
+case preservation were independently reviewed by a different reviewer.
+
+After refreshing only reviewed pins, the full aggregate ran 1,543 tests in
+31.288 seconds: 1,535 passed and eight skipped. Both Node synthetic suites,
+compilation and diff checks passed. Two release packages are byte-identical:
+`c587b28cea400a7fa063da053b32856d3e4dfd2838c859dc09ec754f8d555909`.
+The 15 accepted cases retain original conditions/layers; 19 affected dependency
+pins were refreshed and five shared-policy pins added (80 total). Old replay
+members remain unchanged; the complete relevant objects have an additive fixed
+policy, so whole-object byte identity with the prior batch is not claimed.
+No native case or additional original case is accepted by this product change.

@@ -8,6 +8,8 @@ import argparse
 import copy
 import json
 import re
+
+from traffic_policy import policy_projection
 import sys
 
 import guardian
@@ -64,8 +66,16 @@ CATALOG = {
                    '确认责任层后展示该层精确键、原值、目标值及恢复值，由Agent按该环境已核实的接口修改；没有工具或许可才交接用户'],
                   ['系统/核心/浏览器分层证据', '内网与节点引导解析保护'],
                   ['同一名称/类型/程序复测；解析成功不等于无泄漏']),
+    'ipv4-only-policy': action('candidate_only', 'ENV-04', 'Claude目标应用流量仅允许IPv4；禁止IPv6回退',
+                   ['核实所选Claude应用、相关子进程及代理到目标连接的精确范围',
+                    '检查作用域与IPv6回退排除能力；不支持则报告unsupported，不改为双栈或整机禁用IPv6',
+                    '保留节点外层IPv6、Codex控制通道和其他应用；展示具体差异、影响、备份与恢复方案',
+                    '取得本次具体操作许可后才考虑已审阅的最小变更；当前仅生成计划，不执行网络修改'],
+                   ['当前目标与活动配置绑定', '应用与目标腿作用域、外层依赖及回退行为证据'],
+                   ['IPv4不可用时保持失败，不回退IPv6',
+                    'AAAA为空、curl -4、单次HTTPS成功、IPv6超时均不证明完整阻断；须另行获准同范围验收']),
     'ipv6': action('agent_investigation', 'ENV-04', '区分IPv6旁路与单纯不可用',
-                   ['确认同一程序的IPv4/IPv6路径', '确有旁路才提出应用/TUN范围的修复；不整机禁用IPv6',
+                   ['确认同一程序的IPv4/IPv6路径', '已观察的旁路只提出应用/TUN范围修复；默认IPv4_ONLY另按策略计划核验，不整机禁用IPv6',
                     '保留节点外层IPv6；具体差异与恢复值确认后在对应客户端设置中调整'],
                    ['同程序双栈对照', '外层节点依赖'], ['复测同一地址族和路径；超时不能证明阻断']),
     'udp': action('agent_investigation', 'ENV-04', '分开处理应用UDP、STUN和隧道外层UDP',
@@ -133,6 +143,7 @@ CATALOG['plan-prepend']['command_template'] += [
     '--base-path', '<authorized-base-profile>']
 
 GROUPS = {
+    'ipv4-only-policy': 'IPV4_ONLY_SCOPE_UNBOUND IPV4_ONLY_SCOPE_UNSUPPORTED IPV4_ONLY_ENFORCEMENT_UNKNOWN IPV4_ONLY_IPV6_FALLBACK_NOT_EXCLUDED IPV4_ONLY_PRESERVED_SCOPE_CONFLICT IPV4_ONLY_VERIFICATION_NOT_RUN IPV4_ONLY_INTENT_CONFLICT IPV4_ONLY_CONFIGURATION_STALE',
     'stop': 'USER_CANCELLED CANCELLED DECLINED CONSENT_TIMEOUT AUTHORIZATION_CANCELLED APPROVAL_CANCELLED APPROVAL_TIMEOUT',
     'bind-target': 'TARGET_NOT_BOUND TARGET_USER_CONTEXT_MISMATCH ROUTE_OR_TARGET_NEEDS_CLARIFICATION CONTEXT_CHANGED CONTEXT_EXPIRED CONTEXT_FOREIGN CONTEXT_INACTIVE CONTEXT_INACTIVE_OR_REMOTE CONTEXT_UNKNOWN CONSOLE_ACCOUNT_EQUALITY_UNPROVEN CONTROLLER_NOT_BOUND RESPONSE_CONTEXT_MISMATCH APPROVAL_CONTEXT_CHANGED INVALID_CONTEXT NATIVE_CONTEXT_NOT_BOUND',
     'reaudit': 'STALE_EVIDENCE_REAUDIT_REQUIRED SNAPSHOT_CHANGED_DURING_AUDIT PLAN_REQUIRES_STABLE_SNAPSHOT_AND_ROUTE_FACTS',
@@ -325,7 +336,7 @@ def select(report, target_ref):
             'explain_exact_diff_impact_backup_and_recovery', 'obtain_required_specific_approval',
             'execute_only_reviewed_minimal_operation', 'read_back_and_redetect_same_scope',
             'never_bypass_denial_or_builtin_gate'] if item['agent_fallback'] != 'none' else [])
-    return dict(schema_version=SCHEMA, target_ref=target_ref,
+    return dict(schema_version=SCHEMA, target_ref=target_ref, traffic_policy=policy_projection(),
                 status='stopped' if 'stop' in selected or no_change else 'selected' if selected else 'insufficient_evidence',
                 actions=list(selected.values()), prerequisite_blockers=barriers, changes=[], authority='none',
                 native_acceptance='not_established', environment_pass=False,

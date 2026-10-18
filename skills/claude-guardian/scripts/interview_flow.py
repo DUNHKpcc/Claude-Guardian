@@ -23,6 +23,23 @@ from datetime import datetime, timezone
 import json
 import re
 
+try:
+    from traffic_policy import policy_projection
+except ModuleNotFoundError as _policy_import_error:
+    if _policy_import_error.name != 'traffic_policy':
+        raise
+    # Preserve the existing standalone file-path import API without changing
+    # sys.path or depending on another test/module having imported siblings.
+    import importlib.util as _policy_importlib
+    import sys as _policy_sys
+    from pathlib import Path as _PolicyPath
+    _policy_spec = _policy_importlib.spec_from_file_location(
+        '_guardian_traffic_policy', _PolicyPath(__file__).with_name('traffic_policy.py'))
+    _policy_module = _policy_importlib.module_from_spec(_policy_spec)
+    _policy_sys.modules[_policy_spec.name] = _policy_module
+    _policy_spec.loader.exec_module(_policy_module)
+    policy_projection = _policy_module.policy_projection
+
 SCHEMA_VERSION = "1.0.0"
 FACT_STATES = frozenset({"unasked", "reported", "observed", "inferred", "unknown",
                          "declined", "conflict", "stale", "not_applicable", "deferred"})
@@ -871,7 +888,8 @@ def assessment(state):
         outcome = "blocked"
     review = state.get("resume_review")
     review_blocks = review is not None and review["status"] in {"pending", "unresolved"}
-    result = {"stage": next((i["stage"] for i in required if any(u["id"] == i["id"] for u in unresolved)), "I6"),
+    result = {"traffic_policy": policy_projection(),
+            "stage": next((i["stage"] for i in required if any(u["id"] == i["id"] for u in unresolved)), "I6"),
             "G1": {"status": outcome, "unresolved_fields": unresolved},
             "G2": {"status": "pass" if outcome == "complete" and not review_blocks else "blocked",
                    "conditional_plan_only": outcome != "complete" or review_blocks},

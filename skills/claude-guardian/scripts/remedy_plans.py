@@ -6,6 +6,23 @@ A successful compile is never native acceptance or permission to change a system
 from copy import deepcopy
 import re
 
+try:
+    from traffic_policy import plan_ipv4_only
+except ModuleNotFoundError as _policy_import_error:
+    if _policy_import_error.name != 'traffic_policy':
+        raise
+    # Preserve the existing standalone file-path import API without changing
+    # sys.path or depending on another test/module having imported siblings.
+    import importlib.util as _policy_importlib
+    import sys as _policy_sys
+    from pathlib import Path as _PolicyPath
+    _policy_spec = _policy_importlib.spec_from_file_location(
+        '_guardian_traffic_policy', _PolicyPath(__file__).with_name('traffic_policy.py'))
+    _policy_module = _policy_importlib.module_from_spec(_policy_spec)
+    _policy_sys.modules[_policy_spec.name] = _policy_module
+    _policy_spec.loader.exec_module(_policy_module)
+    plan_ipv4_only = _policy_module.plan_ipv4_only
+
 SCHEMA = 'guardian-remedy-plan-input/0.1'
 TEMPLATES = ('keep-existing', 'explicit-rule', 'tun-rule', 'scoped-compatibility')
 _ALIAS = re.compile(r'[A-Za-z][A-Za-z0-9_-]{0,63}\Z')
@@ -192,6 +209,7 @@ def compile_plan(request):
     _validate(request)
     result = {'schema_version': 'guardian-remedy-plan/0.1', 'status': 'blocked',
               'target_ref': request['target_ref'], 'route_ref': request['route_ref'],
+              'traffic_policy': plan_ipv4_only().preview(),
               'template': request['template'], 'revision_refs': deepcopy(request['revision_refs']),
               'proposed_changes': [], 'blockers': [], 'dns_checks': {},
               'protected_control_path': {'status': 'unknown'},
@@ -225,6 +243,11 @@ def compile_plan(request):
     if result['blockers']:
         return result
     facts, intent, template = request['facts'], request['intent'], request['template']
+    # Legacy ipv6 intent cannot silently override the current Claude-target policy.
+    # Keep this gap separate from independent rule-edit admission/proposal sets.
+    if intent.get('ipv6_goal') in ('preserve', 'proxy'):
+        result['traffic_policy']['reason_codes'].append('IPV4_ONLY_INTENT_CONFLICT')
+        result['traffic_policy']['planning_status'] = 'unresolved'
     block('NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED')
     block('NATIVE_ACCEPTANCE_NOT_RUN')
     versions = facts.get('versions', {})
@@ -351,3 +374,8 @@ def compile_plan(request):
     result['dns_checks']['local_resolution'] = 'projected_preserved' if dns.get('local_preserved') == 'yes' else 'unknown'
     result['dns_checks']['policy_rule'] = 'preserve full effective nameserver-policy; never deep-merge blindly'
     return result
+
+
+def compile_ipv4_policy_plan(scope=None, *, max_seconds=5, cancelled=lambda: False):
+    """Separate pure policy plan; never feeds executable rule-edit proposals."""
+    return plan_ipv4_only(scope, max_seconds=max_seconds, cancelled=cancelled)

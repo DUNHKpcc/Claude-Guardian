@@ -154,20 +154,21 @@ python -B tests/test_acceptance_task_scope_rebuild.py --replay > /tmp/guardian-t
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `53b69a72d86e7d6c4d1f569e26c70b3dbb73677a34f8cec57f0f5212a1936d1c` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `f1779626ef5fca0fae9a16ab0d7c64781ebe696f7b63d92aba260238584b9b42` |
 | `skills/claude-guardian/scripts/interview_cli.py` | `003b9a31c01395be446e658d0ddac6a898172a9008981a302d7f8d8d5e324a91` |
-| `tests/test_acceptance_task_scope_rebuild.py` | `e05d3fcb8feac9d6e8049055b7629c0578bdf14683db8528a71df40c94b62126` |
-| `tests/test_acceptance_intake_rebuild.py` | `69cd85aed9b568c960db65791e0e21bbb6d7dffeb80b2383d69b1bd602dd212b` |
+| `tests/test_acceptance_task_scope_rebuild.py` | `e5585ba5cd68dc3bf35ca217453f6e2be7835558588fb47006c8d8be7b4f964e` |
+| `tests/test_acceptance_intake_rebuild.py` | `e26a26ee3b3d0ba93270787f8dbd8022ed11adb2fbbb0f1229df8f1aef57245a` |
 | `tests/test_interview_flow.py` | `2e9fa3e886262c62c1a11bbcb0ebda4f02356d03be595de6f9bac804d31b1d4a` |
 | `tests/test_interview_cli.py` | `a3cbd2c8332d50e6c49fee61ced2bb9c10295b7a3393b39b6de2e89a9a37be4d` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
-| `tests/test_interview_migration.py` | `75c016cfc9e1129a948bca8b21e963a16bc62b96ad200cb0a43cb142d29a1b18` |
-| `skills/claude-guardian/SKILL.md` | `8cdec703516570679f497c3b5f417dfcbc60ca8bcf14fbbde093afc506694490` |
+| `tests/test_interview_migration.py` | `6c4e6bf32875b83ea179ffc836f140141f161240b478b359b62b304767063618` |
+| `skills/claude-guardian/SKILL.md` | `9fcf19d0b58f5f2d09c6c7251dea1601315763883c544a0c36ac82f99f86466e` |
 | `skills/claude-guardian/references/intake.md` | `f736f42bf9f962ee1a945452ccf9c3497a849aaa08097ab261b8cdad4bc1e4a7` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
 | `skills/claude-guardian/references/incidents-and-integrations.md` | `da41c24cb830298ea7e859a9f147048ef8523a43dcb34758426df12e0391fd21` |
+| `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 
 
 ### Fifteenth derived-reference preservation review
@@ -179,3 +180,11 @@ capability or authorization; historical single-device observations do not become
 current native evidence. Only reviewed affected file pins above were refreshed.
 The review reran 182 relevant offline tests and 145 interview tests with no skips,
 and compared five complete case replay outputs and both release archives.
+
+Sixteenth-batch preservation review (2026-10-18): the original case conditions
+and layers remain unchanged. Fresh replays preserve all prior members; relevant
+reports add only the exact fixed, non-authorizing traffic-policy projection.
+Complete objects are therefore not claimed byte-identical to the fifteenth
+batch. Shared policy, migration-consumer compatibility, static rendering and
+package dependencies were independently reviewed before these pins were updated.
+No native enforcement or new original-case acceptance is inferred.

@@ -224,13 +224,14 @@ prior accepted ENV-T79/90 workflow pins after independent re-review of this delt
 | `tests/test_workflow_guard.py` | `635b39b747724477efc782eeea129c818bbfb11639d2ad0a83aa4438e8ce2587` |
 | `tests/test_workflow_contact_epoch.py` | `bbb4010d7d7e74b6ba2f080eae4c853ed0b239f8bf522bea365114c17dfc97fd` |
 | `tests/test_acceptance_boundary_rebuild.py` | `b5604c118e9c11fea9d03c19e75efdae4acb53f7bb0df3bd2ac4db38842621fd` |
-| `skills/claude-guardian/SKILL.md` | `8cdec703516570679f497c3b5f417dfcbc60ca8bcf14fbbde093afc506694490` |
+| `skills/claude-guardian/SKILL.md` | `9fcf19d0b58f5f2d09c6c7251dea1601315763883c544a0c36ac82f99f86466e` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
-| `skills/claude-guardian/references/network-and-remedies.md` | `3b2eb1ea88b16656558e9327f42470dd371114401995d688994783f686085120` |
+| `skills/claude-guardian/references/network-and-remedies.md` | `2eb827d71e91178b12e5d9814f0e7d77de8d5b4956f411af06b52c984d5c3fa5` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `cf16e85bfbe2a9ea6a2cc51d88b9f82c85eab29248f289c3ae3990c15cda6cb9` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `docs/implementation-tracker.md` | `8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50` |
+| `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 
 ## Limits and recovery of this code change
 
@@ -256,3 +257,11 @@ capability or authorization; historical single-device observations do not become
 current native evidence. Only reviewed affected file pins above were refreshed.
 The review reran 182 relevant offline tests and 145 interview tests with no skips,
 and compared five complete case replay outputs and both release archives.
+
+Sixteenth-batch preservation review (2026-10-18): the original case conditions
+and layers remain unchanged. Fresh replays preserve all prior members; relevant
+reports add only the exact fixed, non-authorizing traffic-policy projection.
+Complete objects are therefore not claimed byte-identical to the fifteenth
+batch. Shared policy, migration-consumer compatibility, static rendering and
+package dependencies were independently reviewed before these pins were updated.
+No native enforcement or new original-case acceptance is inferred.

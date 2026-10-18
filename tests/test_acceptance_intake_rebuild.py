@@ -81,6 +81,19 @@ VALUES.update({'Q-C02': 'macos', 'Q-C01': 'web_writing', 'Q-C08': 'Pro',
     'Q-C12': 'preserve_existing_projects_settings', 'Q-C10': 'step_by_step'})
 
 
+def expected_policy():
+    # Independently authored current product requirement; old assertions remain exact.
+    return {
+        'schema_version': 'guardian-traffic-policy/0.1',
+        'requirement_id': 'PRODUCT-IPV4-20261018', 'effective_from': '2026-10-18',
+        'policy': 'IPv4_ONLY', 'applies_to': 'claude_target_application_traffic',
+        'ipv6_fallback': 'forbidden', 'proxy_outer_transport': 'preserve_existing_independently',
+        'control_channels': 'preserve', 'other_applications': 'unchanged',
+        'enforcement_status': 'unknown', 'compliance': 'not_established',
+        'environment_pass': False, 'apply_supported': False, 'authorization': 'none',
+    }
+
+
 def expected_question(qid):
     if qid == 'Q-OS03': branch, stage = 'os', 'I2'
     elif qid in NETWORK: branch, stage = 'network', 'I4'
@@ -112,7 +125,7 @@ def projection(state):
 
 def expected_literal_assessment():
     missing = ['Q-C01', 'Q-OS03', 'Q-C08', 'Q-C03', 'Q-C04'] + NETWORK + CHANNEL_CHOICE + TAIL
-    return {'stage': 'I2', 'G1': {'status': 'partial', 'unresolved_fields': [
+    return {'traffic_policy': expected_policy(), 'stage': 'I2', 'G1': {'status': 'partial', 'unresolved_fields': [
         {'id': q, 'reason': 'target_plan_identity_missing' if q == 'Q-C08' else 'unasked'} for q in missing]},
         'G2': {'status': 'blocked', 'conditional_plan_only': True}, 'G3': G3,
         'active_branches': ['core', 'os', 'network', 'payment', 'local', 'protection'],
@@ -271,7 +284,7 @@ class IntakeAcceptanceRebuildTests(unittest.TestCase):
             state = f.set_context(state, contact_phase='PC2')
             state, later = feed(state, CHANNEL_LATER[channel], channel)
             self.assertIsNone(f.next_question(state))
-            self.assertEqual(f.assessment(state), {'stage': 'I6', 'G1': {'status': 'complete', 'unresolved_fields': []},
+            self.assertEqual(f.assessment(state), {'traffic_policy': expected_policy(), 'stage': 'I6', 'G1': {'status': 'complete', 'unresolved_fields': []},
                 'G2': {'status': 'pass', 'conditional_plan_only': False}, 'G3': G3,
                 'active_branches': ['core', 'os', 'network', 'payment', 'local', 'protection'],
                 'deferred_branches': [], 'route_confirmation': 'confirmed',

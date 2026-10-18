@@ -1,6 +1,6 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: fifteenth rebuild, 2026-10-18
+## Current checkpoint: sixteenth rebuild, 2026-10-18
 
 The current ledger records 15 freshly accepted original cases and 203 pending:
 T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
@@ -11,7 +11,11 @@ native-deferred / 30 conditional-native, not completion counts. Native/device
 work remains deferred. The latest validated aggregate and publication receipts are listed in
 [validation](validation.md). The thirteenth input-boundary and fourteenth bounded
 policy-conversion changes did not add complete-case acceptances. The fifteenth
-batch adds a sanitized case reference, not runtime network capability.
+batch adds a sanitized case reference, not runtime network capability. The sixteenth
+adds a separately dated Claude-scoped IPv4-only policy and private candidate-plan
+contract. Native enforcement, observed compliance and user-device changes are not
+established by that policy. Proxy outer transport and unrelated traffic are outside
+its scope.
 This is not full-project or user-device acceptance.
 
 ## Basis

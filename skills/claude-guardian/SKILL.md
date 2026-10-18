@@ -17,6 +17,14 @@ description: 为 Claude 订阅准备、账号与客户端异常、代理和运�
 6. 只在获准目标范围内使用已实现 CLI 检查（先查看 `scripts/guardian.py --help`）。缺依赖不静默安装；未支持的检查记为未知。内置功能未开放时，Agent继续调查实际环境；不得用临时命令绕过权限拒绝、PC0或既有执行门禁。独立Agent修复须按 [agent-remediation.md](references/agent-remediation.md) 取得具体动作许可并提供最小差异、备份与复测。
 7. 交付具体问题、目标范围、证据、未知项、最小修复建议、保留项及下一步。`pass/fail/unknown/not_applicable/blocked/skipped` 只描述指定检查。盘点完成不等于 PC-G1 通过；离线测试不证明平台支持或网络隔离。
 
+## Claude 目标流量默认仅允许 IPv4
+
+已确认的新产品要求 `PRODUCT-IPV4-20261018`：所选 Claude 应用／目标流量采用 `IPv4_ONLY`，禁止 IPv6 fallback；IPv4 失败就报告该策略下不可用，不静默改回双栈。它更新历史 D05 的当前推荐，不改写原规格或历史验收。网络准备即使没有已观察到的 IPv6 旁路，也要检查这个策略缺口；不再让用户重复选择协议偏好。
+
+明确应用、目标／功能、档案和参与的子进程，单独检查代理到目标这一腿。保留代理节点必要的外层 IPv6／UDP、Codex／恢复通道、组织规则、内网／VPN、其他应用及系统 IPv6。无法隔离时先报告 unknown／unsupported，不自动关闭整机 IPv6、不扩大浏览器限制、不悄悄缩小承诺范围。
+
+AAAA 为空、`curl -4`、单次 IPv4 HTTPS 成功或 IPv6 超时都不是强制生效证明。当前固定策略与纯计划只能报告合规尚未建立，不能开放执行、接触或登录／付款；G2 规划通过也不是策略通过。按 [network-and-remedies.md](references/network-and-remedies.md#claude-target-ipv4-only) 解释分层证据，并由 [Agent 修复流程](references/agent-remediation.md#ipv4-only-policy) 提供精确差异、独立恢复、具体批准及同范围复测。取消、拒绝和事故优先级保持不变，独立无关任务不因展示默认策略而被强行加入网络修改。
+
 ## 完整访谈入口
 
 完整状态化访谈使用 `scripts/interview_cli.py`：默认仅输出下一题和阶段评估；已确认答案通过本地 answer JSON 传入；用户明确要求保存时才指定 `--output`。普通读档或连续轮次用 `--input`；真正中断后继续须加 `--resume <本次事件别名>`，按 [intake.md 的续接规则](references/intake.md#interruption-and-resume) 先核实相关变化，再规划。95 个问题 ID 按条件调度，Q-C07 始终停用。`guardian.py interview` 保留为兼容的简化入口，不把它的八字段流程当作完整访谈。
