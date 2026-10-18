@@ -1119,12 +1119,34 @@ Windows 1,338/391. All four release hashes matched; the
 also passed. Hosted fixtures do not establish native Claude ownership, exclusive
 writer exclusion or actual user-device cleanup authorization.
 
+## Twenty-second reconstruction: T03/T05 actual guided response evidence
+
+T03 and T05 retain original L+C clauses. Exact synthetic inputs, actual two-turn
+responses, execution timestamps and independent sentence-level reviews are
+retained. T03 asks response origin, authentication outcome and resource permission
+before diagnosing a 403; unknown cause stays unknown. T05 records the supplied
+intermittent observation dates and missing scope without inventing a ban rate or
+future safety guarantee. This is observed guided behavior, not an actual VPS test
+or a guarantee about future model outputs.
+
+Six retained-record integrity tests verify artifacts, guidance and review bytes;
+they do not generate responses. The aggregate ran 1,743 tests in 35.765 seconds:
+1,735 passed and eight skipped. Only T03/T05 change acceptance, now 23/218 with
+195 pending. Original IDs, conditions, layers and scheduling remain unchanged.
+No runtime, shipped guidance, private user records or native results are added.
+
+Independent twenty-second integration rerun: 1,743 total, 1,735 passed and eight
+skipped in 35.322 seconds. Both Node suites and compilation passed. Two release
+archives are identical at
+`9ce77248c44c36e1d6f79bfc80ac59cec70ae126f43813c377e0d5f3138256b7`;
+no tests or retained response records are shipped in the Skill package.
+
 ## Twenty-first publication and minimum-Python test hotfix
 
 Published `51193c3d610c35686596dc896d48615103420263` with exact source tree
 `7e0910aa72a39e08bbf295518dc1354daa108030`. Its
 [push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39112833044)
-failed on Python 3.10: seven new test setup methods used TestCase.enterContext,
+failed on Python 3.10: two new setup methods affecting seven tests used TestCase.enterContext,
 which is unavailable there. Ubuntu passed 1,729/eight skips, macOS 1,725/12,
 Windows 1,345/392. This run is not an all-green result.
 
@@ -1140,3 +1162,19 @@ skipped. API-absence reproduction retains the original seven failures and the
 fixed eight-test success. Explicit cleanup-lifetime checks cover patch removal
 and partial setup failure; these are local compatibility probes, not a substitute
 for the actual Python 3.10 push result.
+
+After the exact minimum-Python test hotfix transplant, the local aggregate ran
+1,743 tests in 35.421 seconds and the independent aggregate in 35.178 seconds:
+1,735 passed and eight skipped in each run. The fixed setup API and relevant
+evidence pins match the separately reviewed hotfix; actual CI is recorded below.
+
+## Minimum-Python hotfix publication verification
+
+Published `d44f4c95710dde953e932fb89b9878727a27c2aa`, parent
+`51193c3d610c35686596dc896d48615103420263`; exact seven-file delta and complete
+228-source tree `3666c6ff59de19714bcaa1b388a082caa422bd78` verified.
+[Push CI](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/39113242566)
+passed on all four jobs: Python 3.10 and Ubuntu 1,729 passed/eight skipped;
+macOS 1,725/12; Windows 1,345/392. All release hashes matched. This closes the
+specific enterContext test compatibility defect; the earlier failed run remains
+recorded, and hosted results do not replace actual user-device acceptance.

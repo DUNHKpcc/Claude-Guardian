@@ -1,11 +1,17 @@
 # 版本记录
 
+## Twenty-second reconstruction, 2026-10-18
+
+- Revalidate original T03/T05 using retained actual two-turn guided responses and independent sentence-level review
+- Preserve uncertainty for 403 origin/authentication/permission and prohibit inferred ban rates from a reported VPS observation period
+- Add six evidence integrity checks; no runtime changes or native/service claims
+
 ## 2026-10-18 最低 Python 测试兼容修复
 
 - 修复新增 T16/T23 测试使用 Python 3.11 专属 enterContext，改用等价 ExitStack 与 addCleanup，保留原断言
 - 记录第二十一批 Python 3.10 CI 失败，不修改运行时或原验收条件
 
-## 2026-10-18 重建第二十一批
+## 2026-10-18 重建第二十一批（51193c3）
 
 - 按原 L+C 条件验收 T16：非秘密进度恢复、环境变更复核、已完成购买状态和真实临时清理中断／重试控制
 - 按原 L+C 条件验收 T23：本机 Code 与 VPS 出口分开记录，不擅自转换远端工作区或安装
