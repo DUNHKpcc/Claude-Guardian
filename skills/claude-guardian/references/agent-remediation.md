@@ -46,6 +46,51 @@ Agent 只在证据支持时选对应代码；每条原始证据及时间留在�
 
 所有 guardian.py 已实现 finding/error 与静态 inventory 公开错误码由测试覆盖。网络等归一化代码仅用于 Agent 解释现有获准证据，不代表检测器自动输出或该模块全部实现。
 
+## ENV-06：把已读取规则来源转换为受限候选输入
+
+`rule_source_import.py` 是纯内存宿主库，不是新命令或写入执行器。Agent先明确用户选中的客户端/功能、来源范围及目标策略；只传入已经获准读取的完整字节。不能因为官方文档列出可达域名，就自行选择代理动作或扩大业务范围。仅做离线解释/转换不需要原生执行器准入或修改设备许可；后续文件读取、变更和探测仍各自满足权限与范围。
+
+支持的显式格式只有：
+
+- `exact-domain-lines/0.1`：每行一个ASCII精确域名，只匹配该主机；支持LF/CRLF、一个可选结尾换行和开头BOM。不接受空白/注释行、首尾空格、根点、通配符、Unicode/IDNA或IP字面量，不自动猜后缀。所有标签均为数字的主机（如`127.1`、`192.000.2.1`）也作为歧义输入拒绝，`123.example.invalid`仍可用；这是保守子集，不是任意地址写法检测
+- `mihomo-domain-rules-fragment/0.1`：仅含`rules`的YAML映射，使用block sequence和plain单行三字段`DOMAIN`/`DOMAIN-SUFFIX`。后缀选择保留原有语义，包括后缀本身和标签边界下的子域；不改成仅子域。引号/转义、多行、flow list、别名/标签、provider payload、其他引擎JSON、ASN/CIDR/keyword、修饰符均不在本片段语法内
+
+格式ID只声明该输入语法，不证明安装版本支持。Agent须先核实原列表确实声明精确主机语义，不能把语义未知的provider或其他列表标成精确格式来通过。两种格式使用相同主机子集。源域名大小写和原记录顺序完整保留；仅在检查同类型重复选择器时按ASCII主机名大小写比较。重复、冲突或任意不支持记录导致整批拒绝，不排序、去重、过滤或返回部分候选。精确与后缀记录不会互相合并；它们若重叠，后续编译器仍可拒绝优先级不明的组合。
+
+宿主示例（虚构数据，不能据此执行修改）：
+
+```python
+import hashlib
+from rule_source_import import import_rule_bindings
+
+raw = b"Api.example.invalid\n"
+source = {
+    "schema_version": "guardian-rule-source-binding/0.1",
+    "source_ref": "source-a", "expected_sha256": hashlib.sha256(raw).hexdigest(),
+    "evidence_kind": "user_supplied", "verified_at": "2026-10-18",
+    "version_scope": "declared-source-v1", "purpose": "workflow-repair",
+    "client_scope": ["client-a"], "feature_gate": "selected-feature",
+    "shared_service": False, "activation_state": "candidate",
+}
+imported = import_rule_bindings(
+    raw, "exact-domain-lines/0.1", ["rule-a"], source,
+    {"kind": "user_selected_egress", "group_name": "approved-group"},
+)
+public_summary = imported.preview()
+components = imported.binding_components()  # private, fresh copies
+provenance = imported.private_material()      # private; do not log/export
+```
+
+`expected_sha256`必须匹配函数从完整字节实际计算的SHA-256；不是调用者给什么哈希就信什么。`source_ref`、版本范围、用途、客户端和功能使用非识别性别名；已知凭据形状会拒绝，但不是通用秘密检测。每条私有记录保留源索引/行号/字节位置/原记录、类型、大小写及源动作。带动作来源的每一项必须与明确选定组一致，混合REJECT/DIRECT/其他组不会被静默改写。无动作来源也必须有明确选择。来源日期/版本/类别只作为调用者声明保存，不证明真实性、新鲜度、独立性、活动配置或授权。
+
+Agent将`components`用于既有`rules-prepend` binding的`rules`、`rule_order`、`group_name`字段，不把来源元数据塞进编译器不接受的字段。与当前请求的规则引用、顺序或组不一致时停止并核对选择，不能为通过校验改请求含义。其余target/scope、扩展/base快照、保护索引、所有权/版本/策略组检查仍由原流程处理。继续调用既有`compile_rules_extension`或`repair_cli`预检，不能绕过保护/重复/陈旧/有效优先级门禁；成功导入也不改变`apply_supported=false`或原生未验状态。
+
+私有来源证据应随本次候选审阅保留，但本库不读取来源路径，也不替当前CLI增加来源文件的持久化/执行期复验。来源变化或需再次规划时，重新读取获准字节、重新导入并重新预检，不能把旧源哈希或旧日期当作现在仍有效的证明。公开输出只有固定状态和有界计数；不要将`private_material()`的源正文或元数据放进普通报告。
+
+默认上限：1 MiB完整来源、256条记录、16个客户端别名、5秒（最多60秒）的原始调用预算；保持取消回调。超限、不可读、格式未知或解析器缺失时说明准确缺口，不跳过坏记录、不扩大读取范围、不静默安装依赖。精确域名格式不依赖PyYAML；YAML片段缺解析器时返回固定`PARSER_UNAVAILABLE`。
+
+这只补原ENV-T40的一小段格式导入能力。provider/其他JSON引擎及ASN等语义转换、版本化多引擎适配和完整L+R验收仍未完成；要扩展前先核对有日期/版本的官方语法，不依赖遗失代码或猜测字段。
+
 ## 下一项真正可执行修复：窄范围系统代理端口适配（尚未实现）
 
 建议优先 macOS 的“已启用手动代理、同一活动网络服务、同一代理类型，仅端口修正”。它直接对应当前已实现 PROXY_PORT_ASSOCIATION_CONFLICT 检测，不需要 Clash 文件候选的完整合并/扩展归属证明，但必须有它自身的保护：

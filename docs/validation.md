@@ -571,3 +571,23 @@ Independent full-condition review supports T24; prior T19/T20/T21 replay objects
 remain byte-equivalent at their unchanged projections. Rollback code, CLI,
 guidance, saved-state compatibility and evidence/ledger together; do not discard
 an unresolved resume record merely to load it with an older reader.
+
+Seventh publication `b64c159f` passed both workflows and all five CI jobs:
+Linux 1,232/8 skipped, macOS 1,231/9, Windows 1,054/186, Python 3.10 Linux
+1,232/8; preview 27/27 and detached runtime 9/9. No traceback appeared. Mac
+executable-symlink and Windows foreign-context capture skips remain; they do not
+establish user-device acceptance. Exact remote delta and parent were verified.
+
+Eighth batch adds a pure bounded source-to-binding importer for explicit exact
+lists and the existing three-field domain-rule subset. It preserves source bytes,
+indexes, case, type, order, actions and supplied provenance; unsupported/conflicting
+batches fail without output. No source is fetched or executed. Existing downstream
+protection/version/group/staleness/native gates remain. See
+[API and evidence](evidence/rebuild-rule-source-import.md). Full ENV-T40 L+R remains
+pending. T09's packager pin was freshly reviewed; the five original accepted
+cases and other 213 pending rows are unchanged.
+
+Second full aggregate: 1,285 tests in 18.385 seconds, 1,277 passed and eight skipped.
+Both Node synthetic suites, compilation and whitespace checks passed. Two packages
+matched SHA-256 `8ccd1e7ec763445ffdbace66f9b73f5618fe8408d2b1d707e4e879de8ac18692`.
+Independent review reran 144 focused checks and the exact before/after reproducer.
