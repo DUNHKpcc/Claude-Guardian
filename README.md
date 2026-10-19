@@ -35,6 +35,26 @@ Claude-Guardian 把订阅准备、账号与客户端异常、代理和运行环�
 - Skill 和参考文档可以直接阅读，不运行脚本也能查阅
 - 项目不会自行安装 Python、代理工具或后台服务；部分静态 YAML 功能需要可选的 PyYAML，缺少时会停止并说明
 
+macOS / Linux 在 Bash 中运行（已存在仓库时跳过 `git clone`）：
+
+```bash
+git clone https://github.com/DUNHKpcc/Claude-Guardian.git
+(
+  set -eu
+  skill_root="$HOME/.codex/skills"
+  mkdir -p "$skill_root"
+  if [ -e "$skill_root/claude-guardian" ] || [ -L "$skill_root/claude-guardian" ]; then
+    printf '%s\n' '目标已存在，停止安装；请先检查并备份现有 Skill，再手动迁移。' >&2
+    exit 1
+  fi
+  cp -R Claude-Guardian/skills/claude-guardian "$skill_root/claude-guardian"
+)
+```
+
+最终应有 `~/.codex/skills/claude-guardian/SKILL.md`。该命令遇到已有目标（包括符号链接）会停止，避免嵌套复制或覆盖自定义内容；更新时先检查差异并备份，再手动迁移需要的文件。
+
+Windows 可手动下载或克隆仓库，在自己的 Codex Skill 目录（通常为 `%USERPROFILE%\.codex\skills`）中创建缺少的父目录，再复制完整的 `claude-guardian` 文件夹。确认最终为 `skills\claude-guardian\SKILL.md`；若同名目标已存在，先检查、备份并手动迁移，不直接合并或覆盖。
+
 ### 2. 在 Codex 中开始对话
 
 ```text
@@ -46,7 +66,7 @@ $claude-guardian
 
 ### 3. 确认路线，再开始检查
 
-**明确本轮任务 → 选择本机 / VM / VPS → 了解网络资源和配置状态 → 授权具体检查 → 查看结果与下一步**
+**明确本轮任务 → 显式选择本机 / VM / VPS → 声明必要网络资源与配置状态 → 授权具体检查 → 执行检查 → 计划与逐项操作授权**
 
 路线选择只确定检查对象和深度，不等于允许联网、修改配置或保存资料。只想了解订阅或比较方案，可以停留在解释阶段。
 
@@ -64,6 +84,35 @@ $claude-guardian
 
 本地 HTTP/mixed 入口与上游 SOCKS5 出口是不同层，配置已导入也不等于已生效。详见[环境入口与路线边界](docs/environment-entry-decision.md)。
 
+路线未知、仅比较、拒绝、撤回、过期或冲突时，不继续检查目标，也不能沿用先前的路线确认。路线、目标、资源或配置变化后，相关绑定、确认和旧计划失效，须重新核实；已有恢复义务仍保留。
+
+## 核心场景
+
+| 适用场景 | 需要解决的问题 | 当前处理方式 |
+| --- | --- | --- |
+| **订阅前准备与渠道核对** | 不清楚本机、VM、VPS 的区别，或付款渠道与商店地区前提 | 先确认订阅阶段和用途；需要环境检查时先选路线。逐项核对渠道前提，缺少条件时保留未知，不催促购买 |
+| **代理与网络分流诊断** | 配置已导入但不确定生效，担心 DNS、IPv6 或 WebRTC 路径不符 | 在选定路线与具体授权下检查适用证据，按 Claude 目标流量 `IPv4_ONLY` 规划最小改动；主动端点探测另行授权 |
+| **客户端异常与报错分流** | 遇到 `403` / `429` / `529`、账单冲突或疑似凭据泄露 | 先暂停非必要重试、整理已有证据，区分传输、认证、额度、账单和账号状态，再提出下一步 |
+| **旧设备残留数据清理规划** | 需要整理 Claude 本地残留，同时保护项目源码、Git 历史和 Codex | 说明精确归属、保护项与隔离/恢复计划；清理接口默认无宿主适配器，不能据此宣称已可执行或已验收 |
+
+## 工作流与门禁机制
+
+```mermaid
+flowchart TD
+    A["PC0 接触前保护 / G1 明确本轮任务"] --> B["显式选择 local / VM / VPS"]
+    B --> C["声明必要网络资源与配置状态"]
+    C --> D["绑定目标并取得具体检查授权"]
+    D --> E["按路线范围检查；VPS 仅基础非侵入"]
+    E --> F["G2 计划：证据、未知项、差异与恢复条件"]
+    F --> G["G3 逐项授权；按能力执行与复测"]
+    G --> H["另行满足 PC1 安装/基础测试、PC2 登录/支付前提与授权"]
+    B --> I["路线未知或撤回：停止检查，相关旧计划失效"]
+```
+
+- **PC0** 保持接触门禁关闭：不启动客户端、不执行 `claude --version`，不访问或解析 Claude / Anthropic 服务；诊断通过不会自动开启门禁。
+- **G1 → G2 → G3** 分别组织事实收集、方案和逐项授权。选择路线或完成问卷只满足部分入口前提，不能代替检查、修改或联网授权。
+- **PC1 / PC2** 的客户端安装、基础测试、官方登录和支付有各自条件与授权；不是流程图走到末尾就可执行。VPS 采购与部署留待后续范围。
+
 ## 能力与边界
 
 | 能力 | 当前能做什么 | 不能由此得出的结论 |
@@ -73,6 +122,8 @@ $claude-guardian
 | **离线分析与面板** | 整理本地结构化事实，生成静态状态快照和下一步建议 | 面板不是实时监控，输入报告不是本次认证的设备证据 |
 | **修复计划与候选** | 生成限定范围的计划或私有差异，说明保护项与恢复条件 | 生成候选不代表已写入、应用生效或实际网络恢复 |
 | **受限探测与恢复接口** | 供可信宿主按各自契约、精确范围和逐次授权调用 | 源码中有接口不代表默认 CLI 会调用，也不开放完整自动修复 |
+
+清理当前是规划与受控接口边界。默认 `cleanup_cli.py capabilities` 返回 `host_adapter_available=false`、`default_mutations=blocked_without_host`、`native_acceptance=not_run`，永久删除不受支持。POSIX 隔离/恢复夹具通过不代表用户设备清理已验收；详见[清理接口说明](docs/cleanup-cli-usage.md)。
 
 默认 CLI 不自动联网、付款、清理或修改配置。网络探测必须另行确认端点与范围；受限 POSIX 事务和恢复接口有独立前提，不能把测试文件中的成功当成用户设备上的成功。
 
@@ -113,6 +164,42 @@ python3 skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --
 `check` 的目标绑定必须来自实际宿主与用户确认，不能补造授权。`analyze` / `plan` 处理本地结构化事实，样例见 [`tests/fixtures/`](tests/fixtures)。合成数据必须保留合成标记；导入报告不会恢复执行权限。完整契约见[导入与导出边界](docs/evidence/rebuild-inventory-export-boundaries.md)。
 
 Windows 用户使用环境中实际可用的 Python 3 启动命令，例如 `py -3`。各入口的平台支持以对应帮助和文档为准；不能把核心跨平台测试等同于每个宿主接口均可用。
+
+### CLI 与脚本索引
+
+下列路径均位于 `skills/claude-guardian/scripts/`，命令从仓库根目录执行。帮助和能力查询不执行设备检查。
+
+| 脚本 | 用途与边界 | 入口示例 |
+| --- | --- | --- |
+| `interview_cli.py` | 完整状态化访谈、单题调度和中断续接 | `python3 skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --account-ref account-a` |
+| `guardian.py` | 简化访谈、本机受控检查、离线分析与计划 | `python3 skills/claude-guardian/scripts/guardian.py --help` |
+| `status_dashboard.py` | 读取已有报告，生成新的静态离线 HTML，不做新检查 | `python3 skills/claude-guardian/scripts/status_dashboard.py --input report.json --output dashboard.html` |
+| `diagnostic_session.py` | 当前本机有限元数据会话，需要入口声明及现场终端确认；CLI 不开放 DNS | `python3 skills/claude-guardian/scripts/diagnostic_session.py --help` |
+| `inventory_cli.py` | 能力查询、门禁状态和授权静态配置审计 | `python3 skills/claude-guardian/scripts/inventory_cli.py capabilities` |
+| `agent_remediation.py` | 从本地报告选择结构化修复动作，不执行修复 | `python3 skills/claude-guardian/scripts/agent_remediation.py --help` |
+| `repair_cli.py` | 精确文件预检、计划、差异与受门禁阻塞的执行；含 `rules-prepend` 候选 | `python3 skills/claude-guardian/scripts/repair_cli.py --help` |
+| `recovery_cli.py` | POSIX 回执检查、协调与精确文件恢复，不能代替排他访问或操作授权 | `python3 skills/claude-guardian/scripts/recovery_cli.py --help` |
+| `cleanup_cli.py` | 清理能力查询；其余操作依赖可信宿主，默认阻塞 | `python3 skills/claude-guardian/scripts/cleanup_cli.py capabilities` |
+| `serve_webrtc.py` | 限时回环测试页；用户在浏览器确认后才发起 STUN，不能称为完全离线探测 | `python3 skills/claude-guardian/scripts/serve_webrtc.py --help` |
+
+`report.json` 必须是已授权且符合输入契约的本地报告，`dashboard.html` 必须是尚不存在的新文件。CLI 示例中的别名、声明和输入文件都不构成真实设备证据或操作授权。
+
+诊断会话在已核实的本机 macOS 可信宿主中，先由宿主依据本次明确选择准备当前入口声明，再使用绝对路径：
+
+```sh
+python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop-a \
+  --entry-file /approved-private-directory/entry.json
+```
+
+路径为占位示例；文件须满足 `environment_entry.require_entry(..., 'offline_precheck', 'laptop-a')`，随后仍需现场具体检查确认。当前 `--entry-file` 安全读取器仅支持 POSIX；Windows 不可照搬该命令，可信宿主须显式通过 `diagnostic_session.run(..., entry_request=...)` 或 `execute(..., entry_request=...)` 传入声明，并保留原有目标、权限和现场确认契约。不能用保存的问卷或伪造布尔值替代授权，详见[诊断会话](docs/diagnostic-session.md)和[环境入口](docs/environment-entry-decision.md)。
+
+**保存与修改按各入口契约区分：**
+
+- `interview_cli.py`、`guardian.py` 默认把结果写到 stdout，显式 `--output` 才另存新报告；`status_dashboard.py` 则要求 `--output` 指定新 HTML。
+- `diagnostic_session.py` 把 JSON 写到 stdout；显式 `--dashboard-output` 可保存新 HTML，取消或拒绝时不保存，阻塞状态也可能生成报告，不能把保存成功视为检查通过。
+- `repair_cli.py plan` 可通过 `--plan-file` 配合 `--backup-directory` 保留私有计划；`execute` 读取保留计划和摘要，仍受 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE` 阻塞。计划保存不代表目标配置已写入。
+- `recovery_cli.py inspect / preview / reconcile` 只读核对指定回执与适用目标；`rollback / restore-prepared` 在精确范围、排他访问和现场确认成立后会恢复目标文件字节/模式，并可能按事务契约保留恢复记录，不使用 `--output` 作为写入开关。详见[离线恢复](docs/offline-recovery.md)。
+- `cleanup_cli.py` 的宿主操作另有计划、回执与隔离/恢复契约（如 `--plan-output`、`--receipt-output`），默认缺少宿主时不能执行。`serve_webrtc.py` 会临时监听回环端口，不因没有 `--output` 就变成无副作用的离线解析器。
 
 </details>
 
