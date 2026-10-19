@@ -60,8 +60,19 @@ PRIOR_LIMITED_REVIEW = 'docs/evidence/entry-order-limited-revalidation.md'
 PRIOR_LIMITED_REVIEW_SHA256 = 'b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d'
 AGENT_TASK_REVIEW = 'docs/evidence/agent-rules-limited-revalidation.md'
 AGENT_TASK_REVIEW_SHA256 = 'e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900'
-LIMITED_CURRENT_REVIEW = 'docs/evidence/agent-rules-comments-limited-revalidation.md'
-LIMITED_CURRENT_REVIEW_SHA256 = '93621e537809d78cc7482919bb979a1f8e4c47498933b7943dab524a37ca4900'
+COMMENT_REVIEW = 'docs/evidence/agent-rules-comments-limited-revalidation.md'
+COMMENT_REVIEW_SHA256 = '93621e537809d78cc7482919bb979a1f8e4c47498933b7943dab524a37ca4900'
+LIMITED_CURRENT_REVIEW = 'docs/evidence/whole-machine-limited-revalidation.md'
+LIMITED_CURRENT_REVIEW_SHA256 = '3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2'
+WHOLE_MACHINE_TRANSITION = 'docs/evidence/whole-machine-limited-transition.json'
+WHOLE_MACHINE_TRANSITION_SHA256 = '04e401b9721d729359de50b6bc6973c61f5fa3e4e990292c2f389a42ded61d7f'
+WHOLE_MACHINE_PRIOR_SOURCES = {
+    'skills/claude-guardian/SKILL.md': '4d66015c1a0af5a4d325c99e839703ffd1b860a24804df6590d59014f29b1ff6',
+    'skills/claude-guardian/references/routes-and-platforms.md': 'dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984',
+    'skills/claude-guardian/references/network-and-remedies.md': 'a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b',
+    'skills/claude-guardian/references/agent-remediation.md': '7b0cae2742163bff73ff8bb5b6dc177a47fdb9e50f20a0e7cb565c5dd9b93b16',
+    'tests/test_guides.py': 'efa94b9c97930000979eb79e963925e0c8baaa79c0f1e2fdead61aa963dcc34c',
+}
 COMMENT_TRANSITION = 'docs/evidence/agent-rules-comments-limited-transition.json'
 COMMENT_TRANSITION_SHA256 = '0e4b9ab806fddf72b2f79183b4aba4e24b6f9190dda742ac8f464362e8826214'
 COMMENT_PRIOR_SOURCES = {
@@ -136,12 +147,47 @@ def _comment_transition_records():
     return proof['sources']
 
 
+def _whole_machine_transition_records():
+    path = ROOT / WHOLE_MACHINE_TRANSITION
+    if path.is_symlink():
+        raise AssertionError('Whole-machine transition proof is a symlink')
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != WHOLE_MACHINE_TRANSITION_SHA256:
+        raise AssertionError('Unreviewed whole-machine transition proof')
+    proof = json.loads(raw)
+    if (set(proof) != {'schema', 'purpose', 'prior_review_path',
+                       'prior_review_sha256', 'sources'}
+            or proof['schema'] != 'guardian-whole-machine-guidance-transition/1'
+            or proof['purpose'] != 'exact_source_transition_only_not_behavioral_acceptance'
+            or proof['prior_review_path'] != COMMENT_REVIEW
+            or proof['prior_review_sha256'] != COMMENT_REVIEW_SHA256
+            or set(proof['sources']) != set(WHOLE_MACHINE_PRIOR_SOURCES)):
+        raise AssertionError('Whole-machine transition scope changed')
+    for relative, entry in proof['sources'].items():
+        if (set(entry) != {'before_sha256', 'after_sha256', 'replacements'}
+                or entry['before_sha256'] != WHOLE_MACHINE_PRIOR_SOURCES[relative]
+                or not entry['replacements']
+                or any(set(item) != {'before', 'after'} for item in entry['replacements'])):
+            raise AssertionError('Prior whole-machine source pin or replacement shape changed')
+    return proof['sources']
+
+
+def _whole_machine_prior_source_bytes(relative):
+    """Preserve the previous guidance in full; never execute it as new evidence."""
+    path = ROOT / relative
+    if path.is_symlink():
+        raise AssertionError('Current whole-machine transition source is a symlink')
+    raw = path.read_bytes()
+    records = _whole_machine_transition_records()
+    return _reverse_exact_transition(raw, records[relative]) if relative in records else raw
+
+
 def _agent_task_source_bytes(relative):
     """Reconstruct prior source bytes only; never execute them as current evidence."""
     path = ROOT / relative
     if path.is_symlink():
         raise AssertionError('Current comment transition source is a symlink')
-    raw = path.read_bytes()
+    raw = _whole_machine_prior_source_bytes(relative)
     records = _comment_transition_records()
     return _reverse_exact_transition(raw, records[relative]) if relative in records else raw
 
@@ -279,14 +325,67 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(page.read_bytes()).hexdigest(), LIMITED_CURRENT_REVIEW_SHA256)
         pins = re.findall(r'^\| `([^`]+)` \| `([0-9a-f]{64})` \|$',
                           page.read_text(encoding='utf-8'), re.MULTILINE)
-        self.assertEqual(len(pins), 19)
-        self.assertEqual(len({name for name, _ in pins}), 19)
+        self.assertEqual(len(pins), 22)
+        self.assertEqual(len({name for name, _ in pins}), 22)
         for name, digest in pins:
             with self.subTest(current_reviewed_source=name):
                 path = ROOT / name
                 self.assertFalse(path.is_symlink())
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest,
                                  'Current acceptance requires renewed scoped review after source drift')
+
+    def test_prior_comment_review_and_all_nineteen_pins_remain_unchanged(self):
+        page = ROOT / COMMENT_REVIEW
+        self.assertFalse(page.is_symlink())
+        self.assertEqual(hashlib.sha256(page.read_bytes()).hexdigest(), COMMENT_REVIEW_SHA256)
+        pins = re.findall(r'^\| `([^`]+)` \| `([0-9a-f]{64})` \|$',
+                          page.read_text(encoding='utf-8'), re.MULTILINE)
+        self.assertEqual(len(pins), 19)
+        self.assertEqual(len({name for name, _ in pins}), 19)
+        for name, digest in pins:
+            with self.subTest(prior_comment_source=name):
+                self.assertEqual(hashlib.sha256(_whole_machine_prior_source_bytes(name)).hexdigest(), digest,
+                                 'Keep the complete prior comment review; never refresh old pins')
+
+    def test_whole_machine_transition_preserves_five_complete_previous_files(self):
+        records = _whole_machine_transition_records()
+        self.assertEqual(set(records), set(WHOLE_MACHINE_PRIOR_SOURCES))
+        for relative, digest in WHOLE_MACHINE_PRIOR_SOURCES.items():
+            with self.subTest(source=relative):
+                raw = _whole_machine_prior_source_bytes(relative)
+                self.assertNotEqual(records[relative]['after_sha256'], digest)
+                self.assertEqual(hashlib.sha256(raw).hexdigest(), digest)
+                if relative.endswith(('network-and-remedies.md', 'routes-and-platforms.md')):
+                    saved = ROOT / 'tests/fixtures/historical-fact-copy-95015be/source' / relative
+                    self.assertEqual(raw, saved.read_bytes())
+
+    def test_whole_machine_transition_rejects_source_drift_and_altered_reverse_spans(self):
+        for relative, entry in _whole_machine_transition_records().items():
+            raw = (ROOT / relative).read_bytes()
+            with self.subTest(source=relative):
+                with self.assertRaisesRegex(AssertionError, 'Unreviewed current'):
+                    _reverse_exact_transition(raw + b'\n', entry)
+                changed = json.loads(json.dumps(entry))
+                changed['replacements'][0]['before'] += 'unreviewed'
+                with self.assertRaisesRegex(AssertionError, 'whole-file'):
+                    _reverse_exact_transition(raw, changed)
+                changed = json.loads(json.dumps(entry))
+                changed['replacements'][0]['after'] = 'not present in reviewed source'
+                with self.assertRaisesRegex(AssertionError, 'missing or duplicated'):
+                    _reverse_exact_transition(raw, changed)
+
+    def test_whole_machine_transition_rejects_changed_proof_and_symlink_inputs(self):
+        proof = (ROOT / WHOLE_MACHINE_TRANSITION).read_bytes()
+        with patch.object(Path, 'read_bytes', return_value=proof + b'\n'):
+            with self.assertRaisesRegex(AssertionError, 'Unreviewed whole-machine transition'):
+                _whole_machine_transition_records()
+        with patch.object(Path, 'is_symlink', return_value=True):
+            with self.assertRaisesRegex(AssertionError, 'proof is a symlink'):
+                _whole_machine_transition_records()
+            for relative in WHOLE_MACHINE_PRIOR_SOURCES:
+                with self.subTest(source=relative):
+                    with self.assertRaisesRegex(AssertionError, 'source is a symlink'):
+                        _whole_machine_prior_source_bytes(relative)
 
     def test_prior_agent_task_review_and_all_nineteen_pins_remain_unchanged(self):
         page = ROOT / AGENT_TASK_REVIEW
@@ -311,7 +410,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
 
     def test_comment_transition_rejects_source_drift_and_altered_reverse_spans(self):
         for relative, entry in _comment_transition_records().items():
-            raw = (ROOT / relative).read_bytes()
+            raw = _whole_machine_prior_source_bytes(relative)
             with self.subTest(source=relative):
                 with self.assertRaisesRegex(AssertionError, 'Unreviewed current'):
                     _reverse_exact_transition(raw + b'\n', entry)
@@ -365,7 +464,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
 
     def test_exact_source_transition_rejects_extra_bytes_and_changed_replacement(self):
         for relative, entry in _transition_records().items():
-            raw = (ROOT / relative).read_bytes()
+            raw = _agent_task_source_bytes(relative)
             with self.subTest(source=relative), self.assertRaisesRegex(AssertionError, 'Unreviewed current'):
                 _reverse_exact_transition(raw + b'\n', entry)
             changed = json.loads(json.dumps(entry))
@@ -471,6 +570,19 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         for evidence in previous.values():
             self.assertEqual(evidence['path'], AGENT_TASK_REVIEW)
             self.assertEqual(evidence['sha256'], AGENT_TASK_REVIEW_SHA256)
+
+    def test_prior_comment_evidence_objects_are_retained_exactly(self):
+        ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))
+        previous = {case['id']: case['prior_comment_revalidation_evidence']
+                    for case in ledger['cases'] if 'prior_comment_revalidation_evidence' in case}
+        self.assertEqual(set(previous), CURRENTLY_ACCEPTED)
+        canonical = json.dumps(previous, ensure_ascii=True, sort_keys=True,
+                               separators=(',', ':')).encode('utf-8')
+        self.assertEqual(hashlib.sha256(canonical).hexdigest(),
+                         '9aea03755067a37c19007fbbbfb5c163292fea124916244b71dc0618358d6e46')
+        for evidence in previous.values():
+            self.assertEqual(evidence['path'], COMMENT_REVIEW)
+            self.assertEqual(evidence['sha256'], COMMENT_REVIEW_SHA256)
 
     def test_scheduling_is_not_current_or_historical_acceptance(self):
         ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))

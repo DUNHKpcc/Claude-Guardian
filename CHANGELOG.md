@@ -1,5 +1,17 @@
 # 版本记录
 
+## 2026-10-19 — 整机统一路径默认与明确分流例外
+
+- 按用户新要求将网络准备／修复默认扩展到同一电脑所有普通应用、子进程和后台服务；普通应用目标腿 IPv4-only，故障不直连，用户明确指定的独立路径分别验收
+- 配置前说明 TUN 等接管方式、影响、精确例外及恢复并取得具体批准；区分接管与路由模式、上游引导／本地例外、整机强制证据及IP观察范围
+- 原 target-only API、报告和面板契约保持原义，不冒充整机能力；仅更新现有 Skill 指导与离线文档回归，不新增脚本、守护、真实设备操作或持续保护能力
+
+## 2026-10-19 — 修复后出口稳定性指导
+
+- 在现有 Agent 修复闭环增加唯一稳定性核查章节，覆盖自启、配置持久化、故障出口边界、IPv4-only、生命周期复验及 IP 漂移说明
+- 区分规则声明、应用载入、目标进程采用和端到端观察；复用现有检查与回执，保留 DNS／UDP／WebRTC 证据、具体授权、独立恢复及未知能力边界
+- 仅补充既有 Skill 文档及五项离线文档回归；不新增 Skill、脚本、守护进程或运行能力，不扩张真实设置／重载权限、历史验收或持续守护承诺
+
 ## 2026-10-19 — Preserve comments in the bounded Agent rules task
 
 - Accept legal comments within the existing three-sequence extension shape while preserving original bytes and the single insertion

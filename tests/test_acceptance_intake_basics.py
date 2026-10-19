@@ -616,7 +616,14 @@ class IntakeBasicsAcceptanceTests(unittest.TestCase):
             self.assertIn(row + ' L+C |', TRACKER_TEXT)
         self.assertIn('Technical skill changes explanation depth only.', INTAKE_GUIDE)
         self.assertIn('An answer is never an action authorization', f.__doc__)
-        self.assertIn('A browser-only task does not require Code/Desktop or firewall setup.', ROUTE_GUIDE)
+        # Current product guidance retains no-default-installation, while a
+        # browser-only use case does not exempt the whole-device network goal.
+        self.assertIn('A browser-only task does not require Code/Desktop installation.', ROUTE_GUIDE)
+        self.assertIn('browser-only 不能豁免整机网络要求', ROUTE_GUIDE)
+        self.assertIn('具体接管／防护机制先核验能力、说明影响并取得批准，不默认安装防火墙。', ROUTE_GUIDE)
+        self.assertIn('不默认安装系统防火墙；防护机制按整机覆盖需求和具体批准评估，不因只用浏览器就豁免网络要求', ROUTE_GUIDE)
+        self.assertNotIn('A browser-only task does not require Code/Desktop or firewall setup.', ROUTE_GUIDE)
+        self.assertNotIn('浏览器-only 跳过开发运行时、CLI、MCP 和系统防火墙安装', ROUTE_GUIDE)
         self.assertIn('解释深度可按新手逐步卡片、熟悉用户简表、专家差异清单调整，安全门槛不随等级变化。', ROUTE_GUIDE)
         self.assertIn('Q-C07 永久停用', INTAKE_GUIDE)
         self.assertIn('完整环境摘要可自动填入初访字段，只补缺口。', SPEC_TEXT)

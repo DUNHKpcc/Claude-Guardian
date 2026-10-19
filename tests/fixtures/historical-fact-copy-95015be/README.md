@@ -5,7 +5,7 @@ This sparse fixture preserves public source bytes from release
 `0fbe23a5fe52dd28706f933e4c9df94c077ae688`). It is not the current runtime,
 not a new acceptance decision, and not a new model-response generation.
 
-12 changed source files are retained verbatim (562,019 bytes). Every other
+14 changed source files are retained verbatim (604,006 bytes). Every other
 required source has one explicit repository origin and must still match the
 recorded whole-file hash and size. There is no fallback, hash substitution, or
 symlink to current code. A repository-origin source change requires an explicit
@@ -37,3 +37,13 @@ The additional stored source is the original 10,004-byte
 The current document clarifies retained schema 0.3; this historical source keeps
 schema 0.2 exactly. Only its explicit origin changes from repository to snapshot;
 its old hash and size, all other source records, and historical receipts stay fixed.
+
+Two further sources retain their original whole-file bytes for the whole-machine
+network-guidance update: `skills/claude-guardian/references/network-and-remedies.md`
+(16,003 bytes, SHA-256
+`a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b`) and
+`skills/claude-guardian/references/routes-and-platforms.md` (25,984 bytes, SHA-256
+`dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984`).
+Only their two origins change to snapshot. Old hashes, sizes, source membership
+and every historical evidence packet stay unchanged. These preserved bytes are
+not evidence that current whole-machine routing or TUN behavior works.

@@ -10,7 +10,7 @@ The execution host runs Guardian; the target runs the future Claude workflow; an
 
 ## R-LOCAL / local (recommended, never silently selected)
 
-Scope: macOS and Windows 10/11. Identify OS/version, Edition or relevant architecture, chosen client, installation metadata, proxy boundaries, and data protections. A browser-only task does not require Code/Desktop or firewall setup. Linux desktop and mobile-only users receive clearly limited general guidance; do not claim a native adapter or force a VM/VPS migration.
+Scope: macOS and Windows 10/11. Identify OS/version, Edition or relevant architecture, chosen client, installation metadata, proxy boundaries, and data protections. A browser-only task does not require Code/Desktop installation. browser-only 不能豁免整机网络要求；网络准备／修复按[现行整机默认与明确例外](agent-remediation.md#ipv4-only-policy)核对，具体接管／防护机制先核验能力、说明影响并取得批准，不默认安装防火墙。Linux desktop and mobile-only users receive clearly limited general guidance; do not claim a native adapter or force a VM/VPS migration.
 
 1. Interview and authorized native metadata reads; plan only necessary changes
 2. Identify network/browser evidence gaps and post-contact compatibility checks
@@ -80,7 +80,7 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 ### L1 准备与已有环境接入（本机，PC0）
 
 1. 用户确认 Mac/Windows 的实际目标和日常使用者；从已有报告复用版本/架构/Edition，不把远程沙箱当本机
-2. 明确网页、Desktop、独立 Code 或 IDE 中的 Code；只处理需要的客户端。浏览器-only 跳过开发运行时、CLI、MCP 和系统防火墙安装
+2. 明确网页、Desktop、独立 Code 或 IDE 中的 Code；只处理需要的客户端。浏览器-only 跳过无关开发运行时、CLI、MCP，不默认安装系统防火墙；防护机制按整机覆盖需求和具体批准评估，不因只用浏览器就豁免网络要求
 3. 通过授权元数据检查安装来源、版本/签名、浏览器 Profile、活动代理实例/配置；不运行 `claude --version`、更新器或登录状态命令
 4. 记录现有后台任务、恢复标签页和扩展可能联网的缺口。需要退出时先保存工作并让用户确认正常退出；不能强杀整个运行时
 5. 标注需保护的项目、未提交修改、CLI 配置、历史、skills/hooks、Codex 路径。备份方案列明私有目的地和恢复限制，再单独批准实际备份
@@ -89,14 +89,14 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ### L2 网络、浏览器与可选防护（本机，PC0）
 
-1. 写清预期路径：例如指定 Profile 的 HTTPS 走既有代理；不要写“全机安全”
+1. 写清现行整机默认或用户明确选择的窄范围／分流例外，按[Agent 路径要求](agent-remediation.md#ipv4-only-policy)核对。指定 Profile 的 HTTPS 走既有代理只是局部观察示例，不是整机验收；不能据此写“全机安全”
 2. 按 [网络与解决方法](network-and-remedies.md) 分别检查 HTTPS、DNS、IPv6、UDP、WebRTC；中性端点也要范围批准，不主动解析 Claude 域名
 3. 对确认的差异仅拟最小配置改动，展示语义 diff、配置持久化位置、更新覆盖风险、备份与回滚；批准后仅使用已验收的适配器，否则交给用户人工完成并复验
 4. macOS 严格出站保护可评估免费 **LuLu** 候选；核验官方来源、当前许可/兼容性、系统扩展权限、进程/子进程匹配和卸载恢复。安装不是本卡默认动作；未完成故障测试不能称已实现 kill switch
 5. Windows 优先评估系统内置防火墙的精确程序/作用域规则；先导出现有相关规则并核查组织策略。不要用全局 block 再假定 allow 回环能覆盖冲突；共享解释器规则可能影响其他项目
 6. 故障演练前准备离线恢复和独立控制通道，单独请求授权。分别测节点失效、GUI 退出/内核仍在、内核停止、新进程、网络切换、IPv4/IPv6 和适用 UDP；未测项保留未测
 
-**验收/恢复**：正常与故障条件下有实际获准的新连接尝试和观测才能评价阻断；单次连接失败不够。恢复原配置/精确规则后复测 Codex、代理及用户必要应用。不能改变 Codex 为 DIRECT，不能全机禁 UDP/IPv6 来隐藏缺口。
+**验收/恢复**：正常与故障条件下有实际获准的新连接尝试和观测才能评价阻断；单次连接失败不够。恢复原配置/精确规则后复测 Codex、代理及用户必要应用。不得未经具体批准将 Codex 改为 DIRECT；获准的 Codex／救援独立直连须单列为例外并验收，不能称全软件零旁路。不能全机禁 UDP/IPv6 来隐藏缺口。
 
 ### L3 安装、使用与更新（本机，PC1/PC2）
 

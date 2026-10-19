@@ -6,12 +6,14 @@ Read only for relevant network/client tasks. Every method below is a diagnostic 
 
 See [sanitized macOS DNS/IPv6/Tailscale case lessons](macos-dns-case-lessons.md) for a derived single-device example and its evidence limits. Configuration drift invalidates conclusions about the new state; process-bound direct checks do not establish stop/restart lifecycle behavior, and UDP/TCP DNS coverage must be evaluated separately.
 
+**现行范围（2026-10-19）：** 默认同一目标电脑所有普通应用的公网路径统一；用户明确指定的软件／进程独立路径作为例外分别验收。配置前须说明 TUN 等接管方式、影响、例外和恢复并取得具体批准。以[Agent 整机路径要求](agent-remediation.md#ipv4-only-policy)为唯一权威范围说明；本页的程序、档案或协议样本是局部证据，不能缩小整机默认、自动豁免其他应用或据此认证整机通过。原目标范围工具和历史资料未因此升级为整机能力。
+
 <a id="claude-target-ipv4-only"></a>
-## PRODUCT-IPV4-20261018: selected Claude traffic is IPv4-only
+## PRODUCT-IPV4-20261018: legacy selected-target methods
 
-中文执行要求：2026-10-18 已确认所选 Claude 目标／应用流量只允许 IPv4，不得在失败时回退 IPv6。即使尚未观察到旁路，也要在网络准备中规划并核对此要求；不能因为暂时连通或没有报错就省略。历史 D05 的双栈优先推荐在这个范围内由新产品选择取代，原规格／验收行和历史案例不改写。无需重新询问协议偏好；只补实际目标范围、能力与证据缺口。
+旧目标范围方法：2026-10-18 所选 Claude 目标／应用流量的 IPv4-only 要求曾取代其范围内历史 D05 的双栈推荐；原规格／验收行和历史案例不改写。以下方法仅在用户明确选择相应窄范围方案时适用，或作为局部诊断，不定义现行整机默认。保留其他应用、外层IPv6或未选流量的旧范围声明不得自动成为整机例外；整机范围与明确分流按上节链接处理。
 
-Keep three layers separate: the product policy is `IPv4_ONLY`; scoped enforcement support may be unknown or unsupported; compliance is not established without current same-scope verification. This batch's pure policy/planning/reporting interfaces cannot certify enforcement or grant execution. Imported JSON claims, saved approvals, G2 planning readiness and successful independent rule edits cannot promote that status. Lack of a supported mechanism does not change the policy to dual stack.
+For the legacy selected-target contract, keep three layers separate: the policy is `IPv4_ONLY`; scoped enforcement support may be unknown or unsupported; compliance is not established without current same-scope verification. The shipped pure policy/planning/reporting interfaces cannot certify enforcement or grant execution, and their selected-target output is not whole-device coverage. Imported JSON claims, saved approvals, G2 planning readiness and successful independent rule edits cannot promote that status. Lack of a supported mechanism does not change the policy to dual stack.
 
 1. Enumerate the selected application, profile, target/function flows and participating subprocesses. A parent proxy environment variable is not child-process enforcement. For a proxy path, identify the application-to-proxy path and the proxy-to-target address-family decision separately; an IPv4 loopback listener does not prove the target leg is IPv4-only
 2. Preserve the proxy's outer node transport, including necessary IPv6/UDP, separately from the target leg. Also preserve loopback, Codex and independent recovery channels, organization rules, VPN/private DNS, other applications, system interface IPv6 and all unselected flows. A global switch or browser-wide restriction is not an acceptable silent substitute for selected-scope control
@@ -83,7 +85,7 @@ Mihomo 的 `fingerprint` 是证书指纹字段，`fingerprint: chrome` 属于字
 
 ENV-06 plan families are: keep current configuration with narrow rule repair; explicit proxy plus rules; TUN plus rules; explicitly scoped compatibility fallback. Do not publish an unvalidated universal Clash YAML. Account for GUI/extension merge priority, effective runtime, subscription updates, first-match ordering, internal exceptions, Codex connectivity, and rollback conflicts.
 
-The current IPv4-only policy is evaluated separately from these four legacy semantic plans. Do not inject networking changes into an unrelated rule edit or remove the older compatibility planner's outer-transport protection. A legacy intent to preserve target-leg IPv6 conflicts with the current product policy and must be disclosed; it is not silently reinterpreted as an instruction to block. Completing an independent plan does not satisfy the policy.
+The shipped selected-target IPv4-only contract is evaluated separately from these four legacy semantic plans. Do not inject networking changes into an unrelated rule edit or remove the older compatibility planner's outer-transport protection. A legacy intent to preserve target-leg IPv6 conflicts with that contract and must be disclosed; it is not silently reinterpreted as an instruction to block. These finding/plan entries remain local diagnostic methods, not the current whole-device scope or automatic exceptions. Completing an independent plan does not satisfy either the scoped contract or the current whole-device requirement.
 
 ## Guarded host libraries and remaining native validation
 

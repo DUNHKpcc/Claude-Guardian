@@ -36,14 +36,51 @@ class HistoricalSourceFixtureControls(unittest.TestCase):
         self.assertEqual(manifest['release_commit'], '95015be0fc70d2a1b143b43aab09e7a7ab7a7565')
         self.assertEqual(manifest['release_tree'], '0fbe23a5fe52dd28706f933e4c9df94c077ae688')
         self.assertEqual(len(manifest['sources']), 64)
-        self.assertEqual(manifest['snapshot_files'], 12)
-        self.assertEqual(manifest['snapshot_bytes'], 562019)
+        self.assertEqual(manifest['snapshot_files'], 14)
+        self.assertEqual(manifest['snapshot_bytes'], 604006)
         self.assertEqual({entry['origin'] for entry in manifest['sources'].values()},
                          {'snapshot', 'repository'})
 
+    def _before_network_preservation_manifest(self):
+        previous = json.loads(json.dumps(MANIFEST))
+        expected = {
+            'skills/claude-guardian/references/network-and-remedies.md':
+                (16003, 'a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b'),
+            'skills/claude-guardian/references/routes-and-platforms.md':
+                (25984, 'dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984'),
+        }
+        for relative, (size, digest) in expected.items():
+            self.assertEqual(previous['sources'][relative],
+                             {'origin': 'snapshot', 'size_bytes': size, 'sha256': digest})
+            previous['sources'][relative]['origin'] = 'repository'
+        previous['snapshot_files'] = 12
+        previous['snapshot_bytes'] = 562019
+        previous['readme_sha256'] = 'ac6bd29e5c913c5978bfa25d382c3ad3d81f0d2597dc05c38eb91d33535cb8e7'
+        return previous
+
+    def test_network_guidance_preservation_reconstructs_complete_prior_manifest(self):
+        previous = self._before_network_preservation_manifest()
+        raw = (json.dumps(previous, ensure_ascii=True, sort_keys=True, indent=2) + '\n').encode('utf-8')
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),
+                         '696c39044e3711a6594bfc3861d20396b9ff462c097a6d9afb5cd8070a38e692')
+        readme = (ROOT / compatibility.SNAPSHOT_REL / 'README.md').read_bytes()
+        marker = b'\nTwo further sources retain their original whole-file bytes for the whole-machine\n'
+        self.assertEqual(readme.count(marker), 1)
+        original = readme[:readme.index(marker)].replace(
+            b'14 changed source files are retained verbatim (604,006 bytes).',
+            b'12 changed source files are retained verbatim (562,019 bytes).', 1)
+        self.assertEqual(hashlib.sha256(original).hexdigest(), previous['readme_sha256'])
+        for relative in ('skills/claude-guardian/references/network-and-remedies.md',
+                         'skills/claude-guardian/references/routes-and-platforms.md'):
+            with self.subTest(source=relative):
+                entry = previous['sources'][relative]
+                snapshot = ROOT / compatibility.SNAPSHOT_REL / 'source' / relative
+                self.assertEqual(len(snapshot.read_bytes()), entry['size_bytes'])
+                self.assertEqual(hashlib.sha256(snapshot.read_bytes()).hexdigest(), entry['sha256'])
+
     def test_rules_document_preservation_changes_origin_without_repinning_history(self):
         # Reverse only this explicit preservation step, not historical content.
-        previous = json.loads(json.dumps(MANIFEST))
+        previous = self._before_network_preservation_manifest()
         entry = previous['sources']['docs/rules-extension-plan.md']
         self.assertEqual(entry, {'origin': 'snapshot', 'size_bytes': 10004,
             'sha256': 'bc851c13dffd4670ab6e6f471eabd38f3087a22f146dc2ad67cc8913aa12f057'})

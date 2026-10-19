@@ -19,12 +19,12 @@
     }
   },
   "purpose": "historical_only_not_current_acceptance",
-  "readme_sha256": "ac6bd29e5c913c5978bfa25d382c3ad3d81f0d2597dc05c38eb91d33535cb8e7",
+  "readme_sha256": "7cbcf13f8ae391639f6aa2a74818cf942022fedcdd8b3f1a50a4360f1480dfca",
   "release_commit": "95015be0fc70d2a1b143b43aab09e7a7ab7a7565",
   "release_tree": "0fbe23a5fe52dd28706f933e4c9df94c077ae688",
   "schema": "guardian-historical-fact-copy-source/1",
-  "snapshot_bytes": 562019,
-  "snapshot_files": 12,
+  "snapshot_bytes": 604006,
+  "snapshot_files": 14,
   "sources": {
     "AGENTS.md": {
       "origin": "repository",
@@ -122,12 +122,12 @@
       "size_bytes": 8118
     },
     "skills/claude-guardian/references/network-and-remedies.md": {
-      "origin": "repository",
+      "origin": "snapshot",
       "sha256": "a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b",
       "size_bytes": 16003
     },
     "skills/claude-guardian/references/routes-and-platforms.md": {
-      "origin": "repository",
+      "origin": "snapshot",
       "sha256": "dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984",
       "size_bytes": 25984
     },
