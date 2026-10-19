@@ -137,6 +137,10 @@ T01_VALUES = {
     'Q-C12': 'preserve_existing_projects_settings', 'Q-Z01': 'plan_only',
     'Q-C11': 'upgrade',
 }
+# T01's current-user arm follows original T77, not the new-purchase survey.
+UPGRADE_ORDER = {'plan': 'current-plan-A', 'billing_channel': 'web'}
+UPGRADE_PROMPT = '升级所需的当前套餐和原购买渠道是什么？只说已知情况；不确定或暂不回答也可以，无需打开 Claude。'
+
 T02_FLAGS = {'existing_test': True, 'integration_used': True, 'compatibility_needed': True}
 T02_INPUT = deepcopy(ROUTE_FIXTURE['common_answers'])
 for item in T02_INPUT:
@@ -245,26 +249,37 @@ def t01_initial():
 
 
 def t01_sequence(journey):
+    if journey == 'existing_subscriber':
+        return ['Q-J01', 'Q-C11', 'Q-P02', 'Q-C08']
     return ['Q-J01'] + (['Q-C11'] if journey == 'existing_subscriber' else []) + [
         'Q-C02', 'Q-OS03', 'Q-C08', 'Q-C03', 'Q-C04', 'Q-C05', 'Q-C06'] + NETWORK + (
         ['Q-P02'] if journey == 'existing_subscriber' else []) + PAYMENT + TAIL
 
 
 def t01_required(journey, *, plan='Pro'):
+    if journey == 'existing_subscriber':
+        return ['Q-P02', 'Q-C08']
     return ['Q-J01', 'Q-C02', 'Q-C01', 'Q-OS03', 'Q-C08', 'Q-C03', 'Q-C04', 'Q-C06'] + NETWORK + (
         ['Q-P02'] if journey == 'existing_subscriber' else []) + (['Q-P05'] if plan == 'undecided' else []) + [
         'Q-P07', 'Q-W01', 'Q-W02', 'Q-W03', 'Q-W04'] + TAIL + ['Q-C10']
+
+
+def t01_question(qid, journey):
+    expected = question(qid)
+    if journey == 'existing_subscriber' and qid == 'Q-P02':
+        expected['prompt'] = UPGRADE_PROMPT
+    return expected
 
 
 def drive_t01(journey):
     state, trace = t01_initial(), []
     for qid in t01_sequence(journey):
         actual = f.next_question(state)
-        if actual != question(qid):
-            raise AssertionError({'expected': question(qid), 'actual': actual})
+        if actual != t01_question(qid, journey):
+            raise AssertionError({'expected': t01_question(qid, journey), 'actual': actual})
         trace.append(deepcopy(actual))
         state = f.record_fact(f.mark_asked(state, qid), qid,
-                              journey if qid == 'Q-J01' else T01_VALUES[qid],
+                              journey if qid == 'Q-J01' else UPGRADE_ORDER if journey == 'existing_subscriber' and qid == 'Q-P02' else T01_VALUES[qid],
                               source=T01_SOURCE, observed_at=TIME)
     trace.append(f.next_question(state))
     return state, trace
@@ -300,6 +315,8 @@ class IntakeBasicsAcceptanceTests(unittest.TestCase):
                 f.dumps_state(state, scope=scope)
 
     def assert_t01(self, journey):
+        if journey == 'existing_subscriber':
+            return self.assert_t01_upgrade()
         initial = t01_initial()
         self.assertEqual(initial, expected_state({
             'Q-C01': envelope('Q-C01', 'web_writing', T01_SOURCE),
@@ -336,6 +353,50 @@ class IntakeBasicsAcceptanceTests(unittest.TestCase):
         self.assertEqual(f.loads_state(json.dumps(state)), state)
         if journey != 'existing_subscriber':
             self.assertTrue({'Q-C11', 'Q-P02', 'Q-A06'}.isdisjoint(state['asked_question_ids']))
+        return state
+
+    def assert_t01_upgrade(self):
+        """Original T01 classification plus T77's precise current-user scope.
+
+        Historical broad-path replay is retained in dated evidence. These exact
+        expected outputs were authored before observing repaired output.
+        """
+        initial = t01_initial()
+        self.assertEqual(initial, expected_state({
+            'Q-C01': envelope('Q-C01', 'web_writing', T01_SOURCE),
+            'Q-C10': envelope('Q-C10', 'step_by_step', T01_SOURCE)}))
+        self.assertEqual(f.next_question(initial), question('Q-J01'))
+        self.assertEqual(f.assessment(initial)['route_confirmation'], 'unconfirmed')
+        self.assertFalse(any(q['branch'] in {'local', 'vm', 'vps'} for q in f.applicable_questions(initial)))
+        self.assert_closed(initial)
+        state, trace = drive_t01('existing_subscriber')
+        sequence = ['Q-J01', 'Q-C11', 'Q-P02', 'Q-C08']
+        self.assertEqual(trace, [t01_question(qid, 'existing_subscriber') for qid in sequence] + [None])
+        facts = {qid: envelope(qid, value, T01_SOURCE) for qid, value in (
+            ('Q-C01', 'web_writing'), ('Q-C10', 'step_by_step'),
+            ('Q-J01', 'existing_subscriber'), ('Q-C11', 'upgrade'),
+            ('Q-P02', UPGRADE_ORDER), ('Q-C08', 'Pro'))}
+        expected = expected_state(facts, asked=sequence, context={'task': 'upgrade'},
+                                  status='active_reported', source=T01_SOURCE, payment='upgrade')
+        self.assertEqual(state, expected)
+        self.assertEqual(f.applicable_questions(state), [requirement(q) for q in ['Q-P02', 'Q-C08']])
+        self.assertEqual(f.assessment(state), {
+            'traffic_policy': deepcopy(POLICY), 'stage': 'I6',
+            'G1': {'status': 'complete', 'unresolved_fields': []},
+            'G2': {'status': 'pass', 'conditional_plan_only': False}, 'G3': deepcopy(G3),
+            'active_branches': ['payment', 'core'], 'deferred_branches': [],
+            'route_confirmation': 'unconfirmed',
+            'current_subscription': subscription('active_reported', T01_SOURCE),
+            'upgrade_scope': {'current_order_gaps': [], 'billing_feasibility': 'not_established'}})
+        self.assertEqual(state['facts']['Q-P02']['value'], {'plan': 'current-plan-A', 'billing_channel': 'web'})
+        self.assertEqual(state['facts']['Q-C08']['value'], 'Pro')
+        self.assertEqual(state['context']['billing_channel'], 'unselected')
+        self.assertEqual(state['context']['route_selection_basis'], 'default_proposal')
+        self.assertTrue({'Q-C07', 'Q-A06', 'Q-C13', 'Q-C05'}.isdisjoint(state['facts']))
+        self.assertEqual(state['facts']['Q-C10']['value'], 'step_by_step')
+        self.assert_closed(state)
+        self.assertIsNone(f.next_question(state))
+        self.assertEqual(f.loads_state(json.dumps(state)), expected)
         return state
 
     def test_T01_first_subscription_web_writing_whole_PC0_trace(self):

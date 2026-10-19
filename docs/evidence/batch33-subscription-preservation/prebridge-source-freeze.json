@@ -1,0 +1,18 @@
+{
+  "schema": "guardian-source-freeze-public-projection/1",
+  "evidence_form": "sanitized_public_projection",
+  "source_scope": "Exact nine-source compatibility tuple and two supporting files only",
+  "files": {
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+    "skills/claude-guardian/SKILL.md": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "skills/claude-guardian/references/accounts-and-payments.md": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+    "skills/claude-guardian/references/contact-and-safety.md": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+    "skills/claude-guardian/references/intake.md": "3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742",
+    "skills/claude-guardian/scripts/interview_flow.py": "691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9",
+    "skills/claude-guardian/scripts/traffic_policy.py": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+    "skills/claude-guardian/scripts/interview_cli.py": "d23708f043b7701ba05ff75851a75ad3f81c6facb37e57a728214b4e3ac06b5d",
+    "tests/test_interview_upgrade_conflict.py": "0e9ec23aa2feefc5fdf3dd80ff356b89e41cf25b306f460ec2e4cfa0f166dfce"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "format": "guardian-upgrade-conflict-public/2",
+  "files": {
+    "CURRENT-REVIEW.md": "585396d0dc76b3603b65893d69ad7efa357661a97ad5831dade880784bef0826",
+    "README.md": "6756d86c779a95b089fee1e03982421dad57bd74e25fa4914c8b25ccb8d255cf",
+    "current-source-pins.json": "6cb5762df9391bb2516dad08cb488f448fc8680af1df4a05b1c678f683214cd4",
+    "original-clauses.json": "a24eb6d18897a114a0ac465bc86b45e60c241a9a887da33fba8c5759b1e6b91c",
+    "original-ledger-rows.json": "4cf30aa9b2901fd902f93c348d993761060f09956abfd74f0a743487d9eb2dcc",
+    "projection-map.json": "9ba6b6eb020df2966d8936054732c4c9a852bd075749ee1aae1a7b1eae66cfd2",
+    "projection.json": "3bf29af69670718b82318637ef5e2b01aff10e1b977b7a0bc77affd52d0d6238",
+    "tests/terminal_suite.py": "20d470f18f6b7ed59d4ff4140377edee0d6462478e07556efa87a0d87e108733",
+    "tests/test_upgrade_conflict_evidence.py": "3fb0e412df38c0c5d11c2e18a3d68e0a8fa4c741ec4e7a40dbba85e22b00bdd2",
+    "tests/verify_packet.py": "a3189337066a0a640516a65a21623c63840d0a0781b3978eddae801ee01ecfa7",
+    "values.json": "c3e0dcfd7f74ff3d0f61fd2efac7fbf028fe56c9e8da3af2a6c7ae97f65494dc"
+  }
+}

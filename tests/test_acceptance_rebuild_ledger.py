@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Explicit cases and original layer spellings; scheduling does not imply acceptance.
 ACCEPTED = {
+    **{case: ('docs/evidence/rebuild-upgrade-conflict-cases.md', 'L+C', ['L', 'C'])
+       for case in ('T77', 'T80')},
     **{case: ('docs/evidence/subscription-boundaries/CURRENT-REVIEW.md', 'L+C', ['L', 'C'])
        for case in ('T36', 'T38', 'T46', 'T54')},
     **{case: ('docs/evidence/rebuild-rule-scope-guided-responses.md', 'L + C', ['L', 'C'])

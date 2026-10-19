@@ -18,6 +18,28 @@ Normal subscription-preparation order: Q-J01 → OS/purpose/target plan → acco
 
 完成这段问诊后回到同一任务的 `subscription_preparation`，复用已选目标和无有效订阅自述，继续真正重订前提；明确的新任务仍用 `begin_task`，不继承旧购买目标。`billing_issue` 的 payment_intent 为 troubleshoot，仅表示账单问题；不授权扣款、申请退款或访问账户。具体退款规则、状态和官方入口仍须在获准范围内核验，不能承诺退款。依据：[D-SPEC §5.5、§6.8–6.9、§6.11、D.5–D.6、T76](../sources/design/D-SPEC-v0.1.10.md)。
 
+### 已有订阅的明确升级与实际订阅冲突（T77/T80）
+
+明确已有订阅且本次只解释升级时，直接复用开场与任务；只补 Q-P02 的当前套餐/原购买渠道和 Q-C08 的目标套餐。当前套餐可复用有效 Q-C13，不从目标套餐或拟用渠道推定；Q-P02 的当前 plan、billing_channel 不要求额外盘问旧订单状态才能解释升级。当前渠道保留 apple/google/web 区别，未来渠道仍独立。未决定目标时按需问用途 Q-C01 与预算 Q-P05，做有来源及时效限制的比较，不默认最高档或当前价格。缺少当前套餐或渠道时，P02 最多澄清一次，只说实际缺口；对这一个缺口的真实当前答复，复用仍有效的另一字段，不要求用户把已知渠道/套餐重说一遍；未知/拒答/延期后不换成 A06 重问。此支路的 G2 仅表示足以给升级说明或比较草案；生效时间、抵扣/按比例收费、当前渠道资格、冲突与含税总价仍未核验，实际升级继续走 B6/B5 与 G3/接触门禁。明确 compatibility_needed 时另保留系统 Q-C02 与客户端要求 Q-L02 的实际缺口；另行要求 environment/network/cleanup 时仍按其真实前提处理，不能仅因已有订阅就全局跳过这些检查。
+
+实际完成购买、订阅阶段变化或明确套餐失效后，旧 P02 的 plan 不能再替代当前套餐；旧版保存状态已明确把 C13 标成 stale/conflict 时，也须保留这项义务；保留原订单值、渠道、来源和观察时间，只补当前套餐缺口。可选派生 context.current_order_plan_stale 保留此义务，不能由 set_context 手动清除。 真实当前 P02 套餐答复解除义务后保留派生 false，区分已刷新与缺少新字段的旧存档；此标记不是权益或操作授权。当前 Q-C13 答复可满足当前套餐缺口；P02 的真实当前套餐答复也可解除该项义务，均不能从目标套餐推定。历史 P02 重放、较新导入或 correction 不能恢复已有陈旧义务，也不重置澄清次数；同一完成事件重试不重开已回答的问题。新生命周期的实际套餐缺口有一次自己的澄清，不继承上次已经耗尽的次数。同账号换设备保留这些账号订单事实与义务，新账号不继承。真正中断的分组复核包含此当前套餐来源； 已由真实当前 P02 答复消除的 retained_keys 义务，不从历史 scope_keys 重新生成；未解决的复核不能通过 begin_task 复活旧 plan，已知渠道仍保留，旧到期退款历史不因此扩展成当前套餐问诊。晚到的历史完成报告也不能使更新的当前 P02 套餐答复失效。
+
+只有实际矛盾才开启订阅复核：例如首次订阅自述与相关购买页的已有订阅/续费提示冲突。先保留两方来源和观察时间，只问该提示是否对应这次目标及相关订阅状态，不问账号归属、密码或全套新购问题。此处 P02 的最小详情是 status=active/none/expired 与 page_relation=same_target/other_target/outdated，只缺一项就只问该项；已有渠道不能替代这两项，也不为完成详情额外要求旧账单 pending_issue/渠道。完整描述 P02 不等于消除矛盾：可以 G1 覆盖结束而 G2 对依赖的购买/账单任务仍 blocked，给最小查证与条件说明；未解决不重复扣款、不换渠道再买。已回答的 Apple 登录/验证不可用仍是 reported 的否定前提；已到期的旧退款仍是 returning/none_reported，它们本身不构成订阅冲突。具体路线是否可行与覆盖、权限分别说明。
+
+宿主以 `report_subscription_conflict(state, source=..., observed_at=..., current_reply=True)` 记录当前实际报告；已有 `set_context(subscription_conflict=True)` 兼容入口生成宿主标记。可选 `subscription_review` 保留当前 episode_id、原始账号/任务/设备绑定、来源/时间、原旅程/订单及首个相关详情快照和一份解决记录。未解决期间出现实际较新提示时，另保留一份有绑定、来源、时间和详情的 latest_report，推进解决证据的新鲜性边界，原始记录不变；不把新提示当作成功的空操作。相同来源/显式观测时间的精确重试保留原日期，省略时间则表示新当前回复，不用于旧证据重试。较旧或同时间但来源改变的提示拒绝。新 episode 或实际较新提示重置本处详情的澄清次数，旧 P02 留存但不能冒充本次详情；已真实提供且不早于本次提示的状态/目标关系则直接复用。旧 true 状态迁移为未解决记录，原标记时间不明保留 null；false 旧状态不新增字段。未知、拒答、延期和后续 P02 覆盖都不能清除复核。`set_context(subscription_conflict=False)` 不能清除未解决记录。
+
+解决入口 `resolve_subscription_conflict` 必须给当前 episode_id、account_ref、target_ref、task_id、outcome、answers、source；带显式 observed_at 时必须是实际当前回复并标 current_reply=True，省略时间表示新的当前回复。answers 沿用问题/值/状态的归一化形状，但只接受本次 Q-J01、Q-P02 和相关 Q-C11 的 reported/observed 事实，来源/时间统一来自这次真实回复。支持三种有兼容事实的结果：
+
+- existing_subscription：Q-J01=existing_subscriber；P02 的 status=active、page_relation=same_target、pending_issue=none_reported，已知的当前 plan 与原 billing_channel 一并复用，未给出则保留后续升级的真实缺口，不把无关套餐/渠道盘问作为确认已有订阅的前提；用户明确后续任务才记录 Q-C11。没有后续任务只问 Q-C11，不擅自升级/续费
+- other_target_page / outdated_page：保持原 first_subscription 或 returning_subscription；P02 的 page_relation 分别为 other_target / outdated，当前目标的 status 为 none/expired，pending_issue=none_reported，只保留已明确的对应渠道（确实没有渠道可为 none），不猜测。这表示原页面不再与当前目标矛盾，不自动切换账号；只有实际选了新目标才用 begin_task
+- unknown / declined / deferred：answers=[]，保留未解决状态并结束自动追问；之后实际给出新证据才能继续
+
+当 P02 只剩一个相关缺口且实际当前回复明确补了该项时，P02 事实可另带一个 retained_fields 条目，保存互补字段的原 value/state/source/subject_ref/observed_at；本次 value 与本次来源/时间仍只描述新答复，不给旧字段刷新日期。此结构仅用于当前套餐/原渠道，或同次冲突的状态/目标关系，不是通用对象合并。实际当前回复对唯一所问缺口表示 unknown / declined / deferred 时，本次 value 仍为 null、state 仍为该终止结果，仅将已知互补项连同原来源/账号/时间保存在 retained_fields；不重问，不将互补项误记为未知，也不解除缺口的 G2/G3 阻断。之后主动补答或同一证据重试仍保留互补项原日期。若互补项是当前套餐，实际中断后的套餐复核义务仍保留，不能以渠道补答或拒答代替套餐的新鲜性复核。完整订单替换、correction、历史导入、没有唯一相关缺口、陈旧/新 episode 或跨账号信息不走补字段复用。实际新冲突或显式失效可使该 null 事实转为 stale / conflict；此时 retained_fields 只是历史证据，不满足当前套餐/渠道或新冲突详情。旧读档中缺失该字段完全兼容；严格旧读取器需要升级，不能删除保存的互补证据来伪装新鲜。
+
+这只是可信宿主对实际回复的事实契约，不是自然语言解析器、网页观察器或实时账单验证器。不晚于最新实际冲突提示、早于较新订阅证据的回复，以及历史导入、错误目标、缺失/矛盾/不支持的结果均不改原状态。精确同 episode 的重试不刷新时间、重写后来事实或开启购买；新冲突有新标识，不能重用旧解决。原始快照在后来 P02 被覆盖后仍保留。真实中断的 resume_review 独立存在，解决订阅冲突不替其他保留事实完成复核。记录实际购买完成也不能自动解决重复订单/目标矛盾。
+
+同账号切换任务或设备保留未解决记录；无关 environment/network/cleanup 只使其休眠，回到依赖购买时重新阻断。新账号不继承另一账号的记录。CLI 新增 `--subscription-conflict-file` 与 `--subscription-resolution-file`，其他回答、加载、显式私有保存和输出规则不变；stdout 只给不含原始来源的复核状态/episode_id，原证据只进获准私有状态。旧严格读取器可能拒绝新可选字段，需升级读取器，不能剥除记录以伪装就绪。所有事实、标记及重试都不构成 PC 接触、支付、清理、保存或其他真实操作授权。
+
 ### 仅在实际问题需要时确认当前套餐（T84）
 
 Q-C13 是新增的派生实现 ID，依据 D-SPEC §6.4/§6.11/T84；原文 ID、Q-C08 目标套餐和 Q-L02 系统/架构问题不变。只有明确当前已有订阅，并且 network/environment/cleanup 的具体客户端功能问题确实依赖套餐时，宿主显式设置可选 `plan_compatibility_needed=true`。普通网络/清理没有这个条件，不问当前套餐，也不展开支付问卷。仅有技术熟练度、设备、付款渠道、目标套餐或此标志，都不能证明当前权益。

@@ -1,0 +1,73 @@
+{
+  "schema": "guardian-evidence-projection-origins/1",
+  "evidence_form": "sanitized_public_projection",
+  "scope": "Original SHA-256 references only; raw originals retained separately and not published by this projection. No private locations or identities are included.",
+  "historical_packet_file_count": 173,
+  "historical_packet_unchanged": true,
+  "original_bridge_artifacts": {
+    "REVIEW.md": {
+      "original_sha256": "6d964959c396cff5883a780a1e85f0e208a0a13fbde89c0f6c412d3a5928bdff",
+      "projection_identity": "manifest.json files entry"
+    },
+    "approved-bridge-design.json": {
+      "original_sha256": "21c6bb7f137a95afa64599c5cddce49f3355dcfa60a30ca6c6b367b4476f2ffe",
+      "projection_identity": "manifest.json files entry"
+    },
+    "approved-preservation-review.json": {
+      "original_sha256": "a4af5abcd73d60cfc2440d7e58dd9dae9669b70eeba6ca7213309487bdfce90d",
+      "projection_identity": "manifest.json files entry"
+    },
+    "coordinator-approval.json": {
+      "original_sha256": "3d569444abe619c60d290da3e9ec14ec8686cb5442aadfaf1256b72b8066182e",
+      "projection_identity": "manifest.json files entry"
+    },
+    "fixture-copy-review.md": {
+      "original_sha256": "894af32c3ca1b9bad55b366f999ced7de04e628c890ee58f956f37f94c05e70b",
+      "projection_identity": "manifest.json files entry"
+    },
+    "live-helper-replay-runner.py.txt": {
+      "original_sha256": "3c9505362501610b6a1f9af7b2ddf4a445f8c201eec530979ab597ed4f78e3d9",
+      "projection_identity": "manifest.json files entry"
+    },
+    "live-helper-replay.json": {
+      "original_sha256": "90625b733b8e8f2a37b7cbde48c21590210f51c4b20bfb2f048280189aaed020",
+      "projection_identity": "manifest.json files entry"
+    },
+    "manifest.json": {
+      "original_sha256": "0202f671246e73057dbaee9f52f77a96ade537d8feeacb9451522db08939bfa3",
+      "projection_identity": "installed consumer BRIDGE_MANIFEST_SHA256"
+    },
+    "prebridge-source-freeze.json": {
+      "original_sha256": "aabb25be64a32db0aad1de15dd87c658268e58ca9a52e11d7c50a782d96b84e2",
+      "projection_identity": "manifest.json files entry"
+    },
+    "preservation-review.md": {
+      "original_sha256": "eb2ad37ec4af9a36162ba2ce9b5259fa4521e7fadbde3881f26f5d8708ed9219",
+      "projection_identity": "manifest.json files entry"
+    },
+    "reviewed-source-delta.json": {
+      "original_sha256": "7338b8d02cedb1f7073d66fe4c92c1f4d2521d998fb5064db12efc934ecefda7",
+      "projection_identity": "manifest.json files entry"
+    },
+    "runtime-clearance-revision4/independent-clearance-summary.json": {
+      "original_sha256": "8f0dc95df5b5d3e5dcb7003ccc03f96620aa08db3152e5bf46aadad19cb2b98a",
+      "projection_identity": "manifest.json files entry"
+    },
+    "runtime-review.md": {
+      "original_sha256": "7d423bf27ba06e7c932f544269424ab03d42e2627a2d093eeb8c73bcb67a677e",
+      "projection_identity": "manifest.json files entry"
+    },
+    "terminal-runs.json": {
+      "original_sha256": "b9496fbd2d75fc824c45a4b67f448b526029f1e96bc791b23e9eb4e93a138256",
+      "projection_identity": "manifest.json files entry"
+    },
+    "verified-runtime-clearance.json": {
+      "original_sha256": "18cc05ee3f803cac67f43385f532e624109fea49fdc46bf33038fb348fd9daf5",
+      "projection_identity": "manifest.json files entry"
+    },
+    "verify.py": {
+      "original_sha256": "54e5a2ea19445a39e3b7d03f9dbaf3f5c53255de75178a30d600fe7677e3e799",
+      "projection_identity": "manifest.json files entry"
+    }
+  }
+}

@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Forty-five original cases have freshly reviewed, pinned evidence under unchanged original layers; remaining 173 cases are pending_revalidation. Latest T36/T38/T46/T54 use independently reviewed actual multi-turn outputs; T38 v1 failure remains immutable and v2 is separately frozen. Relevant source changes require scoped review; no unseen-output or native guarantee."
+    "Forty-seven original cases have reviewed, pinned evidence under unchanged original layers; remaining171 are pending_revalidation. Latest T77/T80 combine actual revision3 dialogues with two independently regenerated revision4 affected trajectories and exact current-source compatibility. Historical failures remain immutable; no unseen-output or native guarantee."
   ],
   "cases": [
     {
@@ -24,7 +24,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
-        "sha256": "b248887830a458433d0c9a70debadfbf0ec90e812b342a2cb4034a8df0ac4421",
+        "sha256": "9655ca582fa3da9f1629688641637c9f71f792be312226118f7ed580a5cc08ee",
         "layers": [
           "L",
           "C"
@@ -44,7 +44,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
-        "sha256": "b248887830a458433d0c9a70debadfbf0ec90e812b342a2cb4034a8df0ac4421",
+        "sha256": "9655ca582fa3da9f1629688641637c9f71f792be312226118f7ed580a5cc08ee",
         "layers": [
           "L",
           "C"
@@ -244,7 +244,7 @@
       "dependencies": "A、P、U",
       "evidence": {
         "path": "docs/evidence/rebuild-resume-completion.md",
-        "sha256": "d204c5bb76251230225dd2c1f871b67ac19dae5ec2bc43505b54eda29c786f06",
+        "sha256": "dbe3a96a41f157e9416ea73d0c6b605070789dc1acf213e810129fe0905befee",
         "layers": [
           "L",
           "C"
@@ -294,7 +294,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "33ed46b93af0a13f769943ce0a59bd20403db2b29858d166be7850bea993ece4",
+        "sha256": "e434dad2616d636e0e3eac92415d50ca7b81e5195af193eeed9d0692d9ee6e4f",
         "layers": [
           "L",
           "C"
@@ -314,7 +314,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "33ed46b93af0a13f769943ce0a59bd20403db2b29858d166be7850bea993ece4",
+        "sha256": "e434dad2616d636e0e3eac92415d50ca7b81e5195af193eeed9d0692d9ee6e4f",
         "layers": [
           "L",
           "C"
@@ -334,7 +334,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "33ed46b93af0a13f769943ce0a59bd20403db2b29858d166be7850bea993ece4",
+        "sha256": "e434dad2616d636e0e3eac92415d50ca7b81e5195af193eeed9d0692d9ee6e4f",
         "layers": [
           "L",
           "C"
@@ -364,7 +364,7 @@
       "dependencies": "A、B、N、L",
       "evidence": {
         "path": "docs/evidence/rebuild-local-egress.md",
-        "sha256": "84ea80e820b8f1f254de4ca78f1481d41aed18c6dccc00a1609e007a844ed5e1",
+        "sha256": "5f1ce85e09a22b81f7f91cd02e0c3a20bead87b58aa25040e5623739e82d32e9",
         "layers": [
           "L",
           "C"
@@ -384,7 +384,7 @@
       "dependencies": "A、V、U",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "33ed46b93af0a13f769943ce0a59bd20403db2b29858d166be7850bea993ece4",
+        "sha256": "e434dad2616d636e0e3eac92415d50ca7b81e5195af193eeed9d0692d9ee6e4f",
         "layers": [
           "L",
           "C"
@@ -444,7 +444,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
-        "sha256": "bde1cd87714f10fc386f284e1528498425034cee783840cac534d773ef3f5cf1",
+        "sha256": "4b9700cb9f0fe297559a55336e9072afdfd01cd12d844b331af6fc645615e447",
         "layers": [
           "L",
           "C"
@@ -474,7 +474,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
-        "sha256": "1159de8c789b1bac21bc1c322f4db005f0e26898b7a19e28deb0afd9486c3c95",
+        "sha256": "f3c5ccf0654f5fb0fe5ff58824907ff22881c80ac346ed791255e6a7d6e72b8e",
         "layers": [
           "L",
           "C"
@@ -514,7 +514,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "7b47fbedfebcae330b0ee8b76ab38977bdbc5f74784362700504edf31bcd57b6",
+        "sha256": "53b376e36c01b853a0748b489498638b3f2636875fe29b87130551c19f452ef4",
         "layers": [
           "L",
           "C"
@@ -631,7 +631,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "7b47fbedfebcae330b0ee8b76ab38977bdbc5f74784362700504edf31bcd57b6",
+        "sha256": "53b376e36c01b853a0748b489498638b3f2636875fe29b87130551c19f452ef4",
         "layers": [
           "L",
           "C"
@@ -689,7 +689,7 @@
       "dependencies": "A、U",
       "evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
-        "sha256": "1159de8c789b1bac21bc1c322f4db005f0e26898b7a19e28deb0afd9486c3c95",
+        "sha256": "f3c5ccf0654f5fb0fe5ff58824907ff22881c80ac346ed791255e6a7d6e72b8e",
         "layers": [
           "L",
           "C"
@@ -709,7 +709,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "7b47fbedfebcae330b0ee8b76ab38977bdbc5f74784362700504edf31bcd57b6",
+        "sha256": "53b376e36c01b853a0748b489498638b3f2636875fe29b87130551c19f452ef4",
         "layers": [
           "L",
           "C"
@@ -728,7 +728,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
-        "sha256": "7663b20ac196dcf0ecf0b504b0cb8045821c34c9155777e6e635ce01099e8da8",
+        "sha256": "0111d4d6d09865f449e8a42d4dea7ad3c0688207afbefcc273829b56f5ae4727",
         "layers": [
           "L",
           "C"
@@ -778,7 +778,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "99526206988b6cecba027e34b771225a320c58bea27b8c24eff13ef661f86728",
+        "sha256": "d36d881a718a95bfc2b195a42a41880a68600b631e2a265f22821226d59f6b83",
         "layers": [
           "L",
           "C"
@@ -836,7 +836,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
-        "sha256": "bde1cd87714f10fc386f284e1528498425034cee783840cac534d773ef3f5cf1",
+        "sha256": "4b9700cb9f0fe297559a55336e9072afdfd01cd12d844b331af6fc645615e447",
         "layers": [
           "L",
           "C"
@@ -1016,7 +1016,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "99526206988b6cecba027e34b771225a320c58bea27b8c24eff13ef661f86728",
+        "sha256": "d36d881a718a95bfc2b195a42a41880a68600b631e2a265f22821226d59f6b83",
         "layers": [
           "L",
           "C"
@@ -1035,7 +1035,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
-        "sha256": "ef8d3043b8219a29dd89999a8ceb546711f316a431d69308b1039bae09b8b665",
+        "sha256": "39e98668fac7e1618a9f61eceec371a06b6e1acff9820d93203161b5976ce314",
         "layers": [
           "L",
           "C"
@@ -1055,7 +1055,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
-        "sha256": "0c3c0689572236660c18f634b6393edde52824b303477656bcdc8206f8c83f4a",
+        "sha256": "9f89929b8a233fa16033994d1d0afe5512c7855596147b11a7a1927d71a3860f",
         "layers": [
           "L",
           "C"
@@ -1070,9 +1070,19 @@
       "requirement": "不重问开场；按需核实当前套餐/购买渠道和目标套餐，避开注册新购全流程",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "变更时复核原条件、指导/来源路径及专页工作实例，重跑支持回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导或运行时变化后复核原完整条件、固定对话与当前来源兼容性；不外推真机或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-upgrade-conflict-cases.md",
+        "sha256": "0a8b8a724d76bba6e5c4a7a80c1846ce8e6b9608f8a374c784bea5a12925563b",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Observed revision3 trajectories and separately generated revision4 affected paths, with an explicitly sanitized public projection, independent review, exact current-source API/CLI replay and privately retained originals; hashes do not authenticate omitted execution records, no native or actual operation authority."
+      }
     },
     {
       "id": "T78",
@@ -1085,7 +1095,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "7b47fbedfebcae330b0ee8b76ab38977bdbc5f74784362700504edf31bcd57b6",
+        "sha256": "53b376e36c01b853a0748b489498638b3f2636875fe29b87130551c19f452ef4",
         "layers": [
           "L",
           "C"
@@ -1104,7 +1114,7 @@
       "dependencies": "A、P",
       "evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
-        "sha256": "ef8d3043b8219a29dd89999a8ceb546711f316a431d69308b1039bae09b8b665",
+        "sha256": "39e98668fac7e1618a9f61eceec371a06b6e1acff9820d93203161b5976ce314",
         "layers": [
           "L",
           "C"
@@ -1119,9 +1129,19 @@
       "requirement": "标记实际冲突，仅澄清相关账户/订阅状态；未解决不重复扣款，不审问账号归属",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导或运行时变化后复核原完整条件、固定对话与当前来源兼容性；不外推真机或未观察输入",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-upgrade-conflict-cases.md",
+        "sha256": "0a8b8a724d76bba6e5c4a7a80c1846ce8e6b9608f8a374c784bea5a12925563b",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-18",
+        "boundary": "Observed revision3 trajectories and separately generated revision4 affected paths, with an explicitly sanitized public projection, independent review, exact current-source API/CLI replay and privately retained originals; hashes do not authenticate omitted execution records, no native or actual operation authority."
+      }
     },
     {
       "id": "T81",
@@ -1134,7 +1154,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "99526206988b6cecba027e34b771225a320c58bea27b8c24eff13ef661f86728",
+        "sha256": "d36d881a718a95bfc2b195a42a41880a68600b631e2a265f22821226d59f6b83",
         "layers": [
           "L",
           "C"
@@ -1153,7 +1173,7 @@
       "dependencies": "A、U",
       "evidence": {
         "path": "docs/evidence/rebuild-legacy-retirement.md",
-        "sha256": "f90a9d3aa8c1f6f99db85248917ef27831dcd422eb639f99faa400b359a2e949",
+        "sha256": "4f1bb67f0ded6fbe715761b5feae642305378b1b22835356fd8c103697d7d689",
         "layers": [
           "L",
           "C"
@@ -1173,7 +1193,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
-        "sha256": "7663b20ac196dcf0ecf0b504b0cb8045821c34c9155777e6e635ce01099e8da8",
+        "sha256": "0111d4d6d09865f449e8a42d4dea7ad3c0688207afbefcc273829b56f5ae4727",
         "layers": [
           "L",
           "C"
@@ -1193,7 +1213,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
-        "sha256": "0c3c0689572236660c18f634b6393edde52824b303477656bcdc8206f8c83f4a",
+        "sha256": "9f89929b8a233fa16033994d1d0afe5512c7855596147b11a7a1927d71a3860f",
         "layers": [
           "L",
           "C"

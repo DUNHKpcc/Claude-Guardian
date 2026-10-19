@@ -238,11 +238,35 @@ class ExperienceStatusAcceptanceTests(unittest.TestCase):
             self.assert_reports('T79', state)
             self.assertEqual(state['context']['task'], task)
             self.assertEqual(state['payment_intent'], task)
-            self.assertEqual(f.next_question(state), expected('Q-C02'))
+            if task == 'renew':
+                self.assertEqual(f.next_question(state), expected('Q-C02'))
+            else:
+                # Original T77 limits this known upgrade to current/target gaps.
+                self.assertEqual(f.next_question(state), {
+                    'id': 'Q-P02', 'branch': 'payment', 'stage': 'I4', 'postcontact': False,
+                    'prompt': '升级所需的当前套餐和原购买渠道是什么？只说已知情况；不确定或暂不回答也可以，无需打开 Claude。',
+                    'clarification': False, 'allowed_outcomes': ['reported', 'unknown', 'declined', 'deferred'],
+                    'requires_action_authorization': False})
+                self.assertEqual([q['id'] for q in f.applicable_questions(state)], ['Q-P02', 'Q-C08'])
             ids = {q['id'] for q in f.applicable_questions(state)}
             self.assertTrue({'Q-P02', 'Q-C08'}.issubset(ids))
             self.assertNotIn('Q-C11', ids)
             self.assertNotEqual(state['payment_intent'], 'new_subscription')
+            if task == 'upgrade':
+                initial_facts = deepcopy(state['facts'])
+                order = {'plan': 'synthetic-current-A', 'billing_channel': 'web'}
+                state = f.record_fact(state, 'Q-P02', order, source='synthetic:known-current-subscription')
+                self.assertEqual(f.next_question(state), expected('Q-C08'))
+                state = f.record_fact(state, 'Q-C08', 'synthetic-desired-B', source='synthetic:upgrade-target')
+                self.assertIsNone(f.next_question(state))
+                self.assertEqual({q: state['facts'][q] for q in initial_facts}, initial_facts)
+                self.assertEqual(state['facts']['Q-P02']['value'], order)
+                self.assertEqual(state['facts']['Q-C08']['value'], 'synthetic-desired-B')
+                self.assertEqual(f.assessment(state)['G2'], {'status': 'pass', 'conditional_plan_only': False})
+                self.assertEqual(f.assessment(state)['upgrade_scope'], {'current_order_gaps': [], 'billing_feasibility': 'not_established'})
+                self.assertEqual([q['id'] for q in f.applicable_questions(state)], ['Q-P02', 'Q-C08'])
+                self.assert_reports('T79', state)
+                self.assert_boundaries(state)
 
     def test_T75_expertise_alone_never_establishes_paid_or_first_subscription(self):
         for ambiguous, question in ((False, 'Q-J01'), (True, 'Q-J02')):

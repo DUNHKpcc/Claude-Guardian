@@ -1,0 +1,11 @@
+test_T19_explicit_acceptance_confirms_only_local_and_not_permissions (__main__.RouteAcceptanceRebuildTests.test_T19_explicit_acceptance_confirms_only_local_and_not_permissions) ... ok
+test_T19_unselected_local_is_proposal_and_emits_exact_choice (__main__.RouteAcceptanceRebuildTests.test_T19_unselected_local_is_proposal_and_emits_exact_choice) ... ok
+test_T20_L0_vm_has_independent_exact_six_question_sequence (__main__.RouteAcceptanceRebuildTests.test_T20_L0_vm_has_independent_exact_six_question_sequence) ... ok
+test_T21_existing_and_new_vps_preserve_choice_and_distinct_server_facts (__main__.RouteAcceptanceRebuildTests.test_T21_existing_and_new_vps_preserve_choice_and_distinct_server_facts) ... ok
+test_T24_current_change_invalidates_only_relevant_vm_or_vps_fact (__main__.RouteAcceptanceRebuildTests.test_T24_current_change_invalidates_only_relevant_vm_or_vps_fact) ... ok
+test_T24_same_task_retains_route_and_requires_exact_environment_review (__main__.RouteAcceptanceRebuildTests.test_T24_same_task_retains_route_and_requires_exact_environment_review) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.373s
+
+OK

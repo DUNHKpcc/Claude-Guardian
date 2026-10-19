@@ -1,0 +1,102 @@
+{
+  "schema": "guardian-subscription-preservation-review-public-projection/1",
+  "historical_generation_immutable": true,
+  "source_freeze_sha256": "dbbf4a346dddcb7285cfee840dc4f709754c2fa0d4cbfaac42c896248978a26b",
+  "covered_cases": {
+    "T36": "L+C",
+    "T38": "L+C",
+    "T46": "L+C",
+    "T54": "L+C"
+  },
+  "original_rows_sha256": "84975325686c368a191b8232a0564518f1ba32ad7055ce4742d32cc4c26c77b9",
+  "historical_current_guidance_pin_record_sha256": "880e24b65f320333e1ee7b7d085c48f81044fa503259029ca9aa8a028ae74512",
+  "historical_integration_manifest_sha256": "fe36d3ca6620168a9288142b1c799cd95c802bd1ca812cc35cb4a4d8bac05f3a",
+  "historical_original_stage_manifest_sha256": "e54b3abbea72c7e347ad6537b916b93b44b15377711f24d610eadbc3b318e251",
+  "historical_exact_source_tuple": {
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+    "skills/claude-guardian/SKILL.md": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "skills/claude-guardian/references/accounts-and-payments.md": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+    "skills/claude-guardian/references/contact-and-safety.md": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+    "skills/claude-guardian/references/intake.md": "541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71",
+    "skills/claude-guardian/scripts/interview_flow.py": "304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e",
+    "skills/claude-guardian/scripts/traffic_policy.py": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4"
+  },
+  "reviewed_final_exact_source_tuple": {
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+    "skills/claude-guardian/SKILL.md": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "skills/claude-guardian/references/accounts-and-payments.md": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+    "skills/claude-guardian/references/contact-and-safety.md": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+    "skills/claude-guardian/references/intake.md": "3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742",
+    "skills/claude-guardian/scripts/interview_flow.py": "691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9",
+    "skills/claude-guardian/scripts/traffic_policy.py": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4"
+  },
+  "changed_live_pins": [
+    {
+      "path": "skills/claude-guardian/references/intake.md",
+      "historical_current_sha256": "541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71",
+      "historical_consumed_or_control_sha256": "541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71",
+      "revision4_actual_sha256": "3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742"
+    },
+    {
+      "path": "skills/claude-guardian/scripts/interview_flow.py",
+      "historical_current_sha256": "304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e",
+      "historical_consumed_or_control_sha256": "304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e",
+      "revision4_actual_sha256": "691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9"
+    }
+  ],
+  "supporting_cli_sha256": "d23708f043b7701ba05ff75851a75ad3f81c6facb37e57a728214b4e3ac06b5d",
+  "live_helper_receipt": {
+    "path": "live-helper-replay.json",
+    "sha256": "9cb463f5f372a9d8d64ede64a87a91074ff9420e6b54b2e86b41082d2120b478",
+    "full_call_count": 15,
+    "complete_calls_equal_historical_controls": true,
+    "blocked_io_attempts": [],
+    "model_prose_generated": false,
+    "live_runtime_sha256": "691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9"
+  },
+  "runtime_clearance": {
+    "path": "verified-runtime-clearance.json",
+    "sha256": "e49886a44c8327555c7ea618646f8f04716727f735182f0059ee635e65c16a0b",
+    "status": "CLEAR"
+  },
+  "accepted_live_hashes": {
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+    "skills/claude-guardian/SKILL.md": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "skills/claude-guardian/references/accounts-and-payments.md": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+    "skills/claude-guardian/references/contact-and-safety.md": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+    "skills/claude-guardian/references/intake.md": "3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742",
+    "skills/claude-guardian/scripts/interview_flow.py": "691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9",
+    "skills/claude-guardian/scripts/traffic_policy.py": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4"
+  },
+  "whole_original_clauses_reviewed": true,
+  "all_retained_selected_response_text_and_context_reviewed": true,
+  "semantic_review": {
+    "path": "preservation-review.md",
+    "sha256": "65e66da3fff5c7b26df30b6fd5825cb5c3e5d0f45fd39499a5941e8d34d39796"
+  },
+  "bridge_design": [
+    "Verify immutable packet integration/original-stage/v2/candidate/response manifests and all historical consumed/control fields unchanged",
+    "Verify this sanitized historical preservation projection by its exact projection hash and historical status; missing/false/unknown/unreviewed projection fails closed",
+    "Compare the complete nine-source live tuple to the exact reviewed tuple, not independent per-file old-or-new allowlists; otherwise retain the original strict historical equality behavior",
+    "Only intake.md and interview_flow.py may differ from the historical nine-source tuple; all other consumed guide/control equality checks stay strict",
+    "Bind complete current helper15-call output/no-I/O receipt and runtime-schema clearance; source hashes identify bytes but do not replace semantic review",
+    "Keep packet historical equality assertions and original source-comparison unchanged; amend only installed live-compatibility consumer in a separately reviewed integration",
+    "Never rewrite consumed/current generation hashes, old supporting test pins, retained failure verdicts, original response prose or historical package receipts",
+    "Preserve original four case IDs/layers and no new acceptance counts; future source drift invalidates this exact reviewed tuple",
+    "Add negative controls for missing/unapproved record, changed guide/runtime, altered unchanged source, altered historical manifest, mixed old/new tuple and tampered replay/review identity"
+  ],
+  "approval_scope": "Historical exact-source preservation finding for original T36/T38/T46/T54 L+C clauses and retained responses only. This projection does not authenticate the raw approval, supply a new independent review, establish new acceptance, or authorize publication/native/payment actions.",
+  "coordinator_approval": {
+    "path": "coordinator-approval.json",
+    "sha256": "000d3bb87dfd12f1d66a651f5b3ca46a38372cc8ab199d150d302313870d179c"
+  },
+  "evidence_form": "sanitized_public_projection",
+  "historical_status": "APPROVED_EXACT_SOURCE_PRESERVATION_ONLY",
+  "status": "HISTORICAL_REVIEW_PROJECTION"
+}

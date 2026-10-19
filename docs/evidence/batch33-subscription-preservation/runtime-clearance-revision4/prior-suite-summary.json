@@ -1,0 +1,24 @@
+{
+  "initial12": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "revision1_11": {
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "schema7": {
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "owned82": {
+    "returncode": 0
+  },
+  "sources_unchanged": true
+}

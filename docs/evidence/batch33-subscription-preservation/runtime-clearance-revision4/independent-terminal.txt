@@ -1,0 +1,14 @@
+test_current_channel_declined (__main__.TerminalRetention.test_current_channel_declined) ... ok
+test_current_channel_deferred (__main__.TerminalRetention.test_current_channel_deferred) ... ok
+test_current_channel_unknown (__main__.TerminalRetention.test_current_channel_unknown) ... ok
+test_current_plan_declined (__main__.TerminalRetention.test_current_plan_declined) ... ok
+test_current_plan_deferred (__main__.TerminalRetention.test_current_plan_deferred) ... ok
+test_current_plan_unknown (__main__.TerminalRetention.test_current_plan_unknown) ... ok
+test_new_episode_cannot_reuse_old_detail (__main__.TerminalRetention.test_new_episode_cannot_reuse_old_detail) ... ok
+test_stale_complement_cannot_be_restored (__main__.TerminalRetention.test_stale_complement_cannot_be_restored) ... ok
+test_wrong_account_is_atomic (__main__.TerminalRetention.test_wrong_account_is_atomic) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.084s
+
+OK

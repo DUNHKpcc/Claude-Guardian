@@ -3,7 +3,8 @@
 Public API: new_state, record_fact, record_facts, set_context, next_question, assessment,
 mark_asked, defer_branch, resume_branch, complete_purchase, dumps_state,
 loads_state, validate_state, resume_interview, record_resume_review,
-resume_review_prompt, resume_scope_keys, cleanup_assessment. All updates return copies. Persisting returned JSON
+resume_review_prompt, resume_scope_keys, cleanup_assessment,
+report_subscription_conflict, resolve_subscription_conflict. All updates return copies. Persisting returned JSON
 is exclusively the host's responsibility and requires explicit opt-in per scope.
 
 Example::
@@ -174,6 +175,7 @@ CONTEXT_DEFAULTS = {
     "os_issue": "none", "language_change_needed": False,
     "timezone_issue": False, "windows10": False, "compatibility_needed": False,
     "plan_compatibility_needed": False,
+    "current_order_plan_stale": False,
     "budget_needed": False, "gift_card": False, "buying_gift_card": False,
     "changing_store_region": False, "organization_task": False,
     "billing_product_ambiguous": False, "existing_test": False,
@@ -182,7 +184,7 @@ CONTEXT_DEFAULTS = {
     "paused": False, "blocked_reason": None,
 }
 # Optional additive fields preserve the published schema-1 input contract.
-PLAN_CONTEXT_FIELDS = {"plan_compatibility_needed"}
+PLAN_CONTEXT_FIELDS = {"plan_compatibility_needed", "current_order_plan_stale"}
 INCIDENT_CONTEXT_FIELDS = {"incident_origin", "account_incident_resolved"}
 DEVICE_CONTEXT_FIELDS = {"device_incident_resolved", "device_incident_resolution_ref", "cleanup_offer_dismissed_ref"}
 ENUM_CONTEXT = {
@@ -298,7 +300,7 @@ def validate_state(state):
     required = {"schema_version", "task_id", "target_alias", "account_alias", "facts", "context",
                 "asked_question_ids", "deferred_branches", "current_subscription", "payment_intent",
                 "purchase_intent", "persistence_consent"}
-    if set(state) - required - {'resume_review', 'purchase_completion'} or required - set(state):
+    if set(state) - required - {'resume_review', 'purchase_completion', 'subscription_review'} or required - set(state):
         raise InterviewError("Unexpected or missing state fields")
     _safe(state)
     for name in ("task_id", "target_alias", "account_alias"):
@@ -328,7 +330,9 @@ def validate_state(state):
             raise InterviewError("Store canonical IDs only")
         keys = {"value", "state", "source", "subject_ref", "observed_at", "applies_when",
                 "required_for", "sensitivity", "clarification_count", "blocker_reason"}
-        if not isinstance(fact, dict) or set(fact) != keys or not isinstance(fact["state"], str) or fact["state"] not in FACT_STATES:
+        optional = {'retained_fields'} if qid == 'Q-P02' else set()
+        if (not isinstance(fact, dict) or set(fact) - keys - optional or keys - set(fact)
+                or not isinstance(fact["state"], str) or fact["state"] not in FACT_STATES):
             raise InterviewError("Invalid fact envelope")
         expected_subject = state["account_alias" if qid in ACCOUNT_QUESTIONS else "target_alias"]
         if fact["subject_ref"] != expected_subject:
@@ -347,6 +351,28 @@ def validate_state(state):
             if fact[field] is not None and not isinstance(fact[field], str):
                 raise InterviewError("Fact metadata must be text or null")
         _validate_date(fact["observed_at"])
+        if 'retained_fields' in fact:
+            retained = fact['retained_fields']
+            current_value = (isinstance(fact['value'], dict)
+                             and fact['state'] in {'reported', 'observed', 'stale', 'conflict'})
+            terminal_value = (fact['value'] is None
+                              and fact['state'] in {'unknown', 'declined', 'deferred', 'stale', 'conflict'})
+            if (not isinstance(retained, dict) or len(retained) != 1
+                    or not (current_value or terminal_value)):
+                raise InterviewError('Invalid scoped P02 retained field')
+            for key, origin in retained.items():
+                if (key not in {'plan', 'billing_channel', 'status', 'page_relation'}
+                        or (isinstance(fact['value'], dict) and key in fact['value']) or not isinstance(origin, dict)
+                        or set(origin) != {'value', 'state', 'source', 'subject_ref', 'observed_at'}
+                        or not _p02_field_valid(key, origin['value'])
+                        or type(origin['state']) is not str or origin['state'] not in {'reported', 'observed'}
+                        or type(origin['source']) is not str or not origin['source']
+                        or origin['subject_ref'] != expected_subject):
+                    raise InterviewError('Invalid scoped P02 provenance')
+                prior_date = _validate_date(origin['observed_at'])
+                date = _validate_date(fact['observed_at'])
+                if prior_date is not None and (date is None or prior_date > date):
+                    raise InterviewError('Retained P02 field cannot postdate its current reply')
         if qid == 'Q-C13' and fact['state'] in {'reported', 'observed'}:
             if (type(fact['value']) is not str or not fact['value'].strip()
                     or fact['value'] == 'selected_unspecified'):
@@ -406,6 +432,7 @@ def validate_state(state):
             raise InterviewError('Invalid account-bound purchase completion receipt')
         _validate_date(receipt['observed_at'])
     _validate_resume_review(state)
+    _validate_subscription_review(state)
     return state
 
 
@@ -447,6 +474,8 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
     _validate_date(observed_at)
     result = deepcopy(state)
     _normalize_incident_context(result)
+    _normalize_subscription_review(result)
+    _normalize_current_order_plan(result)
     if qid in {"Q-J01", "Q-J02", "Q-C02", "Q-C03", "Q-C04", "Q-C05", "Q-C08", "Q-C13", "Q-C11", "Q-P06"} and value is not None and not isinstance(value, str):
         raise InterviewError("This routing fact requires a categorical string")
     old = result["facts"].get(qid, {})
@@ -457,6 +486,9 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
             "subject_ref": subject_ref or state["account_alias" if qid in ACCOUNT_QUESTIONS else "target_alias"], "observed_at": observed_at if observed_at is not None else _now(),
             "applies_when": "current task and target", "required_for": ["intake", "plan"],
             "sensitivity": "low", "clarification_count": count, "blocker_reason": blocker_reason}
+    if (qid == 'Q-P02' and fresh_reply and not correction
+            and state_name in {'reported', 'observed', 'unknown', 'declined', 'deferred'}):
+        _retain_p02_complement(result, fact)
     prior_facts = result["facts"].copy()
     result["facts"][qid] = fact
     if (qid == 'Q-P02' and state_name in {'reported', 'observed'}
@@ -467,7 +499,10 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
             result['context'].update(device_incident_resolved=False, device_incident_resolution_ref=None)
     if qid in DEVICE_CLEANUP_VALUES:
         validate_state(result)
-    if (qid in ACCOUNT_INCIDENT_VALUES or qid in DEVICE_CLEANUP_VALUES or qid == "Q-C13" or qid.startswith("Q-H")) and state_name in {"reported", "observed"}:
+    protected_order = (qid == 'Q-P02' and (old.get('state') in {'stale', 'conflict'}
+                       or _upgrade_only_task(state) or state['context']['subscription_conflict']
+                       or result['context'].get('current_order_plan_stale', False)))
+    if (qid in ACCOUNT_INCIDENT_VALUES or qid in DEVICE_CLEANUP_VALUES or qid == "Q-C13" or qid.startswith("Q-H") or protected_order) and state_name in {"reported", "observed"}:
         # Validate the full candidate before a replay can return early; malformed
         # provenance, targets and metadata must not hide behind idempotency.
         validate_state(result)
@@ -481,6 +516,24 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
                     device_incident_resolution_ref=state['context']['device_incident_resolution_ref'])
             validate_state(result)
             return result
+    if qid == 'Q-P02' and state_name in {'reported', 'observed'}:
+        if old.get('state') in {'stale', 'conflict'} and not fresh_reply:
+            fact.update(state='stale', blocker_reason='Historical order evidence requires a fresh current reply')
+        review = result.get('subscription_review')
+        if review is not None and review['status'] == 'unresolved':
+            report = _current_subscription_report(review)
+            if report['observed_at'] is not None and (not fresh_reply or
+                    _validate_date(fact['observed_at']) < _validate_date(report['observed_at'])):
+                fact.update(state='stale', blocker_reason='Current contradiction requires a fresh account/status reply')
+            if report['detail'] is None and fact['state'] in {'reported', 'observed'}:
+                report['detail'] = deepcopy(fact)
+        if (fresh_reply and fact['state'] in {'reported', 'observed'} and isinstance(value, dict)
+                and _named_plan(value.get('plan')) and _after_purchase_completion(result, fact)):
+            if 'current_order_plan_stale' in result['context']:
+                # Explicit false records that this runtime saw a fresh P02 plan
+                # after the obligation. Do not mistake stale legacy C13 for a
+                # new invalidation on the next load/device change.
+                result['context']['current_order_plan_stale'] = False
     if qid == 'Q-C13' and state_name in {'reported', 'observed'}:
 
         # A historical snapshot is not a current reply. Neither a newer import
@@ -550,7 +603,9 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
     if review is not None and qid in review['retained_keys']:
         # Only explicit fresh reports retire retained evidence. Re-rendering,
         # loading, and replaying an old observation cannot make it current.
-        if fresh_reply:
+        if fresh_reply and not (qid == 'Q-P02' and 'plan' in fact.get('retained_fields', {})):
+            # A current channel answer/refusal has not refreshed the retained
+            # plan's evidence across an actual interruption.
             review['retained_keys'].remove(qid)
     _refresh_resume_binding(result)
     _sync_task_intent(result)
@@ -658,6 +713,12 @@ def set_context(state, **changes):
     validate_state(state)
     result = deepcopy(state)
     _normalize_incident_context(result)
+    _normalize_subscription_review(result)
+    _normalize_current_order_plan(result)
+    if 'current_order_plan_stale' in changes:
+        raise InterviewError('Current-order plan freshness is derived from evidence, not routing flags')
+    if changes.get('subscription_conflict') is False and result['context']['subscription_conflict']:
+        raise InterviewError('Unresolved subscription conflict requires current evidence-bound resolution')
     if state["context"]["paused"] and changes.get("paused") is False:
         raise InterviewError("Use resume_interview for an interrupted session")
     if 'task' in changes and changes['task'] != state['context']['task']:
@@ -667,6 +728,7 @@ def set_context(state, **changes):
         raise InterviewError('Device episode reference is derived from current history')
     result["context"].update(changes)
     if changes.get('subscription_conflict') is True and not state['context']['subscription_conflict']:
+        _start_subscription_review(result, source='host:subscription_conflict', observed_at=_now())
         _stale_current_plan(result, 'Actual subscription conflict requires current-plan clarification')
     if 'device_incident_resolved' in changes:
         result['context']['device_incident_resolution_ref'] = (_device_episode_ref(result)
@@ -705,8 +767,70 @@ def journey(state):
 
 
 def _value(state, qid):
-    fact = state["facts"].get(canonical(qid), {})
-    return fact.get("value") if fact.get("state") in {"reported", "observed"} else None
+    qid = canonical(qid)
+    fact = state["facts"].get(qid, {})
+    if (qid == 'Q-P02' and fact.get('state') in {'unknown', 'declined', 'deferred'}
+            and 'retained_fields' in fact):
+        # The null outcome applies only to the scoped gap, not its older known
+        # complement. Stale/conflict envelopes never enter this active path.
+        return {key: origin['value'] for key, origin in fact['retained_fields'].items()}
+    if fact.get('state') not in {'reported', 'observed'}:
+        return None
+    value = fact.get('value')
+    if qid == 'Q-P02' and 'retained_fields' in fact:
+        return {**{key: origin['value'] for key, origin in fact['retained_fields'].items()}, **value}
+    return value
+
+
+def _p02_component(fact, key):
+    value = fact.get('value')
+    if isinstance(value, dict) and key in value:
+        return value[key], fact
+    origin = fact.get('retained_fields', {}).get(key, {})
+    return origin.get('value'), origin
+
+
+def _p02_field_valid(key, value):
+    return (_named_plan(value) if key == 'plan' else type(value) is str and value in {
+        'billing_channel': {'apple', 'google', 'web'},
+        'status': {'active', 'none', 'expired'},
+        'page_relation': {'same_target', 'other_target', 'outdated'}}[key])
+
+
+def _retain_p02_complement(state, fact):
+    """Only an actual answer to the one scoped gap reuses its known complement.
+
+    Keep the older field's own provenance; never restamp it as a new answer.
+    A null terminal reply describes the gap alone, not the valid complement.
+    Complete-order replacements, imports and corrections do not use this path.
+    """
+    old = state['facts'].get('Q-P02', {})
+    value = fact['value']
+    terminal = fact['state'] in {'unknown', 'declined', 'deferred'} and value is None
+    old_terminal = old.get('state') in {'unknown', 'declined', 'deferred'} and 'retained_fields' in old
+    if (old.get('state') not in {'reported', 'observed'} and not old_terminal
+            or not isinstance(value, dict) and not terminal):
+        return
+    if _subscription_conflict_active(state):
+        gaps = _conflict_detail_gaps(state)
+        fields = {'subscription_status': ('status', 'page_relation'),
+                  'page_relation': ('page_relation', 'status')}
+    elif _upgrade_only_task(state):
+        gaps = _upgrade_order_gaps(state)
+        fields = {'current_plan': ('plan', 'billing_channel'),
+                  'current_channel': ('billing_channel', 'plan')}
+    else:
+        return
+    if len(gaps) != 1:
+        return
+    requested, complement = fields[gaps[0]]
+    if not terminal and (not _p02_field_valid(requested, value.get(requested)) or complement in value):
+        return
+    retained, origin = _p02_component(old, complement)
+    if _p02_field_valid(complement, retained):
+        fact['retained_fields'] = {complement: {key: deepcopy(origin[key]) for key in
+            ('state', 'source', 'subject_ref', 'observed_at')}}
+        fact['retained_fields'][complement]['value'] = deepcopy(retained)
 
 
 def _account_incident(state):
@@ -851,10 +975,48 @@ def _stale_old_order_followup(state):
 
 def _stale_current_plan(state, reason):
     """Retain account provenance, never revive an older effective plan."""
+    plan, _ = _p02_component(state['facts'].get('Q-P02', {}), 'plan')
+    if _named_plan(plan):
+        # P02 remains valid historical order/channel evidence. Only its use as
+        # the current plan is invalidated; do not erase or restamp that history.
+        state['context']['current_order_plan_stale'] = True
+        state['facts']['Q-P02']['clarification_count'] = 0
+        state['asked_question_ids'] = [qid for qid in state['asked_question_ids'] if qid != 'Q-P02']
     fact = state['facts'].get('Q-C13')
     if fact and fact['state'] in {'reported', 'observed', 'stale', 'conflict'}:
         fact.update(state='stale', blocker_reason=reason, clarification_count=0)
         state['asked_question_ids'] = [qid for qid in state['asked_question_ids'] if qid != 'Q-C13']
+
+
+def _named_plan(value):
+    return type(value) is str and bool(value.strip()) and value != 'selected_unspecified'
+
+
+def _order_plan_stale(state):
+    context = state['context']
+    return (context.get('current_order_plan_stale', False)
+            or 'current_order_plan_stale' not in context
+            and state['facts'].get('Q-C13', {}).get('state') in {'stale', 'conflict'})
+
+
+def _after_purchase_completion(state, fact):
+    date = _validate_date(fact.get('observed_at'))
+    barriers = [state.get('purchase_completion', {}).get('observed_at')]
+    if _order_plan_stale(state):
+        barriers.append(state['current_subscription']['observed_at'])
+    return all(value is None or date is not None and date >= _validate_date(value)
+               for value in barriers)
+
+
+def _normalize_current_order_plan(state):
+    # Legacy completed states may predate the component freshness marker.
+    fact = state['facts'].get('Q-P02', {})
+    value, origin = _p02_component(fact, 'plan')
+    if _named_plan(value) and (_order_plan_stale(state) or not _after_purchase_completion(state, origin)):
+        if not state['context'].get('current_order_plan_stale', False):
+            fact['clarification_count'] = 0
+            state['asked_question_ids'] = [qid for qid in state['asked_question_ids'] if qid != 'Q-P02']
+        state['context']['current_order_plan_stale'] = True
 
 
 def _current_plan_needed(state):
@@ -863,15 +1025,388 @@ def _current_plan_needed(state):
             and journey(state) == 'existing_subscriber')
 
 
+# One bounded subscription contradiction, not a billing/entitlement authority.
+SUBSCRIPTION_OUTCOMES = {'existing_subscription', 'other_target_page', 'outdated_page'}
+
+
+def _subscription_binding(state):
+    return {**{key: state[key] for key in ('task_id', 'target_alias', 'account_alias')},
+            'task': state['context']['task']}
+
+
+def _subscription_conflict_active(state):
+    return (state['context']['subscription_conflict']
+            and state['context']['task'] in PURCHASE_TASKS | BILLING_TASKS
+            and not _cleanup_mode(state))
+
+
+def _current_subscription_report(review):
+    return review.get('latest_report', review)
+
+
+def _conflict_detail_gaps(state):
+    fact = state['facts'].get('Q-P02', {})
+    value = _value(state, 'Q-P02')
+    value = value if isinstance(value, dict) else {}
+    review = state.get('subscription_review')
+    report = _current_subscription_report(review) if review else None
+    gaps = []
+    for key, gap in [('status', 'subscription_status'), ('page_relation', 'page_relation')]:
+        _, origin = _p02_component(fact, key)
+        old = (report and report['observed_at'] is not None and (origin.get('observed_at') is None
+               or _validate_date(origin['observed_at']) < _validate_date(report['observed_at'])))
+        if old or not _p02_field_valid(key, value.get(key)):
+            gaps.append(gap)
+    return gaps
+
+
+def _prepare_subscription_detail(state, report):
+    """A new observed report needs its own detail, not the prior episode's reply."""
+    if report['observed_at'] is None:  # Legacy date unknown; retain its existing answers.
+        return
+    fact = state['facts'].get('Q-P02')
+    if fact is not None and not _conflict_detail_gaps(state):
+        report['detail'] = deepcopy(fact)
+        return
+    if fact is not None:
+        fact.update(state='stale', clarification_count=0,
+                    blocker_reason='New subscription contradiction requires current account/status detail')
+    state['asked_question_ids'] = [qid for qid in state['asked_question_ids'] if qid != 'Q-P02']
+
+
+def _start_subscription_review(state, *, source, observed_at):
+    previous = state.get('subscription_review')
+    if previous and previous['resolution'] is not None:
+        if observed_at is None or _validate_date(observed_at) <= _validate_date(previous['resolution']['observed_at']):
+            raise InterviewError('A new contradiction must follow the resolved episode')
+    sequence = previous['sequence'] + 1 if previous else 1
+    original = {qid: deepcopy(fact) for qid, fact in state['facts'].items()
+                if qid in {'Q-J01', 'Q-J02', 'Q-P02'}}
+    binding = _subscription_binding(state)
+    digest = hashlib.sha256(json.dumps([binding, sequence, source, observed_at, original],
+                                       sort_keys=True, ensure_ascii=True).encode('utf-8')).hexdigest()
+    state['subscription_review'] = {
+        'episode_id': '.'.join(digest[i:i + 8] for i in range(0, 64, 8)),
+        'sequence': sequence, 'binding': binding, 'source': source,
+        'observed_at': observed_at, 'original': original, 'detail': None,
+        'status': 'unresolved', 'resolution': None}
+    state['context']['subscription_conflict'] = True
+    _prepare_subscription_detail(state, state['subscription_review'])
+
+
+def _normalize_subscription_review(state):
+    # A legacy true flag contains no page observation date. Retain that unknown,
+    # rather than manufacturing a current observation on every load or retry.
+    if state['context']['subscription_conflict'] and 'subscription_review' not in state:
+        _start_subscription_review(state, source='legacy:subscription_conflict', observed_at=None)
+
+
+def _resolution_answers(outcome, answers):
+    if not isinstance(answers, list) or not 2 <= len(answers) <= 3:
+        raise InterviewError('Resolution requires current journey and related order facts')
+    values = {}
+    for item in answers:
+        if (not isinstance(item, dict) or set(item) - {'question_id', 'value', 'state'}
+                or not {'question_id', 'value'}.issubset(item)
+                or type(item['question_id']) is not str
+                or item['question_id'] not in {'Q-J01', 'Q-P02', 'Q-C11'}
+                or item['question_id'] in values
+                or type(item.get('state', 'reported')) is not str
+                or item.get('state', 'reported') not in {'reported', 'observed'}):
+            raise InterviewError('Invalid current subscription resolution facts')
+        values[item['question_id']] = item['value']
+    if not {'Q-J01', 'Q-P02'}.issubset(values):
+        raise InterviewError('Resolution requires current journey and related order facts')
+    order = values['Q-P02']
+    if (not isinstance(order, dict) or order.get('pending_issue') != 'none_reported'
+            or order.get('billing_channel') is not None and (type(order['billing_channel']) is not str
+                or order['billing_channel'] not in {'apple', 'google', 'web', 'none'})
+            or order.get('plan') is not None and (type(order['plan']) is not str
+                or not order['plan'].strip() or order['plan'] == 'selected_unspecified')):
+        raise InterviewError('Resolution requires explicit current related-order status')
+    if outcome == 'existing_subscription':
+        if (values['Q-J01'] != 'existing_subscriber' or order.get('status') != 'active'
+                or order.get('page_relation') != 'same_target'
+                or order.get('billing_channel') == 'none'):
+            raise InterviewError('Existing-subscription resolution requires matching current evidence')
+        if 'Q-C11' in values and (type(values['Q-C11']) is not str
+                or values['Q-C11'] not in ENUM_CONTEXT['task'] - {'subscription_preparation'}):
+            raise InterviewError('Resolution next task must be an explicit supported task')
+    elif outcome in {'other_target_page', 'outdated_page'}:
+        if (type(values['Q-J01']) is not str or values['Q-J01'] not in {'first_subscription', 'returning_subscription'}
+                or type(order.get('status')) is not str or order.get('status') not in {'none', 'expired'}
+                or order.get('page_relation') != {'other_target_page': 'other_target',
+                                                  'outdated_page': 'outdated'}[outcome]
+                or 'Q-C11' in values):
+            raise InterviewError('Page clarification requires matching same-account absence evidence')
+    else:
+        raise InterviewError('Unsupported subscription resolution outcome')
+    return values
+
+
+def _validate_subscription_review(state):
+    review = state.get('subscription_review')
+    if review is None and 'subscription_review' not in state:
+        return
+    keys = {'episode_id', 'sequence', 'binding', 'source', 'observed_at', 'original',
+            'detail', 'status', 'resolution'}
+    if (not isinstance(review, dict) or set(review) - keys - {'latest_report'} or keys - set(review)
+            or type(review['episode_id']) is not str
+            or not re.fullmatch(r'[0-9a-f]{8}(?:\.[0-9a-f]{8}){7}', review['episode_id'])
+            or type(review['sequence']) is not int or review['sequence'] < 1
+            or type(review['source']) is not str or not review['source']
+            or type(review['status']) is not str or review['status'] not in {'unresolved', 'resolved'}):
+        raise InterviewError('Invalid subscription review episode')
+    _validate_date(review['observed_at'])
+    binding = review['binding']
+    if (not isinstance(binding, dict) or set(binding) != {'task_id', 'target_alias', 'account_alias', 'task'}
+            or any(type(binding[key]) is not str or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', binding[key])
+                   for key in ('task_id', 'target_alias', 'account_alias'))
+            or type(binding['task']) is not str or binding['task'] not in ENUM_CONTEXT['task']
+            or binding['account_alias'] != state['account_alias']):
+        raise InterviewError('Subscription review account binding mismatch')
+    if state['context']['subscription_conflict'] != (review['status'] == 'unresolved'):
+        raise InterviewError('Subscription review contradicts unresolved flag')
+    original = review['original']
+    if not isinstance(original, dict) or set(original) - {'Q-J01', 'Q-J02', 'Q-P02'}:
+        raise InterviewError('Invalid original subscription evidence')
+    # Reuse the ordinary fact validator without accepting an arbitrary historical
+    # state or trusting a snapshot's source/time/subject metadata.
+    for facts in (original, {} if review['detail'] is None else {'Q-P02': review['detail']}):
+        probe = new_state(binding['target_alias'], binding['account_alias'], task_id=binding['task_id'])
+        probe['facts'] = deepcopy(facts)
+        probe['current_subscription']['status'] = 'conflict'
+        validate_state(probe)
+    latest = review.get('latest_report')
+    if 'latest_report' in review:
+        if (not isinstance(latest, dict) or set(latest) != {'source', 'observed_at', 'binding', 'detail'}
+                or type(latest['source']) is not str or not latest['source'] or latest['observed_at'] is None):
+            raise InterviewError('Invalid latest subscription contradiction report')
+        date = _validate_date(latest['observed_at'])
+        opened = _validate_date(review['observed_at'])
+        if opened is not None and date <= opened:
+            raise InterviewError('Latest contradiction must follow the initial report')
+        rb = latest['binding']
+        if (not isinstance(rb, dict) or set(rb) != set(binding) or rb['account_alias'] != binding['account_alias']
+                or any(type(rb[key]) is not str or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', rb[key])
+                       for key in ('task_id', 'target_alias', 'account_alias'))
+                or type(rb['task']) is not str or rb['task'] not in ENUM_CONTEXT['task']):
+            raise InterviewError('Invalid latest contradiction binding')
+        if latest['detail'] is not None:
+            probe = new_state(rb['target_alias'], rb['account_alias'], task_id=rb['task_id'])
+            probe['facts'] = {'Q-P02': deepcopy(latest['detail'])}
+            validate_state(probe)
+            if latest['detail']['observed_at'] is None or _validate_date(latest['detail']['observed_at']) < date:
+                raise InterviewError('Latest contradiction detail predates its report')
+    resolution = review['resolution']
+    if review['status'] == 'unresolved':
+        if resolution is not None:
+            raise InterviewError('Unresolved subscription episode cannot carry a resolution')
+    else:
+        if (not isinstance(resolution, dict)
+                or set(resolution) != {'binding', 'outcome', 'answers', 'source', 'observed_at'}
+                or type(resolution['source']) is not str or not resolution['source']
+                or resolution['observed_at'] is None):
+            raise InterviewError('Invalid subscription resolution record')
+        rb = resolution['binding']
+        if (not isinstance(rb, dict) or set(rb) != set(binding)
+                or rb['account_alias'] != binding['account_alias']
+                or any(type(rb[key]) is not str or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', rb[key])
+                       for key in ('task_id', 'target_alias', 'account_alias'))
+                or type(rb['task']) is not str or rb['task'] not in ENUM_CONTEXT['task']):
+            raise InterviewError('Invalid subscription resolution binding')
+        date = _validate_date(resolution['observed_at'])
+        opened = _validate_date(_current_subscription_report(review)['observed_at'])
+        if opened is not None and date <= opened:
+            raise InterviewError('Resolution must follow the actual contradiction')
+        retained = list(original.values()) + ([] if review['detail'] is None else [review['detail']])
+        if latest and latest['detail'] is not None:
+            retained.append(latest['detail'])
+        if any(fact['observed_at'] is not None and date < _validate_date(fact['observed_at']) for fact in retained):
+            raise InterviewError('Resolution predates retained subscription evidence')
+        if type(resolution['outcome']) is not str or resolution['outcome'] not in SUBSCRIPTION_OUTCOMES:
+            raise InterviewError('Unsupported subscription resolution outcome')
+        values = _resolution_answers(resolution['outcome'], resolution['answers'])
+        if resolution['outcome'] != 'existing_subscription':
+            prior_journey = next((fact['value'] for qid, fact in original.items()
+                                  if qid in {'Q-J01', 'Q-J02'} and fact['state'] in {'reported', 'observed'}), None)
+            if values['Q-J01'] != prior_journey:
+                raise InterviewError('Page clarification contradicts original subscription journey')
+
+
+def report_subscription_conflict(state, *, source, observed_at=None, current_reply=False):
+    """Record the host's actual current same-account/task contradiction.
+
+    Use only sanitized reported/authorized evidence. This is not page access,
+    natural-language detection, entitlement verification, or action permission.
+    Keep the initial episode and one latest report. Exact retries retain dates;
+    a newer actual report advances the evidence barrier and refreshes only its
+    focused clarification. An old resolution cannot clear that newer evidence.
+    """
+    result = deepcopy(validate_state(state))
+    if type(current_reply) is not bool or not isinstance(source, str) or not source:
+        raise InterviewError('Actual subscription contradiction requires provenance')
+    _safe(source)
+    date = _validate_date(observed_at)
+    if observed_at is not None and not current_reply:
+        raise InterviewError('Historical import cannot establish a current subscription episode')
+    retained = state.get('subscription_review')
+    if retained is not None and observed_at is not None:
+        for report in (retained, _current_subscription_report(retained)):
+            if source == report['source'] and date == _validate_date(report['observed_at']):
+                return result
+    if state['context']['subscription_conflict']:
+        _normalize_subscription_review(result)
+        review = result['subscription_review']
+        report = _current_subscription_report(review)
+        effective_at = observed_at or _now()
+        date = _validate_date(effective_at)
+        old_date = _validate_date(report['observed_at'])
+        if source == report['source'] and date == old_date:
+            return result
+        if old_date is not None and date <= old_date:
+            raise InterviewError('Older or same-time changed contradiction cannot replace current evidence')
+        if (report['detail'] is not None and report['detail']['observed_at'] is not None
+                and date < _validate_date(report['detail']['observed_at'])):
+            raise InterviewError('New contradiction cannot discard later retained detail evidence')
+        review['latest_report'] = {'source': source, 'observed_at': effective_at,
+                                  'binding': _subscription_binding(result), 'detail': None}
+        _prepare_subscription_detail(result, review['latest_report'])
+        _stale_current_plan(result, 'New actual subscription evidence requires current-plan clarification')
+        return validate_state(result)
+    prior = state.get('subscription_review', {}).get('resolution')
+    if date is not None and prior is not None and date <= _validate_date(prior['observed_at']):
+        raise InterviewError('Replayed contradiction cannot reopen a resolved episode')
+    _start_subscription_review(result, source=source, observed_at=observed_at or _now())
+    _stale_current_plan(result, 'Actual subscription conflict requires current-plan clarification')
+    return validate_state(result)
+
+
+def resolve_subscription_conflict(state, *, episode_id, account_ref, target_ref, task_id,
+                                  outcome, answers, source, observed_at=None, current_reply=False):
+    """Atomically record one explicit current reply resolving this exact episode.
+
+    Supported normalized outcomes require compatible journey/order evidence.
+    For active-subscription discovery, omit C11 if the next task was not specified;
+    the one relevant task question remains open. Other-target page evidence does
+    not switch accounts; use begin_task only for an actually requested new target.
+    Unknown/declined/deferred stop P02 repeats without clearing the contradiction.
+    Exact retries preserve timestamps and all later facts. No outcome is a purchase.
+    """
+    result = deepcopy(validate_state(state))
+    _normalize_subscription_review(result)
+    review = result.get('subscription_review')
+    if (review is None or episode_id != review['episode_id']
+            or (account_ref, target_ref, task_id) != (state['account_alias'], state['target_alias'], state['task_id'])):
+        raise InterviewError('No matching current account/task subscription episode')
+    if type(current_reply) is not bool or not isinstance(source, str) or not source:
+        raise InterviewError('Resolution requires explicit current provenance')
+    _safe({'answers': answers, 'source': source, 'outcome': outcome})
+    date = _validate_date(observed_at)
+    if type(outcome) is not str or outcome not in SUBSCRIPTION_OUTCOMES | {'unknown', 'declined', 'deferred'}:
+        raise InterviewError('Unsupported subscription resolution outcome')
+    if outcome in SUBSCRIPTION_OUTCOMES:
+        values = _resolution_answers(outcome, answers)
+    elif answers != []:
+        raise InterviewError('Unresolved reply cannot contain affirmative resolution facts')
+    receipt = {'binding': _subscription_binding(state), 'outcome': outcome,
+               'answers': deepcopy(answers), 'source': source, 'observed_at': observed_at or _now()}
+    prior = review['resolution']
+    if prior is not None:
+        # Task changes made by the original resolution are expected. Its original
+        # binding remains immutable; device/task-id changes are not the same retry.
+        same = (all(prior[key] == receipt[key] for key in ('outcome', 'answers', 'source'))
+                and all(prior['binding'][key] == receipt['binding'][key]
+                        for key in ('task_id', 'target_alias', 'account_alias'))
+                and (observed_at is None or date == _validate_date(prior['observed_at'])))
+        if same:
+            return deepcopy(state)
+        raise InterviewError('Subscription episode already resolved')
+    if state['context']['task'] not in PURCHASE_TASKS | BILLING_TASKS:
+        raise InterviewError('Resolve subscription evidence only in its dependent billing task')
+    if observed_at is not None and not current_reply:
+        raise InterviewError('Resolution must be a current reply, not an imported snapshot')
+    date = _validate_date(receipt['observed_at'])
+    report = _current_subscription_report(review)
+    opened = _validate_date(report['observed_at'])
+    evidence = list(review['original'].values()) + list(state['facts'].get(qid, {})
+                for qid in ('Q-J01', 'Q-J02', 'Q-P02'))
+    if review['detail'] is not None:
+        evidence.append(review['detail'])
+    if report is not review and report['detail'] is not None:
+        evidence.append(report['detail'])
+    if (opened is not None and date <= opened or any(
+            fact.get('observed_at') is not None and date < _validate_date(fact['observed_at'])
+            for fact in evidence)):
+        raise InterviewError('Stale resolution cannot clear current subscription evidence')
+    if outcome not in SUBSCRIPTION_OUTCOMES:
+        return _record_fact(result, 'Q-P02', state_name=outcome, source=source,
+                            observed_at=receipt['observed_at'], fresh_reply=True)
+    if outcome != 'existing_subscription':
+        prior_journey = next((fact['value'] for qid, fact in review['original'].items()
+                              if qid in {'Q-J01', 'Q-J02'} and fact['state'] in {'reported', 'observed'}), None)
+        if values['Q-J01'] != prior_journey:
+            raise InterviewError('Page clarification must preserve the original subscription journey')
+    # Remove an old task answer when discovery did not establish the next task.
+    # Do not use complete_purchase: this reply is no completed-purchase report.
+    result['subscription_review'].update(status='resolved', resolution=receipt)
+    result['context']['subscription_conflict'] = False
+    if outcome == 'existing_subscription':
+        result['facts'].pop('Q-C11', None)
+        result['asked_question_ids'] = [qid for qid in result['asked_question_ids'] if qid != 'Q-C11']
+        result['context']['task'] = 'subscription_preparation'
+        result['context']['purchase_completed'] = False
+        result['purchase_intent'] = 'none'
+    for item in sorted(answers, key=lambda item: {'Q-J01': 0, 'Q-C11': 1, 'Q-P02': 2}[item['question_id']]):
+        result = _record_fact(result, item['question_id'], item['value'],
+                              state_name=item.get('state', 'reported'), source=source,
+                              observed_at=receipt['observed_at'], fresh_reply=True)
+    _refresh_resume_binding(result)
+    _sync_task_intent(result)
+    return validate_state(result)
+
+
 def _old_billing_needed(state):
     c = state['context']
-    return (c['subscription_conflict']
+    return (_subscription_conflict_active(state)
             or journey(state) == 'existing_subscriber' and c['task'] in BILLING_TASKS
             or journey(state) == 'returning_subscription' and c['task'] in {'billing_issue', 'change_channel'})
 
 
 def _billing_only_task(state):
     return state['context']['task'] == 'billing_issue' and _old_billing_needed(state)
+
+
+def _upgrade_only_task(state):
+    return state['context']['task'] == 'upgrade' and journey(state) == 'existing_subscriber'
+
+
+def _subscription_task_needed(state):
+    return (journey(state) == 'existing_subscriber'
+            and state['context']['task'] == 'subscription_preparation'
+            and state.get('subscription_review', {}).get('status') == 'resolved')
+
+
+def _upgrade_order_gaps(state):
+    order = _value(state, 'Q-P02')
+    order = order if isinstance(order, dict) else {}
+    fact = state['facts'].get('Q-P02', {})
+    _, plan_origin = _p02_component(fact, 'plan')
+    plan = (order.get('plan') if not _order_plan_stale(state)
+            and _after_purchase_completion(state, plan_origin) else None)
+    if not _named_plan(plan):
+        plan = _value(state, 'Q-C13')
+    gaps = []
+    if type(plan) is not str or not plan.strip() or plan == 'selected_unspecified':
+        gaps.append('current_plan')
+    if type(order.get('billing_channel')) is not str or order['billing_channel'] not in {'apple', 'google', 'web'}:
+        gaps.append('current_channel')
+    return gaps
+
+
+def _focused_subscription_task(state):
+    return (_billing_only_task(state) or _upgrade_only_task(state)
+            or _subscription_conflict_active(state) or _subscription_task_needed(state))
 
 
 def _ask_apple_old_order(state):
@@ -899,6 +1434,12 @@ def _old_order_covered(state):
 def _old_order_needs_clarification(state):
     # Structured partial non-Apple orders have no A06 follow-up. Do not let a
     # reported partial object turn a missing billing dependency into G2 pass.
+    if _subscription_conflict_active(state):
+        return (state['facts'].get('Q-P02', {}).get('state') in {'reported', 'observed'}
+                and bool(_conflict_detail_gaps(state)))
+    if _upgrade_only_task(state):
+        return (state['facts'].get('Q-P02', {}).get('state') in {'reported', 'observed'}
+                and bool(_upgrade_order_gaps(state)))
     return (isinstance(_value(state, 'Q-P02'), dict) and not _old_order_covered(state)
             and not _ask_apple_old_order(state) and _value(state, 'Q-A06') is None)
 
@@ -940,6 +1481,27 @@ def applicable_questions(state):
             add('cleanup', 'I5', ['Q-Z03', 'Q-Z04'])
         if _current_plan_needed(state):
             add('compatibility', 'I5', ['Q-C13'])
+        return requirements
+    if _subscription_conflict_active(state):
+        # Coverage of the description is not resolution. Stop the dependent
+        # purchase survey until the actual account/subscription mismatch clears.
+        add('payment', 'I4', ['Q-P02'])
+        return requirements
+    if _subscription_task_needed(state):
+        add('core', 'I1', ['Q-C11'])
+        return requirements
+    if _upgrade_only_task(state):
+        add('payment', 'I4', ['Q-P02'])
+        add('core', 'I2', ['Q-C08'])
+        if c['compatibility_needed']:
+            # An explicitly identified client dependency is separate from the
+            # ordinary new-purchase/deployment survey and remains a real gap.
+            add('compatibility', 'I5', ['Q-C02', 'Q-L02'])
+        if c['budget_needed'] or _value(state, 'Q-C08') in {'compare', 'undecided'}:
+            add('core', 'I2', ['Q-C01'])
+            add('payment', 'I4', ['Q-P05'])
+        if c['billing_product_ambiguous']:
+            add('payment', 'I4', ['Q-P01'])
         return requirements
     if _billing_only_task(state):
         # A legacy refund/restoration explanation must not require unrelated
@@ -1088,6 +1650,16 @@ def next_question(state):
         if item["id"] in state["asked_question_ids"] and not clarification:
             continue
         prompt = '你已经选好套餐；具体是哪一个套餐？' if unnamed_plan else QUESTION_PROMPTS[item['id']]
+        if item['id'] == 'Q-P02' and _subscription_conflict_active(state):
+            missing = _conflict_detail_gaps(state)
+            detail = ('这条提示对应这次目标账号吗，当前订阅状态是什么' if len(missing) == 2
+                      else '当前订阅状态是什么' if 'subscription_status' in missing
+                      else '这条提示对应这次目标账号吗')
+            prompt = f'先前的订阅自述与相关页面/订单提示不一致：{detail}？只补这处不一致；不确定或暂不回答也可以。'
+        elif item['id'] == 'Q-P02' and _upgrade_only_task(state):
+            missing = _upgrade_order_gaps(state)
+            detail = '当前套餐和原购买渠道' if len(missing) == 2 else '当前套餐' if 'current_plan' in missing else '原购买渠道'
+            prompt = f'升级所需的{detail}是什么？只说已知情况；不确定或暂不回答也可以，无需打开 Claude。'
         if item['id'] in DEVICE_CLEANUP_VALUES:
             prompt = prompt.format(target_alias=state['target_alias'])
         if (item['id'] in EXPOSURE_PROMPTS and state['context']['incident'] == 'credential_exposure'
@@ -1148,8 +1720,12 @@ def assessment(state):
             reason = "requires_contact_gate"
         elif item['id'] == 'Q-C08' and _plan_identity_missing(fact):
             reason = 'target_plan_identity_missing'
+        elif item['id'] == 'Q-P02' and _subscription_conflict_active(state) and _conflict_detail_gaps(state):
+            reason = 'subscription_detail_incomplete'
         elif item['id'] == 'Q-P02' and _old_order_needs_clarification(state):
             reason = 'old_order_incomplete'
+        elif item['id'] == 'Q-P02' and _upgrade_only_task(state) and not _subscription_conflict_active(state) and _upgrade_order_gaps(state):
+            reason = 'current_plan_or_channel_missing'
         elif item['id'] == 'Q-C13' and (fact.get('state') not in {'reported', 'observed'}
                                           or _plan_identity_missing(fact)):
             reason = 'current_plan_missing' if fact.get('state') in RESOLVED else fact.get('state', 'unasked')
@@ -1158,7 +1734,7 @@ def assessment(state):
         if reason:
             unresolved.append({"id": item["id"], "reason": reason})
     c = state["context"]
-    if c["route_selection_basis"] == "default_proposal" and not _billing_only_task(state) and not (_cleanup_mode(state) and _value(state, "Q-D02") == "no_cleanup") and not any(x["id"] == "Q-C05" for x in unresolved):
+    if c["route_selection_basis"] == "default_proposal" and not _focused_subscription_task(state) and not (_cleanup_mode(state) and _value(state, "Q-D02") == "no_cleanup") and not any(x["id"] == "Q-C05" for x in unresolved):
         unresolved.append({"id": "Q-C05", "reason": "route_unconfirmed"})
     if not _cleanup_mode(state) and journey(state) == "unknown" and not any(x["id"] in {"Q-J01", "Q-J02"} for x in unresolved):
         unresolved.append({"id": "Q-J01", "reason": "journey_unknown"})
@@ -1182,6 +1758,17 @@ def assessment(state):
             "deferred_branches": list(state["deferred_branches"]),
             "route_confirmation": "unconfirmed" if c["route_selection_basis"] == "default_proposal" else "confirmed",
             "current_subscription": deepcopy(state["current_subscription"])}
+    if state['context']['subscription_conflict']:
+        episode = state.get('subscription_review')
+        result['subscription_review'] = {
+            'status': 'unresolved', 'episode_id': episode['episode_id'] if episode else None,
+            'blocks_current_task': _subscription_conflict_active(state)}
+        if _subscription_conflict_active(state):
+            result['G2'].update(status='blocked', conditional_plan_only=True,
+                                reason='subscription_conflict_unresolved')
+    if _upgrade_only_task(state):
+        result['upgrade_scope'] = {'current_order_gaps': _upgrade_order_gaps(state),
+                                   'billing_feasibility': 'not_established'}
     if any(item['id'] == 'Q-C13' for item in required):
         result['current_plan_dependency'] = {
             'question_id': 'Q-C13', 'fact_state': state['facts'].get('Q-C13', {}).get('state', 'unasked'),
@@ -1232,6 +1819,15 @@ def complete_purchase(state, *, source, observed_at=None, observed=False):
     current_at = _validate_date(current['observed_at'])
     plan = state['facts'].get('Q-C13', {})
     plan_at = _validate_date(plan.get('observed_at'))
+    order = state['facts'].get('Q-P02', {})
+    value = _value(state, 'Q-P02')
+    _, origin = _p02_component(order, 'plan')
+    order_at = _validate_date(origin.get('observed_at'))
+    if (isinstance(value, dict) and _named_plan(value.get('plan'))
+            and not _order_plan_stale(state)
+            and _after_purchase_completion(state, origin) and order_at is not None
+            and (plan_at is None or order_at > plan_at)):
+        plan, plan_at = order, order_at
     if completed_at is not None and (current_at is not None and completed_at < current_at
             or current['status'] in {'active_reported', 'observed_active'}
             and plan.get('state') in {'reported', 'observed'} and plan_at is not None and completed_at < plan_at):
@@ -1292,6 +1888,8 @@ def dumps_state(state, *, host_opt_in=False, scope="private_save"):
     """
     result = deepcopy(validate_state(state))
     _normalize_incident_context(result)
+    _normalize_subscription_review(result)
+    _normalize_current_order_plan(result)
     _sync_task_intent(result)
     if scope == "public_export":
         raise InterviewError("Public export requires a separately reviewed redacted artifact")
@@ -1322,6 +1920,8 @@ def loads_state(serialized):
         raise InterviewError("Invalid saved interview: " + str(exc)) from None
     validate_state(result)
     _normalize_incident_context(result)
+    _normalize_subscription_review(result)
+    _normalize_current_order_plan(result)
     _sync_task_intent(result)
     # Saved permission is historical evidence, not new permission to save/export.
     result["persistence_consent"] = {key: False for key in result["persistence_consent"]}
@@ -1331,7 +1931,7 @@ def loads_state(serialized):
 # Resume review is a planning obligation, never an operation/identity permission.
 # An explicit event boundary is separate from ordinary JSON deserialization.
 RESUME_FIELD_KEYS = frozenset(
-    {'Q-D01', 'Q-D02', 'Q-C02', 'Q-C04', 'Q-C06', 'Q-C09', 'Q-C13', 'Q-Z04', 'Q-J01', 'Q-J02'} |
+    {'Q-D01', 'Q-D02', 'Q-C02', 'Q-C04', 'Q-C06', 'Q-C09', 'Q-C13', 'Q-P02', 'Q-Z04', 'Q-J01', 'Q-J02'} |
     {f'Q-OS{i:02d}' for i in range(2, 13)} |
     {f'Q-N{i:02d}' for i in range(1, 7)} |
     {f'Q-L{i:02d}' for i in range(1, 5)} |
@@ -1385,6 +1985,13 @@ def _validate_resume_review(state):
             raise InterviewError('Resume response contradicts its status')
 
 
+def _resume_current_order_plan(state):
+    plan, _ = _p02_component(state['facts'].get('Q-P02', {}), 'plan')
+    return (_named_plan(plan)
+            and (journey(state) == 'existing_subscriber'
+                 or state['context'].get('current_order_plan_stale', False)))
+
+
 def resume_scope_keys(state):
     """Snapshot retained topics, including dormant conditionals in the chosen route.
 
@@ -1394,6 +2001,8 @@ def resume_scope_keys(state):
     """
     validate_state(state)
     allowed = {key for key in RESUME_FIELD_KEYS if not key.startswith(('Q-L', 'Q-V', 'Q-S', 'Q-J'))}
+    if not _resume_current_order_plan(state):
+        allowed.discard('Q-P02')
     if state['context']['route_selection_basis'] != 'default_proposal':
         prefix = {'local': 'Q-L', 'vm': 'Q-V', 'vps': 'Q-S'}.get(state['context']['route'])
         if prefix:
@@ -1401,7 +2010,8 @@ def resume_scope_keys(state):
     if state['context']['task'] in PURCHASE_TASKS | BILLING_TASKS:
         allowed.update({'Q-J01', 'Q-J02'})
     return sorted(key for key, fact in state['facts'].items() if key in allowed
-                  and fact['state'] in {'reported', 'observed', 'inferred', 'stale', 'conflict'})
+                  and (fact['state'] in {'reported', 'observed', 'inferred', 'stale', 'conflict'}
+                       or key == 'Q-P02' and 'plan' in fact.get('retained_fields', {})))
 
 
 def resume_interview(state, *, resume_id):
@@ -1427,8 +2037,10 @@ def resume_interview(state, *, resume_id):
         'event_id': resume_id, 'binding': _resume_binding(result),
         'scope_keys': resume_scope_keys(result),
         'retained_keys': sorted(key for key, fact in result['facts'].items()
-                                if key in RESUME_FIELD_KEYS and fact['state'] in
-                                {'reported', 'observed', 'inferred', 'stale', 'conflict'}),
+                                if key in RESUME_FIELD_KEYS
+                                and (key != 'Q-P02' or _resume_current_order_plan(result))
+                                and (fact['state'] in {'reported', 'observed', 'inferred', 'stale', 'conflict'}
+                                     or key == 'Q-P02' and 'plan' in fact.get('retained_fields', {}))),
         'status': 'pending', 'response': None,
         'changed_keys': [], 'source': None, 'reported_at': None}
     if not result['resume_review']['scope_keys']:
@@ -1520,6 +2132,8 @@ def resume_review_prompt(state):
         topics.append('账号登录情况')
     if 'Q-C13' in keys:
         topics.append('已记录的当前套餐及本次功能依赖（不涉及购买或付款）')
+    if 'Q-P02' in keys:
+        topics.append('已记录的当前套餐和原购买渠道（不涉及实际付款）')
     if 'Q-C09' in keys:
         topics.append('使用地区/跨地区安排（无需详细地址）')
     if keys & {'Q-D01', 'Q-D02'}:
@@ -1558,6 +2172,7 @@ def invalidate_facts(state, question_ids, *, reason):
     There is deliberately no arbitrary permanent validity or global re-interview.
     """
     result = deepcopy(validate_state(state))
+    _normalize_subscription_review(result)
     if not isinstance(reason, str) or not reason:
         raise InterviewError("A refresh reason is required")
     question_ids = list(question_ids)
@@ -1569,6 +2184,8 @@ def invalidate_facts(state, question_ids, *, reason):
             result["asked_question_ids"].remove(qid)
     if 'Q-P02' in question_ids:
         _stale_old_order_followup(result)
+    if 'Q-C13' in question_ids:
+        _stale_current_plan(result, reason)
     if 'Q-D01' in question_ids and 'device_incident_resolved' in result['context']:
         result['context'].update(device_incident_resolved=False, device_incident_resolution_ref=None)
     if any(qid in {"Q-J01", "Q-J02"} for qid in question_ids) and journey(result) == "unknown":
@@ -1593,10 +2210,17 @@ def begin_task(state, *, task_id, task, target_alias=None, account_alias=None):
         result = new_state(target_alias, account_alias, task_id=task_id)
         if account_alias == state["account_alias"]:
             # A different device does not imply a different subscription.
-            keep = {"Q-J01", "Q-J02", "Q-C03", "Q-C04", "Q-C06", "Q-C13"}
+            keep = {"Q-J01", "Q-J02", "Q-C03", "Q-C04", "Q-C06", "Q-C13", "Q-P02"}
             result["facts"] = {qid: deepcopy(fact) for qid, fact in state["facts"].items()
                                if qid in keep and fact["subject_ref"] == account_alias}
             result["current_subscription"] = deepcopy(state["current_subscription"])
+            original = deepcopy(state)
+            _normalize_subscription_review(original)
+            if 'subscription_review' in original:
+                result['subscription_review'] = original['subscription_review']
+                result['context']['subscription_conflict'] = state['context']['subscription_conflict']
+            if 'current_order_plan_stale' in original['context']:
+                result['context']['current_order_plan_stale'] = original['context']['current_order_plan_stale']
             if 'purchase_completion' in state:
                 result['purchase_completion'] = deepcopy(state['purchase_completion'])
             if _legacy_incident_review(state):
@@ -1608,6 +2232,7 @@ def begin_task(state, *, task_id, task, target_alias=None, account_alias=None):
                 result["context"]["account_incident_resolved"] = _account_incident_resolved(state)
     else:
         result = deepcopy(state)
+        _normalize_subscription_review(result)
         result.pop("resume_review", None)
         old_task = result["task_id"]
         result["task_id"] = task_id
@@ -1629,9 +2254,11 @@ def begin_task(state, *, task_id, task, target_alias=None, account_alias=None):
         result = invalidate_facts(result, ['Q-P02', 'Q-A06'], reason='New billing task requires relevant old-order review')
     review = state.get('resume_review')
     if (review is not None and review['status'] in {'pending', 'unresolved'}
-            and 'Q-C13' in set(review['retained_keys']) | set(review['scope_keys'])):
+            and ('Q-C13' in set(review['retained_keys']) | set(review['scope_keys'])
+                 or 'Q-P02' in review['retained_keys'])):
         _stale_current_plan(result, 'Unresolved interruption review requires a fresh current-plan report')
     result["context"].pop("plan_compatibility_needed", None)
+    _normalize_current_order_plan(result)
     result["context"]["task"] = task
     result["purchase_intent"] = "subscription_preparation" if task in PURCHASE_TASKS else "none"
     result["payment_intent"] = task if task in {"renew", "upgrade", "change_channel"} else "unresolved" if task in PURCHASE_TASKS else "none"
@@ -1651,10 +2278,42 @@ FACT_SCHEMA = {
         "required_for": {"type": "array", "items": {"enum": ["intake", "plan", "purchase", "apply"]}},
     },
 }
+# Only P02 may retain the complementary field from a scoped current reply.
+# Generic facts remain closed; runtime adds exact account and chronology checks.
+P02_RETAINED_VALUE_SCHEMAS = {
+    'plan': {'type': 'string', 'pattern': r'\S', 'not': {'const': 'selected_unspecified'}},
+    'billing_channel': {'enum': ['apple', 'google', 'web']},
+    'status': {'enum': ['active', 'none', 'expired']},
+    'page_relation': {'enum': ['same_target', 'other_target', 'outdated']}}
+P02_FACT_SCHEMA = {
+    **FACT_SCHEMA,
+    'properties': {**FACT_SCHEMA['properties'], 'retained_fields': {
+        'type': 'object', 'additionalProperties': False, 'minProperties': 1, 'maxProperties': 1,
+        'properties': {key: {
+            'type': 'object', 'additionalProperties': False,
+            'required': ['value', 'state', 'source', 'subject_ref', 'observed_at'],
+            'properties': {'value': value_schema, 'state': {'enum': ['reported', 'observed']},
+                           'source': {'type': 'string', 'minLength': 1},
+                           'subject_ref': {'type': 'string'}, 'observed_at': {'type': ['string', 'null']}}}
+            for key, value_schema in P02_RETAINED_VALUE_SCHEMAS.items()}}},
+    'allOf': [{'if': {'required': ['retained_fields']}, 'then': {
+        'anyOf': [
+            {'properties': {'value': {'type': 'object'},
+                            'state': {'enum': ['reported', 'observed', 'stale', 'conflict']}}},
+            {'properties': {'value': {'type': 'null'},
+                            'state': {'enum': ['unknown', 'declined', 'deferred']}}},
+            {'properties': {'value': {'type': 'null'},
+                            'state': {'enum': ['stale', 'conflict']}}}],
+        'allOf': [{'if': {'properties': {'retained_fields': {'required': [key]}}},
+                   'then': {'properties': {'value': {'not': {'type': 'object', 'required': [key]}}}}}
+                  for key in P02_RETAINED_VALUE_SCHEMAS]}}]}
+
+
 STATE_SCHEMA["properties"]["facts"] = {
     "type": "object", "additionalProperties": False,
     "properties": {qid: FACT_SCHEMA for qid in QUESTION_PROMPTS if qid != RETIRED and qid not in ALIASES},
 }
+STATE_SCHEMA['properties']['facts']['properties']['Q-P02'] = P02_FACT_SCHEMA
 STATE_SCHEMA["properties"]["context"] = {
     "type": "object", "additionalProperties": False,
     "required": [key for key in CONTEXT_DEFAULTS if key not in INCIDENT_CONTEXT_FIELDS | DEVICE_CONTEXT_FIELDS | PLAN_CONTEXT_FIELDS],
@@ -1703,3 +2362,25 @@ for _device_qid, _device_values in DEVICE_CLEANUP_VALUES.items():
 for _episode_ref_key in ('device_incident_resolution_ref', 'cleanup_offer_dismissed_ref'):
     STATE_SCHEMA['properties']['context']['properties'][_episode_ref_key] = {
         'type': ['string', 'null'], 'pattern': r'^[0-9a-f]{8}(?:\.[0-9a-f]{8}){7}$'}
+
+# Optional schema-1 extension. Runtime validation checks bounded evidence,
+# resolution facts and account bindings; old states without it remain valid.
+STATE_SCHEMA['properties']['subscription_review'] = {
+    'type': 'object', 'additionalProperties': False,
+    'required': ['episode_id', 'sequence', 'binding', 'source', 'observed_at',
+                 'original', 'detail', 'status', 'resolution'],
+    'properties': {
+        'episode_id': {'type': 'string', 'pattern': r'^[0-9a-f]{8}(?:\.[0-9a-f]{8}){7}$'},
+        'sequence': {'type': 'integer', 'minimum': 1},
+        'binding': {'type': 'object'}, 'source': {'type': 'string', 'minLength': 1},
+        'observed_at': {'type': ['string', 'null']},
+        'original': {'type': 'object', 'additionalProperties': False,
+                     'properties': {'Q-J01': FACT_SCHEMA, 'Q-J02': FACT_SCHEMA, 'Q-P02': P02_FACT_SCHEMA}},
+        'detail': {'anyOf': [P02_FACT_SCHEMA, {'type': 'null'}]},
+        'status': {'enum': ['unresolved', 'resolved']},
+        'resolution': {'type': ['object', 'null']}}}
+STATE_SCHEMA['properties']['subscription_review']['properties']['latest_report'] = {
+    'type': 'object', 'additionalProperties': False,
+    'required': ['source', 'observed_at', 'binding', 'detail'],
+    'properties': {'source': {'type': 'string', 'minLength': 1}, 'observed_at': {'type': 'string'},
+                   'binding': {'type': 'object'}, 'detail': {'anyOf': [P02_FACT_SCHEMA, {'type': 'null'}]}}}

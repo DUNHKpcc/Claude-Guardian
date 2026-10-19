@@ -1,0 +1,11 @@
+test_T49_both_mobile_channels_keep_complete_vps_path_without_web_cards (__main__.MobileRouteAcceptanceTests.test_T49_both_mobile_channels_keep_complete_vps_path_without_web_cards) ... ok
+test_T49_changing_mobile_channel_preserves_existing_workspace_and_no_web_fallback (__main__.MobileRouteAcceptanceTests.test_T49_changing_mobile_channel_preserves_existing_workspace_and_no_web_fallback) ... ok
+test_T83_device_store_and_target_entry_are_distinct_requirements (__main__.MobileRouteAcceptanceTests.test_T83_device_store_and_target_entry_are_distinct_requirements) ... ok
+test_T83_full_post_handoff_fixture_asks_match_not_old_subscription (__main__.MobileRouteAcceptanceTests.test_T83_full_post_handoff_fixture_asks_match_not_old_subscription) ... ok
+test_T83_old_orders_activate_only_for_explicit_actual_conflict (__main__.MobileRouteAcceptanceTests.test_T83_old_orders_activate_only_for_explicit_actual_conflict) ... ok
+test_T83_unknown_declined_or_deferred_store_prerequisite_remains_visible (__main__.MobileRouteAcceptanceTests.test_T83_unknown_declined_or_deferred_store_prerequisite_remains_visible) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 4.400s
+
+OK

@@ -1,0 +1,40 @@
+{
+  "schema": "guardian-subscription-bridge-design-public-projection/1",
+  "preservation_review_file": "approved-preservation-review.json",
+  "preservation_review_sha256": "3fe9be1a2002275206d6b9049a8696ecd9a9f658c9c1f11e77785cf5b82a80e0",
+  "implemented": true,
+  "original_historical_manifests_must_remain_unchanged": true,
+  "covered_original_cases": {
+    "T36": "L+C",
+    "T38": "L+C",
+    "T46": "L+C",
+    "T54": "L+C"
+  },
+  "source_freeze_sha256": "dbbf4a346dddcb7285cfee840dc4f709754c2fa0d4cbfaac42c896248978a26b",
+  "exact_final_source_tuple": {
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+    "skills/claude-guardian/SKILL.md": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "skills/claude-guardian/references/accounts-and-payments.md": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+    "skills/claude-guardian/references/contact-and-safety.md": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+    "skills/claude-guardian/references/intake.md": "3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742",
+    "skills/claude-guardian/scripts/interview_flow.py": "691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9",
+    "skills/claude-guardian/scripts/traffic_policy.py": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4"
+  },
+  "ordered_requirements": [
+    "Verify immutable packet integration/original-stage/v2/candidate/response manifests and all historical consumed/control fields unchanged",
+    "Verify this sanitized historical preservation projection by its exact projection hash and historical status; missing/false/unknown/unreviewed projection fails closed",
+    "Compare the complete nine-source live tuple to the exact reviewed tuple, not independent per-file old-or-new allowlists; otherwise retain the original strict historical equality behavior",
+    "Only intake.md and interview_flow.py may differ from the historical nine-source tuple; all other consumed guide/control equality checks stay strict",
+    "Bind complete current helper15-call output/no-I/O receipt and runtime-schema clearance; source hashes identify bytes but do not replace semantic review",
+    "Keep packet historical equality assertions and original source-comparison unchanged; amend only installed live-compatibility consumer in a separately reviewed integration",
+    "Never rewrite consumed/current generation hashes, old supporting test pins, retained failure verdicts, original response prose or historical package receipts",
+    "Preserve original four case IDs/layers and no new acceptance counts; future source drift invalidates this exact reviewed tuple",
+    "Add negative controls for missing/unapproved record, changed guide/runtime, altered unchanged source, altered historical manifest, mixed old/new tuple and tampered replay/review identity"
+  ],
+  "new_case_acceptance": false,
+  "evidence_form": "sanitized_public_projection",
+  "historical_status": "APPROVED_EXACT_SOURCE_PRESERVATION_ONLY",
+  "status": "HISTORICAL_DESIGN_PROJECTION"
+}

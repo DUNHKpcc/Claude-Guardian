@@ -1,0 +1,12 @@
+test_T29_T57_supplied_entry_facts_are_absorbed_together_and_not_reasked (__main__.EntryOrderAcceptanceTests.test_T29_T57_supplied_entry_facts_are_absorbed_together_and_not_reasked) ... ok
+test_T29_complete_mac_and_windows_first_time_paths_preserve_order_and_contact_gap (__main__.EntryOrderAcceptanceTests.test_T29_complete_mac_and_windows_first_time_paths_preserve_order_and_contact_gap) ... ok
+test_T29_empty_entry_asks_subscription_stage_before_any_environment_or_tutorial (__main__.EntryOrderAcceptanceTests.test_T29_empty_entry_asks_subscription_stage_before_any_environment_or_tutorial) ... ok
+test_T57_exact_short_os_question_follows_subscription_and_only_relevant_details_appear (__main__.EntryOrderAcceptanceTests.test_T57_exact_short_os_question_follows_subscription_and_only_relevant_details_appear) ... ok
+test_T57_mobile_only_has_one_limited_exit_and_no_inferred_desktop_or_migration (__main__.EntryOrderAcceptanceTests.test_T57_mobile_only_has_one_limited_exit_and_no_inferred_desktop_or_migration) ... ok
+test_T57_supplied_os_does_not_invent_subscription_or_move_it_after_os_questions (__main__.EntryOrderAcceptanceTests.test_T57_supplied_os_does_not_invent_subscription_or_move_it_after_os_questions) ... ok
+test_T57_unknown_declined_and_deferred_os_are_visible_without_forcing_a_platform (__main__.EntryOrderAcceptanceTests.test_T57_unknown_declined_and_deferred_os_are_visible_without_forcing_a_platform) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.765s
+
+OK

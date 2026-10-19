@@ -1,0 +1,16 @@
+{
+  "from_revision": 3,
+  "to_revision": 4,
+  "changed_source_files": [
+    "skills/claude-guardian/references/intake.md",
+    "skills/claude-guardian/scripts/interview_flow.py",
+    "tests/test_interview_upgrade_conflict.py"
+  ],
+  "current_source_freeze_sha256": "dbbf4a346dddcb7285cfee840dc4f709754c2fa0d4cbfaac42c896248978a26b",
+  "delta_sha256": "531545082b361eacb2f1e7301c1ac676875792c6c08e83a0cdcead4344ddde59",
+  "production_scope": "P02 single-gap terminal retention, retained-plan interruption obligations and typed schema; guide contract and owned regressions only",
+  "full_12_replays_equal_revision3": true,
+  "original_218_rows_unchanged": true,
+  "historical_C_unchanged": true,
+  "evidence_form": "sanitized_public_projection"
+}

@@ -49,6 +49,8 @@ def main(argv=None):
         parser.add_argument('--context-file', help='Explicit host routing facts; not action permission')
         parser.add_argument('--resume', help='Actual interruption event label; requires --input, not an authorization token')
         parser.add_argument('--resume-review-file', help='Current normalized reply: resume_id/response/source, optional changed_keys/reported_at')
+        parser.add_argument('--subscription-conflict-file', help='Actual current contradiction: source, optional observed_at/current_reply; no service access')
+        parser.add_argument('--subscription-resolution-file', help='Current normalized evidence bound to the exact subscription episode/account/device/task')
         parser.add_argument('--output', help='Opt-in private state file; never overwrites')
         args=parser.parse_args(argv)
         if (args.resume is not None or args.resume_review_file is not None) and not args.input:
@@ -81,15 +83,27 @@ def main(argv=None):
             prior=state
             pending=flow.next_question(prior)
             state=flow.record_facts(prior,answers,source='user:current-turn')
-            if (pending is not None and pending['id']=='Q-C08' and pending['clarification']
-                    and prior['facts'].get('Q-C08',{}).get('state') in {'reported','observed'}
-                    and prior['facts'].get('Q-C08',{}).get('value')=='selected_unspecified'
-                    and any(answer['question_id']=='Q-C08' for answer in answers)):
+            if (pending is not None and pending['clarification']
+                    and (pending['id']=='Q-P02' or pending['id']=='Q-C08'
+                         and prior['facts'].get('Q-C08',{}).get('state') in {'reported','observed'}
+                         and prior['facts'].get('Q-C08',{}).get('value')=='selected_unspecified')
+                    and any(answer['question_id']==pending['id'] for answer in answers)):
                 # Validate the whole batch first. Then replay that pure update
                 # with the delivered identity question consumed; named/refused
                 # replies also retain the spent clarification. No partial save.
-                state=flow.record_facts(flow.mark_asked(prior,'Q-C08'),answers,
+                state=flow.record_facts(flow.mark_asked(prior,pending['id']),answers,
                                         source='user:current-turn')
+        if args.subscription_conflict_file:
+            reply=guardian.load_json(args.subscription_conflict_file)
+            if not isinstance(reply,dict) or not {'source'}.issubset(reply) or set(reply)-{'source','observed_at','current_reply'}:
+                raise flow.InterviewError('Invalid subscription contradiction envelope')
+            state=flow.report_subscription_conflict(state,**reply)
+        if args.subscription_resolution_file:
+            reply=guardian.load_json(args.subscription_resolution_file)
+            required={'episode_id','account_ref','target_ref','task_id','outcome','answers','source'}
+            if not isinstance(reply,dict) or not required.issubset(reply) or set(reply)-required-{'observed_at','current_reply'}:
+                raise flow.InterviewError('Invalid subscription resolution envelope')
+            state=flow.resolve_subscription_conflict(state,**reply)
         question=flow.next_question(state)
         # The pending plan-identity clarification is consumed only by its matching
         # valid reply. Rendering alone must not lose an undelivered question.

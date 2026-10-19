@@ -1,4 +1,5 @@
 """Pure offline interview regressions; no native platform or payment claims."""
+from copy import deepcopy
 import importlib.util
 import json
 from pathlib import Path
@@ -220,9 +221,67 @@ class InterviewTests(unittest.TestCase):
         self.assertEqual(state("returning_subscription")["payment_intent"], "resubscribe")
 
     def test_actual_conflict_reopens_only_relevant_old_billing(self):
-        s = state(billing_channel="apple", subscription_conflict=True)
-        self.assertIn("Q-P02", ids(s))
-        self.assertIn("Q-A06", ids(s))
+        # T80 / D.5: proposed Apple billing does not establish an old Apple order.
+        with patch.object(f, "_now", return_value="2026-10-18T07:00:00Z"):
+            original = state(billing_channel="apple")
+            subscription = deepcopy(original["current_subscription"])
+            s = f.set_context(original, subscription_conflict=True)
+            self.assertEqual(ids(s), ["Q-P02"])
+            self.assertEqual(f.next_question(s), {
+                "id": "Q-P02", "branch": "payment", "stage": "I4", "postcontact": False,
+                "prompt": "先前的订阅自述与相关页面/订单提示不一致：这条提示对应这次目标账号吗，当前订阅状态是什么？只补这处不一致；不确定或暂不回答也可以。",
+                "clarification": False, "allowed_outcomes": ["reported", "unknown", "declined", "deferred"],
+                "requires_action_authorization": False})
+            self.assertNotIn("Q-P02", s["facts"])
+            order = {"plan": "current-A", "billing_channel": "web", "status": "active",
+                     "pending_issue": "renewal-page-conflicts-with-first-subscription"}
+            s = f.record_fact(s, "Q-P02", order, source="synthetic:actual-conflict-details")
+            self.assertEqual(ids(s), ["Q-P02"])
+            first_detail = deepcopy(s["facts"]["Q-P02"])
+            self.assertEqual(f.next_question(s), {
+                "id": "Q-P02", "branch": "payment", "stage": "I4", "postcontact": False,
+                "prompt": "先前的订阅自述与相关页面/订单提示不一致：这条提示对应这次目标账号吗？只补这处不一致；不确定或暂不回答也可以。",
+                "clarification": True, "allowed_outcomes": ["reported", "unknown", "declined", "deferred"],
+                "requires_action_authorization": False})
+            partial = {"status": "partial", "unresolved_fields": [{"id": "Q-P02", "reason": "subscription_detail_incomplete"}]}
+            self.assertEqual(f.assessment(s)["G1"], partial)
+            s = f.mark_asked(s, "Q-P02")
+            self.assertIsNone(f.next_question(s))
+            self.assertEqual(f.assessment(s)["G1"], partial)
+            self.assertEqual(f.assessment(s)["G2"], {"status": "blocked", "conditional_plan_only": True,
+                                                    "reason": "subscription_conflict_unresolved"})
+            # NEW synthetic current reply, normalized by the host, not inferred:
+            # "This page is for the selected account. It says current-A on web
+            # is active, still conflicting with my earlier first-subscription answer."
+            order = {"plan": "current-A", "billing_channel": "web", "status": "active",
+                     "pending_issue": "renewal-page-conflicts-with-first-subscription", "page_relation": "same_target"}
+            s = f.record_fact(s, "Q-P02", order, source="synthetic:current-same-target-details",
+                              observed_at="2026-10-18T07:00:00Z", current_reply=True)
+            self.assertIsNone(f.next_question(s))
+            self.assertEqual(s["facts"]["Q-P02"]["value"], order)
+            self.assertEqual(s["context"]["billing_channel"], "apple")
+            self.assertEqual(s["current_subscription"], subscription)
+            self.assertEqual(s["payment_intent"], "new_subscription")
+            self.assertEqual(f.assessment(s)["G1"], {"status": "complete", "unresolved_fields": []})
+            self.assertEqual(f.assessment(s)["G2"], {"status": "blocked", "conditional_plan_only": True,
+                                                    "reason": "subscription_conflict_unresolved"})
+            self.assertEqual(s["subscription_review"]["status"], "unresolved")
+            self.assertEqual(s["subscription_review"]["original"], {"Q-J01": original["facts"]["Q-J01"]})
+            self.assertEqual(s["subscription_review"]["detail"], first_detail)
+            self.assertEqual(f.loads_state(json.dumps(s)), s)
+            self.assertEqual(f.assessment(s)["G3"]["status"], "blocked")
+            self.assertEqual(s["context"]["contact_phase"], "PC0")
+            self.assertFalse(any(s["persistence_consent"].values()))
+            self.assertFalse(original["context"]["subscription_conflict"])
+            with self.assertRaises(f.InterviewError):
+                f.set_context(s, subscription_conflict=False)
+            for outcome in ("unknown", "declined", "deferred"):
+                unanswered = f.record_fact(s, "Q-P02", state_name=outcome, source="synthetic:cannot-clarify")
+                self.assertIsNone(f.next_question(unanswered))
+                self.assertEqual(unanswered["facts"]["Q-P02"]["state"], outcome)
+                self.assertEqual(f.assessment(unanswered)["G2"], {"status": "blocked", "conditional_plan_only": True,
+                                                                 "reason": "subscription_conflict_unresolved"})
+                self.assertNotIn("Q-A06", ids(unanswered))
 
     def test_existing_technical_task_skips_payment(self):
         s = state("existing_subscriber", task="network", billing_channel="apple")
@@ -231,10 +290,101 @@ class InterviewTests(unittest.TestCase):
         self.assertFalse(any(q.startswith(("Q-P", "Q-A", "Q-W")) for q in ids(s)))
 
     def test_existing_upgrade_gets_old_channel(self):
+        # T77 requires missing facts, not both P02 and A06 regardless of coverage.
         s = state("existing_subscriber", task="upgrade", billing_channel="apple")
-        self.assertIn("Q-P02", ids(s))
-        self.assertIn("Q-A06", ids(s))
-        self.assertIn("Q-C08", ids(s))
+        self.assertEqual(ids(s), ["Q-P02", "Q-C08"])
+        self.assertEqual(f.next_question(s), {
+            "id": "Q-P02", "branch": "payment", "stage": "I4", "postcontact": False,
+            "prompt": "升级所需的当前套餐和原购买渠道是什么？只说已知情况；不确定或暂不回答也可以，无需打开 Claude。",
+            "clarification": False, "allowed_outcomes": ["reported", "unknown", "declined", "deferred"],
+            "requires_action_authorization": False})
+        s = f.record_fact(s, "Q-P02", {"plan": "current-A", "billing_channel": "web"}, source="synthetic:current-order")
+        self.assertEqual(f.next_question(s)["id"], "Q-C08")
+        self.assertNotIn("Q-A06", ids(s))
+        self.assertNotIn("Q-C08", s["facts"])
+        s = f.record_fact(s, "Q-C08", "desired-B", source="synthetic:desired-plan")
+        self.assertIsNone(f.next_question(s))
+        self.assertEqual(ids(s), ["Q-P02", "Q-C08"])
+        self.assertEqual(s["facts"]["Q-P02"]["value"], {"plan": "current-A", "billing_channel": "web"})
+        self.assertEqual(s["facts"]["Q-C08"]["value"], "desired-B")
+        self.assertEqual(s["context"]["billing_channel"], "apple")
+        self.assertEqual(f.assessment(s)["G2"], {"status": "pass", "conditional_plan_only": False})
+        self.assertEqual(f.assessment(s)["upgrade_scope"], {"current_order_gaps": [], "billing_feasibility": "not_established"})
+        self.assertEqual(f.assessment(s)["route_confirmation"], "unconfirmed")
+        self.assertEqual(f.assessment(s)["G3"]["status"], "blocked")
+        self.assertEqual(s["context"]["contact_phase"], "PC0")
+        self.assertFalse(any(s["persistence_consent"].values()))
+        self.assertNotIn("Q-C13", s["facts"])
+
+    def test_upgrade_current_and_future_channels_never_substitute(self):
+        for current in ("web", "apple", "google"):
+            for future in ("unselected", "web", "apple", "google"):
+                with self.subTest(current=current, future=future):
+                    s = state("existing_subscriber", task="upgrade", billing_channel=future)
+                    s = f.record_fact(s, "Q-C08", "desired-B", source="synthetic:target")
+                    s = f.record_fact(s, "Q-P02", {"plan": "current-A", "billing_channel": current}, source="synthetic:current")
+                    self.assertEqual(ids(s), ["Q-P02", "Q-C08"])
+                    self.assertIsNone(f.next_question(s))
+                    self.assertEqual(s["facts"]["Q-P02"]["value"]["billing_channel"], current)
+                    self.assertEqual(s["context"]["billing_channel"], future)
+                    self.assertEqual(f.assessment(s)["G2"], {"status": "pass", "conditional_plan_only": False})
+                    self.assertEqual(f.assessment(s)["G3"]["status"], "blocked")
+
+    def test_upgrade_missing_current_plan_or_channel_is_one_actual_gap(self):
+        for order, gap, words in (({"billing_channel": "web", "status": "active", "pending_issue": "none_reported"}, "current_plan", "当前套餐"),
+                                  ({"plan": "current-A"}, "current_channel", "原购买渠道")):
+            with self.subTest(gap=gap):
+                s = state("existing_subscriber", task="upgrade", billing_channel="apple")
+                s = f.record_fact(s, "Q-C08", "desired-B", source="synthetic:target")
+                s = f.record_fact(s, "Q-P02", order, source="synthetic:partial-current")
+                question = f.next_question(s)
+                self.assertEqual(question, {"id": "Q-P02", "branch": "payment", "stage": "I4", "postcontact": False,
+                    "prompt": "升级所需的" + words + "是什么？只说已知情况；不确定或暂不回答也可以，无需打开 Claude。",
+                    "clarification": True, "allowed_outcomes": ["reported", "unknown", "declined", "deferred"],
+                    "requires_action_authorization": False})
+                self.assertEqual(f.assessment(s)["upgrade_scope"], {"current_order_gaps": [gap], "billing_feasibility": "not_established"})
+                self.assertEqual(f.assessment(s)["G2"], {"status": "blocked", "conditional_plan_only": True})
+                shown = f.mark_asked(s, "Q-P02")
+                self.assertIsNone(f.next_question(shown))
+                self.assertIsNone(f.next_question(f.loads_state(json.dumps(shown))))
+                self.assertEqual(f.assessment(shown)["G2"], {"status": "blocked", "conditional_plan_only": True})
+                self.assertEqual(shown["facts"]["Q-P02"]["clarification_count"], 1)
+                self.assertEqual(s["facts"]["Q-P02"]["clarification_count"], 0)
+
+    def test_upgrade_unknown_refused_deferred_has_no_a06_second_question(self):
+        for qid in ("Q-P02", "Q-C08"):
+            for outcome in ("unknown", "declined", "deferred"):
+                s = state("existing_subscriber", task="upgrade", billing_channel="apple")
+                s = f.record_fact(s, "Q-C08", "desired-B", source="synthetic:target")
+                s = f.record_fact(s, "Q-P02", {"plan": "current-A", "billing_channel": "apple"}, source="synthetic:current")
+                s = f.record_fact(s, qid, state_name=outcome, source="synthetic:unanswered")
+                self.assertIsNone(f.next_question(s))
+                self.assertEqual(s["facts"][qid]["state"], outcome)
+                self.assertIsNone(s["facts"][qid]["value"])
+                self.assertEqual(ids(s), ["Q-P02", "Q-C08"])
+                self.assertEqual(f.assessment(s)["G2"], {"status": "blocked", "conditional_plan_only": True})
+                self.assertEqual(f.assessment(s)["G3"]["status"], "blocked")
+
+    def test_actual_old_apple_order_gap_retains_conditional_a06(self):
+        # A06 still matters for actual Apple old-order detail, not a future choice.
+        s = state("returning_subscription", task="billing_issue", billing_channel="web")
+        subscription = deepcopy(s["current_subscription"])
+        s = f.record_fact(s, "Q-P02", {"billing_channel": "apple", "status": "expired"}, source="synthetic:old-order")
+        self.assertEqual(f.next_question(s)["id"], "Q-A06")
+        self.assertEqual(ids(s), ["Q-J01", "Q-P02", "Q-A06"])
+        self.assertEqual(f.assessment(s)["G2"], {"status": "blocked", "conditional_plan_only": True})
+        s = f.record_fact(s, "Q-A06", "no_pending_refund_reported", source="synthetic:remaining-old-order")
+        self.assertIsNone(f.next_question(s))
+        self.assertEqual(f.assessment(s)["G2"], {"status": "pass", "conditional_plan_only": False})
+        self.assertEqual(s["current_subscription"], subscription)
+        self.assertEqual(subscription["status"], "none_reported")
+        self.assertFalse(s["context"]["subscription_conflict"])
+        complete = state("returning_subscription", task="billing_issue", billing_channel="web")
+        complete = f.record_fact(complete, "Q-P02", {"billing_channel": "apple", "status": "expired", "pending_issue": "pending_refund"}, source="synthetic:complete-old-order")
+        self.assertEqual(ids(complete), ["Q-J01", "Q-P02"])
+        self.assertIsNone(f.next_question(complete))
+        self.assertFalse(complete["context"]["subscription_conflict"])
+        self.assertEqual(f.assessment(complete)["G2"], {"status": "pass", "conditional_plan_only": False})
 
     def test_suspension_prioritizes_incident_over_new_purchase(self):
         s = f.record_fact(state(), "Q-C03", "current_suspension", source="user:2")

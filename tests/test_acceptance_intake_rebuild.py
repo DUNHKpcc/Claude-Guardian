@@ -297,10 +297,58 @@ class IntakeAcceptanceRebuildTests(unittest.TestCase):
     def test_T74_actual_billing_conflict_is_a_distinct_conditional_branch(self):
         state = f.record_fact(new(), 'Q-J01', 'first_subscription', source='synthetic:T74', observed_at=TIME)
         state = f.set_context(state, billing_channel='apple')
+        original = deepcopy(state)
         before = [q['id'] for q in f.applicable_questions(state)]
-        after = [q['id'] for q in f.applicable_questions(f.set_context(state, subscription_conflict=True))]
-        self.assertEqual([q for q in after if q not in before], ['Q-P02', 'Q-A06'])
-        self.assertNotIn('Q-C07', after)
+        self.assertTrue({'Q-P02', 'Q-A06', 'Q-C07'}.isdisjoint(before))
+        conflict = f.set_context(state, subscription_conflict=True)
+        self.assertEqual(f.applicable_questions(conflict), [
+            {'id': 'Q-P02', 'branch': 'payment', 'stage': 'I4', 'postcontact': False}])
+        self.assertEqual(f.next_question(conflict), {
+            'id': 'Q-P02', 'branch': 'payment', 'stage': 'I4', 'postcontact': False,
+            'prompt': '先前的订阅自述与相关页面/订单提示不一致：这条提示对应这次目标账号吗，当前订阅状态是什么？只补这处不一致；不确定或暂不回答也可以。',
+            'clarification': False, 'allowed_outcomes': ['reported', 'unknown', 'declined', 'deferred'],
+            'requires_action_authorization': False})
+        self.assertEqual(conflict['facts'], original['facts'])
+        # Proposed Apple billing is not evidence that the conflicting old order is Apple.
+        order = {'plan': 'synthetic-current-A', 'billing_channel': 'web', 'status': 'active',
+                 'pending_issue': 'renewal-page-conflicts-with-first-subscription'}
+        conflict = f.record_fact(conflict, 'Q-P02', order, source='synthetic:T74-actual-page-details', observed_at=TIME)
+        # This original input is a historical import, not a current reply.
+        self.assertEqual(conflict['facts']['Q-P02']['state'], 'stale')
+        self.assertIsNone(conflict['subscription_review']['detail'])
+        self.assertEqual(f.next_question(conflict), {
+            'id': 'Q-P02', 'branch': 'payment', 'stage': 'I4', 'postcontact': False,
+            'prompt': '先前的订阅自述与相关页面/订单提示不一致：这条提示对应这次目标账号吗，当前订阅状态是什么？只补这处不一致；不确定或暂不回答也可以。',
+            'clarification': True, 'allowed_outcomes': ['reported', 'unknown', 'declined', 'deferred'],
+            'requires_action_authorization': False})
+        partial = {'status': 'partial', 'unresolved_fields': [{'id': 'Q-P02', 'reason': 'subscription_detail_incomplete'}]}
+        self.assertEqual(f.assessment(conflict)['G1'], partial)
+        conflict = f.mark_asked(conflict, 'Q-P02')
+        self.assertIsNone(f.next_question(conflict))
+        self.assertEqual(f.assessment(conflict)['G1'], partial)
+        self.assertEqual(f.assessment(conflict)['G2'], {'status': 'blocked', 'conditional_plan_only': True,
+                                                     'reason': 'subscription_conflict_unresolved'})
+        # NEW synthetic current reply: "This page is for the selected account;
+        # synthetic-current-A bought on web is active, still conflicting with
+        # my earlier first-subscription answer." No resolution is reported.
+        order = {'plan': 'synthetic-current-A', 'billing_channel': 'web', 'status': 'active',
+                 'pending_issue': 'renewal-page-conflicts-with-first-subscription', 'page_relation': 'same_target'}
+        conflict = f.record_fact(conflict, 'Q-P02', order, source='synthetic:T74-current-same-target-details',
+                                 observed_at=TIME, current_reply=True)
+        self.assertIsNone(f.next_question(conflict))
+        self.assertEqual(f.assessment(conflict)['G1'], {'status': 'complete', 'unresolved_fields': []})
+        self.assertEqual([q['id'] for q in f.applicable_questions(conflict)], ['Q-P02'])
+        self.assertEqual(conflict['facts']['Q-P02']['value'], order)
+        self.assertEqual(conflict['context']['billing_channel'], 'apple')
+        self.assertEqual(conflict['current_subscription'], original['current_subscription'])
+        self.assertEqual(conflict['payment_intent'], 'new_subscription')
+        self.assertEqual(f.assessment(conflict)['G2'], {'status': 'blocked', 'conditional_plan_only': True,
+                                                     'reason': 'subscription_conflict_unresolved'})
+        self.assertEqual(conflict['subscription_review']['status'], 'unresolved')
+        self.assertEqual(conflict['subscription_review']['detail'], conflict['facts']['Q-P02'])
+        self.assertEqual(f.loads_state(json.dumps(conflict)), conflict)
+        self.assert_closed(conflict)
+        self.assertEqual(state, original)
 
 
 def replay():

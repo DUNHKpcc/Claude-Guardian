@@ -132,20 +132,20 @@ These pins bind the actual runtime, fixture, complete executable assertions, ope
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
 | `docs/implementation-tracker.md` | `8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9` |
 | `skills/claude-guardian/scripts/workflow_guard.py` | `68aa99db78a70d0387a3901d4f3ba25a9c4dcee19fa2ff3a584706419ccfeed0` |
 | `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 | `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
-| `skills/claude-guardian/references/intake.md` | `541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71` |
+| `skills/claude-guardian/references/intake.md` | `3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742` |
 | `skills/claude-guardian/references/routes-and-platforms.md` | `dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984` |
 | `skills/claude-guardian/references/accounts-and-payments.md` | `ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8` |
 | `skills/claude-guardian/references/contact-and-safety.md` | `095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c` |
 | `tests/fixtures/acceptance-routes-rebuild.json` | `073ad74ba195fd1c72bcab61887f24f1ce5cbeaef6ff6036d9ff76a713154a80` |
-| `tests/test_interview_flow.py` | `7140e70b88e4cd3099d2fa725b3b20269de511be90d4dd020154d2db3e5e0965` |
+| `tests/test_interview_flow.py` | `a411fe5a8f809ac6aac91ffc58580379056b2b158a334646b07647c22ced7bbe` |
 | `tests/test_interview_resume.py` | `081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442` |
-| `tests/test_acceptance_intake_rebuild.py` | `e26a26ee3b3d0ba93270787f8dbd8022ed11adb2fbbb0f1229df8f1aef57245a` |
+| `tests/test_acceptance_intake_rebuild.py` | `d1480db2071fd5429fb63768043c96ca4f8b5b93a2f2b15854c3cbf423cb12eb` |
 | `tests/test_acceptance_task_scope_rebuild.py` | `e5585ba5cd68dc3bf35ca217453f6e2be7835558588fb47006c8d8be7b4f964e` |
-| `tests/test_acceptance_intake_basics.py` | `6645ba02aa87dca93c9dfa2a3e97c35eae3fb63e75aa3374990cb51d4092a15d` |
+| `tests/test_acceptance_intake_basics.py` | `43826153de254466367fadd3c9f279ef47896a25935de723fbe22b5486ac1bdb` |
 
 No runtime change is proposed by this subset. If a test exposes a real missing behavior, retain the failed result and return that exact counterexample before modifying production code. New acceptance is eligible only after review of the complete L+C record and its final source hashes; the parent owns ledger integration.
 
@@ -173,3 +173,32 @@ All 13 unchanged original tests on this page passed on both trees, with zero ski
 The unchanged helper can report G1 complete and G2 pass/conditional_plan_only=false for an answered negative Apple-login fact; that value remains reported and negative. An independent synthetic control reproduced this on both trees while retaining blocked G3, absent persistence authority, separate PC0 contact gaps, and blocking unknown/refused/deferred, pause and unresolved-resume controls. Its identical complete-output SHA-256 is `239fc78643aa3282342393330fc65ed1fc846e0f7bb89748dd9c6e7a1502f932`. This is an interpretation boundary, not a new eligibility engine, runtime fix, purchase-execution defect or counterfactual eligibility inference.
 
 Only this reviewed current intake dependency pin and this page's corresponding ledger evidence hashes may change. The 218 original clauses and layers, all historical source/response packets and their existing pins, and native/contact/action boundaries remain unchanged. This preservation review adds no accepted case, generated response, actual device/store/account result or action permission; future source drift requires a new scoped review.
+
+
+## 2026-10-18 batch33 final-revision3 preservation
+
+This dated review preserves the existing original cases and their verification layers; it does not add T77/T80 acceptance or replace older execution/generation history. The complete original clause was reviewed against the current intake guide, full outputs, and reachable authority/lifecycle boundaries.
+
+- T01 (L+C): L0 准备订阅用于网页写作 — 先分首次/重订/已有订阅；问目标套餐和相关前提，本机默认建议；不询问账号归属，不推荐无关 VPS/企业开户/脚本
+- T02 (L+C): L4 直接提供完整环境 — 复用信息，不反复问基础问题；仍保留必要授权
+
+Full first/returning subscription arms, all T02 and evidence-scope objects equal the published baseline. Only the explicit existing-upgrade arm changes (37 full structural differences): J01/C11/P02/C08 with current plan/channel separate from target/future channel; local remains an unconfirmed proposal; G1/G2 cover explanation only, billing feasibility is not established and G3/contact/consent remain blocked. The old broad trace and hash remain historical, not claimed identical.
+
+Fresh complete replay: `957d126fca5adf2cea94d00d06efe689f73c15d748f6723843162cc0a99db85c` (198896 bytes), repeated twice identically. Every full replay also equals the retained revision2 output. Test suite: `tests/test_acceptance_intake_basics.py`; full recursive differences are retained, not filtered.
+
+Current compatibility was reviewed against the 635-file revision3 source freeze SHA-256 `6fbbd10dbe6fb993b1bdda0ea09a897a17a3fa4de83e471a420018c186798bac`. The final change since revision2 is public schema definitions only; all 79 production function/class ASTs, intake guide, CLI and five existing adapted tests are unchanged. Actual schema/runtime roundtrip and malformed/nested/generic controls passed independently. Current preservation receipts include 105 page tests, 282 interview tests, 188 other support tests, 226 C/cp1252 tests, 13 actual CLI commands/12 state inspections, 15 complete current-helper calls and the full known-negative control. These are bounded synthetic/offline checks, not new model dialogue, native-device validation, real billing eligibility or action permission.
+
+Retained prior active dependency SHA-256 values (historical review identity; the current table above names the final reviewed bytes):
+
+- Historical `skills/claude-guardian/scripts/interview_flow.py`: `304144309c2e918223777df5d0f2f9801ff1e862fad195d18f0f318b5b321f4e`
+- Historical `skills/claude-guardian/references/intake.md`: `541ff7e2b21f847ddc6ae143c41b848a7af193866234d228197ab9cb7f035f71`
+- Historical `tests/test_interview_flow.py`: `7140e70b88e4cd3099d2fa725b3b20269de511be90d4dd020154d2db3e5e0965`
+- Historical `tests/test_acceptance_intake_rebuild.py`: `e26a26ee3b3d0ba93270787f8dbd8022ed11adb2fbbb0f1229df8f1aef57245a`
+- Historical `tests/test_acceptance_intake_basics.py`: `6645ba02aa87dca93c9dfa2a3e97c35eae3fb63e75aa3374990cb51d4092a15d`
+
+Detailed approved preservation records: [batch33 current-guide/runtime bridge](batch33-subscription-preservation/REVIEW.md). Historical subscription consumed-source/response manifests remain immutable; current compatibility is a separate reviewed record.
+
+
+### 2026-10-18 revision4 exact-source compatibility
+
+The active dependency rows above identify revision4; prior revision3 review and historical hashes remain in the preceding dated record. The scoped P02 terminal-retention fix preserves a known complement without filling the refused/unknown/deferred gap, re-questioning it, changing provenance, or opening G2/G3. Retained-plan interruption review remains separate. All105 affected page tests pass and all12 complete original-case replays are byte-identical to revision3; complete current helper15-call equality and historical packet18-test integrity also pass. See `batch33-subscription-preservation/preservation-review.md`, its exact freeze/portable receipts and the independent runtime and engineering approval. This is current compatibility evidence, not new model generation or added acceptance; the existing218 clauses/layers and45 accepted statuses are unchanged. Independent source4 runtime and engineering clearance support preservation of the existing45 only; integration application remains separately reviewed and T77/T80 are not newly accepted.

@@ -2,7 +2,8 @@
 
 Load the portable retained-evidence tests from the documented packet location.
 Actual model prose stays in retained files; no canned response generator exists.
-See docs/evidence/subscription-boundaries/CURRENT-REVIEW.md for semantic review.
+Historical review stays in docs/evidence/subscription-boundaries/CURRENT-REVIEW.md.
+Final-source compatibility is separately reviewed in batch33-subscription-preservation/REVIEW.md.
 """
 import importlib.util
 import hashlib
@@ -14,6 +15,38 @@ import unittest
 
 ROOT = Path(os.environ.get('GUARDIAN_AUDIT_ROOT', Path(__file__).resolve().parents[1]))
 PACKET = ROOT / 'docs/evidence/subscription-boundaries'
+
+
+# This pins one sanitized historical-preservation projection, not raw approval identity.
+# Complete historical/current source tuple checks remain strict; see bridge PROJECTION.md.
+BRIDGE = Path('docs/evidence/batch33-subscription-preservation')
+BRIDGE_MANIFEST_SHA256 = '71c7b62c7f55a59d0d9556ea3ea605a162bc2e919f5bf7e223769ef731f0284e'
+
+
+def load_current_preservation(root=ROOT):
+    directory = root / BRIDGE
+    manifest_path = directory / 'manifest.json'
+    if (not manifest_path.is_file() or manifest_path.is_symlink()
+            or hashlib.sha256(manifest_path.read_bytes()).hexdigest() != BRIDGE_MANIFEST_SHA256):
+        raise AssertionError('Missing or unreviewed current-preservation manifest')
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    verifier = directory / 'verify.py'
+    if (not verifier.is_file() or verifier.is_symlink()
+            or hashlib.sha256(verifier.read_bytes()).hexdigest() != manifest['files']['verify.py']):
+        raise AssertionError('Unreviewed preservation verifier must not execute')
+    spec = importlib.util.spec_from_file_location('subscription_current_preservation', verifier)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.ROOT = root
+    module.PINNED_MANIFEST_SHA256 = BRIDGE_MANIFEST_SHA256
+    module.PINNED_LOADER = load_current_preservation
+    return module
+
+
+Preservation = load_current_preservation()
+SubscriptionPreservationBridgeControls = Preservation.SubscriptionPreservationBridgeControls
+# Verify all historical bytes before importing their retained test modules.
+Preservation.verify_bridge(ROOT, BRIDGE_MANIFEST_SHA256)
 
 
 def load(name, filename):
@@ -30,12 +63,12 @@ RetainedSubscriptionBoundaryEvidence = OriginalEvidence.RetainedSubscriptionBoun
 CurrentSubscriptionBoundaryReview = CurrentEvidence.CurrentSubscriptionBoundaryReview
 
 
+
 class SubscriptionBoundaryInstalledCandidatePins(unittest.TestCase):
     def test_exact_live_guidance_runtime_and_design_pins(self):
-        pins = json.loads((PACKET / 'current-guidance-source-pins.json').read_text(encoding='utf-8'))
-        for entry in pins['pins']:
-            actual = hashlib.sha256((ROOT / entry['relative_path']).read_bytes()).hexdigest()
-            self.assertEqual(actual, entry['current_sha256'], entry['relative_path'])
+        # The immutable packet still checks historical consumed/current equality.
+        # Only this installed consumer applies the independently reviewed exact tuple.
+        Preservation.verify_bridge(ROOT, BRIDGE_MANIFEST_SHA256)
         proof = json.loads((PACKET / 'package-inventory-proof.json').read_text(encoding='utf-8'))
         self.assertEqual(hashlib.sha256((ROOT / 'tools/package_skill.py').read_bytes()).hexdigest(),
                          proof['package_builder_sha256']['after'])

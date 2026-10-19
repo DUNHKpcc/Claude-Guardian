@@ -261,13 +261,60 @@ class MobileRouteAcceptanceTests(unittest.TestCase):
             state, _ = complete_pc0(channel)
             self.assert_boundary(state, 'vps', channel)
             conflict = f.set_context(state, subscription_conflict=True)
-            ids = [q['id'] for q in f.applicable_questions(conflict)]
-            self.assertIn('Q-P02', ids)
-            self.assertEqual('Q-A06' in ids, channel == 'apple')
+            self.assertEqual(f.applicable_questions(conflict), [
+                {'id': 'Q-P02', 'branch': 'payment', 'stage': 'I4', 'postcontact': False}])
+            self.assertEqual(f.next_question(conflict), {
+                'id': 'Q-P02', 'branch': 'payment', 'stage': 'I4', 'postcontact': False,
+                'prompt': '先前的订阅自述与相关页面/订单提示不一致：这条提示对应这次目标账号吗，当前订阅状态是什么？只补这处不一致；不确定或暂不回答也可以。',
+                'clarification': False, 'allowed_outcomes': ['reported', 'unknown', 'declined', 'deferred'],
+                'requires_action_authorization': False})
+            self.assertEqual(conflict['facts'], state['facts'])
             self.assertEqual(conflict['context']['route'], 'vps')
+            self.assertEqual(conflict['context']['billing_channel'], channel)
             self.assertEqual(f.assessment(conflict)['G3'], G3)
             self.assertNotIn('Q-P02', state['facts'])
             self.assertFalse(state['context']['subscription_conflict'])
+            # Actual old-channel evidence remains distinct from the mobile candidate.
+            order = {'plan': 'synthetic-current-A', 'billing_channel': 'web', 'status': 'active',
+                     'pending_issue': 'renewal-page-conflicts-with-first-subscription'}
+            described = f.record_fact(conflict, 'Q-P02', order, source='synthetic:T83-page-details')
+            first_detail = deepcopy(described['facts']['Q-P02'])
+            self.assertEqual(f.next_question(described), {
+                'id': 'Q-P02', 'branch': 'payment', 'stage': 'I4', 'postcontact': False,
+                'prompt': '先前的订阅自述与相关页面/订单提示不一致：这条提示对应这次目标账号吗？只补这处不一致；不确定或暂不回答也可以。',
+                'clarification': True, 'allowed_outcomes': ['reported', 'unknown', 'declined', 'deferred'],
+                'requires_action_authorization': False})
+            partial = {'status': 'partial', 'unresolved_fields': [{'id': 'Q-P02', 'reason': 'subscription_detail_incomplete'}]}
+            self.assertEqual(f.assessment(described)['G1'], partial)
+            described = f.mark_asked(described, 'Q-P02')
+            self.assertIsNone(f.next_question(described))
+            self.assertEqual(f.assessment(described)['G1'], partial)
+            self.assertEqual(f.assessment(described)['G2'], {'status': 'blocked', 'conditional_plan_only': True,
+                                                          'reason': 'subscription_conflict_unresolved'})
+            # NEW synthetic current reply: "This page is for the selected account;
+            # synthetic-current-A bought on web is active, still conflicting with
+            # my earlier first-subscription answer." No resolution is reported.
+            order = {'plan': 'synthetic-current-A', 'billing_channel': 'web', 'status': 'active',
+                     'pending_issue': 'renewal-page-conflicts-with-first-subscription', 'page_relation': 'same_target'}
+            described = f.record_fact(described, 'Q-P02', order, source='synthetic:T83-current-same-target-details',
+                                      observed_at=TIME, current_reply=True)
+            self.assertIsNone(f.next_question(described))
+            self.assertEqual(f.assessment(described)['G1'], {'status': 'complete', 'unresolved_fields': []})
+            self.assertEqual(described['subscription_review']['detail'], first_detail)
+            self.assertEqual([q['id'] for q in f.applicable_questions(described)], ['Q-P02'])
+            self.assertEqual(described['facts']['Q-P02']['value'], order)
+            self.assertEqual({q: described['facts'][q] for q in state['facts']}, state['facts'])
+            self.assertEqual(described['current_subscription'], state['current_subscription'])
+            self.assertEqual(described['context']['route'], 'vps')
+            self.assertEqual(described['context']['billing_channel'], channel)
+            self.assertEqual(described['payment_intent'], 'new_subscription')
+            self.assertEqual(f.assessment(described)['G2'], {'status': 'blocked', 'conditional_plan_only': True,
+                                                          'reason': 'subscription_conflict_unresolved'})
+            self.assertEqual(f.assessment(described)['G3'], G3)
+            self.assertEqual(described['context']['contact_phase'], 'PC0')
+            self.assertEqual(described['persistence_consent'], CONSENT)
+            self.assertEqual(described['subscription_review']['status'], 'unresolved')
+            self.assertEqual(f.loads_state(json.dumps(described)), described)
 
 
 if __name__ == '__main__':

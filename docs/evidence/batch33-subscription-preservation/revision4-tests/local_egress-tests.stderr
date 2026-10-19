@@ -1,0 +1,9 @@
+test_complete_local_code_with_vps_egress (__main__.LocalEgressTests.test_complete_local_code_with_vps_egress) ... ok
+test_egress_asset_does_not_silently_select_route (__main__.LocalEgressTests.test_egress_asset_does_not_silently_select_route) ... ok
+test_incomplete_local_installation_does_not_offer_remote_setup (__main__.LocalEgressTests.test_incomplete_local_installation_does_not_offer_remote_setup) ... ok
+test_saved_local_route_and_changed_exit_remain_local (__main__.LocalEgressTests.test_saved_local_route_and_changed_exit_remain_local) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.124s
+
+OK
