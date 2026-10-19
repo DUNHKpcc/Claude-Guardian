@@ -1,5 +1,13 @@
 # 版本记录
 
+## 2026-10-19 — Explicit execution-route and resource entry
+
+- Require a current local / VM / VPS choice and bounded resource declarations before target inspection or remediation; resource ownership alone never selects a route
+- Recheck entry state around host callbacks and invalidate withdrawn contact grants; retain narrowly scoped recovery protections and routes
+- Separate local/VM detailed eligibility from VPS basic non-intrusive scope, and distinguish local HTTP/mixed proxy entry from a SOCKS upstream
+- Add the entry module to the 65-member package; preserve historical 51-case evidence with explicit current revalidation status rather than rewriting original clauses or old results
+- Native metadata write support, application activation and actual device acceptance remain pending
+
 ## 2026-10-19 — Bounded read-only Darwin metadata observation
 
 - Add inherited-fd observation with fixed categories/counts, bounded native name listing, ownership/state checks and privacy-safe errors

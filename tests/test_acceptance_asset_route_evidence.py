@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import re
 import unittest
+from acceptance_runtime_compat import historical_baseline
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKET = ROOT / 'docs/evidence/asset-route-v1'
@@ -132,6 +133,13 @@ def validate_review(value):
 
 
 class AssetRouteEvidenceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Exact release fixture for retained-source checks, never live acceptance.
+        context = historical_baseline(ROOT)
+        cls.HISTORICAL_ROOT = context.__enter__()
+        cls.addClassCleanup(context.__exit__, None, None, None)
+
     def test_manifest_and_casepage_bytes_are_pinned(self):
         manifest = trusted_manifest()
         self.assertFalse(PAGE.is_symlink())
@@ -172,14 +180,14 @@ class AssetRouteEvidenceTests(unittest.TestCase):
             self.assertIn(expected['literal_design_row'], design)
             self.assertIn(expected['literal_tracker_row'], tracker)
 
-    def test_current_guidance_runtime_and_reviewed_source_correspondence(self):
+    def test_historical_guidance_runtime_and_reviewed_source_correspondence(self):
         manifest = trusted_manifest()
         for relative, expected in manifest['source_sha256'].items():
             with self.subTest(source=relative):
-                path = ROOT / relative
+                path = self.HISTORICAL_ROOT / relative
                 self.assertFalse(path.is_symlink())
                 self.assertEqual(sha(path.read_bytes()), expected,
-                                 'Relevant source changed: rerun and re-review before repinning')
+                                 'Historical source identity must remain exact')
         projection = read_json(PACKET / 'dialogues-projection-public.json')
         review = read_json(PACKET / 'final-semantic-review.json')
         document_paths = {
@@ -270,15 +278,15 @@ class AssetRouteEvidenceTests(unittest.TestCase):
             with self.subTest(artifact=path.name):
                 check_public_text(path.read_text(encoding='utf-8'))
 
-    def test_evidence_is_outside_explicit_installed_inventory(self):
+    def test_historical_evidence_is_outside_exact_prior_installed_inventory(self):
         # Inspect the real packager's explicit inventory; actual packaging is a
         # separate aggregate gate, not an execution performed by this check.
-        tree = ast.parse((ROOT / 'tools/package_skill.py').read_text(encoding='utf-8'))
+        tree = ast.parse((self.HISTORICAL_ROOT / 'tools/package_skill.py').read_text(encoding='utf-8'))
         assignments = [node for node in ast.walk(tree) if isinstance(node, ast.Assign)
                        and any(isinstance(t, ast.Name) and t.id == 'release_paths' for t in node.targets)]
         self.assertEqual(len(assignments), 1)
         inventory = ast.literal_eval(assignments[0].value)
-        source_manifest = read_json(ROOT / 'skills/claude-guardian/sources/manifest.json')
+        source_manifest = read_json(self.HISTORICAL_ROOT / 'skills/claude-guardian/sources/manifest.json')
         for source in source_manifest['sources']:
             inventory.append(source['path'])
             inventory.extend(c['path'] for c in source.get('companions', []))
@@ -295,6 +303,26 @@ class AssetRouteEvidenceTests(unittest.TestCase):
                      ROOT / 'tests/test_acceptance_asset_route_cases.py',
                      ROOT / 'tests/fixtures/acceptance-asset-route-cases.json']:
             self.assertFalse(path.resolve().is_relative_to(skill.resolve()))
+
+    def test_current_inventory_adds_only_the_declared_entry_member_to_prior_packager(self):
+        current = (ROOT / 'tools/package_skill.py').read_bytes()
+        historical = (self.HISTORICAL_ROOT / 'tools/package_skill.py').read_bytes()
+        entry = b', "scripts/environment_entry.py"'
+        self.assertEqual(current.count(entry), 1)
+        self.assertEqual(current.replace(entry, b'', 1), historical)
+        tree = ast.parse(current.decode('utf-8'))
+        assignments = [node for node in ast.walk(tree) if isinstance(node, ast.Assign)
+                       and any(isinstance(t, ast.Name) and t.id == 'release_paths' for t in node.targets)]
+        self.assertEqual(len(assignments), 1)
+        inventory = ast.literal_eval(assignments[0].value)
+        for source in read_json(ROOT / 'skills/claude-guardian/sources/manifest.json')['sources']:
+            inventory.append(source['path'])
+            inventory.extend(c['path'] for c in source.get('companions', []))
+        inventory.append('LICENSE')
+        self.assertEqual(len(inventory), 65)
+        self.assertEqual(len(set(inventory)), 65)
+        self.assertEqual(inventory.count('scripts/environment_entry.py'), 1)
+        self.assertFalse(any('asset-route' in path or 'asset_route' in path for path in inventory))
 
     def test_changed_response_is_rejected_without_embedded_hash_trust(self):
         value = read_json(PACKET / 'dialogues-projection-public.json')

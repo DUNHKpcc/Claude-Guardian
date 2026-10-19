@@ -7,6 +7,7 @@ A host must separately establish these before invoking static-audit. Pseudo-TTYs
 can be automated: this interface is not protection against a malicious caller.
 """
 import argparse
+from copy import deepcopy
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,7 @@ import stat
 import sys
 
 import clash_inventory
+import environment_entry
 import windows_transactions
 import workflow_guard
 
@@ -60,9 +62,9 @@ def read_request(filename):
     Caller must establish request-file storage is local/hydrated before invocation.
     This POSIX adapter intentionally fails closed on Windows; capabilities works.
     """
-    path = _path(filename)
     if os.name != 'posix' or not hasattr(os, 'O_NOFOLLOW') or os.open not in os.supports_dir_fd:
         raise InputError('HOST_CAPABILITY_UNAVAILABLE')
+    path = _path(filename)
     fd = None
     try:
         fd = os.open(path.anchor, os.O_RDONLY | os.O_DIRECTORY)
@@ -108,14 +110,17 @@ def read_request(filename):
 def validate_request(request, target):
     """Validate the complete CLI envelope before displaying scope or opening files."""
     if type(request) is not dict or set(request) != {
-            'schema_version', 'target_ref', 'target_binding', 'application', 'files'}:
+            'schema_version', 'target_ref', 'target_binding', 'application', 'files', 'entry_request'}:
         raise InputError('INPUT_OR_RESPONSE_INVALID')
-    if request['schema_version'] != 'guardian-static-cli-request/1':
+    if request['schema_version'] != 'guardian-static-cli-request/2':
         raise InputError('INPUT_OR_RESPONSE_INVALID')
     if type(target) is not str or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,47}', target):
         raise InputError('TARGET_NOT_BOUND')
     if request['target_ref'] != target:
         raise InputError('TARGET_NOT_BOUND')
+    entry = environment_entry.require_entry(request['entry_request'], 'offline_precheck', target)
+    if entry['target_role'] != 'local':
+        raise InputError('TARGET_USER_CONTEXT_MISMATCH')
     expected = {'target_ref': target, 'binding_state': 'bound', 'declared_os': 'macos',
                 'execution_location': 'native_local', 'desktop_user_relation': 'same',
                 'filesystem_namespace': 'host_desktop'}
@@ -192,11 +197,17 @@ def run(argv=None, *, incoming=None, outgoing=None, prompt=None):
         else:
             request = read_request(args.request)
             validate_request(request, args.target_ref)
+            entry_snapshot = deepcopy(request['entry_request'])
             confirm_scope(request, incoming, prompt)
+            validate_request(request, args.target_ref)
+            if request['entry_request'] != entry_snapshot:
+                raise InputError('ENTRY_CHANGED')
             library_request = dict(request, schema_version='guardian-clash-inventory/0.1',
                                    operation='audit', contact_phase='precontact', gate_state='closed',
                                    authorization={'approved_paths': [f['path'] for f in request['files']],
                                                   'local_hydrated_files': True})
+            # The library contract remains strict and does not persist entry declarations.
+            del library_request['entry_request']
             result['inventory'] = clash_inventory.audit_inventory(library_request, args.target_ref)
             errors = result['inventory']['errors']
             if errors:
@@ -207,6 +218,11 @@ def run(argv=None, *, incoming=None, outgoing=None, prompt=None):
     except KeyboardInterrupt:
         result.update(status='cancelled', error_code='USER_CANCELLED')
         code = 3
+    except (environment_entry.InvalidProjection, environment_entry.EntryBlocked) as exc:
+        result.update(status='blocked', error_code=str(exc))
+        if isinstance(exc, environment_entry.EntryBlocked):
+            result['entry_gaps'] = list(exc.gaps)
+        code = 2
     except InputError as exc:
         result.update(status='blocked', error_code=exc.code)
         code = 3 if exc.code in {'LIVE_TERMINAL_REQUIRED', 'USER_CANCELLED'} else 2

@@ -4,6 +4,7 @@ The seven responses were observed and independently reviewed before integration.
 These regressions pin that public evidence and sources; the separate logic suite
 consumes normalized facts and did not generate or participate in those dialogues.
 """
+import atexit
 from copy import deepcopy
 import hashlib
 import json
@@ -11,9 +12,13 @@ from pathlib import Path
 import re
 import unittest
 
-from acceptance_runtime_compat import EXPECTED_MANIFEST as COPY_MANIFEST, load as load_copy_compatibility
+from acceptance_runtime_compat import (EXPECTED_MANIFEST as COPY_MANIFEST,
+                                       historical_baseline, load as load_copy_compatibility)
 
-ROOT = Path(__file__).resolve().parents[1]
+CURRENT_ROOT = Path(__file__).resolve().parents[1]
+_BASELINE = historical_baseline(CURRENT_ROOT)
+ROOT = _BASELINE.__enter__()  # Historical source identity only.
+atexit.register(_BASELINE.__exit__, None, None, None)
 COPY = load_copy_compatibility(ROOT)
 PACKET = ROOT / 'docs/evidence/local-incident-v1'
 PAGE = ROOT / 'docs/evidence/rebuild-local-incident-cases.md'
@@ -84,12 +89,8 @@ def validate_projection(value):
     check_public_text(json.dumps(value, ensure_ascii=False))
 
 
-class LocalIncidentEvidenceTests(unittest.TestCase):
-    def test_current_fact_copy_runtime_replays_complete_normalized_evidence(self):
-        # A new API execution, explicitly separate from the seven old dialogues.
-        suite = 'tests/test_acceptance_local_incident_cases.py'
-        receipt = COPY.read_json(ROOT / COPY.REL / 'replay-receipt.json')
-        COPY.verify_replay_value(COPY.replay_output(ROOT, suite), receipt['semantic_suites'][suite])
+class HistoricalLocalIncidentEvidenceTests(unittest.TestCase):
+    """Pinned historical source, seven old dialogues, and exact negative controls."""
 
     def test_manifest_and_casepage_bytes_are_pinned(self):
         self.assertFalse((PACKET / 'evidence-manifest.json').is_symlink())
@@ -130,7 +131,7 @@ class LocalIncidentEvidenceTests(unittest.TestCase):
             self.assertEqual([part.strip() for part in case['literal_tracker_row'].split('|')[1:5]],
                              [case_id, case['scenario'], case['requirement'], 'L+C'])
 
-    def test_reviewed_current_sources_and_response_source_mapping(self):
+    def test_reviewed_historical_sources_and_response_source_mapping(self):
         manifest = read_json(PACKET / 'evidence-manifest.json')
         self.assertEqual(manifest['source_sha256'], SOURCE_SHA256)
         self.assertEqual(manifest['dialogue_source_mapping'], SOURCE_MAPPING)
@@ -260,6 +261,14 @@ class LocalIncidentEvidenceTests(unittest.TestCase):
             with self.subTest(injection=text):
                 with self.assertRaises(ValueError):
                     check_public_text(text)
+
+
+class CurrentLocalIncidentRuntimeTests(unittest.TestCase):
+    def test_current_runtime_replays_complete_normalized_evidence(self):
+        # Direct current execution, separate from the seven historical dialogues.
+        suite = 'tests/test_acceptance_local_incident_cases.py'
+        receipt = COPY.read_json(CURRENT_ROOT / COPY.REL / 'replay-receipt.json')
+        COPY.verify_replay_value(COPY.replay_output(CURRENT_ROOT, suite), receipt['semantic_suites'][suite])
 
 
 if __name__ == '__main__':

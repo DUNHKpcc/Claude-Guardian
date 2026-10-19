@@ -1,10 +1,20 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: thirty-seventh rebuild, 2026-10-19
+## Active delivery order, user direction 2026-10-19
+
+1. Make an explicit local / VM / VPS execution choice precede environment inspection or repair. Then collect only necessary network-resource and configuration-state declarations. Local/VM receive detailed applicable checks; VPS currently receives a basic non-intrusive profile. VM host and guest remain separately bound. Existing assets never select a route automatically. This is a dated product requirement change; original specification rows and historical evidence are retained and affected conclusions must be re-evaluated.
+2. Resume the Mac repair delivery path: bounded metadata support, exact approved writing, application activation, effective-state verification, and conflict-safe failure recovery. The read-only observer does not complete this path. Native adapter and real-device evidence remain necessary; no assumption that the user's Mac stays online.
+3. Retain Windows native verification and the C5 full scoped Claude-data cleanup / recovery acceptance work. Neither is removed by the new entry workflow. The complete original specification remains the final project goal; a narrowly declared Mac trial scope is a delivery milestone only.
+
+## Current candidate: thirty-eighth entry-order integration, 2026-10-19
+
+The published baseline 95015be completed all four CI platforms and preview successfully. This candidate implements the new entry-order decision. Historical 51-case evidence is preserved; current applicability is being revalidated and must not be read as 51 current passes. See [entry decision](environment-entry-decision.md).
+
+## Preceding checkpoint: thirty-seventh rebuild, 2026-10-19
 
 The new Darwin metadata observer is a bounded read-only, inherited-descriptor interface. It reports only fixed name categories/counts and explicit unknowns; it does not read attribute values or grant receipt, replacement, cleanup or recovery admission. New-module native execution remains pending. The prior Windows replay-receipt correction passed all four CI platforms; the original Windows POSIX-fixture skip remains a skip.
 
-The current ledger records 51 freshly accepted original cases and 167 pending:
+The preceding published ledger recorded 51 freshly accepted original cases and 167 pending:
 T26, T33, T22, T25, T77, T80, T36, T38, T46, T54, ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58, T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections

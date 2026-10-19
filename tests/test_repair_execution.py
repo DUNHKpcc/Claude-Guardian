@@ -14,6 +14,7 @@ import repair_execution as e
 import repair_cli as r
 import test_repair_cli as fixtures
 from test_config_edit_plan import RAW
+from environment_entry_fixture import local_entry
 
 
 
@@ -58,6 +59,7 @@ class RepairExecution(unittest.TestCase):
                 redirect_stdout(output), redirect_stderr(errors):
             result = r.main(['plan', '--request', str(self.request),
                              '--target-path', str(self.target), '--target-ref', 'mac-a',
+                             '--entry-file', str(self.entry_file),
                              '--plan-file', str(self.root / 'plan.json'),
                              '--backup-directory', str(self.root / 'absent')])
         self.assertEqual(result, 2)
@@ -114,7 +116,8 @@ class RepairExecution(unittest.TestCase):
                                backup_directory=str(self.backups))
         self.arguments = dict(request_path=str(self.request), plan_path=str(self.plan),
                               plan_digest=self.digest, target_path=str(self.target),
-                              target_ref='mac-a', backup_directory=str(self.backups))
+                              target_ref='mac-a', backup_directory=str(self.backups),
+                              entry_request=self.entry)
 
     def retention_scope(self):
         backups = self.root / 'backups'
@@ -145,6 +148,7 @@ class RepairExecution(unittest.TestCase):
                 redirect_stdout(output), redirect_stderr(errors):
             result = r.main(['plan', '--request', str(self.request),
                              '--target-path', str(self.target), '--target-ref', 'mac-a',
+                             '--entry-file', str(self.entry_file),
                              '--plan-file', scope['plan_path'],
                              '--backup-directory', scope['backup_directory']])
         self.assertEqual(result, 2)
@@ -310,6 +314,8 @@ class RepairExecution(unittest.TestCase):
                                  ('target_ref', 'other', 'TARGET_MISMATCH'),
                                  ('backup_directory', str(self.root), 'BACKUP_SCOPE_MISMATCH')]:
             args = dict(self.arguments, **{key: value})
+            if key == 'target_ref':
+                args['entry_request'] = local_entry(value)
             with self.assertRaisesRegex(e.tx.TransactionError, '^' + code + '$'):
                 e.execute(**args)
         with patch.object(e.time, 'time', return_value=1e10):

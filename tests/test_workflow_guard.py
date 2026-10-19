@@ -5,6 +5,8 @@ from pathlib import Path
 import sys
 import unittest
 
+from environment_entry_fixture import local_entry
+
 PATH = Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts/workflow_guard.py'
 spec = importlib.util.spec_from_file_location('workflow_guard', PATH)
 w = importlib.util.module_from_spec(spec)
@@ -16,7 +18,7 @@ class WorkflowTests(unittest.TestCase):
     def setUp(self):
         self.binding = w.Binding('mac', 'user', 'native', 'browser-profile', 'cfg-1', 'net-1', 'v1')
         self.requirements = w.Requirements(('network', 'protection'), ('client-path',), ('authenticated-path',))
-        self.ready = w.Readiness('complete', (), (), ())
+        self.ready = w.Readiness('complete', (), (), (), local_entry(self.binding.target))
         self.local = w.Scope('ENV-01', w.Operation.AUDIT, 'metadata', 'os', 'v1', 'native', 'macos')
         self.neutral = replace(self.local, operation=w.Operation.PROBE, action='neutral-probe',
                                contact=w.Contact.NEUTRAL, endpoint_refs=('approved-endpoint',))
@@ -59,9 +61,12 @@ class WorkflowTests(unittest.TestCase):
         self.assertFalse(self.evaluate().executes)
         self.assertEqual(self.evaluate().enforcement_level, 'workflow_guard')
 
-    def test_read_only_can_continue_with_interview_gaps(self):
-        self.assertTrue(self.evaluate(ready=w.Readiness()).allowed)
-        self.assertFalse(self.evaluate(self.action(self.neutral), ready=w.Readiness()).allowed)
+    def test_selected_target_audit_can_continue_with_other_interview_gaps(self):
+        self.assertEqual(self.evaluate(ready=w.Readiness()).gaps, ('ENVIRONMENT_ENTRY_REQUIRED',))
+        self.assertEqual(self.requests, [])
+        incomplete = w.Readiness(entry_request=local_entry(self.binding.target))
+        self.assertTrue(self.evaluate(ready=incomplete).allowed)
+        self.assertFalse(self.evaluate(self.action(self.neutral), ready=incomplete).allowed)
 
     def test_neutral_consent_does_not_open_contact(self):
         self.assertTrue(self.evaluate(self.action(self.neutral)).allowed)

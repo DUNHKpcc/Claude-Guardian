@@ -2,6 +2,8 @@
 
 Recorded prose, events, source snapshots, and errors remain immutable. Current
 replays add test-level API sentinels, not historical or OS-wide telemetry.
+Historical-source pins and current-runtime execution are distinct modes; a
+current replay does not establish current whole-case or guidance acceptance.
 """
 from contextlib import ExitStack
 from copy import deepcopy
@@ -72,13 +74,44 @@ def encode(value):
 
 
 def load_functions(repo):
-    # Module loading precedes instrumentation; it is not falsely claimed I/O-free.
-    sys.path.insert(0, str(Path(repo) / 'skills' / 'claude-guardian' / 'scripts'))
-    import urllib.request  # noqa: F401
+    # Import each selected real tree afresh. A preceding historical replay must
+    # never leave a cached old helper masquerading as current execution (or vice
+    # versa). Returned function objects retain their own module globals.
+    directory = Path(repo) / 'skills' / 'claude-guardian' / 'scripts'
+    names = {name.rsplit('.', 1)[0] for name in CALLABLES} | {
+        'guardian', 'traffic_policy', 'source_evidence', 'environment_entry'}
+    previous_modules = {name: sys.modules[name] for name in names if name in sys.modules}
+    previous_path = list(sys.path)
+    for name in names:
+        sys.modules.pop(name, None)
+    sys.path.insert(0, str(directory))
+    try:
+        import urllib.request  # noqa: F401
+        result = {}
+        for name in CALLABLES:
+            module, member = name.rsplit('.', 1)
+            loaded = importlib.import_module(module)
+            assert Path(loaded.__file__).resolve().parent == directory.resolve()
+            result[name] = getattr(loaded, member)
+        return result
+    finally:
+        sys.path[:] = previous_path
+        for name in names:
+            sys.modules.pop(name, None)
+        sys.modules.update(previous_modules)
+
+
+def source_identity(repo, data=DATA):
+    freeze = read_json(Path(data) / 'supplemental/input-freeze.json')
+    names = set(freeze['source_sha256'])
+    entry = 'skills/claude-guardian/scripts/environment_entry.py'
+    if (Path(repo) / entry).is_file():
+        names.add(entry)
     result = {}
-    for name in CALLABLES:
-        module, member = name.rsplit('.', 1)
-        result[name] = getattr(importlib.import_module(module), member)
+    for name in sorted(names):
+        path = Path(repo) / name
+        assert not path.is_symlink() and path.is_file(), name
+        result[name] = sha(path.read_bytes())
     return result
 
 
@@ -133,12 +166,16 @@ def replay_observed(repo=ROOT, data=DATA):
     return results
 
 
-def replay_supplement(repo=ROOT, data=DATA):
+def replay_supplement(repo=ROOT, data=DATA, *, source_kind='historical_source'):
     supplemental = Path(data) / 'supplemental'
     freeze = read_json(supplemental / 'input-freeze.json')
     assert sha((supplemental / 'inputs.json').read_bytes()) == freeze['inputs_sha256']
-    for name, expected in freeze['source_sha256'].items():
-        assert sha((Path(repo) / name).read_bytes()) == expected, name
+    if source_kind not in {'historical_source', 'current_runtime'}:
+        raise ValueError('Unknown replay source kind')
+    identity = source_identity(repo, data)
+    if source_kind == 'historical_source':
+        for name, expected in freeze['source_sha256'].items():
+            assert identity[name] == expected, name
     functions = load_functions(repo)
     results = {}
     for trace in read_json(supplemental / 'inputs.json')['calls']:
@@ -165,15 +202,26 @@ def main():
     parser.add_argument('--repo', type=Path, default=ROOT)
     parser.add_argument('--data', type=Path, default=DATA)
     parser.add_argument('--capture-supplement', type=Path)
+    parser.add_argument('--source-kind', choices=('historical_source', 'current_runtime'),
+                        default='current_runtime')
     args = parser.parse_args()
     if args.capture_supplement is not None:
-        result = replay_supplement(args.repo, args.data)
+        result = replay_supplement(args.repo, args.data, source_kind=args.source_kind)
+        if args.source_kind == 'current_runtime':
+            result = {'source_kind': args.source_kind, 'source_sha256': source_identity(args.repo, args.data),
+                      'current_whole_case_acceptance': 'pending', 'calls': result}
         args.capture_supplement.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n',
                                           encoding='utf-8')
     else:
-        result = {'scope': 'current helper replay only; no model prose regeneration',
+        result = {'scope': 'supporting helper replay only; no model prose regeneration',
+                  'source_kind': args.source_kind,
+                  'source_sha256': source_identity(args.repo, args.data),
+                  'current_whole_case_acceptance': 'pending',
+                  'historical_source_compatibility': ('strict_source_pins'
+                      if args.source_kind == 'historical_source' else 'not_established'),
                   'observed_calls': replay_observed(args.repo, args.data),
-                  'reviewer_supplemental_calls': replay_supplement(args.repo, args.data)}
+                  'reviewer_supplemental_calls': replay_supplement(args.repo, args.data,
+                      source_kind=args.source_kind)}
         print(json.dumps(result, ensure_ascii=True, sort_keys=True))
 
 

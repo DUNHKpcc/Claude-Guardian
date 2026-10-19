@@ -5,6 +5,7 @@ No JSON field grants authority or native capability. Raw diffs require an
 explicit authorized private-host review; ordinary output contains no file bytes or paths.
 """
 import argparse
+import copy
 import json
 import os
 import sys
@@ -16,6 +17,7 @@ import clash_verge_258 as ownership
 import rules_extension_plan as rules_edits
 import recovery_cli
 import transactions as tx
+import environment_entry
 
 SCHEMA = 'guardian-repair-request/0.1'
 RESULT_SCHEMA = 'guardian-repair-result/0.1'
@@ -62,17 +64,30 @@ def _check_source(source):
 
 def preflight(request_path, target_path, target_ref, *, max_seconds=30,
               cancelled=lambda: False, candidate_kind='merge-policy', base_path=None,
-              app_info_path=None, profile_index_path=None, extension_uid=None):
+              app_info_path=None, profile_index_path=None, extension_uid=None, entry_request=None):
     """Read only explicit authorized request/target and optional base; never discover paths.
 
     The return value is private in-process material, not a native authorization.
     Call public_report for agent-visible data. A host must have independently
     bound target, user and namespace before invoking even this read-only API.
     """
+    try:
+        environment_entry.require_entry(entry_request, 'offline_precheck', target_ref)
+    except (environment_entry.InvalidProjection, environment_entry.EntryBlocked):
+        raise RepairError('ENVIRONMENT_ENTRY_REQUIRED') from None
     if type(max_seconds) not in (int, float) or not 0 < max_seconds <= 60:
         raise RepairError('INVALID_DEADLINE')
     deadline = time.monotonic() + max_seconds
-    _guard(cancelled, deadline)
+    entry_basis = copy.deepcopy(entry_request)
+    def entry_guard():
+        _guard(cancelled, deadline)
+        if entry_request != entry_basis:
+            raise RepairError('ENVIRONMENT_ENTRY_CHANGED')
+        try:
+            environment_entry.require_entry(entry_request, 'offline_precheck', target_ref)
+        except (environment_entry.InvalidProjection, environment_entry.EntryBlocked):
+            raise RepairError('ENVIRONMENT_ENTRY_REQUIRED') from None
+    entry_guard()
     if candidate_kind not in ('merge-policy', 'rules-prepend'):
         raise RepairError('UNSUPPORTED_CANDIDATE_KIND')
     extra = (base_path, app_info_path, profile_index_path, extension_uid)
@@ -88,7 +103,7 @@ def preflight(request_path, target_path, target_ref, *, max_seconds=30,
     tx._support()
     request = _load_request(request_path)
     fingerprint = tx.digest(request)
-    _guard(cancelled, deadline)
+    entry_guard()
     semantic, binding = request['remedy_request'], request['binding']
     if (type(semantic) is not dict or semantic.get('target_ref') != target_ref
             or type(binding) is not dict or binding.get('target_ref') != target_ref):
@@ -97,28 +112,28 @@ def preflight(request_path, target_path, target_ref, *, max_seconds=30,
     with tx._parent(target_path) as (fd, name):
         original, snapshot = tx._read(fd, name)
         parent_identity = tx._identity(fd)
-    _guard(cancelled, deadline)
+    entry_guard()
     base_source, metadata_sources, linkage = None, {}, None
     if candidate_kind == 'rules-prepend':
         base_raw, base_source = _read_source(base_path)
         info_raw, metadata_sources['app_info'] = _read_source(app_info_path)
-        _guard(cancelled, deadline)
+        entry_guard()
         index_raw, metadata_sources['profile_index'] = _read_source(profile_index_path)
-        _guard(cancelled, deadline)
+        entry_guard()
         linkage = ownership.inspect_linkage(info_raw, index_raw, original,
                                             selected_uid=extension_uid,
                                             selected_basename=os.path.basename(target_path),
                                             extension_kind='rules', max_seconds=max_seconds,
-                                            cancelled=cancelled)
+                                            cancelled=lambda: (entry_guard() or False))
         if linkage.private_material()['base_basename'] != os.path.basename(base_path):
             raise RepairError('BASE_PROFILE_FILE_MISMATCH')
-        _guard(cancelled, deadline)
+        entry_guard()
         candidate = rules_edits.compile_rules_extension(original, base_raw, semantic, binding,
-                                                        max_seconds=max_seconds, cancelled=cancelled)
+                                                        max_seconds=max_seconds, cancelled=lambda: (entry_guard() or False))
     else:
         candidate = edits.compile_edit_plan(original, semantic, binding)
     material = candidate.private_material()
-    _guard(cancelled, deadline)
+    entry_guard()
     target_source = {'path': target_path, 'snapshot': snapshot,
                      'parent_identity': parent_identity}
     # An observation of matching bytes is not an action plan. In particular,
@@ -129,15 +144,15 @@ def preflight(request_path, target_path, target_ref, *, max_seconds=30,
                        ttl_seconds=600)
         if plan['before'] != snapshot or plan['parent_identity'] != parent_identity:
             raise RepairError('STALE_FILE')
-    _guard(cancelled, deadline)
+    entry_guard()
     _check_source(base_source)
     for source in metadata_sources.values():
-        _guard(cancelled, deadline)
+        entry_guard()
         _check_source(source)
-    _guard(cancelled, deadline)
+    entry_guard()
     if tx.digest(_load_request(request_path)) != fingerprint:
         raise RepairError('REQUEST_CHANGED')
-    _guard(cancelled, deadline)
+    entry_guard()
     if candidate_kind == 'rules-prepend':
         review = [{'rule_ref': ref, 'position': index, 'added_rule': value}
                   for index, (ref, value) in enumerate(material['ordered_additions'])]
@@ -151,7 +166,8 @@ def preflight(request_path, target_path, target_ref, *, max_seconds=30,
     prepared = PrivatePreflight(candidate, plan, fingerprint, review, candidate_kind, base_source,
                                 metadata_sources, extension_uid, linkage, deadline,
                                 request_path=request_path, cancelled=cancelled,
-                                target_source=target_source, target_ref=target_ref)
+                                target_source=target_source, target_ref=target_ref,
+                                entry_request=entry_request, entry_basis=entry_basis)
     if plan is None:
         prepared.recheck_review()
     return prepared
@@ -160,11 +176,13 @@ def preflight(request_path, target_path, target_ref, *, max_seconds=30,
 class PrivatePreflight:
     __slots__ = ('_candidate', '_plan', '_request_digest', '_review', '_candidate_kind', '_base_source',
                  '_metadata_sources', '_extension_uid', '_linkage', '_deadline', '_request_path',
-                 '_cancelled', '_target_source', '_target_ref')
+                 '_cancelled', '_target_source', '_target_ref', '_entry_request', '_entry_basis')
 
     def __init__(self, candidate, plan, request_digest, review, candidate_kind='merge-policy', base_source=None,
                  metadata_sources=None, extension_uid=None, linkage=None, deadline=None, *,
-                 request_path=None, cancelled=lambda: False, target_source=None, target_ref=None):
+                 request_path=None, cancelled=lambda: False, target_source=None, target_ref=None,
+                 entry_request=None, entry_basis=None):
+        self._entry_request, self._entry_basis = entry_request, entry_basis
         self._deadline = deadline
         self._request_path, self._cancelled = request_path, cancelled
         self._candidate_kind, self._base_source = candidate_kind, base_source
@@ -225,8 +243,16 @@ class PrivatePreflight:
         request_path = self._request_path
         def guard():
             _guard(self._cancelled, self._deadline)
+            if self._entry_request != self._entry_basis:
+                raise RepairError('ENVIRONMENT_ENTRY_CHANGED')
+            try:
+                environment_entry.require_entry(self._entry_request, 'offline_precheck', self._target_ref)
+            except (environment_entry.InvalidProjection, environment_entry.EntryBlocked):
+                raise RepairError('ENVIRONMENT_ENTRY_REQUIRED') from None
             if cancelled is not None:
                 _guard(cancelled, self._deadline)
+                if self._entry_request != self._entry_basis:
+                    raise RepairError('ENVIRONMENT_ENTRY_CHANGED')
         guard()
         if self._plan is not None:
             tx._validate(self._plan, time.time())
@@ -298,6 +324,7 @@ def main(argv=None):
     parser.add_argument('--request', required=True, help='Exact private request JSON file')
     parser.add_argument('--target-path', required=True, help='Exact owned extension candidate')
     parser.add_argument('--target-ref', required=True)
+    parser.add_argument('--entry-file', required=True, help='Explicit local sanitized environment-entry projection')
     parser.add_argument('--candidate-kind', choices=('merge-policy', 'rules-prepend'), default='merge-policy')
     parser.add_argument('--app-info', help='Exact separately authorized application Info.plist')
     parser.add_argument('--profile-index', help='Exact separately authorized profiles.yaml')
@@ -312,6 +339,13 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         import repair_execution as execution
+        import inventory_cli
+        try:
+            entry_request = inventory_cli.read_request(args.entry_file)
+            environment_entry.require_entry(entry_request,
+                'configuration' if args.command == 'execute' else 'offline_precheck', args.target_ref)
+        except (inventory_cli.InputError, environment_entry.InvalidProjection, environment_entry.EntryBlocked):
+            raise RepairError('ENVIRONMENT_ENTRY_REQUIRED') from None
         if args.command == 'execute':
             if args.private_review:
                 raise RepairError('INVALID_ARGUMENTS')
@@ -322,7 +356,8 @@ def main(argv=None):
                                        target_ref=args.target_ref, backup_directory=args.backup_directory,
                                        max_seconds=args.max_seconds, candidate_kind=args.candidate_kind,
                                        base_path=args.base_path, app_info_path=args.app_info,
-                                       profile_index_path=args.profile_index, extension_uid=args.extension_uid)
+                                       profile_index_path=args.profile_index, extension_uid=args.extension_uid,
+                                       entry_request=entry_request)
             print(json.dumps(result, sort_keys=True), flush=True)
             return 0
         if args.plan_digest or (args.backup_directory and not args.plan_file):
@@ -334,7 +369,8 @@ def main(argv=None):
         prepared = preflight(args.request, args.target_path, args.target_ref,
                              max_seconds=args.max_seconds, candidate_kind=args.candidate_kind,
                              base_path=args.base_path, app_info_path=args.app_info,
-                                       profile_index_path=args.profile_index, extension_uid=args.extension_uid)
+                                       profile_index_path=args.profile_index, extension_uid=args.extension_uid,
+                                       entry_request=entry_request)
         result = prepared.public_report(args.command)
         if args.plan_file and prepared._plan is not None:
             result['retained_plan_digest'] = execution.retain(prepared, plan_path=args.plan_file,

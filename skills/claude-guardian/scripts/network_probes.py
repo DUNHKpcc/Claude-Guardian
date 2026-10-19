@@ -4,6 +4,7 @@ PD03 endpoint selection and runtime approval remain caller responsibilities. The
 candidates are not standing approval. Evidence is for this probe only, never the
 browser, Claude's routing, account eligibility, or an anti-ban guarantee.
 """
+from copy import deepcopy
 import ipaddress
 import json
 import os
@@ -15,6 +16,18 @@ import re
 import math
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
+
+try:
+    import environment_entry
+except ModuleNotFoundError as _entry_import_error:
+    if _entry_import_error.name != 'environment_entry':
+        raise
+    # Preserve the existing standalone file-path import API without sys.path edits.
+    import importlib.util as _entry_importlib
+    _entry_spec = _entry_importlib.spec_from_file_location(
+        '_probe_environment_entry', Path(__file__).with_name('environment_entry.py'))
+    environment_entry = _entry_importlib.module_from_spec(_entry_spec)
+    _entry_spec.loader.exec_module(environment_entry)
 
 ENDPOINTS = {
     "ipify_v4": ("https://api.ipify.org?format=json", 4),
@@ -277,10 +290,12 @@ class SystemRouteTransport:
 
 def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_ref,
                    path_kind="direct_socket_os_route_tun_unknown", transport=None,
-                   response_clock=None):
+                   response_clock=None, entry_request=None):
     """One request, no retries; approved_endpoints must contain the exact URL.
 
     approved_paths must explicitly include the requested path for this run.
+    entry_request must pass active_probe for the same target; it grants no
+    endpoint/path consent, target verification, or remote adapter capability.
     Optional response_clock() is called immediately after transport returns and
     yields (aware receipt datetime, explicit trust bool). Default local clock is
     untrusted; the helper does not verify clock synchronization. Never provide a
@@ -294,6 +309,13 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
     Injection is a trusted adapter boundary, not a sandbox for untrusted plugins.
     Raw address is local evidence; redact/alias it before sharing ordinary reports.
     """
+    try:
+        entry = environment_entry.require_entry(entry_request, 'active_probe', target_ref)
+        entry_snapshot = deepcopy(entry_request)
+    except (environment_entry.InvalidProjection, environment_entry.EntryBlocked) as exc:
+        raise ProbeError(str(exc)) from None
+    if transport is None and entry['target_role'] != 'local':
+        raise ProbeError('target_binding_required')
     if endpoint_id not in ENDPOINTS:
         raise ProbeError("endpoint_not_allowlisted")
     url, expected_family = ENDPOINTS[endpoint_id]
@@ -306,8 +328,29 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
     if not isinstance(approved_paths, (list, tuple, set, frozenset)) or path_kind not in approved_paths:
         raise ProbeError("explicit_path_consent_required")
     transport = transport if transport is not None else SystemRouteTransport()
-    if getattr(transport, "path_kind", None) != path_kind:
+    try:
+        adapter_path = getattr(transport, "path_kind", None)
+    except Exception:
+        raise ProbeError('transport_error') from None
+    if adapter_path != path_kind:
         raise ProbeError("transport_path_mismatch")
+    # Bind once before the final entry check: a request descriptor can invoke a
+    # trusted-host callback too. Looking it up at the call site would leave a
+    # withdrawal/resource-change gap after that check.
+    try:
+        send_request = transport.request
+    except Exception:
+        raise ProbeError('transport_error') from None
+    if not callable(send_request):
+        raise ProbeError('transport_error')
+    # Trusted adapter properties may run callbacks; revalidate the full current
+    # declaration, including resource aliases, before its first transport call.
+    try:
+        environment_entry.require_entry(entry_request, 'active_probe', target_ref)
+    except (environment_entry.InvalidProjection, environment_entry.EntryBlocked) as exc:
+        raise ProbeError(str(exc)) from None
+    if entry_request != entry_snapshot:
+        raise ProbeError('ENTRY_CHANGED')
     result = dict(endpoint=url, endpoint_id=endpoint_id, target_ref=target_ref,
                   sample_type="probe_https", path_kind=path_kind,
                   expected_address_family=expected_family, observed_address_family=None,
@@ -319,7 +362,7 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
                   retry_after=None,
                   interpretation="One neutral HTTPS sample; no safety or target-route certification")
     try:
-        response = transport.request(url, connect_timeout=5, total_timeout=10, max_body=MAX_BODY)
+        response = send_request(url, connect_timeout=5, total_timeout=10, max_body=MAX_BODY)
         observed_at, clock_trusted = datetime.now(timezone.utc), False
         if response_clock is not None:
             try:

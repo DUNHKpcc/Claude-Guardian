@@ -6,6 +6,8 @@ import sys
 import unittest
 from unittest.mock import Mock, patch
 
+from environment_entry_fixture import local_entry
+
 SCRIPTS = Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts'
 
 
@@ -123,7 +125,7 @@ class WorkflowTimeTests(unittest.TestCase):
     def setUp(self):
         w = workflow
         self.binding = w.Binding('target', 'user', 'native', 'profile', 'cfg', 'net', 'v1')
-        self.ready = w.Readiness('complete', (), (), ())
+        self.ready = w.Readiness('complete', (), (), (), local_entry(self.binding.target))
         self.scope = w.Scope('ENV-01', w.Operation.AUDIT, 'metadata', 'os', 'v1', 'native', 'macos')
         self.client = replace(self.scope, operation=w.Operation.VERIFY, contact=w.Contact.CLAUDE)
         self.guard = w.WorkflowGuard(self.binding, w.Requirements(('network',), ('client',)),

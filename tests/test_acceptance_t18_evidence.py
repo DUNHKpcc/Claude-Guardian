@@ -3,18 +3,17 @@
 The observed responses were generated in a separate guided exercise, then reviewed
 independently. These tests freeze/check that evidence and the exact guides reviewed;
 they do not ask a model for another response or prove behavior on unseen inputs.
-GUARDIAN_REPOSITORY_ROOT is optional for running this standalone candidate against
-its read-only reviewed source tree before integration.
+Historical source checks use the exact pre-entry release fixture. Current
+guidance compatibility is separately reviewed by the acceptance ledger suite.
 """
 import hashlib
 import json
-import os
 from pathlib import Path
 import unittest
 from test_acceptance_skill_registry_wording import SKILL_PATH, checked_registry_wording_sha256
+from acceptance_runtime_compat import historical_baseline
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE_ROOT = Path(os.environ.get('GUARDIAN_REPOSITORY_ROOT', str(ROOT))).resolve()
 EVIDENCE = ROOT / 'docs/evidence/t18-guided-response-v1'
 PAGE = ROOT / 'docs/evidence/rebuild-t18-appeal-facts.md'
 REQUIREMENT = '使用待补充字段，不能捏造使用地点、本人行为或付款事实'
@@ -34,6 +33,13 @@ def read_json(path):
 
 
 class T18RetainedEvidenceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Exact release fixture for retained-source checks, never live acceptance.
+        context = historical_baseline(ROOT)
+        cls.HISTORICAL_ROOT = context.__enter__()
+        cls.addClassCleanup(context.__exit__, None, None, None)
+
     def test_manifest_and_page_are_reviewed_candidate_bytes(self):
         self.assertEqual(digest(EVIDENCE / 'evidence-manifest.json'), EXPECTED_MANIFEST_SHA256)
         self.assertEqual(digest(PAGE), EXPECTED_PAGE_SHA256)
@@ -58,21 +64,21 @@ class T18RetainedEvidenceTests(unittest.TestCase):
         self.assertEqual(manifest['requirement'], REQUIREMENT)
         self.assertEqual(manifest['verification_layer'], 'L+C')
         original = manifest['original_design']
-        path = SOURCE_ROOT / original['path']
+        path = self.HISTORICAL_ROOT / original['path']
         self.assertEqual(digest(path), original['sha256'])
         row = next(line for line in path.read_text(encoding='utf-8').splitlines()
                    if line.startswith('| T18 |'))
         self.assertEqual(row, original['literal_row'])
         self.assertEqual(row.split('|')[3].strip(), REQUIREMENT)
 
-    def test_historical_guides_and_reviewed_current_doc_compatibility(self):
+    def test_historical_guides_and_exact_prior_wording_compatibility(self):
         manifest = read_json(EVIDENCE / 'evidence-manifest.json')
         record = read_json(EVIDENCE / 'execution-record.json')
         self.assertEqual(manifest['guide_sha256'], EXPECTED_GUIDE_SHA256)
         self.assertEqual(record['guides'], EXPECTED_GUIDE_SHA256)
         for relative, expected in EXPECTED_GUIDE_SHA256.items():
             with self.subTest(guide=relative):
-                path = SOURCE_ROOT / relative
+                path = self.HISTORICAL_ROOT / relative
                 self.assertFalse(path.is_symlink())
                 if relative == SKILL_PATH:
                     checked_registry_wording_sha256(path.read_bytes(), expected)

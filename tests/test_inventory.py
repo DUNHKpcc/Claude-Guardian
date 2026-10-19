@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch, Mock
+from environment_entry_fixture import local_entry
 
 SPEC = importlib.util.spec_from_file_location('inventory_guardian', Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts/guardian.py')
 g = importlib.util.module_from_spec(SPEC)
@@ -61,7 +62,7 @@ class InventoryTests(unittest.TestCase):
                 extra, errors = g.extended_inventory('macos', lambda _: '')
                 fact = next(row for row in extra if row[0] == 'S04')
                 with patch.object(g, 'extended_inventory', return_value=([fact], [])):
-                    result = g.native_check(args)
+                    result = g.native_check(args, entry_request=local_entry('device-1'))
                 command.assert_not_called()
             observed = next(f for f in result['facts'] if f['id'] == 'S04')
             self.assertEqual(observed['value'], machine)
@@ -174,7 +175,7 @@ class InventoryTests(unittest.TestCase):
         args = argparse.Namespace(target_ref='device-1', confirm_target=True, authorize_audit=True, target_os='macos', target_kind='local', namespace='desktop', execution_location='native_local', user_context='same')
         extra = [('S02','macOS-product-15.2;build-24C101','mac-version'), ('S08','IANA:Asia:Shanghai','mac-timezone-link'), ('P06',g.proxy_summary(MAC_PROXY),'mac-proxy')]
         with patch.object(g.sys, 'platform','darwin'), patch.object(g, 'extended_inventory', return_value=(extra, [])), patch.object(g.os, 'uname', return_value=type('Uname', (), {'release':'fixture-kernel'})(), create=True):
-            report = g.native_check(args)
+            report = g.native_check(args, entry_request=local_entry('device-1'))
         output = g.analyze(report, 'device-1', True)
         self.assertEqual(output['contact_control']['gate_state'], 'closed')
         self.assertEqual(output['changes'], [])
@@ -186,7 +187,7 @@ class InventoryTests(unittest.TestCase):
         args = argparse.Namespace(target_ref='device-1', confirm_target=True, authorize_audit=False, target_os='macos')
         with patch.object(g, 'extended_inventory') as collector:
             with self.assertRaisesRegex(g.GuardianError, 'AUTHORIZATION_MISSING'):
-                g.native_check(args)
+                g.native_check(args, entry_request=local_entry('device-1'))
             collector.assert_not_called()
 
 if __name__ == '__main__':

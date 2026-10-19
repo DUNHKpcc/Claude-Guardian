@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import sys
+from environment_entry_fixture import local_entry
 import unittest
 from unittest.mock import patch
 
@@ -590,7 +591,7 @@ class IntakeBasicsAcceptanceTests(unittest.TestCase):
         # Mock adapter eligibility is deliberately isolated from real validation.
         adapters = tuple(w.AdapterSupport(s, 'accepted', 'implemented', 'native_pass', 'synthetic-adapter-claim') for s in (scope, client))
         guard = w.WorkflowGuard(binding, requirements, adapters, clock=lambda: 20)
-        ready = w.Readiness('complete', (), (), ())
+        ready = w.Readiness('complete', (), (), (), entry_request=local_entry(binding.target))
         self.assertEqual(guard.snapshot(), {'phase': 'precontact', 'gate_state': 'closed',
             'observed_contact': 'not_measured', 'runtime_permission_restorable': False})
         action = w.Action(scope, binding, 'synthetic-plan', 10, 100)
@@ -631,7 +632,7 @@ def permission_replay():
     adapters = tuple(w.AdapterSupport(s, 'accepted', 'implemented', 'native_pass', 'synthetic-adapter-claim')
                      for s in (scope, client))
     guard = w.WorkflowGuard(binding, requirements, adapters, clock=lambda: 20)
-    ready = w.Readiness('complete', (), (), ())
+    ready = w.Readiness('complete', (), (), (), entry_request=local_entry(binding.target))
     action = w.Action(scope, binding, 'synthetic-plan', 10, 100)
     before = guard.snapshot()
     decisions = {

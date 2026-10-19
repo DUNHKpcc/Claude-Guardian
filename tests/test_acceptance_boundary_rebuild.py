@@ -13,6 +13,7 @@ import io
 import json
 from pathlib import Path
 import sys
+from environment_entry_fixture import local_entry
 import unittest
 from unittest.mock import patch
 
@@ -131,7 +132,7 @@ def make_guard():
     guard = workflow.WorkflowGuard(binding,
         workflow.Requirements(('preparation',), ('claude-domain-actual-hit',), ()),
         support, fixture_reply, clock=lambda: 20)
-    ready = workflow.Readiness('complete', (), (), ())
+    ready = workflow.Readiness('complete', (), (), (), entry_request=local_entry(binding.target))
     preparation = workflow.Evidence('preparation', workflow.CheckStage.PRECONTACT,
         binding, 10, 100, workflow.EvidenceKind.TARGET_MANUAL, 'pass')
     return guard, local, client, ready, preparation, approvals

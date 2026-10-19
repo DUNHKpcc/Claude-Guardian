@@ -11,6 +11,7 @@ import io
 import json
 from pathlib import Path
 import sys
+from environment_entry_fixture import local_entry
 import unittest
 from unittest.mock import patch
 
@@ -77,7 +78,7 @@ class RequiredControlsTests(unittest.TestCase):
                                  'config-a', 'network-a', 'runtime-a')
         self.requirements = w.Requirements(('target-path', 'required-fault-blocking'),
                                           ('client-path',), ('authenticated-path',))
-        self.ready = w.Readiness('complete', (), (), ())
+        self.ready = w.Readiness('complete', (), (), (), entry_request=local_entry(self.binding.target))
         local = w.Scope('ENV-10', w.Operation.PLAN, 'offline-plan', 'fixture-client',
                         'v1', 'fixture-install', 'fixture-platform')
         client = replace(local, operation=w.Operation.VERIFY, action='client-path',

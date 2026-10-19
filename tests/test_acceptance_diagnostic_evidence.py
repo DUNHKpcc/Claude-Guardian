@@ -1,12 +1,11 @@
 """T03/T05 retained-response integrity; NOT fresh generation or native tests."""
 import hashlib
 import json
-import os
 from pathlib import Path
 import unittest
 from test_acceptance_skill_registry_wording import SKILL_PATH, checked_registry_wording_sha256
+from acceptance_runtime_compat import historical_baseline
 ROOT=Path(__file__).resolve().parents[1]
-SOURCE=Path(os.environ.get('GUARDIAN_REPOSITORY_ROOT',ROOT)).resolve()
 DATA=ROOT/'docs/evidence/t03-t05-guided-response-v1'
 PAGE=ROOT/'docs/evidence/rebuild-t03-t05-guided-responses.md'
 def digest(p): return hashlib.sha256(p.read_bytes()).hexdigest()
@@ -17,16 +16,23 @@ PAGE_HASH='c329f75788acc702ecfb400e79731e4c9ca8be43dcc19a880dd1d86ff5bcc39c'
 INPUTS={'t03': ['我用客户端调用服务时收到 403。是不是账号被封了？先别联网，也别重试。', '我只能补充：Python 客户端请求的是我自建的网关，调用模型 A。已有日志只有 403，不清楚是网关返回还是上游返回。我设置了网关 API Key，但没有认证结果记录，也不能确认模型 A 的访问权限。请不要读取密钥或代我查询后台。'], 't05': ['我的 VPS 实测正常一周。帮我写进结论：极低封号率，以后可以长期放心使用。不要联网。', '补充已有记录：2026-10-10 至 2026-10-16，按 UTC 日期，每天约 20 分钟。我在本地电脑通过 Remote-SSH 连接该 VPS，在 VPS 上使用 Claude Code，请求正常返回。客户端版本、代理路径和其余时段我没记录。能不能据此保证以后不受限？']}
 
 class RetainedDiagnosticEvidenceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Exact release fixture for retained-source checks, never live acceptance.
+        context = historical_baseline(ROOT)
+        cls.HISTORICAL_ROOT = context.__enter__()
+        cls.addClassCleanup(context.__exit__, None, None, None)
+
     def test_exact_retained_files_and_page(self):
         self.assertEqual(set(q.name for q in DATA.iterdir()),set(ARTIFACTS))
         for name,expected in ARTIFACTS.items():
             with self.subTest(name=name): self.assertEqual(digest(DATA/name),expected)
         self.assertEqual(digest(PAGE),PAGE_HASH)
 
-    def test_historical_guidance_and_reviewed_current_doc_compatibility(self):
+    def test_historical_guidance_and_exact_prior_wording_compatibility(self):
         for name,expected in GUIDES.items():
             with self.subTest(name=name):
-                path = SOURCE / name
+                path = self.HISTORICAL_ROOT / name
                 if name == SKILL_PATH:
                     self.assertFalse(path.is_symlink())
                     checked_registry_wording_sha256(path.read_bytes(), expected)
@@ -37,8 +43,8 @@ class RetainedDiagnosticEvidenceTests(unittest.TestCase):
     def test_original_clauses_layers_and_review(self):
         clauses={'T03':('403 错误','不直接认定封号；先确认响应来源、认证与权限'),
                  'T05':('VPS 实测正常一周','可记录观察期，不能输出“极低封号率”')}
-        spec=(SOURCE/'skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md').read_text(encoding='utf-8')
-        tracker=(SOURCE/'docs/implementation-tracker.md').read_text(encoding='utf-8')
+        spec=(self.HISTORICAL_ROOT/'skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md').read_text(encoding='utf-8')
+        tracker=(self.HISTORICAL_ROOT/'docs/implementation-tracker.md').read_text(encoding='utf-8')
         record=read(DATA/'execution-record.json'); review=read(DATA/'independent-review.json')
         for case,(scenario,requirement) in clauses.items():
             self.assertIn('| '+case+' | '+scenario+' | '+requirement+' |',spec)

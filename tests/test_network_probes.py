@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from pathlib import Path
 import unittest
 from unittest.mock import patch
+from environment_entry_fixture import local_entry
 
 FILE = Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts/network_probes.py'
 spec = importlib.util.spec_from_file_location('network_probes', FILE)
@@ -29,20 +30,24 @@ class FakeTransport:
 
 class ContractTests(unittest.TestCase):
     def probe(self, transport=None, endpoint='ipify_v4', **kwargs):
+        kwargs.setdefault('entry_request', local_entry('local-target-1'))
         return n.probe_https_ip(endpoint, approved_endpoints=[n.ENDPOINTS[endpoint][0]],
             approved_paths=[PATH], target_ref='local-target-1', transport=transport or FakeTransport(), **kwargs)
 
     def test_endpoint_and_path_consent(self):
         for approval in [[], ['https://api.ipify.org'], True, n.ENDPOINTS['ipify_v4'][0]]:
             with self.assertRaisesRegex(n.ProbeError, 'exact_endpoint_consent_required'):
-                n.probe_https_ip('ipify_v4', approved_endpoints=approval, approved_paths=[PATH], target_ref='x')
+                n.probe_https_ip('ipify_v4', approved_endpoints=approval, approved_paths=[PATH],
+                                 target_ref='x', entry_request=local_entry('x'))
         with self.assertRaisesRegex(n.ProbeError, 'explicit_path_consent_required'):
-            n.probe_https_ip('ipify_v4', approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]], approved_paths=[], target_ref='x')
+            n.probe_https_ip('ipify_v4', approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]], approved_paths=[],
+                             target_ref='x', entry_request=local_entry('x'))
 
     def test_arbitrary_endpoints_rejected(self):
         for endpoint in ['https://claude.ai', 'https://user:password@api.ipify.org', 'https://example.com', 'ipify_v4?token=x']:
             with self.assertRaisesRegex(n.ProbeError, 'endpoint_not_allowlisted'):
-                n.probe_https_ip(endpoint, approved_endpoints=[endpoint], approved_paths=[PATH], target_ref='x')
+                n.probe_https_ip(endpoint, approved_endpoints=[endpoint], approved_paths=[PATH],
+                                 target_ref='x', entry_request=local_entry('x'))
 
     def test_success_does_not_certify_browser_or_route(self):
         fake = FakeTransport()
@@ -89,7 +94,8 @@ class ContractTests(unittest.TestCase):
             self.probe(path_kind='browser')
         with self.assertRaisesRegex(n.ProbeError, 'transport_path_mismatch'):
             n.probe_https_ip('ipify_v4', approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],
-                approved_paths=['explicit_proxy'], target_ref='x', path_kind='explicit_proxy')
+                approved_paths=['explicit_proxy'], target_ref='x', path_kind='explicit_proxy',
+                entry_request=local_entry('x'))
 
     def test_webrtc_asset_is_opt_in_and_no_media(self):
         page = (FILE.parent.parent / 'assets/webrtc-probe.html').read_text()
@@ -268,7 +274,7 @@ class RetryAfterTests(unittest.TestCase):
                 self.assertEqual(len(fake.calls),1)
                 return self.now,True
             with patch('time.sleep',side_effect=AssertionError('must never sleep')):
-                result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],approved_paths=[PATH],target_ref='test',transport=fake,response_clock=clock)
+                result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],approved_paths=[PATH],target_ref='test',transport=fake,response_clock=clock,entry_request=local_entry('test'))
             self.assertEqual(result['error'],'rate_limited_no_retry')
             self.assertEqual(result['status'],'unknown')
             self.assertEqual(len(fake.calls),1)
@@ -278,7 +284,7 @@ class RetryAfterTests(unittest.TestCase):
         self.assertEqual(n.Response(429,b'').retry_after_values,())
         fake=FakeTransport(status=429,retry_after_values=['Thu, 15 Oct 2026 12:02:00 GMT'])
         def broken_clock(): raise RuntimeError('secret-token')
-        result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],approved_paths=[PATH],target_ref='test',transport=fake,response_clock=broken_clock)
+        result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],approved_paths=[PATH],target_ref='test',transport=fake,response_clock=broken_clock,entry_request=local_entry('test'))
         self.assertEqual(result['error'],'rate_limited_no_retry')
         self.assertEqual(result['retry_after']['status'],'clock_untrusted')
         self.assertNotIn('secret-token',str(result))
@@ -300,7 +306,7 @@ class RetryAfterTests(unittest.TestCase):
         self.assertNotIn('secret-token',str(result))
         fake=FakeTransport(status=429,retry_after_values=['Thu, 15 Oct 2026 12:02:00 GMT'])
         result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],
-            approved_paths=[PATH],target_ref='test',transport=fake,response_clock=lambda:(bad_clock,True))
+            approved_paths=[PATH],target_ref='test',transport=fake,response_clock=lambda:(bad_clock,True),entry_request=local_entry('test'))
         self.assertEqual(result['error'],'rate_limited_no_retry')
         self.assertEqual(result['retry_after']['status'],'clock_untrusted')
         self.assertNotIn('secret-token',str(result))
@@ -310,7 +316,7 @@ class RetryAfterTests(unittest.TestCase):
         for clock in [None, lambda: (), lambda: (self.now, True, 'secret-token'),
                       lambda: (None, True), lambda: (self.now, 'true'), lambda: (self.now.replace(tzinfo=None), True)]:
             fake=FakeTransport(status=429,retry_after_values=['Thu, 15 Oct 2026 12:02:00 GMT'])
-            result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],approved_paths=[PATH],target_ref='test',transport=fake,response_clock=clock)
+            result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],approved_paths=[PATH],target_ref='test',transport=fake,response_clock=clock,entry_request=local_entry('test'))
             self.assertEqual(result['error'],'rate_limited_no_retry')
             self.assertEqual(result['retry_after']['status'],'clock_untrusted')
             self.assertNotIn('secret-token',str(result))
@@ -318,7 +324,7 @@ class RetryAfterTests(unittest.TestCase):
 
     def test_redirect_never_becomes_retry_advice(self):
         fake=FakeTransport(status=302,retry_after_values=['60'])
-        result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],approved_paths=[PATH],target_ref='test',transport=fake)
+        result=n.probe_https_ip('ipify_v4',approved_endpoints=[n.ENDPOINTS['ipify_v4'][0]],approved_paths=[PATH],target_ref='test',transport=fake,entry_request=local_entry('test'))
         self.assertEqual(result['error'],'redirect_rejected')
         self.assertIsNone(result['retry_after'])
         self.assertEqual(len(fake.calls),1)

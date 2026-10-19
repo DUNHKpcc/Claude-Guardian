@@ -10,6 +10,7 @@ import tempfile
 import time
 import unittest
 from unittest.mock import Mock, patch
+from environment_entry_fixture import local_entry
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts'))
 import diagnostic_session as m
@@ -36,6 +37,7 @@ class SessionTests(unittest.TestCase):
 
     def execute(self, **kwargs):
         kwargs.setdefault('consent', self.consent)
+        kwargs.setdefault('entry_request', local_entry('target'))
         result = m.execute('target', **kwargs)
         self.assertEqual(result['gate_state'], 'closed')
         self.assertEqual(result['changes'], [])
@@ -379,7 +381,7 @@ class SessionTests(unittest.TestCase):
     def test_cli_pipe_rejected(self):
         output = io.StringIO()
         code = m.run(['--target-ref', 'target'], incoming=io.StringIO('APPROVE\n'),
-                     prompt=io.StringIO(), outgoing=output)
+                     prompt=io.StringIO(), outgoing=output, entry_request=local_entry('target'))
         self.assertEqual(code, 2)
         self.assertIn('LIVE_TERMINAL_REQUIRED', output.getvalue())
         self.capture.assert_not_called()
@@ -388,17 +390,20 @@ class SessionTests(unittest.TestCase):
         for option in ('--yes', '--request', '--dns', '--restore-grants'):
             with self.subTest(option=option):
                 output = io.StringIO()
-                self.assertEqual(m.run(['--target-ref', 'target', option], outgoing=output), 2)
+                self.assertEqual(m.run(['--target-ref', 'target', option], outgoing=output,
+                                       entry_request=local_entry('target')), 2)
         self.capture.assert_not_called()
 
     def test_cli_explicit_new_save_only(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(m.TerminalConsent, '__call__', return_value=True):
             path = str(Path(directory).resolve() / 'preview.html')
             output = io.StringIO()
-            self.assertEqual(m.run(['--target-ref', 'target', '--dashboard-output', path], outgoing=output), 0)
+            self.assertEqual(m.run(['--target-ref', 'target', '--dashboard-output', path], outgoing=output,
+                                   entry_request=local_entry('target')), 0)
             original = Path(path).read_text(encoding="utf-8")
             self.assertIn('<html', original)
-            self.assertEqual(m.run(['--target-ref', 'target', '--dashboard-output', path], outgoing=io.StringIO()), 2)
+            self.assertEqual(m.run(['--target-ref', 'target', '--dashboard-output', path], outgoing=io.StringIO(),
+                                   entry_request=local_entry('target')), 2)
             self.assertEqual(Path(path).read_text(encoding="utf-8"), original)
         self.child.assert_not_called()
 
@@ -421,7 +426,7 @@ class WindowsSessionTests(unittest.TestCase):
         self.consent = Mock(return_value=True)
 
     def test_windows_metadata_route_preserves_unknown_binding(self):
-        result = m.execute('windows-target', consent=self.consent)
+        result = m.execute('windows-target', consent=self.consent, entry_request=local_entry('windows-target'))
         self.assertEqual(result['status'], 'partial')
         self.assertEqual(result['report']['facts'][0]['value'], 'windows')
         self.assertEqual(result['context']['desktop_user_relation'], 'unknown')
@@ -438,7 +443,7 @@ class WindowsSessionTests(unittest.TestCase):
         binding = m.os_dns_probe.Binding('windows-target', 'u', 'n', 'darwin', '/p', '/')
         host = m.DNSHost(binding, Mock(return_value=True), Mock(return_value=True), Mock(return_value=True))
         result = m.execute('windows-target', consent=self.consent, dns_host=host,
-                           queries=[('reserved.test', 'A')])
+                           queries=[('reserved.test', 'A')], entry_request=local_entry('windows-target'))
         self.assertEqual(result['errors'], ['WINDOWS_SESSION_DNS_UNAVAILABLE'])
         self.assertEqual(result['status'], 'blocked')
         self.assertEqual(self.consent.call_count, 1)
@@ -447,10 +452,11 @@ class WindowsSessionTests(unittest.TestCase):
 
     def test_windows_decline_and_cancel_do_not_capture(self):
         self.consent.return_value = False
-        result = m.execute('windows-target', consent=self.consent)
+        result = m.execute('windows-target', consent=self.consent, entry_request=local_entry('windows-target'))
         self.assertEqual(result['status'], 'cancelled')
         self.capture.assert_not_called()
-        result = m.execute('windows-target', consent=self.consent, cancelled=lambda: True)
+        result = m.execute('windows-target', consent=self.consent, cancelled=lambda: True,
+                           entry_request=local_entry('windows-target'))
         self.assertEqual(result['status'], 'cancelled')
         self.capture.assert_not_called()
 
@@ -458,14 +464,15 @@ class WindowsSessionTests(unittest.TestCase):
         for code in ('CONTEXT_INACTIVE_OR_REMOTE', 'CONTEXT_FOREIGN', 'CLEANUP_FAILED', 'PERMISSION_DENIED'):
             with self.subTest(code=code):
                 self.capture.side_effect = m.windows_native_context.ContextError(code)
-                result = m.execute('windows-target', consent=self.consent)
+                result = m.execute('windows-target', consent=self.consent,
+                                   entry_request=local_entry('windows-target'))
                 self.assertEqual(result['errors'], [code])
                 self.assertEqual(result['status'], 'blocked')
                 self.assertEqual(result['report']['facts'], [])
 
     def test_windows_continuity_change_stops(self):
         self.recheck.side_effect = m.windows_native_context.ContextError('CONTEXT_CHANGED')
-        result = m.execute('windows-target', consent=self.consent)
+        result = m.execute('windows-target', consent=self.consent, entry_request=local_entry('windows-target'))
         self.assertEqual(result['errors'], ['CONTEXT_CHANGED'])
         self.assertEqual(result['probe_evidence']['samples'], [])
 
@@ -476,7 +483,8 @@ class WindowsOutputPathTests(unittest.TestCase):
                 patch.object(m, 'execute', side_effect=AssertionError('No collection')) as execute, \
                 patch.object(m.guardian, 'save_new', side_effect=AssertionError('No save')) as save:
             for path in (r'C:\approved\NUL', r'C:\approved\session.html:extra'):
-                code = m.run(['--target-ref', 'target', '--dashboard-output', path], outgoing=io.StringIO())
+                code = m.run(['--target-ref', 'target', '--dashboard-output', path], outgoing=io.StringIO(),
+                             entry_request=local_entry('target'))
                 self.assertEqual(code, 2)
             execute.assert_not_called()
             save.assert_not_called()

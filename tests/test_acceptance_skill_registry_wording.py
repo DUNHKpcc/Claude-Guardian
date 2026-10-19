@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import unittest
 from unittest.mock import patch
+from acceptance_runtime_compat import historical_baseline
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL_PATH = 'skills/claude-guardian/SKILL.md'
@@ -54,8 +55,15 @@ def checked_registry_wording_sha256(content, historical_sha256):
 
 
 class RegistryWordingCompatibilityTests(unittest.TestCase):
-    def test_current_document_has_exact_count_free_wording(self):
-        path = ROOT / SKILL_PATH
+    @classmethod
+    def setUpClass(cls):
+        # Exact release fixture for retained-source checks, never live acceptance.
+        context = historical_baseline(ROOT)
+        cls.HISTORICAL_ROOT = context.__enter__()
+        cls.addClassCleanup(context.__exit__, None, None, None)
+
+    def test_historical_document_has_exact_count_free_wording(self):
+        path = self.HISTORICAL_ROOT / SKILL_PATH
         self.assertFalse(path.is_symlink())
         content = path.read_bytes()
         self.assertEqual(checked_registry_wording_sha256(content, OLD_SHA256), NEW_SHA256)
@@ -63,13 +71,13 @@ class RegistryWordingCompatibilityTests(unittest.TestCase):
         self.assertEqual(content.count(AFTER), 1)
 
     def test_exact_old_bytes_remain_historical_and_reconstructable(self):
-        current = (ROOT / SKILL_PATH).read_bytes()
+        current = (self.HISTORICAL_ROOT / SKILL_PATH).read_bytes()
         old = current.replace(AFTER, BEFORE, 1)
         self.assertEqual(checked_registry_wording_sha256(old, OLD_SHA256), OLD_SHA256)
         self.assertEqual(old.replace(BEFORE, AFTER, 1), current)
 
     def test_unreviewed_drift_and_other_count_edits_fail_closed(self):
-        current = (ROOT / SKILL_PATH).read_bytes()
+        current = (self.HISTORICAL_ROOT / SKILL_PATH).read_bytes()
         for changed in (current + b'\n', current.replace(b'PC0', b'PC1', 1),
                         current.replace(AFTER, BEFORE.replace(b'97', b'98'), 1),
                         current + AFTER, current.replace(AFTER, b'', 1),
@@ -82,13 +90,21 @@ class RegistryWordingCompatibilityTests(unittest.TestCase):
             checked_registry_wording_sha256(current, '0' * 64)
 
     def test_unpinned_or_missing_review_fails_closed(self):
-        current = (ROOT / SKILL_PATH).read_bytes()
+        current = (self.HISTORICAL_ROOT / SKILL_PATH).read_bytes()
         with patch(__name__ + '.SUPPLEMENT_SHA256', '0' * 64):
             with self.assertRaises(ValueError):
                 checked_registry_wording_sha256(current, OLD_SHA256)
         with patch(__name__ + '.SUPPLEMENT', ROOT / 'nonexistent-registry-wording-review.json'):
             with self.assertRaises(ValueError):
                 checked_registry_wording_sha256(current, OLD_SHA256)
+
+    def test_current_entry_guidance_is_outside_the_old_wording_bridge(self):
+        current = (ROOT / SKILL_PATH).read_bytes()
+        self.assertNotEqual(hashlib.sha256(current).hexdigest(), NEW_SHA256)
+        with self.assertRaisesRegex(ValueError, 'Unreviewed SKILL source bytes'):
+            checked_registry_wording_sha256(current, OLD_SHA256)
+        # Current acceptance of four cases lives in the separate entry review;
+        # rejection here is required, not a compatibility failure to bypass.
 
 
 if __name__ == '__main__':
