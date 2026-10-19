@@ -16,6 +16,11 @@ from test_clash_verge_258 import INFO
 from test_rules_extension_plan import BASE, inputs
 
 RAW = b'prepend: []\nappend: []\ndelete: []\n'
+COMMENTED_RAW = ('# private-comment-SENTINEL 中文🙂\n'
+                 'prepend: [] # keep prepend\n'
+                 'append: [] # keep append\n'
+                 'delete: [] # keep delete\n'
+                 '# keep tail\n').encode('utf-8')
 INDEX = b'''current: profile-private
 items:
   - uid: profile-private
@@ -84,6 +89,56 @@ class AgentRulesTaskTests(unittest.TestCase):
         self.assertFalse(report['builtin_apply_supported'])
         self.assertIn('NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED', report['compiler_blockers'])
         self.assertIn('NATIVE_CONTEXT_NOT_BOUND', report['linkage_blockers'])
+        self.assertEqual(review['format_scope'], 'comment_free_three_sequence_yaml_formatting_only')
+
+    def test_legal_comments_preserve_exact_original_and_candidate_bytes(self):
+        snapshots = (b'# head\n' + RAW, RAW + b'# tail\n',
+                     RAW.replace(b'prepend: []', b'prepend: [] # inline'),
+                     COMMENTED_RAW,
+                     b'\xef\xbb\xbf' + COMMENTED_RAW.replace(b'\n', b'\r\n'),
+                     COMMENTED_RAW.replace(b'prepend: []', b'prepend: [  ]'))
+        for raw in snapshots:
+            with self.subTest(raw=raw):
+                task = self.prepare(raw=raw)
+                material = task.private_material()
+                expected = raw.replace(b'prepend: [', b"prepend: ['DOMAIN,example.test,approved-group'")
+                self.assertEqual(material['original_bytes'], raw)
+                self.assertEqual(material['candidate_bytes'], expected)
+                self.assertEqual(material['original_sha256'], hashlib.sha256(raw).hexdigest())
+                self.assertEqual(material['candidate_sha256'], hashlib.sha256(expected).hexdigest())
+                self.assertEqual(task.private_review()['format_scope'],
+                                 'comment_preserving_three_sequence_yaml_exact_bytes_required')
+                candidate_result = self.compare(task, expected)
+                original_result = self.compare(task, raw)
+                self.assertEqual(candidate_result['comparison'], 'exact_match')
+                self.assertEqual(candidate_result['recovery_relation'], 'candidate_matches_supplied_snapshot')
+                self.assertEqual(original_result['comparison'], 'unchanged')
+                self.assertEqual(original_result['recovery_relation'], 'original_matches_supplied_snapshot')
+                for result in (candidate_result, original_result):
+                    self.assertEqual(result['authority'], 'none')
+                    self.assertEqual(result['app_save'], 'not_run')
+                    self.assertEqual(result['recovery'], 'not_run')
+                    self.assertNotIn('private-comment-SENTINEL', json.dumps(result))
+                self.assertNotIn('private-comment-SENTINEL', json.dumps(task.public_report()))
+
+    def test_commented_exact_repeat_is_no_change_without_action_steps(self):
+        original = b'\xef\xbb\xbf' + COMMENTED_RAW.replace(b'\n', b'\r\n')
+        raw = self.prepare(raw=original).private_material()['candidate_bytes']
+        task = self.prepare(raw=raw)
+        self.assertEqual(task.private_material()['original_bytes'], raw)
+        self.assertEqual(task.private_material()['candidate_bytes'], raw)
+        report = task.public_report()
+        self.assertEqual(report['status'], 'no_change')
+        self.assertEqual(report['operation'], 'none')
+        self.assertEqual(report['changed_rules'], 0)
+        self.assertEqual(report['matched_rules'], 1)
+        self.assertEqual(report['steps'], [])
+        self.assertEqual(report['required_host_checks'], [])
+        for key in ('backup_ref', 'recovery_ref', 'receipt', 'action_id', 'native_session'):
+            self.assertNotIn(key, report)
+        result = self.compare(task, raw)
+        self.assertEqual(result['comparison'], 'exact_match')
+        self.assertEqual(result['recovery_relation'], 'no_change_task')
 
     def test_exact_repeat_only_is_no_change_without_action_or_backup_steps(self):
         raw = self.prepare().private_material()['candidate_bytes']
@@ -107,13 +162,20 @@ class AgentRulesTaskTests(unittest.TestCase):
             args, kw = arguments(raw)
             self.reject('NONEMPTY_PREPEND_UNSUPPORTED', args, kw)
 
-    def test_initial_comment_extra_keys_append_and_delete_not_supported(self):
-        for raw in (b'# private comment\n' + RAW, RAW + b'other: keep-private\n',
-                    RAW.replace(b'append: []', b"append: ['DOMAIN,other.test,approved-group']")):
-            args, kw = arguments(raw)
-            self.reject('UNSUPPORTED_AGENT_EXTENSION_FORMAT', args, kw)
-        args, kw = arguments(RAW.replace(b'delete: []', b"delete: ['MATCH,DIRECT']"))
-        self.reject('DELETE_SEQUENCE_UNSUPPORTED', args, kw)
+    def test_extra_keys_append_and_delete_not_supported_with_or_without_comments(self):
+        for original in (RAW, COMMENTED_RAW):
+            for raw in (original + b'other: keep-private\n',
+                        original.replace(b'append: []', b"append: ['DOMAIN,other.test,approved-group']")):
+                with self.subTest(raw=raw):
+                    args, kw = arguments(raw)
+                    self.reject('UNSUPPORTED_AGENT_EXTENSION_FORMAT', args, kw)
+            args, kw = arguments(original.replace(b'delete: []', b"delete: ['MATCH,DIRECT']"))
+            self.reject('DELETE_SEQUENCE_UNSUPPORTED', args, kw)
+
+    def test_comments_do_not_expand_empty_inline_prepend_support(self):
+        raw = COMMENTED_RAW.replace(b'prepend: []', b'prepend: [\n  ]')
+        args, kw = arguments(raw)
+        self.reject('EMPTY_INLINE_PREPEND_REQUIRED', args, kw)
 
     def test_only_one_exact_domain_not_suffix_or_multiple(self):
         args, kw = arguments()
@@ -140,18 +202,20 @@ class AgentRulesTaskTests(unittest.TestCase):
                 self.reject(code, args, kw)
 
     def test_semantic_revision_protected_and_group_checks_not_forged(self):
-        args, kw = arguments()
-        args[0]['facts']['rules']['complete'] = 'unknown'
-        self.reject('SEMANTIC_PLAN_BLOCKED', args, kw)
-        args, kw = arguments()
-        args[0]['revisions']['extension'] = '0' * 64
-        args[0]['current_revisions'] = deepcopy(args[0]['revisions'])
-        self.reject('SNAPSHOT_REVISION_MISMATCH', args, kw)
-        args, kw = arguments()
-        args[1]['protected_rule_indexes'] = [1]
-        self.reject('PROTECTED_RULE_PRIORITY_CONFLICT', args, kw)
-        args, kw = arguments(base=BASE.replace(b'approved-group', b'absent-group'))
-        self.reject('EGRESS_GROUP_MISSING_OR_AMBIGUOUS', args, kw)
+        for raw in (RAW, COMMENTED_RAW):
+            with self.subTest(comments=b'#' in raw):
+                args, kw = arguments(raw)
+                args[0]['facts']['rules']['complete'] = 'unknown'
+                self.reject('SEMANTIC_PLAN_BLOCKED', args, kw)
+                args, kw = arguments(raw)
+                args[0]['revisions']['extension'] = '0' * 64
+                args[0]['current_revisions'] = deepcopy(args[0]['revisions'])
+                self.reject('SNAPSHOT_REVISION_MISMATCH', args, kw)
+                args, kw = arguments(raw)
+                args[1]['protected_rule_indexes'] = [1]
+                self.reject('PROTECTED_RULE_PRIORITY_CONFLICT', args, kw)
+                args, kw = arguments(raw, base=BASE.replace(b'approved-group', b'absent-group'))
+                self.reject('EGRESS_GROUP_MISSING_OR_AMBIGUOUS', args, kw)
 
     def test_entry_required_before_compiler_and_target_must_match(self):
         for value in (None, local_entry('different-target')):
@@ -351,6 +415,76 @@ class AgentRulesTaskTests(unittest.TestCase):
         self.assertEqual(result['comparison'], 'semantic_match_bytes_differ')
         self.assertNotIn('approved', json.dumps(result))
         self.assertEqual(result['recovery'], 'not_run')
+
+    def test_commented_semantic_matches_with_any_byte_change_require_new_review(self):
+        task = self.prepare(raw=COMMENTED_RAW)
+        candidate = task.private_material()['candidate_bytes']
+        head, body = candidate.split(b'\n', 1)
+        uncommented = RAW.replace(b'prepend: []', b"prepend: ['DOMAIN,example.test,approved-group']")
+        variants = {
+            'remove_all_comments': uncommented,
+            'remove_tail': candidate.replace(b'# keep tail\n', b''),
+            'add_comment': candidate + b'# additional-private-SENTINEL\n',
+            'change_comment': candidate.replace(b'# keep prepend', b'# edited-private-SENTINEL'),
+            'move_comment': body + head + b'\n',
+            'reorder_keys': candidate.replace(b'append: [] # keep append\ndelete: [] # keep delete',
+                                              b'delete: [] # keep delete\nappend: [] # keep append'),
+            'block_style': candidate.replace(b"prepend: ['DOMAIN,example.test,approved-group']",
+                                              b'prepend:\n  - DOMAIN,example.test,approved-group'),
+            'newline_normalization': candidate.replace(b'\n', b'\r\n'),
+            'add_bom': b'\xef\xbb\xbf' + candidate,
+            'trailing_whitespace': candidate + b'\n',
+        }
+        for change, raw in variants.items():
+            with self.subTest(change=change):
+                self.assertNotEqual(raw, candidate)
+                self.assertEqual(a._seqmap(raw), a._seqmap(candidate))
+                result = self.compare(task, raw)
+                self.assertEqual(result['comparison'], 'unexpected_delta')
+                self.assertEqual(result['recovery_relation'], 'conflict_requires_new_review')
+                self.assertEqual(result['authority'], 'none')
+                self.assertEqual(result['recovery'], 'not_run')
+                self.assertNotIn('SENTINEL', json.dumps(result))
+                self.assertEqual(task.private_material()['original_bytes'], COMMENTED_RAW)
+
+    def test_comments_added_to_comment_free_candidate_are_not_formatting(self):
+        task = self.prepare()
+        candidate = task.private_material()['candidate_bytes']
+        for raw in (b'# new private-SENTINEL\n' + candidate,
+                    candidate.replace(b'append: []', b'append: [] # new private-SENTINEL')):
+            result = self.compare(task, raw)
+            self.assertEqual(a._seqmap(raw), a._seqmap(candidate))
+            self.assertEqual(result['comparison'], 'unexpected_delta')
+            self.assertEqual(result['recovery_relation'], 'conflict_requires_new_review')
+            self.assertNotIn('SENTINEL', json.dumps(result))
+
+    def test_commented_tasks_keep_cancellation_expiry_and_binding_guards(self):
+        stopped = [False]
+        task = self.prepare(raw=COMMENTED_RAW, cancelled=lambda: stopped[0])
+        stopped[0] = True
+        self.assertEqual(task.private_material()['original_bytes'], COMMENTED_RAW)
+        self.assertEqual(task.public_report()['steps'], [])
+        cancelled = self.compare(task)
+        self.assertEqual(cancelled['comparison'], 'not_compared')
+        self.assertEqual(cancelled['review_state'], 'cancelled')
+        self.assertEqual(cancelled['recovery_relation'], 'conflict_requires_new_review')
+        with patch.object(a.time, 'monotonic', return_value=100):
+            task = self.prepare(raw=COMMENTED_RAW, ttl_seconds=1)
+        with patch.object(a.time, 'monotonic', return_value=101):
+            self.assertEqual(task.private_material()['original_bytes'], COMMENTED_RAW)
+            self.assertEqual(task.public_report()['steps'], [])
+            expired = self.compare(task)
+            self.assertEqual(expired['comparison'], 'exact_match')
+            self.assertEqual(expired['review_state'], 'expired')
+            self.assertEqual(expired['authority'], 'none')
+        for changes in ({'selected_uid': 'different'}, {'base': BASE + b'\n'},
+                        {'entry_request': local_entry('different-target')}):
+            with self.subTest(changes=changes):
+                task = self.prepare(raw=COMMENTED_RAW)
+                result = self.compare(task, **changes)
+                self.assertEqual(result['comparison'], 'binding_changed')
+                self.assertEqual(result['recovery_relation'], 'conflict_requires_new_review')
+                self.assertEqual(task.private_material()['original_bytes'], COMMENTED_RAW)
 
     def test_unchanged_original_is_not_inferred_save_failure_or_restoration(self):
         result = self.compare(self.prepare(), RAW)

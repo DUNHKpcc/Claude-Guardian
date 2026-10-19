@@ -22,6 +22,27 @@ selected extension, then separately validate save, application effects, readback
 and scoped restoration. No actual user-network operation is authorized by this
 code delivery. Windows and C5 acceptance remain queued as above.
 
+## Limited comment compatibility and remaining task granularity
+
+The bounded Agent rules helper preserves legal comments within its existing
+three-sequence format. Exact candidate/original comparisons remain distinct from
+application save, load and recovery. Nonexact commented content requires new
+review; comments must not be stripped to satisfy an input gate.
+
+`keep-existing` still requires the complete existing repair-plan evidence. A
+single non-routed test-domain candidate does not bypass unknown control, effective
+rules, egress, IPv6/UDP or DNS prerequisites. The helper does not automatically
+collect these facts; static configuration declarations cannot certify runtime
+paths. Comment support alone therefore does not establish device readiness.
+
+Future design item, not implemented: a separately named save/readback/restoration
+exercise contract could attest only an exact owned-document edit, with actual
+version/ownership, current original bytes, independent backup/rescue, concurrent
+writer checks, specific Save side-effect approval and conflict-safe restoration.
+It must not certify routing, leak protection or complete automatic repair, inherit
+old approval, or relax the existing `keep-existing` contract. A dedicated design
+and acceptance review is required before introducing such a path.
+
 ## Preceding checkpoint: bounded Darwin private reads, 2026-10-19
 
 Published `55c0f7c5e757bd6808634fcfb8743ae996964c16` passed all four CI platforms

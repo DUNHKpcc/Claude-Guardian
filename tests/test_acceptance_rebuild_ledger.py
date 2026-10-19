@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import re
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -57,8 +58,17 @@ HISTORICALLY_ACCEPTED = {
 CURRENTLY_ACCEPTED = frozenset({'T03', 'T05', 'T09', 'T18'})
 PRIOR_LIMITED_REVIEW = 'docs/evidence/entry-order-limited-revalidation.md'
 PRIOR_LIMITED_REVIEW_SHA256 = 'b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d'
-LIMITED_CURRENT_REVIEW = 'docs/evidence/agent-rules-limited-revalidation.md'
-LIMITED_CURRENT_REVIEW_SHA256 = 'e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900'
+AGENT_TASK_REVIEW = 'docs/evidence/agent-rules-limited-revalidation.md'
+AGENT_TASK_REVIEW_SHA256 = 'e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900'
+LIMITED_CURRENT_REVIEW = 'docs/evidence/agent-rules-comments-limited-revalidation.md'
+LIMITED_CURRENT_REVIEW_SHA256 = '93621e537809d78cc7482919bb979a1f8e4c47498933b7943dab524a37ca4900'
+COMMENT_TRANSITION = 'docs/evidence/agent-rules-comments-limited-transition.json'
+COMMENT_TRANSITION_SHA256 = '0e4b9ab806fddf72b2f79183b4aba4e24b6f9190dda742ac8f464362e8826214'
+COMMENT_PRIOR_SOURCES = {
+    'skills/claude-guardian/scripts/agent_rules_task.py': 'b551060fbaeec437c1b982d18c7912249c3da5a389c00dcca2953dc451dc7bac',
+    'skills/claude-guardian/references/agent-rules-task.md': 'c4bdf4e1072b0f42ab3a3d62da12600c450691806095380802c365b629f61efd',
+    'tests/test_agent_rules_task.py': 'a81f7a58dfafadb6aef3be4e20bcba432f037268c99854d14ff9a803aa69a07e',
+}
 TRANSITION = 'docs/evidence/agent-rules-limited-transition.json'
 TRANSITION_SHA256 = '06fa421e121dba098770eb202ddd6acb0d4dae61e228957157f38ff3a1faedaf'
 PRIOR_TRANSITION_SOURCES = {
@@ -101,8 +111,43 @@ def _reverse_exact_transition(raw, entry):
     return historical
 
 
+def _comment_transition_records():
+    path = ROOT / COMMENT_TRANSITION
+    if path.is_symlink():
+        raise AssertionError('Comment transition proof is a symlink')
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != COMMENT_TRANSITION_SHA256:
+        raise AssertionError('Unreviewed comment transition proof')
+    proof = json.loads(raw)
+    if (set(proof) != {'schema', 'purpose', 'prior_review_path',
+                       'prior_review_sha256', 'sources'}
+            or proof['schema'] != 'guardian-agent-rules-comments-transition/1'
+            or proof['purpose'] != 'exact_source_transition_only_not_behavioral_acceptance'
+            or proof['prior_review_path'] != AGENT_TASK_REVIEW
+            or proof['prior_review_sha256'] != AGENT_TASK_REVIEW_SHA256
+            or set(proof['sources']) != set(COMMENT_PRIOR_SOURCES)):
+        raise AssertionError('Comment transition scope changed')
+    for relative, entry in proof['sources'].items():
+        if (set(entry) != {'before_sha256', 'after_sha256', 'replacements'}
+                or entry['before_sha256'] != COMMENT_PRIOR_SOURCES[relative]
+                or not entry['replacements']
+                or any(set(item) != {'before', 'after'} for item in entry['replacements'])):
+            raise AssertionError('Prior Agent-task source pin or replacement shape changed')
+    return proof['sources']
+
+
+def _agent_task_source_bytes(relative):
+    """Reconstruct prior source bytes only; never execute them as current evidence."""
+    path = ROOT / relative
+    if path.is_symlink():
+        raise AssertionError('Current comment transition source is a symlink')
+    raw = path.read_bytes()
+    records = _comment_transition_records()
+    return _reverse_exact_transition(raw, records[relative]) if relative in records else raw
+
+
 def _prior_source_bytes(relative):
-    raw = (ROOT / relative).read_bytes()
+    raw = _agent_task_source_bytes(relative)
     records = _transition_records()
     return _reverse_exact_transition(raw, records[relative]) if relative in records else raw
 
@@ -243,6 +288,55 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest,
                                  'Current acceptance requires renewed scoped review after source drift')
 
+    def test_prior_agent_task_review_and_all_nineteen_pins_remain_unchanged(self):
+        page = ROOT / AGENT_TASK_REVIEW
+        self.assertFalse(page.is_symlink())
+        self.assertEqual(hashlib.sha256(page.read_bytes()).hexdigest(), AGENT_TASK_REVIEW_SHA256)
+        pins = re.findall(r'^\| `([^`]+)` \| `([0-9a-f]{64})` \|$',
+                          page.read_text(encoding='utf-8'), re.MULTILINE)
+        self.assertEqual(len(pins), 19)
+        self.assertEqual(len({name for name, _ in pins}), 19)
+        for name, digest in pins:
+            with self.subTest(prior_agent_task_source=name):
+                self.assertEqual(hashlib.sha256(_agent_task_source_bytes(name)).hexdigest(), digest,
+                                 'Preserve all prior Agent-task pins; do not repin historical review')
+
+    def test_comment_transition_reconstructs_exactly_three_complete_prior_sources(self):
+        records = _comment_transition_records()
+        self.assertEqual(set(records), set(COMMENT_PRIOR_SOURCES))
+        for relative, digest in COMMENT_PRIOR_SOURCES.items():
+            with self.subTest(source=relative):
+                self.assertNotEqual(records[relative]['after_sha256'], digest)
+                self.assertEqual(hashlib.sha256(_agent_task_source_bytes(relative)).hexdigest(), digest)
+
+    def test_comment_transition_rejects_source_drift_and_altered_reverse_spans(self):
+        for relative, entry in _comment_transition_records().items():
+            raw = (ROOT / relative).read_bytes()
+            with self.subTest(source=relative):
+                with self.assertRaisesRegex(AssertionError, 'Unreviewed current'):
+                    _reverse_exact_transition(raw + b'\n', entry)
+                changed = json.loads(json.dumps(entry))
+                changed['replacements'][0]['before'] += 'unreviewed'
+                with self.assertRaisesRegex(AssertionError, 'whole-file'):
+                    _reverse_exact_transition(raw, changed)
+                changed = json.loads(json.dumps(entry))
+                changed['replacements'][0]['after'] = 'not present in reviewed source'
+                with self.assertRaisesRegex(AssertionError, 'missing or duplicated'):
+                    _reverse_exact_transition(raw, changed)
+
+    def test_comment_transition_rejects_changed_proof_and_symlink_inputs(self):
+        proof = (ROOT / COMMENT_TRANSITION).read_bytes()
+        with patch.object(Path, 'read_bytes', return_value=proof + b'\n'):
+            with self.assertRaisesRegex(AssertionError, 'Unreviewed comment transition'):
+                _comment_transition_records()
+        with patch.object(Path, 'is_symlink', return_value=True):
+            with self.assertRaisesRegex(AssertionError, 'proof is a symlink'):
+                _comment_transition_records()
+            for relative in COMMENT_PRIOR_SOURCES:
+                with self.subTest(source=relative):
+                    with self.assertRaisesRegex(AssertionError, 'source is a symlink'):
+                        _agent_task_source_bytes(relative)
+
     def test_prior_limited_review_and_its_complete_pins_remain_unchanged(self):
         page = ROOT / PRIOR_LIMITED_REVIEW
         self.assertFalse(page.is_symlink())
@@ -364,6 +458,19 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         for evidence in previous.values():
             self.assertEqual(evidence['path'], PRIOR_LIMITED_REVIEW)
             self.assertEqual(evidence['sha256'], PRIOR_LIMITED_REVIEW_SHA256)
+
+    def test_prior_agent_task_evidence_objects_are_retained_exactly(self):
+        ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))
+        previous = {case['id']: case['prior_agent_rules_revalidation_evidence']
+                    for case in ledger['cases'] if 'prior_agent_rules_revalidation_evidence' in case}
+        self.assertEqual(set(previous), CURRENTLY_ACCEPTED)
+        canonical = json.dumps(previous, ensure_ascii=True, sort_keys=True,
+                               separators=(',', ':')).encode('utf-8')
+        self.assertEqual(hashlib.sha256(canonical).hexdigest(),
+                         '48544fb2ed2816b49297d6f7943dde8b309a2b90c902d4a5369fe39bba770cdc')
+        for evidence in previous.values():
+            self.assertEqual(evidence['path'], AGENT_TASK_REVIEW)
+            self.assertEqual(evidence['sha256'], AGENT_TASK_REVIEW_SHA256)
 
     def test_scheduling_is_not_current_or_historical_acceptance(self):
         ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))

@@ -1,5 +1,11 @@
 # 版本记录
 
+## 2026-10-19 — Preserve comments in the bounded Agent rules task
+
+- Accept legal comments within the existing three-sequence extension shape while preserving original bytes and the single insertion
+- Require exact original/candidate bytes when comments are present; comment removal or formatting changes require new review rather than semantic-equivalence acceptance
+- Keep complete repair-plan prerequisites, native gates, permissions and actual-device evidence requirements unchanged
+
 ## 2026-10-19 — Agent-supported single-rule task
 
 - Reuse the pinned 2.5.8 compiler and linkage checks for one dedicated rules extension and one DOMAIN change; provide private candidate material and fixed Agent steps

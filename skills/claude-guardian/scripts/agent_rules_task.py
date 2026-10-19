@@ -122,10 +122,10 @@ def _blobs(blobs):
 
 
 def _seqmap(raw):
-    """Only three comment-free string sequences; no independent YAML parser."""
-    text, root = config._parse(raw)
+    """Only three string sequences; comments use the existing YAML parser."""
+    _, root = config._parse(raw)
     values = config._mapping(root)
-    if set(values) != {'prepend', 'append', 'delete'} or '#' in text:
+    if set(values) != {'prepend', 'append', 'delete'}:
         _fail('UNSUPPORTED_AGENT_EXTENSION_FORMAT')
     result = tuple(tuple(rules._strings(values[key])) for key in ('prepend', 'append', 'delete'))
     if result[1] or result[2]:
@@ -228,7 +228,9 @@ class PrivateAgentRulesTask:
             'selected_additions': list(material['ordered_additions']),
             'matched_rule_refs': list(material['matched_rule_refs']),
             'known_priority_overlaps': list(material['known_priority_overlaps']),
-            'format_scope': 'comment_free_three_sequence_yaml_formatting_only',
+            'format_scope': ('comment_preserving_three_sequence_yaml_exact_bytes_required'
+                             if any(b'#' in material[key] for key in ('original_bytes', 'candidate_bytes'))
+                             else 'comment_free_three_sequence_yaml_formatting_only'),
             'approval': 'real_host_exact_action_required',
             'backup_ref': self._refs['backup_ref'], 'recovery_ref': self._refs['recovery_ref'],
         }
@@ -327,7 +329,9 @@ def assess_supplied_readback(task, *, app_plist, profile_index, extension, base,
     An unchanged original may mean no save, failed save or app restoration; it is
     not proof of any of them. A formatting-only normalized original is deliberately
     unexpected_delta unless its bytes match; restoration is never inferred. A
-    differing snapshot requires fresh conflict-aware review.
+    differing snapshot requires fresh conflict-aware review. Semantic candidate
+    comparison is available only when original, candidate and readback contain
+    no hash marker; comments must never be discarded as formatting.
     """
     if type(task) is not PrivateAgentRulesTask:
         _fail('INVALID_AGENT_TASK')
@@ -398,7 +402,9 @@ def assess_supplied_readback(task, *, app_plist, profile_index, extension, base,
     elif extension == material['original_bytes']:
         result['comparison'] = 'unchanged'
         result['recovery_relation'] = 'original_matches_supplied_snapshot'
-    elif signature == expected:
+    elif (not any(b'#' in raw for raw in (material['original_bytes'],
+                                         material['candidate_bytes'], extension))
+          and signature == expected):
         result['comparison'] = 'semantic_match_bytes_differ'
         result['recovery_relation'] = 'candidate_semantics_match_supplied_snapshot'
     else:

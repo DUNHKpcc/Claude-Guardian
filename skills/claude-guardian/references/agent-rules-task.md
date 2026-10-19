@@ -26,7 +26,13 @@ private_content = task.private_material()  # 原文和候选，不是授权
 
 任务到期后仍可取回原文、比较已供给数据，但必须重新审阅后续动作；取消或入口改变后仍可检查保留原文，比较器分别报告未比较或绑定变化。实际动作必须重新核对当前许可／目标，这些材料不恢复权限。
 
-原 request、binding 和规则编译校验继续使用，不再建立第二套规则引擎。本批只支持无注释且恰好含 prepend／append／delete 三个键的文档，三序列最初必须为空；含注释或自定义键时明确不支持，不能为了通过检查删除用户内容。只识别共享编译器支持的单行内联序列完整精确重复为 no_change，其他非空内容返回范围不支持。若 GUI 将已保存规则改为块式 YAML，旧任务可比较该语义，但重新 prepare 仍返回 NONEMPTY_PREPEND_UNSUPPORTED；Agent应据实际内容停止重复写入并解释限制，不强行改格式或追加规则。无改动时结束该写入任务，不创建备份、操作或恢复回执。
+原 request、binding 和规则编译校验继续使用，不再建立第二套规则引擎。本批只支持恰好含 prepend／append／delete 三个键的文档，三序列最初必须为空；prepend 仍须是共享编译器支持的单行空内联序列，多行 flow 空序列返回 EMPTY_INLINE_PREPEND_REQUIRED。合法头尾／行尾注释可以保留，底层只在选定序列内按字节插入规则，保留其余原文，包括中文／emoji、UTF-8 BOM、CRLF 和注释。额外键、非空 append／delete 仍不支持，不能为了通过检查删除用户内容或注释。
+
+只识别共享编译器支持的单行内联序列完整精确重复为 no_change，包括含注释原文；其他非空 prepend 返回范围不支持。若 GUI 将已保存规则改为块式 YAML，只有无注释任务可能取得下述有限语义比较结果；含注释任务的非精确读回必须重新审阅。重新 prepare 块式非空 prepend 仍返回 NONEMPTY_PREPEND_UNSUPPORTED；Agent 应据实际内容停止重复写入并解释限制，不强行改格式或追加规则。无改动时结束该写入任务，不创建备份、操作或恢复回执。
+
+私有审阅的 format_scope 随原文／候选内容变化：任一含 `#` 时为 comment_preserving_three_sequence_yaml_exact_bytes_required；两者均无 `#` 时为 comment_free_three_sequence_yaml_formatting_only。这是保守的字节标记检查，不是新建注释解析器；后一范围也要求实际读回没有 `#` 才能做有限语义比较。原文字节及其摘要始终保留在私有材料中，供独立恢复审阅使用，不以去注释或重新序列化的文档替代备份。
+
+SEMANTIC_PLAN_BLOCKED 来自既有 compile_plan 语义前提检查，与本次注释格式支持独立；其条件是 request.template 不是 keep-existing，或 compile_plan 的 blocker 代码集合不等于原有 NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED、VERSION_CAPABILITY_UNVERIFIED、NATIVE_ACCEPTANCE_NOT_RUN 三项。本修正不改变该条件。实际请求遇到此错误时检查其真实 template、blockers 及对应规则完整性、来源链、组和保护优先级事实，缺失或未知就保留阻塞，不能为了编译通过改写意图或补造 facts。
 
 输入由已经获准的私有宿主提供：选定扩展、基础 profile、应用 plist、配置索引的完整有界字节，以及已核对的版本、当前来源和非识别性别名。真实路径、域名、组名、订阅或认证资料不进入公开摘要。仅在私有操作审阅中读取任务的私有材料；不能 pickle、公开上传或把完整配置打印进诊断报告。
 
@@ -50,7 +56,7 @@ private_content = task.private_material()  # 原文和候选，不是授权
 - `file_bytes` 只比较宿主实际供给的原文件字节，文件身份与采集可信度仍由宿主建立
 - `app_text` 只表示应用文本观察，不能填成文件字节／inode 验证；应用内对象重新序列化也不是原文件
 - 比较器的 exact_match／semantic_match_bytes_differ 等结论不是批准，也不是“保存成功”。没有实际来源时不得填入预期候选假装读回
-- GUI 可能重排 YAML。只有预先明确批准该专属文档的有限格式化范围，且三个序列恰好符合候选，宿主才可接受语义相同；额外字段、丢失自定义内容或多出规则不能当格式差异忽略。记录真实保存后的摘要，不冒称候选字节摘要
+- 通过现有来源／归属和内容校验后，比较器优先识别候选字节 exact_match 与原文字节 unchanged。只有 original／candidate／readback 三者均无 `#`，且三个序列恰好符合候选，才可能报告 semantic_match_bytes_differ；宿主仍须事先明确批准有限格式化范围。任一含 `#` 时，非精确 GUI 重排、注释删除／新增／修改／移动乃至仅换行或空白变化，都报告 unexpected_delta／conflict_requires_new_review，不能把注释当作可丢格式。额外字段、丢失自定义内容或多出规则也不能忽略。记录真实保存后的摘要，不冒称候选字节摘要
 - 恢复读回目前只直接识别原文字节完全相同；若应用将原文重排成语义相同的三空序列，比较器仍保守报告 unexpected_delta，需宿主独立审阅，不据此断言恢复失败或自动覆盖。
 - 保存、文件内容、元数据、应用载入、有效规则、真实路由和恢复分别记录。保存返回正常不填满后面几层，也不证明 IPv4-only 或免封
 

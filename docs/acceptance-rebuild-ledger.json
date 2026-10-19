@@ -12,7 +12,8 @@
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
     "The thirty-seventh checkpoint retained 51 reviewed original-case acceptances, all preserved as unchanged historical_evidence. The 2026-10-19 environment-entry change leaves 47 pending_revalidation for affected behavior/runtime compatibility. After the later SKILL and package additions, a separate exact-source, whole-clause limited review restores only T03, T05, T09 and T18; see docs/evidence/entry-order-limited-revalidation.md. Current counts are 4 accepted and 214 pending, including the previously pending 167. Historical dialogues remain historical, and pins alone never establish acceptance.",
     "All original 218 scenario/requirement/layer rows and historical evidence bytes are retained. The dated PRODUCT-ENTRY-20261019 requirement is tracked separately; it does not replace original cases. Existing behavioral and runtime tests remain mandatory and are not deleted or skipped by this status correction.",
-    "The fortieth checkpoint separately reviews the Agent application-task link, supplied-snapshot helper/reference, two package additions and retained-schema clarification; docs/evidence/agent-rules-limited-revalidation.md replaces only the current evidence link for the same four cases. The preceding entry review and its evidence objects are retained unchanged. Counts remain 4 accepted / 214 pending; historical source preservation changes an explicit origin, never the old source bytes/hash."
+    "The fortieth checkpoint separately reviews the Agent application-task link, supplied-snapshot helper/reference, two package additions and retained-schema clarification; docs/evidence/agent-rules-limited-revalidation.md replaces only the current evidence link for the same four cases. The preceding entry review and its evidence objects are retained unchanged. Counts remain 4 accepted / 214 pending; historical source preservation changes an explicit origin, never the old source bytes/hash.",
+    "The comment-preserving Agent-task wrapper correction has its own exact three-file transition and whole-clause review in docs/evidence/agent-rules-comments-limited-revalidation.md. The preceding Agent-task review, its nineteen source pins and four evidence objects remain unchanged as historical material. Only T03, T05, T09 and T18 retain current acceptance; counts remain 4 accepted / 214 pending with all 51 historical objects and 218 original rows preserved. No native save or recovery contract is established."
   ],
   "cases": [
     {
@@ -76,7 +77,7 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Agent应用任务指导/打包与0.3说明的窄复核已独立记录；相关指导、来源或打包字节后续变化时重审原完整条件及当前兼容证据，不外推真机、当前外部事实或未观察输入",
+      "next_steps": "注释wrapper与指导的原完整条件窄复核已独立记录；相关指导、来源或打包字节后续变化时重审当前兼容证据，不外推真机保存、恢复、当前外部事实或未观察输入",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-t03-t05-guided-responses.md",
@@ -89,14 +90,14 @@
         "boundary": "Actual two-turn synthetic guided responses independently reviewed sentence by sentence; retained-record integrity tests do not generate new responses or prove native/service facts."
       },
       "evidence": {
-        "path": "docs/evidence/agent-rules-limited-revalidation.md",
-        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "path": "docs/evidence/agent-rules-comments-limited-revalidation.md",
+        "sha256": "93621e537809d78cc7482919bb979a1f8e4c47498933b7943dab524a37ca4900",
         "layers": [
           "L",
           "C"
         ],
         "review_date": "2026-10-19",
-        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
+        "boundary": "Original complete L+C case preserved by a separate exact-source comment-wrapper/guidance compatibility review; earlier reviews and observed replies remain historical, current T09 source/package and wrapper checks rerun, no new dialogue or native save/recovery/action claim."
       },
       "prior_revalidation_evidence": {
         "path": "docs/evidence/entry-order-limited-revalidation.md",
@@ -107,6 +108,16 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Original complete L+C case preserved by a separate exact-source entry-guidance/package compatibility review; prior observed replies remain historical, current T09 source/package tests rerun, no new dialogue generation or native/action claim."
+      },
+      "prior_agent_rules_revalidation_evidence": {
+        "path": "docs/evidence/agent-rules-limited-revalidation.md",
+        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
       }
     },
     {
@@ -126,7 +137,7 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Agent应用任务指导/打包与0.3说明的窄复核已独立记录；相关指导、来源或打包字节后续变化时重审原完整条件及当前兼容证据，不外推真机、当前外部事实或未观察输入",
+      "next_steps": "注释wrapper与指导的原完整条件窄复核已独立记录；相关指导、来源或打包字节后续变化时重审当前兼容证据，不外推真机保存、恢复、当前外部事实或未观察输入",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-t03-t05-guided-responses.md",
@@ -139,14 +150,14 @@
         "boundary": "Actual two-turn synthetic guided responses independently reviewed sentence by sentence; retained-record integrity tests do not generate new responses or prove native/service facts."
       },
       "evidence": {
-        "path": "docs/evidence/agent-rules-limited-revalidation.md",
-        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "path": "docs/evidence/agent-rules-comments-limited-revalidation.md",
+        "sha256": "93621e537809d78cc7482919bb979a1f8e4c47498933b7943dab524a37ca4900",
         "layers": [
           "L",
           "C"
         ],
         "review_date": "2026-10-19",
-        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
+        "boundary": "Original complete L+C case preserved by a separate exact-source comment-wrapper/guidance compatibility review; earlier reviews and observed replies remain historical, current T09 source/package and wrapper checks rerun, no new dialogue or native save/recovery/action claim."
       },
       "prior_revalidation_evidence": {
         "path": "docs/evidence/entry-order-limited-revalidation.md",
@@ -157,6 +168,16 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Original complete L+C case preserved by a separate exact-source entry-guidance/package compatibility review; prior observed replies remain historical, current T09 source/package tests rerun, no new dialogue generation or native/action claim."
+      },
+      "prior_agent_rules_revalidation_evidence": {
+        "path": "docs/evidence/agent-rules-limited-revalidation.md",
+        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
       }
     },
     {
@@ -196,7 +217,7 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Agent应用任务指导/打包与0.3说明的窄复核已独立记录；相关指导、来源或打包字节后续变化时重审原完整条件及当前兼容证据，不外推真机、当前外部事实或未观察输入",
+      "next_steps": "注释wrapper与指导的原完整条件窄复核已独立记录；相关指导、来源或打包字节后续变化时重审当前兼容证据，不外推真机保存、恢复、当前外部事实或未观察输入",
       "dependencies": "A、P",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-source-dedup.md",
@@ -209,14 +230,14 @@
         "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
       },
       "evidence": {
-        "path": "docs/evidence/agent-rules-limited-revalidation.md",
-        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "path": "docs/evidence/agent-rules-comments-limited-revalidation.md",
+        "sha256": "93621e537809d78cc7482919bb979a1f8e4c47498933b7943dab524a37ca4900",
         "layers": [
           "L",
           "C"
         ],
         "review_date": "2026-10-19",
-        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
+        "boundary": "Original complete L+C case preserved by a separate exact-source comment-wrapper/guidance compatibility review; earlier reviews and observed replies remain historical, current T09 source/package and wrapper checks rerun, no new dialogue or native save/recovery/action claim."
       },
       "prior_revalidation_evidence": {
         "path": "docs/evidence/entry-order-limited-revalidation.md",
@@ -227,6 +248,16 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Original complete L+C case preserved by a separate exact-source entry-guidance/package compatibility review; prior observed replies remain historical, current T09 source/package tests rerun, no new dialogue generation or native/action claim."
+      },
+      "prior_agent_rules_revalidation_evidence": {
+        "path": "docs/evidence/agent-rules-limited-revalidation.md",
+        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
       }
     },
     {
@@ -367,7 +398,7 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Agent应用任务指导/打包与0.3说明的窄复核已独立记录；相关指导、来源或打包字节后续变化时重审原完整条件及当前兼容证据，不外推真机、当前外部事实或未观察输入",
+      "next_steps": "注释wrapper与指导的原完整条件窄复核已独立记录；相关指导、来源或打包字节后续变化时重审当前兼容证据，不外推真机保存、恢复、当前外部事实或未观察输入",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-t18-appeal-facts.md",
@@ -380,14 +411,14 @@
         "boundary": "Observed two-turn synthetic guided response and independent sentence-level content review; integrity tests do not regenerate responses. No native, live-account or sending claim."
       },
       "evidence": {
-        "path": "docs/evidence/agent-rules-limited-revalidation.md",
-        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "path": "docs/evidence/agent-rules-comments-limited-revalidation.md",
+        "sha256": "93621e537809d78cc7482919bb979a1f8e4c47498933b7943dab524a37ca4900",
         "layers": [
           "L",
           "C"
         ],
         "review_date": "2026-10-19",
-        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
+        "boundary": "Original complete L+C case preserved by a separate exact-source comment-wrapper/guidance compatibility review; earlier reviews and observed replies remain historical, current T09 source/package and wrapper checks rerun, no new dialogue or native save/recovery/action claim."
       },
       "prior_revalidation_evidence": {
         "path": "docs/evidence/entry-order-limited-revalidation.md",
@@ -398,6 +429,16 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Original complete L+C case preserved by a separate exact-source entry-guidance/package compatibility review; prior observed replies remain historical, current T09 source/package tests rerun, no new dialogue generation or native/action claim."
+      },
+      "prior_agent_rules_revalidation_evidence": {
+        "path": "docs/evidence/agent-rules-limited-revalidation.md",
+        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
       }
     },
     {
