@@ -1,6 +1,8 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: thirty-fifth rebuild, 2026-10-19
+## Current checkpoint: thirty-seventh rebuild, 2026-10-19
+
+The new Darwin metadata observer is a bounded read-only, inherited-descriptor interface. It reports only fixed name categories/counts and explicit unknowns; it does not read attribute values or grant receipt, replacement, cleanup or recovery admission. New-module native execution remains pending. The prior Windows replay-receipt correction passed all four CI platforms; the original Windows POSIX-fixture skip remains a skip.
 
 The current ledger records 51 freshly accepted original cases and 167 pending:
 T26, T33, T22, T25, T77, T80, T36, T38, T46, T54, ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58, T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,

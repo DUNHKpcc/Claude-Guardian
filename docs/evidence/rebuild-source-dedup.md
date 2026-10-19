@@ -158,7 +158,7 @@ Reviewed file SHA-256 values:
 | `skills/claude-guardian/scripts/source_evidence.py` | `a1754f0445012e717dddfb9ed28245d94cb760f9d421fb47b0027a90e6f0feaf` |
 | `skills/claude-guardian/references/evidence-policy.md` | `8afb262a1d85050a897c6c9a89f54afbc96a653874b7308472dbeec4c3ea1838` |
 | `tests/test_source_evidence.py` | `cd9804d062f0226dcd25f7efc204c2fb4d43005be828b79dbeeb6df0ded8b86d` |
-| `tools/package_skill.py` | `02e0ecaab736dcde556fdb003f4c4fb0608eda6b0b045ed4ead7fabff2de9b08` |
+| `tools/package_skill.py` | `1ea4db679625908ca0a9ad103aa79309421725e0cc4d17f7c8d046291572f37b` |
 
 Disposition: the exact original two-identical-tutorial scenario now has executable
 L evidence and a full active-guidance C review, ready for independent integration
@@ -231,3 +231,7 @@ selected-device history and explicit C5 intent do not infer the current account'
 status or grant action permission. Callable quarantine/recovery is separately
 scoped and reviewed; default interview/CLI and existing contact/authorization
 safeguards remain. No new original cleanup/native case is accepted here.
+
+## Read-only observer package addition (2026-10-19)
+
+The sole new packager entry is `scripts/macos_metadata_observer.py`. Removing that one exact entry reconstructs the entire preceding packager hash `02e0ecaab736dcde556fdb003f4c4fb0608eda6b0b045ed4ead7fabff2de9b08`. Source grouping code, active evidence-policy guidance, all original source bytes and the T09 test suite remain unchanged. All 23 source/helper/inventory/package tests were rerun successfully; this refresh is limited to the current package allowlist, not new source independence, Agent behavior or native acceptance. Earlier execution records remain historical.

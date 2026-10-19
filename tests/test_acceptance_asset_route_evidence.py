@@ -270,7 +270,7 @@ class AssetRouteEvidenceTests(unittest.TestCase):
             with self.subTest(artifact=path.name):
                 check_public_text(path.read_text(encoding='utf-8'))
 
-    def test_evidence_is_outside_explicit_63_file_installed_inventory(self):
+    def test_evidence_is_outside_explicit_installed_inventory(self):
         # Inspect the real packager's explicit inventory; actual packaging is a
         # separate aggregate gate, not an execution performed by this check.
         tree = ast.parse((ROOT / 'tools/package_skill.py').read_text(encoding='utf-8'))
@@ -283,8 +283,12 @@ class AssetRouteEvidenceTests(unittest.TestCase):
             inventory.append(source['path'])
             inventory.extend(c['path'] for c in source.get('companions', []))
         inventory.append('LICENSE')
-        self.assertEqual(len(inventory), 63)
-        self.assertEqual(len(set(inventory)), 63)
+        self.assertEqual(len(inventory), 64)
+        self.assertEqual(len(set(inventory)), 64)
+        # The new read-only observer is the sole release addition since this
+        # case packet was captured; historical 63-member records stay intact.
+        self.assertEqual(inventory.count('scripts/macos_metadata_observer.py'), 1)
+        self.assertEqual(len([p for p in inventory if p != 'scripts/macos_metadata_observer.py']), 63)
         self.assertFalse(any('asset-route' in path or 'asset_route' in path for path in inventory))
         skill = ROOT / 'skills/claude-guardian'
         for path in [*PACKET.iterdir(), PAGE, ROOT / 'tests/test_acceptance_asset_route_evidence.py',

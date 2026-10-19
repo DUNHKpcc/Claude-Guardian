@@ -32,6 +32,26 @@ BRIDGE = Path('docs/evidence/batch33-subscription-preservation')
 BRIDGE_MANIFEST_SHA256 = '71c7b62c7f55a59d0d9556ea3ea605a162bc2e919f5bf7e223769ef731f0284e'
 
 
+METADATA_OBSERVER_PACKAGER_SHA256 = '1ea4db679625908ca0a9ad103aa79309421725e0cc4d17f7c8d046291572f37b'
+HISTORICAL_PACKAGE_PROOF_SHA256 = '3c609b1ef9cbb3cc435db6be0913daadf345840716d87c1ee797eaf61cf6c451'
+
+
+def verify_metadata_observer_packager_transition(current, proof_bytes):
+    """Reverse only the exact observer entry; retain the entire old builder pin."""
+    if hashlib.sha256(proof_bytes).hexdigest() != HISTORICAL_PACKAGE_PROOF_SHA256:
+        raise AssertionError('Historical package proof changed')
+    if hashlib.sha256(current).hexdigest() != METADATA_OBSERVER_PACKAGER_SHA256:
+        raise AssertionError('Unreviewed current package builder')
+    entry = b'"scripts/macos_metadata_observer.py", '
+    if current.count(entry) != 1:
+        raise AssertionError('Expected the single exact observer manifest entry')
+    historical = current.replace(entry, b'', 1)
+    proof = json.loads(proof_bytes)
+    if hashlib.sha256(historical).hexdigest() != proof['package_builder_sha256']['after']:
+        raise AssertionError('Other historical package builder bytes changed')
+    return historical
+
+
 def load_current_preservation(root=HISTORICAL_ROOT):
     directory = root / BRIDGE
     manifest_path = directory / 'manifest.json'
@@ -86,9 +106,12 @@ class SubscriptionBoundaryInstalledCandidatePins(unittest.TestCase):
         # The separately pinned supplement binds the precise live transition.
         COPY.verify_current(ROOT, COPY_MANIFEST)
         Preservation.verify_bridge(HISTORICAL_ROOT, BRIDGE_MANIFEST_SHA256)
-        proof = json.loads((PACKET / 'package-inventory-proof.json').read_text(encoding='utf-8'))
-        self.assertEqual(hashlib.sha256((ROOT / 'tools/package_skill.py').read_bytes()).hexdigest(),
-                         proof['package_builder_sha256']['after'])
+        # Current packaging adds one observer, without rewriting historical proof
+        # or normalizing any other builder bytes into an apparent match.
+        verify_metadata_observer_packager_transition(
+            (ROOT / 'tools/package_skill.py').read_bytes(),
+            (PACKET / 'package-inventory-proof.json').read_bytes(),
+        )
 
     def test_original_live_ledger_clauses_and_layers_unchanged(self):
         current = json.loads((PACKET / 'current-verdicts.json').read_text(encoding='utf-8'))['case_verdicts']

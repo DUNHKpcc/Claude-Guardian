@@ -1,5 +1,11 @@
 # 版本记录
 
+## 2026-10-19 — Bounded read-only Darwin metadata observation
+
+- Add inherited-fd observation with fixed categories/counts, bounded native name listing, ownership/state checks and privacy-safe errors
+- Read no attribute values, file contents or ACLs; preserve caller descriptor ownership and all existing production write-admission gates
+- Include one standalone script in the 64-member release; new native module validation remains pending, and original acceptance counts do not change
+
 ## 2026-10-19 — Preserve platform-specific replay coverage
 
 - Correct the compatibility receipt for the original resume suite’s existing Windows skip: compare the complete Windows trace against its own fixed digest, while retaining the complete POSIX digest
