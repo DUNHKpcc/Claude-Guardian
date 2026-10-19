@@ -4,7 +4,14 @@
 
 **在 Codex 中准备 Claude 使用环境，检查问题，整理下一步。**
 
-`Codex Skill` · `Python 3.10+` · `0.2.0 工作流基础`
+<p>
+  <img alt="Codex Skill" src="https://img.shields.io/badge/Codex-Skill-111111?style=flat-square" />
+  <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&amp;logo=python&amp;logoColor=white" />
+  <img alt="CI platforms: macOS, Windows, Linux" src="https://img.shields.io/badge/CI-macOS%20%7C%20Windows%20%7C%20Linux-brightgreen?style=flat-square" />
+  <img alt="License: GPL-3.0-only" src="https://img.shields.io/badge/license-GPL--3.0--only-blue?style=flat-square" />
+</p>
+
+0.2.0 工作流基础 · CI 平台标签表示测试环境，完整真机修复仍待验收
 
 [快速开始](#快速开始) · [选择运行路线](#选择运行路线) · [能力与边界](#能力与边界) · [文档导航](#文档导航)
 
@@ -145,6 +152,12 @@ CI 在 Linux、macOS、Windows 上执行单测、回归与确定性打包检查�
 - [来源清单](docs/source-manifest.json)：设计输入版本与哈希
 
 下一步仍包括真实 Mac / Windows 环境验证、精确修改与生效复测、冲突安全恢复，以及完整清理验收。当前可用的诊断和计划不会替代这些工作。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=DUNHKpcc/Claude-Guardian&type=Date)](https://www.star-history.com/?repos=DUNHKpcc%2FClaude-Guardian&type=date)
+
+图表由 Star History 提供；加载受第三方服务可用性影响。
 
 ## 反馈与许可
 
