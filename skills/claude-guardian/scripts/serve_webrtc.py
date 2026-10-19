@@ -4,7 +4,8 @@ Starting this helper does not open a browser or initiate STUN. The served page
 still requires explicit per-run consent and a user click in the intended browser
 profile. Expiry initiates listener cleanup; failures leave closure unconfirmed.
 Closing the listener cannot revoke a previously loaded page.
-No results, credentials, request logs, or user data are collected by this server.
+No results, credentials, raw request logs, or user data are collected by this
+server. Optional rejection diagnostics emit one fixed classification to stderr.
 """
 import argparse
 import errno
@@ -22,6 +23,16 @@ MAX_DURATION = 900
 MAX_CONNECTIONS = 8
 ASSET = Path(__file__).resolve().parent.parent / 'assets' / 'webrtc-probe.html'
 _STAGES = frozenset({'startup', 'asset', 'bind', 'publish_url', 'serve', 'cleanup'})
+_REJECTION_STAGES = frozenset({'request', 'host', 'origin', 'fetch_site', 'body', 'route'})
+_FETCH_CLASSES = (
+    ('Sec-Fetch-Site', 'fetch_site', frozenset({'none', 'same-origin', 'same-site', 'cross-site'})),
+    ('Sec-Fetch-Mode', 'fetch_mode', frozenset({'cors', 'navigate', 'no-cors', 'same-origin', 'websocket'})),
+    ('Sec-Fetch-Dest', 'fetch_dest', frozenset({
+        'audio', 'audioworklet', 'document', 'embed', 'empty', 'font', 'frame',
+        'iframe', 'image', 'manifest', 'object', 'paintworklet', 'report', 'script',
+        'serviceworker', 'sharedworker', 'style', 'track', 'video', 'worker', 'xslt'})),
+    ('Sec-Fetch-User', 'fetch_user', frozenset({'?1'})),
+)
 
 
 def _at_stage(stage, function, *args):
@@ -93,7 +104,54 @@ class _AssetHandler(BaseHTTPRequestHandler):
 
     def send_error(self, code, message=None, explain=None):
         # Never reflect request paths, headers, methods, credentials, or exceptions.
-        self._reply(code, b'Request rejected.\n', 'text/plain; charset=utf-8')
+        self._reject('request', code, b'Request rejected.\n', 'text/plain; charset=utf-8')
+
+    def _diagnose_rejection(self, stage):
+        if getattr(self.server, 'diagnose_rejection', False) is not True:
+            return
+        with self.server._rejection_lock:
+            if self.server._rejection_reported:
+                return
+            # Claim before output, including a failed sink, so retries cannot log
+            # additional requests. The budget belongs to this server instance.
+            self.server._rejection_reported = True
+        try:
+            headers = getattr(self, 'headers', None)
+
+            def values(name):
+                return headers.get_all(name, []) if headers is not None else []
+
+            def match(name, expected):
+                observed = values(name)
+                return 'absent' if not observed else 'match' if observed == [expected] else 'invalid'
+
+            method = getattr(self, 'command', None)
+            parts = getattr(self, 'requestline', '').split()
+            exact_route = (getattr(self, 'path', None) == ROUTE
+                           and len(parts) >= 2 and parts[1] == ROUTE)
+            fields = [
+                ('stage', stage if type(stage) is str and stage in _REJECTION_STAGES else 'request'),
+                ('method', method if method in ('GET', 'HEAD') else 'other'),
+                ('host', match('Host', self.server.authority)),
+                ('origin', match('Origin', 'http://' + self.server.authority)),
+                ('exact_route', 'yes' if exact_route else 'no'),
+                ('content_length', 'present' if values('Content-Length') else 'absent'),
+                ('transfer_encoding', 'present' if values('Transfer-Encoding') else 'absent'),
+            ]
+            for name, field, allowed in _FETCH_CLASSES:
+                observed = values(name)
+                value = ('missing' if not observed else 'duplicate' if len(observed) != 1
+                         else observed[0] if type(observed[0]) is str and observed[0] in allowed
+                         else 'invalid')
+                fields.append((field, value))
+            print('Local WebRTC request rejected; ' + '; '.join(
+                key + '=' + value for key, value in fields), file=sys.stderr, flush=True)
+        except Exception:
+            pass  # Optional diagnostics, including sink errors, cannot change admission.
+
+    def _reject(self, stage, code, body, content_type):
+        self._diagnose_rejection(stage)
+        return self._reply(code, body, content_type)
 
     def _reply(self, code, body, content_type):
         self.close_connection = True
@@ -115,19 +173,19 @@ class _AssetHandler(BaseHTTPRequestHandler):
     def _serve_asset(self):
         hosts = self.headers.get_all('Host', [])
         if hosts != [self.server.authority]:
-            return self._reply(421, b'Invalid local host.\n', 'text/plain')
+            return self._reject('host', 421, b'Invalid local host.\n', 'text/plain')
         origins = self.headers.get_all('Origin', [])
         if origins and origins != ['http://' + self.server.authority]:
-            return self._reply(403, b'Origin rejected.\n', 'text/plain')
+            return self._reject('origin', 403, b'Origin rejected.\n', 'text/plain')
         if self.headers.get('Sec-Fetch-Site') == 'cross-site':
-            return self._reply(403, b'Cross-site request rejected.\n', 'text/plain')
+            return self._reject('fetch_site', 403, b'Cross-site request rejected.\n', 'text/plain')
         if self.headers.get_all('Transfer-Encoding') or self.headers.get_all('Content-Length'):
-            return self._reply(400, b'Request body not supported.\n', 'text/plain')
+            return self._reject('body', 400, b'Request body not supported.\n', 'text/plain')
         # BaseHTTPRequestHandler normalizes a leading '//'; inspect the original
         # target as well so this endpoint accepts only one exact origin-form path.
         request_parts = self.requestline.split()
         if self.path != ROUTE or len(request_parts) < 2 or request_parts[1] != ROUTE:
-            return self._reply(404, b'Not found.\n', 'text/plain')
+            return self._reject('route', 404, b'Not found.\n', 'text/plain')
         self._reply(200, self.server.asset, 'text/html; charset=utf-8')
 
     do_GET = _serve_asset
@@ -139,7 +197,12 @@ class _BoundedServer(ThreadingHTTPServer):
     block_on_close = False
     allow_reuse_address = False
 
-    def __init__(self, asset):
+    def __init__(self, asset, diagnose_rejection=False):
+        if type(diagnose_rejection) is not bool:
+            raise ValueError('Rejection diagnostics require a boolean')
+        self.diagnose_rejection = diagnose_rejection
+        self._rejection_lock = threading.Lock()
+        self._rejection_reported = False
         self.asset = asset
         self.connections = set()
         self._pending_closes = set()
@@ -217,9 +280,9 @@ class LocalProbeServer:
     unconfirmed and close() can retry it. Serving remains single-use.
     There is intentionally no host, port, directory, or asset-path option.
     """
-    def __init__(self):
+    def __init__(self, diagnose_rejection=False):
         asset = _at_stage('asset', _read_asset)
-        self._server = _at_stage('bind', _BoundedServer, asset)
+        self._server = _at_stage('bind', _BoundedServer, asset, diagnose_rejection)
         self._cancel = threading.Event()
         self._started = False
         self._closed = False
@@ -286,13 +349,15 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--duration', type=float, default=DEFAULT_DURATION,
                         help='HTTP listener lifetime in seconds, greater than 0 and at most 900 (default 300)')
+    parser.add_argument('--diagnose-rejection', action='store_true',
+                        help='Emit one fixed, redacted rejection classification to local stderr')
     args = parser.parse_args(argv)
     if not math.isfinite(args.duration) or not 0 < args.duration <= MAX_DURATION:
         parser.error('duration must be greater than 0 and at most 900 seconds')
     stage = 'startup'
     url_may_be_published = False
     try:
-        with LocalProbeServer() as server:
+        with LocalProbeServer(diagnose_rejection=args.diagnose_rejection) as server:
             stage = 'publish_url'
             # Even a partially failed output write may have disclosed the URL.
             url_may_be_published = True
