@@ -68,13 +68,13 @@ class RejectionDiagnosticTests(unittest.TestCase):
         self.assertTrue(output.startswith(PREFIX), output)
         return dict(field.split('=', 1) for field in output.strip()[len(PREFIX):].split('; '))
 
-    def test_cross_site_navigation_still_rejected_with_safe_classes(self):
-        response, output = self.capture(headers=[HOST,
+    def test_cross_site_head_navigation_still_rejected_with_safe_classes(self):
+        response, output = self.capture(method='HEAD', headers=[HOST,
             ('Sec-Fetch-Site', 'cross-site'), ('Sec-Fetch-Mode', 'navigate'),
             ('Sec-Fetch-Dest', 'document'), ('Sec-Fetch-User', '?1')])
         self.assertTrue(response.startswith(b'HTTP/1.0 403 '))
         self.assertEqual(self.fields(output), {
-            'stage': 'fetch_site', 'method': 'GET', 'host': 'match', 'origin': 'absent',
+            'stage': 'fetch_site', 'method': 'HEAD', 'host': 'match', 'origin': 'absent',
             'exact_route': 'yes', 'content_length': 'absent', 'transfer_encoding': 'absent',
             'fetch_site': 'cross-site', 'fetch_mode': 'navigate', 'fetch_dest': 'document',
             'fetch_user': '?1'})
@@ -177,18 +177,11 @@ class RejectionDiagnosticTests(unittest.TestCase):
         _, output = self.capture(headers=[('Host', PRIVATE), ('Sec-Fetch-User', '?0')])
         self.assertEqual(self.fields(output)['fetch_user'], 'invalid')
 
-    def test_duplicate_fetch_site_reports_duplicate_and_preserves_existing_gate(self):
-        for values, status in ((['cross-site', 'same-origin'], 403),
-                               (['same-origin', 'cross-site'], 200)):
-            server = self.server()
-            response, output = self.capture(server=server, headers=[HOST] + [('Sec-Fetch-Site', v) for v in values])
-            self.assertTrue(response.startswith(('HTTP/1.0 ' + str(status) + ' ').encode()))
-            if status == 403:
-                self.assertEqual(self.fields(output)['fetch_site'], 'duplicate')
-            else:
-                self.assertEqual(output, '')
-                _, output = self.capture(server=server, path='/rejected')
-                self.assertEqual(self.fields(output)['stage'], 'route')
+    def test_duplicate_fetch_site_reports_duplicate_in_either_order(self):
+        for values in (['cross-site', 'same-origin'], ['same-origin', 'cross-site']):
+            response, output = self.capture(headers=[HOST] + [('Sec-Fetch-Site', v) for v in values])
+            self.assertTrue(response.startswith(b'HTTP/1.0 403 '))
+            self.assertEqual(self.fields(output)['fetch_site'], 'duplicate')
 
     def test_no_raw_fields_or_header_names_are_logged(self):
         response, output = self.capture(method=PRIVATE, path='/' + PRIVATE, headers=[

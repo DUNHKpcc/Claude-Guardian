@@ -170,6 +170,22 @@ class _AssetHandler(BaseHTTPRequestHandler):
         if self.command != 'HEAD':
             self.wfile.write(body)
 
+    def _is_user_navigation(self):
+        # Host and Origin have already passed their exact-match gates. This
+        # exception only delivers the static page; starting ICE still needs the
+        # page's separate per-run consent and click.
+        request_parts = getattr(self, 'requestline', '').split()
+        if (getattr(self, 'command', None) != 'GET' or getattr(self, 'path', None) != ROUTE
+                or len(request_parts) < 2 or request_parts[1] != ROUTE):
+            return False
+        if any(self.headers.get_all(name) for name in (
+                'Content-Length', 'Transfer-Encoding', 'Purpose', 'Sec-Purpose')):
+            return False
+        return all(self.headers.get_all(name, []) == [value] for name, value in (
+            ('Sec-Fetch-Mode', 'navigate'),
+            ('Sec-Fetch-Dest', 'document'),
+            ('Sec-Fetch-User', '?1')))
+
     def _serve_asset(self):
         hosts = self.headers.get_all('Host', [])
         if hosts != [self.server.authority]:
@@ -177,7 +193,12 @@ class _AssetHandler(BaseHTTPRequestHandler):
         origins = self.headers.get_all('Origin', [])
         if origins and origins != ['http://' + self.server.authority]:
             return self._reject('origin', 403, b'Origin rejected.\n', 'text/plain')
-        if self.headers.get('Sec-Fetch-Site') == 'cross-site':
+        fetch_sites = self.headers.get_all('Sec-Fetch-Site', [])
+        # Duplicated, combined, or unknown Site values cannot fall through as
+        # non-cross-site requests, regardless of their order.
+        if (fetch_sites and (len(fetch_sites) != 1 or fetch_sites[0] not in {
+                'none', 'same-origin', 'same-site', 'cross-site'})) or (
+                fetch_sites == ['cross-site'] and not self._is_user_navigation()):
             return self._reject('fetch_site', 403, b'Cross-site request rejected.\n', 'text/plain')
         if self.headers.get_all('Transfer-Encoding') or self.headers.get_all('Content-Length'):
             return self._reject('body', 400, b'Request body not supported.\n', 'text/plain')
