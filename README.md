@@ -1,90 +1,153 @@
+<div align="center">
+
 # Claude-Guardian
 
-面向 Codex 的 Claude 使用准备与环境诊断 Skill。许可证：**GPL-3.0-only**。
+**在 Codex 中准备 Claude 使用环境，检查问题，整理下一步。**
 
-## 当前版本：0.2.0 工作流基础（尚非全设计完成）
+`Codex Skill` · `Python 3.10+` · `0.2.0 工作流基础`
 
-首版提供分阶段访谈、明确授权后的限定范围本机元数据采集、离线事实分析与修复计划。它不承诺免封；检查通过也不代表平台认可网络环境。
+[快速开始](#快速开始) · [选择运行路线](#选择运行路线) · [能力与边界](#能力与边界) · [文档导航](#文档导航)
 
-- 首问订阅阶段，再按需了解系统、用途、目标套餐、账号经历和路线
-- 本机默认建议；VM 与 VPS 是独立可选方案
-- 本机主线 macOS / Windows；云端 Linux 不能替用户电脑出具检查结论
-- 接触前 PC0 门禁关闭，不启动 Claude、登录或访问其服务
-- 预览版没有联网探测、配置写入、清理、付款或自动回滚执行器
-- 原生平台实测尚未完成；Python 核心测试与合成夹具不能替代真实设备验证
+[GPL-3.0-only](LICENSE) · [更新记录](CHANGELOG.md) · [反馈问题](https://github.com/DUNHKpcc/Claude-Guardian/issues)
 
-## 安装与使用
+</div>
 
-将仓库的 `skills/claude-guardian` 文件夹复制到你使用的 Codex Skill 目录，保留文件结构；根目录 LICENSE 应随发行包分发。Skill 文本可独立阅读，调用脚本需要 **Python 3.10+**。项目不会自行安装 Python、代理工具或后台服务。
+---
 
-在支持 Skills 的 Codex 会话中调用 `$claude-guardian`，例如：“帮我准备第一次订阅 Claude，先检查我的 Mac 环境”。代理应先复用你已经说明的信息，再分轮提问，并只执行你授权范围内的检查。
+Claude-Guardian 把订阅准备、账号与客户端异常、代理和运行环境问题拆成分阶段的对话。先复用你已经提供的信息，再补必要事实；在明确授权的目标上检查，说明证据、未知项和修复建议。
 
-底层接口：
+**目前可用：访谈、限定只读诊断、离线分析、状态面板和修复计划。完整自动修复尚未验收。** 项目不承诺免封，检查通过也不代表平台认可你的网络环境。
+
+## 快速开始
+
+### 1. 安装 Skill
+
+将仓库中的 [`skills/claude-guardian`](skills/claude-guardian) 文件夹复制到你使用的 Codex Skill 目录，保留内部文件结构。分发时同时保留根目录的 [LICENSE](LICENSE)。
+
+- 需要支持 Skills 的 Codex；脚本需要 **Python 3.10+**
+- Skill 和参考文档可以直接阅读，不运行脚本也能查阅
+- 项目不会自行安装 Python、代理工具或后台服务；部分静态 YAML 功能需要可选的 PyYAML，缺少时会停止并说明
+
+### 2. 在 Codex 中开始对话
+
+```text
+$claude-guardian
+我第一次准备订阅 Claude，使用 Mac。先帮我比较本机和 VM，再决定怎么检查。
+```
+
+普通订阅准备会先确认订阅阶段，再按需了解系统、用途和目标。已有答案会复用；紧急故障和明确的清理任务走各自流程，不强行重做购买问卷。
+
+### 3. 确认路线，再开始检查
+
+**明确本轮任务 → 选择本机 / VM / VPS → 了解网络资源和配置状态 → 授权具体检查 → 查看结果与下一步**
+
+路线选择只确定检查对象和深度，不等于允许联网、修改配置或保存资料。只想了解订阅或比较方案，可以停留在解释阶段。
+
+## 选择运行路线
+
+| 路线 | 适用方向 | 当前检查范围 |
+| --- | --- | --- |
+| **本机** | 在自己的 Mac / Windows 上使用；默认建议，仍需明确接受 | 按目标和可用宿主能力做适用的详细检查 |
+| **VM** | 在虚拟机内建立独立工作环境 | 按适用范围深入检查；宿主和客机分别绑定，不能互相替代结论 |
+| **VPS** | 明确选择远程服务器作为运行环境 | 基础、非侵入检查；选购指南和部署技能留待后续 |
+
+三条路线复用同一套入口与检测核心，差别在目标、范围和深度。原生采集取决于具体宿主支持；当前 `guardian.py check` 只支持本机 macOS / Windows，选择 VM 或 VPS 不会自动开放该命令的原生采集。它们是独立选择，不是升级顺序；已有 VPS、或把 VPS 用作网络出口，都不代表选择在 VPS 上运行。
+
+选定路线后，先确认网络资源是否已有、选中哪个资源别名、代理入口与最终出口类型、配置是否准备好。**不用提交 IP、订阅链接、密码、UUID 或完整配置。** 没有资源、不确定或选择直连，也可以在明确目标和授权下做离线预检，不必先购买。
+
+本地 HTTP/mixed 入口与上游 SOCKS5 出口是不同层，配置已导入也不等于已生效。详见[环境入口与路线边界](docs/environment-entry-decision.md)。
+
+## 能力与边界
+
+| 能力 | 当前能做什么 | 不能由此得出的结论 |
+| --- | --- | --- |
+| **分阶段访谈** | 复用事实、按条件提问、明确保存和中断续接 | 问卷完成不代表获得操作权限 |
+| **限定只读诊断** | 在已授权、正确绑定的目标上采集支持的元数据；未知项保留未知 | 云端 Linux 的结果不能替用户 Mac / Windows 出具结论 |
+| **离线分析与面板** | 整理本地结构化事实，生成静态状态快照和下一步建议 | 面板不是实时监控，输入报告不是本次认证的设备证据 |
+| **修复计划与候选** | 生成限定范围的计划或私有差异，说明保护项与恢复条件 | 生成候选不代表已写入、应用生效或实际网络恢复 |
+| **受限探测与恢复接口** | 供可信宿主按各自契约、精确范围和逐次授权调用 | 源码中有接口不代表默认 CLI 会调用，也不开放完整自动修复 |
+
+默认 CLI 不自动联网、付款、清理或修改配置。网络探测必须另行确认端点与范围；受限 POSIX 事务和恢复接口有独立前提，不能把测试文件中的成功当成用户设备上的成功。
+
+内置生产配置写入适配器尚未开放，`repair_cli.py execute` 仍受原生适配门禁阻塞。Agent 可在独立的具体授权下，通过应用受支持的编辑与保存流程处理限定改动。现有辅助接口可为 Clash Verge Rev 2.5.8 的专属空 rules 扩展准备单条规则候选，并比较宿主实际供给的读回内容；它不操作应用，也不证明保存、载入、生效或恢复已完成。不能用临时脚本、保存的布尔值或回调绕过权限或原生接口门禁。详见 [Agent 修复流程](skills/claude-guardian/references/agent-remediation.md)和[单条 rules 扩展任务](skills/claude-guardian/references/agent-rules-task.md)。
+
+### 开始前要知道
+
+- **先确认，再接触服务**：PC0（接触前阶段）不启动 Claude 客户端、不登录、不访问其服务；阅读来源中的命令不构成执行授权
+- **修改必须单独确认**：说明精确目标、差异、影响、备份与恢复方案，再按实际能力执行和复测
+- **保护其他应用**：当前规划要求所选 Claude 目标流量仅用 IPv4、不回落 IPv6；这不是已生效声明，也不授权关闭整机 IPv6 或影响 Codex、VPN 和其他应用
+- **只保存必要信息**：报告与私有差异按明确请求保存；不把凭据、真实 IP、订阅链接、原始配置或个人报告提交仓库
+
+完整规则见[接触与授权边界](skills/claude-guardian/references/contact-and-safety.md)及[网络证据说明](skills/claude-guardian/references/network-and-remedies.md)。
+
+## 使用示例
+
+这些是向 Codex 发起任务的示例，不是已完成检查或修复的演示结果。
+
+| 你想做的事 | 可以这样说 |
+| --- | --- |
+| 第一次准备订阅 | “我用 Windows，第一次准备订阅。先说明需要确认什么，再决定运行路线。” |
+| 已选本机，想检查网络 | “这次在本机使用，代理配置已经导入。先确认资源和配置状态，只做我同意的检查。” |
+| 比较 VM 和 VPS | “帮我比较这两条路线的检查范围，先不要检查设备或部署服务。” |
+| 处理现有异常 | “当前 Claude Code 报错。先整理已有证据，区分已确认和未知项，再给最小修复建议。” |
+
+<details>
+<summary><strong>开发者：命令行入口</strong></summary>
+
+以下命令在仓库根目录运行。完整访谈推荐 `interview_cli.py`；`guardian.py interview` 是兼容的简化入口。
 
 ```sh
 python3 skills/claude-guardian/scripts/guardian.py --help
-python3 skills/claude-guardian/scripts/guardian.py interview
+python3 skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --account-ref account-a
 ```
 
-`check` 的目标绑定参数必须来自实际宿主能力与用户确认，不能为了通过检查而填写不存在的授权。`analyze` / `plan` 处理本地结构化事实；具体契约及示例见脚本帮助、`tests/fixtures/`。默认输出到标准输出，只有明确指定 `--output` 才保存报告。
+`laptop-a` 和 `account-a` 是本地别名，不是设备或账号标识。访谈默认输出下一题和阶段评估，不默认保存；明确需要保存时使用 `--output`，续接按 [访谈说明](docs/interview-resume.md) 处理。
 
-## 开发与迭代
+`check` 的目标绑定必须来自实际宿主与用户确认，不能补造授权。`analyze` / `plan` 处理本地结构化事实，样例见 [`tests/fixtures/`](tests/fixtures)。合成数据必须保留合成标记；导入报告不会恢复执行权限。完整契约见[导入与导出边界](docs/evidence/rebuild-inventory-export-boundaries.md)。
 
-新增内部修复入口 `repair_cli.py`：Agent可读取精确目标、展示限定规则差异，并按显式请求保留私有计划。已确认交互为“对话确认后，由Agent调用内部脚本”，不要求用户再到终端输入确认码。当前实际Clash版本/扩展归属适配尚未开放，`execute`仍明确阻塞；合成事务测试不代表已能修复用户设备。授权边界、命令和恢复限制见 [Agent修复流程](docs/agent-repair-flow.md)。 显式`rules-prepend`路线已接入同一CLI，可为2.5.8空rules扩展生成有界候选、核对所提供的归属链并保留全部输入快照；实际写入仍阻塞，详见 [规则扩展候选](docs/rules-extension-plan.md)。
+Windows 用户使用环境中实际可用的 Python 3 启动命令，例如 `py -3`。各入口的平台支持以对应帮助和文档为准；不能把核心跨平台测试等同于每个宿主接口均可用。
+
+</details>
+
+## 文档导航
+
+| 从这里开始 | 内容 |
+| --- | --- |
+| [Skill 入口](skills/claude-guardian/SKILL.md) | 对话顺序、工具入口与按需加载规则 |
+| [本机、VM 与 VPS](skills/claude-guardian/references/routes-and-platforms.md) | 路线选择、目标边界与生命周期 |
+| [账号与支付准备](skills/claude-guardian/references/accounts-and-payments.md) | 订阅阶段、渠道前提与支付交接 |
+| [网络与修复建议](skills/claude-guardian/references/network-and-remedies.md) | 代理、DNS、IPv4/IPv6、UDP/WebRTC 的证据解释 |
+| [环境状态面板](docs/environment-dashboard.md) | 使用已有报告生成离线页面，不触发新检查 |
+| [诊断会话](docs/diagnostic-session.md) | 限定采集、取消、保存与未知项 |
+| [规则扩展候选](docs/rules-extension-plan.md) | 私有差异、输入绑定和当前执行限制 |
+| [异常与清理](skills/claude-guardian/references/incidents-and-integrations.md) | 故障、保留范围、申诉和集成边界 |
+| [来源资料库](skills/claude-guardian/references/source-library.md) | 按主题查阅随包原文、章节与来源 |
+
+来源原文可以直接阅读，保留自身署名和许可。收录不代表每条建议均已验证；历史材料和当前执行建议分别使用。
+
+## 开发与验证
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 tools/package_skill.py --output /tmp/claude-guardian-0.2.0.zip
+python3 -m compileall -q skills/claude-guardian/scripts
+python3 tools/package_skill.py --help
 ```
 
-目录：
+打包时使用 `--output` 指定你自己的临时目录中的新 ZIP 路径。测试与发行检查使用合成数据，不应指向真实代理配置或用户资料。
 
-- `skills/claude-guardian/SKILL.md`：Skill 入口
-- `skills/claude-guardian/references/`：按需加载的访谈、路线与证据说明
-- `skills/claude-guardian/scripts/`：离线核心与只读采集入口
-- `tests/`：行为回归与合成样例
-- `docs/requirements.md`：设计覆盖及未实现项
-- `docs/decisions.md`：关键取舍、确认状态和后续条件
-- `docs/source-manifest.json`：输入设计版本及哈希
+CI 在 Linux、macOS、Windows 上执行单测、回归与确定性打包检查，并另有面板预览检查。原生 smoke 与受控夹具只证明各自覆盖的范围，不能替代真实桌面、Clash、浏览器、写入或故障恢复验收。
 
-设计基线是主规范 v0.2.00 和环境脚本规范 v0.3。新版本分别记录设计、代码实现、夹具验证与原生实测状态，避免把“有文档”写成“已可用”。历史规格引用的机器契约 ZIP 没有随本次提供，当前契约按正文重新实现，不继承历史测试结论。
+**原始 218 项验收要求保留。** 历史评审与当前适用性分开记录；入口顺序等要求变化后，受影响结论需要重验。当前进展以[验收台账](docs/acceptance-rebuild-ledger.json)、[重验状态](docs/entry-revalidation-status.md)和[验证记录](docs/validation.md)为准，不用单测数量代表产品完成度。
 
-## 发布与隐私
+- [设计覆盖](docs/requirements.md)：已实现与未实现项
+- [开发状态](docs/rebuild-status.md)：当前交付顺序与剩余工作
+- [关键决策](docs/decisions.md)：设计取舍和确认条件
+- [来源清单](docs/source-manifest.json)：设计输入版本与哈希
 
-测试与发行包只使用合成数据。用户画像、原始代理配置、订阅地址、账号、凭据、真实 IP 和个人报告不得提交仓库。用户已确认所提供资料由其制作并允许公开分发。来源资料随包提供，保留署名和原有许可声明；清理教程中的个人机器记录已去除。参阅 [来源资料库](skills/claude-guardian/references/source-library.md)。来源原文与经过核验的执行建议分别使用，不把阅读命令当作执行授权。
+下一步仍包括真实 Mac / Windows 环境验证、精确修改与生效复测、冲突安全恢复，以及完整清理验收。当前可用的诊断和计划不会替代这些工作。
 
-后续迭代：补充真实 Mac/Windows 只读采集覆盖；确认中性探测端点与隐私边界；按操作完成平台实测后，再开放可审查差异、备份、受控修改和冲突安全恢复。
+## 反馈与许可
 
-## 自动检查覆盖
+欢迎通过 [Issues](https://github.com/DUNHKpcc/Claude-Guardian/issues) 反馈问题，或提交文档、合成样例和回归测试。反馈时说明系统、版本、复现步骤及预期结果；不要上传真实账号、凭据、订阅链接、完整代理配置或个人报告。
 
-每个 push / PR 在 Linux、macOS、Windows CI 上运行单测、回归和确定性打包检查。Mac/Windows CI 另外运行只读 OS 元数据 smoke；该 smoke 不证明真实用户桌面、Clash、浏览器或故障恢复验收通过。原生采集扩展到产品/构建版本、语言偏好、时区和代理/PAC 启用状态；Mac另记录采集进程架构，硬件与翻译状态仍未知。不读取代理凭据或订阅内容。Mac严格上下文路径失败可返回固定字段/原因枚举，不输出路径或放宽筛查；面板可显示白名单默认代理开关，不能据此推断实际路径。
-
-## 新增工作流基础
-
-- `scripts/interview_cli.py`：完整95-ID访谈调度、条件分支、单题输出与明确保存/续接；推荐作为完整访谈入口
-- `scripts/network_probes.py`：带端点与路径授权契约的有限 HTTPS 出口探测；当前不由主CLI自动调用
-- `scripts/serve_webrtc.py`：限时、仅127.0.0.1的固定页面服务，不暴露目录或自动联网；打印本地URL后由用户自行打开
-- `assets/webrtc-probe.html`：本地浏览器页，仅在用户确认和点击后尝试单次STUN；无媒体权限请求
-- `scripts/transactions.py`：POSIX临时/测试文件事务基础，精确计划哈希、私有备份、核验和冲突拒绝回滚；不是已验收的系统/Clash适配器，Windows尚未实现
-
-访谈示例：
-
-```sh
-python skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --account-ref account-a
-```
-
-输出下一题和阶段评估，不默认保存。用户明确要求保存时提供 `--output`，后续通过 `--input` 续接。问题回答使用本地JSON文件（question_id、value、state、source），不要通过命令行传入凭据。
-
-源码里的可调用底层API不代表Agent可以绕过授权。尚未开放的完整Clash配置、浏览器策略、系统设置、深度清理、真实路径与故障注入能力继续在验收台账保留，不声称完成。
-
-## 配置候选与诊断会话的当前边界
-
-- `config_edit_plan.py` 只在内存中生成已有规则的私有字节差异，拒绝无效域名标签及可证明的前置规则覆盖；没有配置写入入口，也不证明完整分流或GUI合并结果
-- `diagnostic_session.py` 提供明确授权后的有限元数据流程，保持原60秒上下文期限与失败锁定；取消不保存面板。CLI没有DNS开关，真实查询仍缺独立可信宿主接入与逐次授权
-- 这些是ENV-02/06与ENV-01/04的部分实现；合成回归、CI和用户设备验收分别记录，详见[配置候选](docs/config-edit-plan.md)、[诊断会话](docs/diagnostic-session.md)与[验证记录](docs/validation.md)
-
-## 离线报告导入与隐私边界
-
-`guardian.py analyze/plan` 导入 `env-inventory/0.2` 时，只接受当前 `guardian.native_check` 生产的完整信封结构；不能手写一个同名 schema 的精简对象冒充完整报告。未知字段、未支持结构和已知凭据形式别名会在投影/输出前拒绝。需要制作离线样例时，使用明确的 `guardian-offline/0.1` 合约与仓库夹具，不补造原生观测。
-
-合成报告经过受支持的导入路径仍保留 `synthetic_example` 和面板合成标记。导入真实设备格式也只是未经本次认证的用户提供观察，不自动通过原生验收、接触或执行门禁。固定 CLI 错误码不回显无效参数；这是当前入口的局部加固，不是任意秘密识别保证。详细范围与未完成项见[导入与导出边界证据](docs/evidence/rebuild-inventory-export-boundaries.md)。
+代码采用 **[GPL-3.0-only](LICENSE)**。来源原文保留其已有署名与许可声明。
