@@ -4,7 +4,7 @@ import importlib.util
 import io
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import sys
 import tempfile
 from types import SimpleNamespace
@@ -59,7 +59,7 @@ def args(**kwargs):
 class NativeEntryTests(unittest.TestCase):
     def test_missing_withdrawn_unasked_and_mismatch_no_target_reads(self):
         for request in denied_requests():
-            with self.subTest(request=request), patch.object(guardian.os, 'uname') as uname, \
+            with self.subTest(request=request), patch.object(guardian.os, 'uname', create=True) as uname, \
                     patch.object(guardian, 'extended_inventory') as collect, \
                     patch.object(guardian.time, 'localtime') as localtime:
                 with self.assertRaises(guardian.GuardianError) as caught:
@@ -87,12 +87,20 @@ class NativeEntryTests(unittest.TestCase):
 
     def test_missing_resources_allow_only_authorized_offline_metadata(self):
         with patch.object(guardian.sys, 'platform', 'darwin'), \
-                patch.object(guardian.os, 'uname', return_value=SimpleNamespace(release='fixture-kernel')), \
+                patch.object(guardian.os, 'uname', return_value=SimpleNamespace(release='fixture-kernel'), create=True), \
                 patch.object(guardian.time, 'localtime', return_value=SimpleNamespace(tm_gmtoff=0)), \
                 patch.object(guardian, 'extended_inventory', return_value=([], [])) as collect:
             result = guardian.native_check(args(), entry_request=entry_request(available=False))
         self.assertEqual(result['record_kind'], 'device_observation')
         collect.assert_called_once_with('macos')
+
+    def test_synthetic_native_checks_work_without_host_uname(self):
+        # Replace only guardian's module reference; never remove a real OS API.
+        host_without_uname = SimpleNamespace()
+        with patch.object(guardian, 'os', host_without_uname):
+            self.test_missing_withdrawn_unasked_and_mismatch_no_target_reads()
+            self.test_missing_resources_allow_only_authorized_offline_metadata()
+        self.assertFalse(hasattr(host_without_uname, 'uname'))
 
     def test_vm_vps_selection_does_not_create_native_adapter(self):
         for route in ('vm', 'vps'):
@@ -230,6 +238,10 @@ class SessionEntryTests(unittest.TestCase):
 
 
 class InventoryEntryTests(unittest.TestCase):
+    def setUp(self):
+        # Host-valid syntax only. read_request and audit_inventory remain mocked.
+        self.fixture_root = (Path(tempfile.gettempdir()) / 'guardian-entry-fixture').resolve()
+
     def request(self):
         return {'schema_version': 'guardian-static-cli-request/2', 'target_ref': 'target',
                 'entry_request': entry_request(),
@@ -237,7 +249,8 @@ class InventoryEntryTests(unittest.TestCase):
                     'declared_os': 'macos', 'execution_location': 'native_local',
                     'desktop_user_relation': 'same', 'filesystem_namespace': 'host_desktop'},
                 'application': {'product': 'clash-verge-rev', 'gui_version': '2.5.5', 'core_version': '1.19.0'},
-                'files': [{'source_ref': 'profile', 'kind': 'profile', 'path': '/fixture/config.yaml'}]}
+                'files': [{'source_ref': 'profile', 'kind': 'profile',
+                           'path': str(self.fixture_root / 'config.yaml')}]}
 
     def invoke(self, request, *, confirm=None):
         out = io.StringIO()
@@ -246,7 +259,7 @@ class InventoryEntryTests(unittest.TestCase):
                 patch.object(inventory, 'confirm_scope', side_effect=confirm) as consent, \
                 patch.object(inventory.clash_inventory, 'audit_inventory',
                              return_value={'errors': [], 'status': 'partial'}) as audit:
-            code = inventory.run(['static-audit', '--request', '/fixture/request.json',
+            code = inventory.run(['static-audit', '--request', str(self.fixture_root / 'request.json'),
                                   '--target-ref', 'target'], outgoing=out)
         return code, json.loads(out.getvalue()), consent, audit
 
@@ -279,7 +292,8 @@ class InventoryEntryTests(unittest.TestCase):
         forwarded = audit.call_args.args[0]
         self.assertNotIn('entry_request', forwarded)
         self.assertEqual(forwarded['schema_version'], 'guardian-clash-inventory/0.1')
-        self.assertEqual(forwarded['authorization']['approved_paths'], ['/fixture/config.yaml'])
+        self.assertEqual(forwarded['authorization']['approved_paths'],
+                         [str(self.fixture_root / 'config.yaml')])
 
     def test_entry_cannot_replace_original_context_gate(self):
         request = self.request()
@@ -302,11 +316,24 @@ class InventoryEntryTests(unittest.TestCase):
         with patch.object(inventory.sys, 'platform', 'darwin'), \
                 patch.object(inventory, 'read_request', return_value=self.request()), \
                 patch.object(inventory.clash_inventory, 'audit_inventory') as audit:
-            code = inventory.run(['static-audit', '--request', '/fixture/request.json', '--target-ref', 'target'],
+            code = inventory.run(['static-audit', '--request', str(self.fixture_root / 'request.json'),
+                                  '--target-ref', 'target'],
                 incoming=io.StringIO('READ\n'), outgoing=out, prompt=io.StringIO())
         self.assertEqual(code, 3)
         self.assertEqual(json.loads(out.getvalue())['error_code'], 'LIVE_TERMINAL_REQUIRED')
         audit.assert_not_called()
+
+    def test_synthetic_inventory_checks_keep_windows_path_rules(self):
+        # Exercise the same assertions with Windows path grammar on any CI host.
+        # The real _path validator stays active, including its rejection branch.
+        self.fixture_root = PureWindowsPath('C:/guardian-entry-fixture')
+        with patch.object(inventory, 'Path', PureWindowsPath):
+            with self.assertRaises(inventory.InputError) as caught:
+                inventory._path('/fixture/config.yaml')
+            self.assertEqual(caught.exception.code, 'UNSAFE_OR_OFFLINE_PATH')
+            self.test_valid_entry_is_removed_before_strict_library_schema()
+            self.test_confirmation_cannot_change_same_eligibility_resource_alias()
+            self.test_original_terminal_consent_stays_required()
 
     def test_pure_capabilities_and_help_need_no_entry(self):
         for argv in (['capabilities'], ['workflow-status'], ['--help']):
