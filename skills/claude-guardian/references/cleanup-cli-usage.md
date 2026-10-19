@@ -24,7 +24,50 @@ Use the returned **document_digest** for the wrapper command, not the underlying
 
 ## Trusted Agent bridge
 
-The integration point is `cleanup_cli.main(argument_list, host=reviewed_live_host)`. Import from a trusted installed scripts directory or use isolated file-path loading; exact sibling dependencies are supported without modifying sys.path. There is no plugin-path or “yes/verified” flag.
+The integration point for new plan/quarantine work is `cleanup_cli.main(argument_list, host=reviewed_live_host, entry_request=current_entry)`. Import from a trusted installed scripts directory or use isolated file-path loading; exact sibling dependencies are supported without modifying sys.path. There is no plugin-path, `--entry-file` or “yes/verified” cleanup flag: the reviewed host supplies the current dict explicitly.
+
+Choose the current local/VM/VPS route before inspecting the selected target. Existing assets, a default recommendation or an old interview are not a current selection, and there is no automatic old-interview-to-entry adapter. The following complete sanitized declaration is a fictional local example with unknown network resources; it permits only entry to the original offline precheck gate:
+
+```json
+{
+  "schema_version": "guardian-environment-entry-input/0.1",
+  "route": {"choice": "local", "state": "selected"},
+  "targets": [{"role": "local", "target_ref": "device-1"}],
+  "network": {
+    "possession": "unknown", "selection": "unknown",
+    "configuration": "unknown", "path": "unknown"
+  },
+  "local_entry": {"kind": "unknown"},
+  "final_egress": {"kind": "unknown", "protocol": "unknown"},
+  "client": "claude_code"
+}
+```
+
+Use only documented enums and non-identifying aliases, never real hostnames, IPs, subscription URLs, UUIDs, credentials, configuration text or approval fields. This declaration neither proves a host binding nor authorizes a read, save, move or restore. Unknown/absent resources do not require a purchase before separately authorized offline work; this example does not qualify for configuration or active probes. Keep the actual operator scope's target_ref equal to the chosen declared alias.
+
+After independent host admission and operation-specific approval, the call shapes are:
+
+```python
+# current_entry is the complete current dict above, not an imported permission.
+# reviewed_live_host must supply the real checks described below.
+code = cleanup_cli.main(
+    ["plan", "--scope", "/private/guardian-task/operator-scope.json",
+     "--plan-output", "/private/guardian-task/new-plan.json"],
+    host=reviewed_live_host, entry_request=current_entry,
+)
+# Only after reviewing the retained plan and its returned document_digest:
+code = cleanup_cli.main(
+    ["quarantine", "--plan-file", "/private/guardian-task/new-plan.json",
+     "--expected-plan-digest", reviewed_plan_digest],
+    host=reviewed_live_host, entry_request=current_entry,
+)
+```
+
+These are placeholder paths and host variables, not a runnable grant or a suggestion to synthesize successful callbacks. The host must check each return code and private state before continuing. plan/quarantine require `offline_precheck` for the same target; unknown resources alone do not waive any cleanup check. Missing, withdrawn, stale, conflicting or mismatched entry blocks new work with fixed errors; changing the dict during a call stops dependent steps. Do not replace it with an implicit local route or reuse previous approval to pass.
+
+Retained plans bind the complete entry used when they were created, including across separate calls or processes. A changed route, target, selected resource or configuration declaration requires a newly generated and reviewed plan; supplying a new eligible entry cannot make an old plan usable for quarantine. Do not edit the stored binding digest to bypass this check. Historical cleanup plans without that entry binding remain usable only for exact reconciliation/recovery of existing work, never for a new quarantine. The same replan requirement applies to retained repair plans; none of these digests conveys permission.
+
+VM declarations require both distinct `vm_host` and `vm_guest` aliases and independent real bindings. Entry eligibility does not provide a VM adapter or let a host result certify a guest. VPS remains basic and non-intrusive: quarantine is rejected with `VPS_QUARANTINE_OUTSIDE_BASIC_CHECK_SCOPE`; no VPS deployment or configuration capability is added. Keep the original exact cleanup host, filesystem and operation boundaries even when an entry is eligible. Other native/diagnostic/repair entry-file forms and the inventory /2 envelope are documented in the installed [environment-entry instructions](agent-remediation.md#environment-entry).
 
 The host must implement:
 
@@ -41,12 +84,14 @@ The bounded operator JSON has exactly schema_version=`guardian-cleanup-operator-
 
 Retain the private plan, its reviewed document digest and the core's quarantine batch. After an interruption, re-establish host identity/ownership/inactivity/backup checks, reconcile against the retained plan and current batch, then obtain separate approval for the new receipt before restore. Exceptions may follow real moves. Use recovery_id, moved_count and stage; never infer “nothing happened” from failure. Interrupted record persistence can report private_record_may_exist=true. Preserve these records and inspect through the authorized recovery path; do not retry with overwrite or delete journals to force success.
 
+Recovery of that existing retained work does not require a new environment entry. Call `cleanup_cli.main(reconcile_arguments, host=reviewed_live_host)` and, after reviewing the fresh receipt and separately approving restoration, `cleanup_cli.main(restore_arguments, host=reviewed_live_host)`. Route withdrawal must not strand the original recovery obligation. This exception preserves all receipt/digest, current target, ownership/inactivity, backup, exclusion and restore-consent checks; it grants no new quarantine, broader cleanup or configuration action. The separate exact-file `recovery_cli.py` paths likewise retain their original recovery checks without requiring `--entry-file`.
+
 Successful quarantine removes **all selected verified roots from their active locations**. Private quarantine data, recovery journals and independent backups remain. Report exact selected/excluded categories and partial completion. This does not certify discovery of every Claude object, permanent secure erasure, credential/browser cleanup, uninstall, account reset or removal of remote restrictions. Permanent purge is unsupported and would require a separate implementation and per-action approval.
 
 ## Installed-package evidence
 
 `tests/test_cleanup_cli_package.py` builds and extracts the real release ZIP, checks that the test-only fixture helper is absent, and runs ordinary script commands from an unrelated directory under `-I -S -B`. Without a host all root operations are blocked before reading the supplied missing paths.
 
-A separate test parent creates and captures the exact private fixture identities and backup bytes. One child interpreter plans and quarantines; after it exits, a different interpreter independently rechecks those live bindings, reloads the retained plan using the parent-held digest, reconciles and restores under new stage-specific synthetic consent. The fixture's cooperating writer lock and known absence of an application apply only to this disposable test. No saved approval is reused. Original/protected/backup content and retained records are checked afterward.
+A separate test parent creates and captures the exact private fixture identities, backup bytes and a synthetic explicit entry for that fixture target. One child interpreter plans and quarantines with that declaration; after it exits, a different interpreter independently rechecks those live bindings, reloads the retained plan using the parent-held digest, reconciles and restores without a new entry under new stage-specific synthetic consent. The fixture's cooperating writer lock and known absence of an application apply only to this disposable test. No saved approval is reused. Original/protected/backup content and retained records are checked afterward.
 
 This is an observed two-process synthetic recovery exercise, not a native ownership adapter or proof about real Claude processes, arbitrary external writers, macOS application behavior or Windows cleanup. Native acceptance remains `not_run`.

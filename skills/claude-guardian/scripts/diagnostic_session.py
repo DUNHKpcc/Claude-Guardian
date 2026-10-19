@@ -4,6 +4,7 @@
 No I/O on import. Python callbacks are a trusted-host boundary, not a sandbox.
 The standalone terminal adapter cannot attest namespaces or resolver runtime.
 """
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
@@ -16,6 +17,7 @@ import sys
 import time
 
 import guardian
+import environment_entry
 import interview_flow
 import inventory_cli
 import native_context
@@ -159,13 +161,15 @@ def _check(handle, cancelled, backend):
 
 
 def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
-            cancelled=lambda: False):
+            cancelled=lambda: False, entry_request=None):
     """Run a fresh session; return sanitized report and in-memory HTML preview.
 
     Caller must be an already trusted host for even local metadata access. The
     selected target alias is presented as a declaration, not device proof. Scope
     approval is live and separate for every DNS query. No imported report or
     interview answer is used as authority. At most eight explicit query pairs.
+    entry_request is a current sanitized declaration, never restored permission.
+    Metadata uses offline_precheck; each DNS query also requires active_probe.
     """
     report = guardian.base('audit', 'session-target')
     report['record_kind'] = 'limited_context_observation'
@@ -189,6 +193,16 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
     handle = None
     metadata_only = False
     continuity_failure = None
+    entry_snapshot = None
+    def check_entry(purpose='offline_precheck'):
+        current = environment_entry.require_entry(entry_request, purpose, target_ref)
+        if entry_snapshot is not None and entry_request != entry_snapshot:
+            raise SessionError('ENTRY_CHANGED')
+        # These native session adapters only observe the current local desktop.
+        # VM/VPS entry eligibility cannot attest or provision another adapter.
+        if current['target_role'] != 'local':
+            raise SessionError('TARGET_USER_CONTEXT_MISMATCH')
+        return current
     cancellation_callback = cancelled
     def poll_cancelled():
         # The probe also polls cancellation directly. Preserve a transient
@@ -207,6 +221,11 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
         if stopped is not False:
             continuity_failure = SessionError('CANCELLED')
             raise continuity_failure
+        try:
+            check_entry()
+        except (environment_entry.InvalidProjection, environment_entry.EntryBlocked, SessionError) as exc:
+            continuity_failure = exc
+            raise
         return False
 
     def checked():
@@ -216,10 +235,12 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
         if continuity_failure is not None:
             raise continuity_failure
         try:
+            check_entry()
             remaining_budget()
             _check(handle, cancelled, backend)
             remaining_budget()
-        except (native_context.ContextError, windows_native_context.ContextError, SessionError) as exc:
+        except (native_context.ContextError, windows_native_context.ContextError, SessionError,
+                environment_entry.InvalidProjection, environment_entry.EntryBlocked) as exc:
             continuity_failure = exc
             raise
         except (KeyboardInterrupt, EOFError):
@@ -246,6 +267,8 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
         return True
 
     try:
+        check_entry()
+        entry_snapshot = deepcopy(entry_request)
         if (type(target_ref) is not str or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,47}', target_ref)
                 or not callable(consent) or not callable(cancelled)
                 or type(queries) not in (tuple, list) or len(queries) > 8):
@@ -274,6 +297,7 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
                     'target_association': 'not_independently_verified',
                     'network': 'none', 'changes': 'none'}) is not True:
             raise SessionError('DECLINED')
+        check_entry()
         _guard(cancelled)
         started = time.monotonic()
         if type(started) not in (int, float) or not 0 <= started < 1e100:
@@ -320,6 +344,7 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
         elif handle is not None and dns_host is not None:
             result['dns_availability'] = 'requires_live_host_checks_and_query_consent'
         for pair in queries if handle is not None else ():
+            check_entry('active_probe')
             checked()
             if dns_host is None:
                 result['errors'].append('DNS_HOST_INTEGRATION_REQUIRED')
@@ -357,6 +382,7 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
             used = False
             def consume(candidate, candidate_budget):
                 nonlocal used
+                check_entry('active_probe')
                 checked()
                 if used or candidate != scope or candidate_budget != budget:
                     return False
@@ -386,6 +412,11 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
     except (KeyboardInterrupt, EOFError):
         result['errors'].append('CANCELLED')
         result['status'] = 'cancelled'
+    except (environment_entry.InvalidProjection, environment_entry.EntryBlocked) as exc:
+        result['errors'].append(str(exc))
+        if isinstance(exc, environment_entry.EntryBlocked):
+            result['entry_gaps'] = list(exc.gaps)
+        result['status'] = 'blocked'
     except (SessionError, native_context.ContextError, windows_native_context.ContextError, os_dns_probe.ProbeError) as exc:
         allowed = {'INPUT_INVALID', 'HOST_INTEGRATION_INVALID', 'CANCELLED', 'DECLINED',
             'LIVE_TERMINAL_REQUIRED', 'CONSENT_TIMEOUT', 'TARGET_NOT_BOUND',
@@ -394,7 +425,7 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
             'CONTEXT_INACTIVE', 'CONTEXT_FOREIGN', 'TARGET_USER_CONTEXT_MISMATCH',
             'RUNTIME_PATH_INVALID', 'PERMISSION_DENIED', 'PC0_TARGET_FORBIDDEN',
             'TIMEOUT', 'AUTHORIZATION_MISSING', 'CLEANUP_FAILED', 'SESSION_FAILED',
-            'CONTEXT_INACTIVE_OR_REMOTE', 'WINDOWS_SESSION_DNS_UNAVAILABLE'}
+            'CONTEXT_INACTIVE_OR_REMOTE', 'WINDOWS_SESSION_DNS_UNAVAILABLE', 'ENTRY_CHANGED'}
         code = exc.args[0] if exc.args and type(exc.args[0]) is str else ''
         code = code if code in allowed else 'INPUT_INVALID'
         if not result['errors'] or result['errors'][-1] != code:
@@ -424,18 +455,24 @@ def execute(target_ref, *, consent, dns_host=None, queries=(), interview=None,
     return result
 
 
-def run(argv=None, *, incoming=None, outgoing=None, prompt=None):
+def run(argv=None, *, incoming=None, outgoing=None, prompt=None, entry_request=None):
     outgoing = sys.stdout if outgoing is None else outgoing
     try:
         parser = inventory_cli.Parser(prog='diagnostic_session.py', description=__doc__)
         parser.add_argument('--target-ref', required=True, help='Declared current Mac/Windows alias; not identity proof')
+        parser.add_argument('--entry-file', help='Explicit absolute local hydrated environment-entry JSON; POSIX reader only, never authorization')
         parser.add_argument('--dashboard-output', help='Explicit new local hydrated HTML path; never auto-opened')
         args = parser.parse_args(argv)
+        if args.entry_file:
+            if entry_request is not None:
+                raise inventory_cli.InputError('INVALID_ARGUMENTS')
+            entry_request = inventory_cli.read_request(args.entry_file)
         if args.dashboard_output:
             if sys.platform == 'win32':
                 guardian.validate_windows_output_path(args.dashboard_output)
             inventory_cli._path(args.dashboard_output)
-        result = execute(args.target_ref, consent=TerminalConsent(incoming, prompt))
+        result = execute(args.target_ref, consent=TerminalConsent(incoming, prompt),
+                         entry_request=entry_request)
         html = result.pop('dashboard_html')
         if args.dashboard_output and result['status'] != 'cancelled':
             guardian.save_new(args.dashboard_output, html)
@@ -443,7 +480,9 @@ def run(argv=None, *, incoming=None, outgoing=None, prompt=None):
         code = 3 if result['status'] == 'cancelled' else 2 if result['status'] == 'blocked' else 0
     except inventory_cli.HelpRequested as exc:
         result, code = {'status': 'help', 'help': exc.text}, 0
-    except (inventory_cli.InputError, guardian.GuardianError, SessionError):
+    except inventory_cli.InputError as exc:
+        result, code = {'status': 'blocked', 'error_code': exc.code}, 2
+    except (guardian.GuardianError, SessionError):
         result, code = {'status': 'blocked', 'error_code': 'INVALID_ARGUMENTS_OR_SAVE_FAILED'}, 2
     except (OSError, ValueError):
         result, code = {'status': 'blocked', 'error_code': 'SESSION_FAILED'}, 2

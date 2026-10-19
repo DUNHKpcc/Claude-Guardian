@@ -8,6 +8,7 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+from environment_entry_fixture import local_entry
 
 SCRIPTS = Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts'
 sys.path.insert(0, str(SCRIPTS))
@@ -28,7 +29,8 @@ class InventoryCliTests(unittest.TestCase):
         self.config = self.root / 'config.yaml'
         self.config.write_text('mode: rule\nsecret: RAW_SECRET_SENTINEL\n', encoding='utf-8')
         self.path = self.root / 'request.json'
-        self.request = {'schema_version': 'guardian-static-cli-request/1', 'target_ref': 'device-1',
+        self.request = {'schema_version': 'guardian-static-cli-request/2', 'target_ref': 'device-1',
+                        'entry_request': local_entry('device-1'),
                         'target_binding': {'target_ref': 'device-1', 'binding_state': 'bound',
                            'declared_os': 'macos', 'execution_location': 'native_local',
                            'desktop_user_relation': 'same', 'filesystem_namespace': 'host_desktop'},

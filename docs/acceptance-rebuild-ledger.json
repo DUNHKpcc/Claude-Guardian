@@ -10,7 +10,9 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Fifty-one original cases have reviewed, pinned evidence under unchanged original layers; remaining167 are pending_revalidation. Latest T26/T33 combine nine unchanged captured synthetic responses collected adaptively in three stages, independent whole-response semantic review and separate normalized logic. Earlier T26 route-question coverage remains partial; the fresh ninth case supplies a route question for its fully specified goal and explicit asset disclaimer. Source/tool provenance remains retrospective self-report; no integrated helper dialogue, unseen-output, native or actual-operation guarantee. Aggregate and prior-source compatibility remain separate integration gates."
+    "The thirty-seventh checkpoint retained 51 reviewed original-case acceptances, all preserved as unchanged historical_evidence. The 2026-10-19 environment-entry change leaves 47 pending_revalidation for affected behavior/runtime compatibility. After the later SKILL and package additions, a separate exact-source, whole-clause limited review restores only T03, T05, T09 and T18; see docs/evidence/entry-order-limited-revalidation.md. Current counts are 4 accepted and 214 pending, including the previously pending 167. Historical dialogues remain historical, and pins alone never establish acceptance.",
+    "All original 218 scenario/requirement/layer rows and historical evidence bytes are retained. The dated PRODUCT-ENTRY-20261019 requirement is tracked separately; it does not replace original cases. Existing behavioral and runtime tests remain mandatory and are not deleted or skipped by this status correction.",
+    "The fortieth checkpoint separately reviews the Agent application-task link, supplied-snapshot helper/reference, two package additions and retained-schema clarification; docs/evidence/agent-rules-limited-revalidation.md replaces only the current evidence link for the same four cases. The preceding entry review and its evidence objects are retained unchanged. Counts remain 4 accepted / 214 pending; historical source preservation changes an explicit origin, never the old source bytes/hash."
   ],
   "cases": [
     {
@@ -19,10 +21,10 @@
       "requirement": "先分首次/重订/已有订阅；问目标套餐和相关前提，本机默认建议；不询问账号归属，不推荐无关 VPS/企业开户/脚本",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导或代码变化后重新审阅原完整条件与固定证据；不外推真机或未观察输入",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
         "sha256": "c8aca9fc6acaef50deb2d1704d73cf7c9f742d1598bb17c1df0b10533710c22d",
         "layers": [
@@ -31,6 +33,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete deterministic interview replays and sentence-level active-guidance review under original L+C; no native or actual action authorization claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "entry_and_environment_intake",
+        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -39,10 +48,10 @@
       "requirement": "复用信息，不反复问基础问题；仍保留必要授权",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导或代码变化后重新审阅原完整条件与固定证据；不外推真机或未观察输入",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
         "sha256": "c8aca9fc6acaef50deb2d1704d73cf7c9f742d1598bb17c1df0b10533710c22d",
         "layers": [
@@ -51,6 +60,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete deterministic interview replays and sentence-level active-guidance review under original L+C; no native or actual action authorization claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "entry_and_environment_intake",
+        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -60,9 +76,9 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant guidance or response changes require renewed whole-clause review; do not generalize to unobserved outputs or actual service behavior.",
+      "next_steps": "Agent应用任务指导/打包与0.3说明的窄复核已独立记录；相关指导、来源或打包字节后续变化时重审原完整条件及当前兼容证据，不外推真机、当前外部事实或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-t03-t05-guided-responses.md",
         "sha256": "c329f75788acc702ecfb400e79731e4c9ca8be43dcc19a880dd1d86ff5bcc39c",
         "layers": [
@@ -71,6 +87,26 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Actual two-turn synthetic guided responses independently reviewed sentence by sentence; retained-record integrity tests do not generate new responses or prove native/service facts."
+      },
+      "evidence": {
+        "path": "docs/evidence/agent-rules-limited-revalidation.md",
+        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
+      },
+      "prior_revalidation_evidence": {
+        "path": "docs/evidence/entry-order-limited-revalidation.md",
+        "sha256": "b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source entry-guidance/package compatibility review; prior observed replies remain historical, current T09 source/package tests rerun, no new dialogue generation or native/action claim."
       }
     },
     {
@@ -90,9 +126,9 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant guidance or response changes require renewed whole-clause review; do not generalize to unobserved outputs or actual service behavior.",
+      "next_steps": "Agent应用任务指导/打包与0.3说明的窄复核已独立记录；相关指导、来源或打包字节后续变化时重审原完整条件及当前兼容证据，不外推真机、当前外部事实或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-t03-t05-guided-responses.md",
         "sha256": "c329f75788acc702ecfb400e79731e4c9ca8be43dcc19a880dd1d86ff5bcc39c",
         "layers": [
@@ -101,6 +137,26 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Actual two-turn synthetic guided responses independently reviewed sentence by sentence; retained-record integrity tests do not generate new responses or prove native/service facts."
+      },
+      "evidence": {
+        "path": "docs/evidence/agent-rules-limited-revalidation.md",
+        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
+      },
+      "prior_revalidation_evidence": {
+        "path": "docs/evidence/entry-order-limited-revalidation.md",
+        "sha256": "b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source entry-guidance/package compatibility review; prior observed replies remain historical, current T09 source/package tests rerun, no new dialogue generation or native/action claim."
       }
     },
     {
@@ -140,9 +196,9 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关代码/契约变化后重跑链接的完整案例与发行包回归",
+      "next_steps": "Agent应用任务指导/打包与0.3说明的窄复核已独立记录；相关指导、来源或打包字节后续变化时重审原完整条件及当前兼容证据，不外推真机、当前外部事实或未观察输入",
       "dependencies": "A、P",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-source-dedup.md",
         "sha256": "0b81ae3758c50584f040610500effe4cc7760d00a94c7c578dbbce24c1310d32",
         "layers": [
@@ -151,6 +207,26 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      },
+      "evidence": {
+        "path": "docs/evidence/agent-rules-limited-revalidation.md",
+        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
+      },
+      "prior_revalidation_evidence": {
+        "path": "docs/evidence/entry-order-limited-revalidation.md",
+        "sha256": "b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source entry-guidance/package compatibility review; prior observed replies remain historical, current T09 source/package tests rerun, no new dialogue generation or native/action claim."
       }
     },
     {
@@ -169,10 +245,10 @@
       "requirement": "输出脱敏，不把秘密带入报告、模板或公共仓库",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review original clauses and observed response evidence after relevant source changes; do not infer universal sanitization or execution prevention.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-t11-t12-safe-inputs.md",
         "sha256": "68d81acfe44558024c420e5b5f2328ea0d713f4dcd28b6b9e27745928ce3a3ea",
         "layers": [
@@ -181,6 +257,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Four retained generated responses, independent line-level original-clause review, and bounded supporting CLI/helper replays; no universal secret sanitizer, publication enforcement, native execution or independent reconstruction of generator telemetry."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "safe_input_compatibility",
+        "reason": "The guardian source pin changed. Preserve the original observed replies; rerun all bounded CLI/helper input checks and review sensitive-data and authority behavior on the current entry paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -189,10 +272,10 @@
       "requirement": "当作不可信文本，不执行或改变权限",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review original clauses and observed response evidence after relevant source changes; do not infer universal sanitization or execution prevention.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-t11-t12-safe-inputs.md",
         "sha256": "68d81acfe44558024c420e5b5f2328ea0d713f4dcd28b6b9e27745928ce3a3ea",
         "layers": [
@@ -201,6 +284,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Four retained generated responses, independent line-level original-clause review, and bounded supporting CLI/helper replays; no universal secret sanitizer, publication enforcement, native execution or independent reconstruction of generator telemetry."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "safe_input_compatibility",
+        "reason": "The guardian source pin changed. Preserve the original observed replies; rerun all bounded CLI/helper input checks and review sensitive-data and authority behavior on the current entry paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -239,10 +329,10 @@
       "requirement": "恢复不含秘密的进度，检查环境变化，不重复付款或删除",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关运行时或活动指导变化后复核完整原条件及固定重放；保留宿主契约与实际动作授权边界",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、P、U",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-resume-completion.md",
         "sha256": "d7fba982e8b5933e6160332ffc60c637577ddde79db2d8397ae1978e77bd52f5",
         "layers": [
@@ -251,6 +341,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Observed composed non-secret resume, environment review, completed-payment state and controlled partial cleanup retry/recovery; explicit trusted-host contract, no provider-side duplicate-charge or native-device claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -270,9 +367,9 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导或代码变化后重新审阅原完整条件与固定证据；不外推真机或未观察输入",
+      "next_steps": "Agent应用任务指导/打包与0.3说明的窄复核已独立记录；相关指导、来源或打包字节后续变化时重审原完整条件及当前兼容证据，不外推真机、当前外部事实或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-t18-appeal-facts.md",
         "sha256": "54bb6b7c0eca1119115b6b8569ebc6058e35643bb5cf066b5824d9a7d589adbb",
         "layers": [
@@ -281,6 +378,26 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Observed two-turn synthetic guided response and independent sentence-level content review; integrity tests do not regenerate responses. No native, live-account or sending claim."
+      },
+      "evidence": {
+        "path": "docs/evidence/agent-rules-limited-revalidation.md",
+        "sha256": "e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source Agent-task guidance/package compatibility review; prior entry review and observed replies remain historical, current T09 source/package tests rerun, no new dialogue or native/action claim."
+      },
+      "prior_revalidation_evidence": {
+        "path": "docs/evidence/entry-order-limited-revalidation.md",
+        "sha256": "b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by a separate exact-source entry-guidance/package compatibility review; prior observed replies remain historical, current T09 source/package tests rerun, no new dialogue generation or native/action claim."
       }
     },
     {
@@ -289,10 +406,10 @@
       "requirement": "本机仅为默认候选，先询问选择/接受建议；未答时为 `unconfirmed`，不是已选本机",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "变更时重跑专页对应完整轨迹及语义审阅；实际执行仍另核授权",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
         "sha256": "1a611f4c646835469a42f6df5e0e91b2aeca1f26e0a7e33a462c407f2995aa1f",
         "layers": [
@@ -301,6 +418,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -309,10 +433,10 @@
       "requirement": "进入 `R-VM`，提供新手步骤，不强制先走本机或 VPS 教程",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "回放“L0 明确选择虚拟机”，逐项核对：进入 `R-VM`，提供新手步骤，不强制先走本机或 VPS 教程。实际 Mac/Windows 宿主与所选客机组合另验；路线调度/教程现在可审",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、V、B",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
         "sha256": "1a611f4c646835469a42f6df5e0e91b2aeca1f26e0a7e33a462c407f2995aa1f",
         "layers": [
@@ -321,6 +445,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -329,10 +460,10 @@
       "requirement": "进入 `R-VPS`，不被本机默认值覆盖；区分已有与新建服务器",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "回放“用户明确选择 VPS 完整部署”，逐项核对：进入 `R-VPS`，不被本机默认值覆盖；区分已有与新建服务器。本机 SSH/编辑器入口的 Mac/Windows 行为另验；Linux VPS 不受本机平台等待阻塞",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、V、B",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
         "sha256": "1a611f4c646835469a42f6df5e0e91b2aeca1f26e0a7e33a462c407f2995aa1f",
         "layers": [
@@ -341,6 +472,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -349,10 +487,10 @@
       "requirement": "留在 `R-LOCAL`，缩减基础解释，不自动推荐 VM/VPS 迁移",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导或运行时变化后重新审阅原完整条件、固定实际对话和独立逻辑证据；不外推未观察输入、当前外部事实或真机操作",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-local-incident-cases.md",
         "sha256": "57c0be1d6fd953f01ad0de69f08bfc92527c1939ea3fa1341bec0d662d170561",
         "layers": [
@@ -361,6 +499,13 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Seven actual frozen synthetic responses independently reviewed against full original T22/T25 L+C clauses, with separate normalized logic tests. No helper was invoked in these dialogues; source reads are responder-reported with a retained 329-token cleanup omission. Integrity checks do not generate new responses or establish native, current-service, repair or recovery evidence."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -369,10 +514,10 @@
       "requirement": "主流程仍为本机；记录网络出口，不能自动安装远端工作区",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关运行时或活动指导变化后复核完整原条件及固定重放；保留宿主契约与实际动作授权边界",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、B、N、L",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-local-egress.md",
         "sha256": "46b31dbdd4cd61b35d53d65940167c9dc43baa18ee1bdb624ea4b368fc3991db",
         "layers": [
@@ -381,6 +526,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Normalized local-runtime and VPS-egress full state replay plus active-guidance content review; host must establish truthful runtime/intent, no arbitrary-prose classifier or actual egress/native claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -389,10 +541,10 @@
       "requirement": "按当前任务保留选择，核实环境变化，不重置本机默认值",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "回放“已选 VM/VPS 后中断再继续”，逐项核对：按当前任务保留选择，核实环境变化，不重置本机默认值。真实本机控制端重连及客机/远端变更分别延期，不混 namespace",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、V、U",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
         "sha256": "1a611f4c646835469a42f6df5e0e91b2aeca1f26e0a7e33a462c407f2995aa1f",
         "layers": [
@@ -401,6 +553,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -409,10 +568,10 @@
       "requirement": "先在原方案进行专项诊断，不自动购买 VPS、重建 VM 或迁移账号",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导或运行时变化后重新审阅原完整条件、固定实际对话和独立逻辑证据；不外推未观察输入、当前外部事实或真机操作",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-local-incident-cases.md",
         "sha256": "57c0be1d6fd953f01ad0de69f08bfc92527c1939ea3fa1341bec0d662d170561",
         "layers": [
@@ -421,6 +580,13 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Seven actual frozen synthetic responses independently reviewed against full original T22/T25 L+C clauses, with separate normalized logic tests. No helper was invoked in these dialogues; source reads are responder-reported with a retained 329-token cleanup omission. Integrity checks do not generate new responses or establish native, current-service, repair or recovery evidence."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -429,10 +595,10 @@
       "requirement": "只记资产信息；主动询问实际目标和方案，不把资产当选择，也不静默开始本机部署",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant guidance or runtime changes require renewed whole-clause review and the separate aggregate/source-compatibility gates; preserve adaptive collection history and do not generalize to unseen outputs or native behavior.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-asset-route-cases.md",
         "sha256": "8e31a9f34aaa5ed191a2eee6721a7633d9754724da156304a23c75f9dd485459",
         "layers": [
@@ -441,6 +607,13 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Nine unchanged captured synthetic responses collected adaptively in three stages, independent whole-response semantic review and separate normalized logic. Original six/later two T26 route-question coverage remains partial; a fresh fully specified-goal case with an explicit asset disclaimer supplies the route question. No integrated helper dialogue, native or universal-output claim; aggregate/source compatibility remain separate gates."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -469,10 +642,10 @@
       "requirement": "第一问订阅阶段，随后系统/目标套餐/账号经历/方案；不直接给安装付款教程，不通问已有权益",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer native payment eligibility or unseen host responses.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
         "sha256": "ac003c14e6a9d2ad17d2a7d57803b57666a15c6ac2c85d7a40c49003ca61b5e8",
         "layers": [
@@ -481,6 +654,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "entry_and_environment_intake",
+        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -499,10 +679,10 @@
       "requirement": "当前状态和历史经历分开记录，历史事实不自动改变方案",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review full original clause and exact guide/runtime pins when relevant bytes change; no native or unspecified historical format claim.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
         "sha256": "0777b57ce8189a47cb5c1565108c979f5f8afd4d93ae0058b4f405a2f119031b",
         "layers": [
@@ -511,6 +691,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete deterministic synthetic state replays and independently reviewed active guidance; normalized host facts and supported compact/report migration contract only; no generated dialogue or native action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -529,10 +716,10 @@
       "requirement": "给简短比较，允许接受本机建议；不进行术语考试，不把不知道当选择",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant guidance or runtime changes require renewed whole-clause review and the separate aggregate/source-compatibility gates; preserve adaptive collection history and do not generalize to unseen outputs or native behavior.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-asset-route-cases.md",
         "sha256": "8e31a9f34aaa5ed191a2eee6721a7633d9754724da156304a23c75f9dd485459",
         "layers": [
@@ -541,6 +728,13 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Nine unchanged captured synthetic responses collected adaptively in three stages, independent whole-response semantic review and separate normalized logic. Original six/later two T26 route-question coverage remains partial; a fresh fully specified-goal case with an explicit asset disclaimer supplies the route question. No integrated helper dialogue, native or universal-output claim; aggregate/source compatibility remain separate gates."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -549,10 +743,10 @@
       "requirement": "默认候选不升为已确认；只允许受限比较/初步建议",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant task, incident, prompt or guidance changes require exact replay and full original L+C review again.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
         "sha256": "37e0478c50e382f206f6f5214ec9bb9291b8ccddd0bab6724752b3defef137c5",
         "layers": [
@@ -560,6 +754,13 @@
           "C"
         ],
         "boundary": "Complete original normalized-host logic and active-guidance review; no arbitrary NLP, native incident detection, credential action or device proof."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -578,10 +779,10 @@
       "requirement": "区分设备、Apple 账户和商店地区，不直接通过礼品卡前提",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导变化后重审完整原条件与逐代固定回复；不外推账号、设备或未观察输入",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
         "sha256": "8f3801b4d6b402779a7d9fb488fc895255c5142220622f8d90afd9c85f4701aa",
         "layers": [
@@ -589,6 +790,13 @@
           "C"
         ],
         "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -607,10 +815,10 @@
       "requirement": "记录付款前提缺失，不把设备存在当作内购就绪，不重新调查账号归属",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导变化后重审完整原条件与逐代固定回复；不外推账号、设备或未观察输入",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
         "sha256": "8f3801b4d6b402779a7d9fb488fc895255c5142220622f8d90afd9c85f4701aa",
         "layers": [
@@ -618,6 +826,13 @@
           "C"
         ],
         "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -666,10 +881,10 @@
       "requirement": "不问新目标套餐或支付渠道；记录本次未处理购买，不将其当成订阅准备默认场景",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant task, incident, prompt or guidance changes require exact replay and full original L+C review again.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
         "sha256": "37e0478c50e382f206f6f5214ec9bb9291b8ccddd0bab6724752b3defef137c5",
         "layers": [
@@ -677,6 +892,13 @@
           "C"
         ],
         "boundary": "Complete original normalized-host logic and active-guidance review; no arbitrary NLP, native incident detection, credential action or device proof."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "entry_and_environment_intake",
+        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -705,10 +927,10 @@
       "requirement": "记录拒绝与阻断范围，可给一般解释，不猜测其资格或强迫回答",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导变化后重审完整原条件与逐代固定回复；不外推账号、设备或未观察输入",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
         "sha256": "8f3801b4d6b402779a7d9fb488fc895255c5142220622f8d90afd9c85f4701aa",
         "layers": [
@@ -716,6 +938,13 @@
           "C"
         ],
         "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -724,10 +953,10 @@
       "requirement": "停止推进或改为缺口摘要；不继续完整题单，不默默通过 G2/G3",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review full original clause and exact guide/runtime pins when relevant bytes change; no native or unspecified historical format claim.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、U",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
         "sha256": "0777b57ce8189a47cb5c1565108c979f5f8afd4d93ae0058b4f405a2f119031b",
         "layers": [
@@ -736,6 +965,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete deterministic synthetic state replays and independently reviewed active guidance; normalized host facts and supported compact/report migration contract only; no generated dialogue or native action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -744,10 +980,10 @@
       "requirement": "最小必要分流优先，其余主题标延期，不以付款问卷拖延保护",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant task, incident, prompt or guidance changes require exact replay and full original L+C review again.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
         "sha256": "37e0478c50e382f206f6f5214ec9bb9291b8ccddd0bab6724752b3defef137c5",
         "layers": [
@@ -755,6 +991,13 @@
           "C"
         ],
         "boundary": "Complete original normalized-host logic and active-guidance review; no arbitrary NLP, native incident detection, credential action or device proof."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -763,10 +1006,10 @@
       "requirement": "运行环境与付款设备分开，读取对应分支，不强制网页银行卡",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer native payment eligibility or unseen host responses.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
         "sha256": "95c564477a08a269f15fc94d5e419ecc67d0d1e087867c64c06f6441962097ea",
         "layers": [
@@ -775,6 +1018,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -813,10 +1063,10 @@
       "requirement": "记录 `accepted_default`，不再增加一次无意义确认；执行授权仍单独处理",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant runtime, guidance or evidence changes require exact replay and full original L+C review again.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
         "sha256": "74979d1eab88d6c2ec73772246ffd06cd14ce4643e9cca8638a0737a9cb5df5e",
         "layers": [
@@ -824,6 +1074,13 @@
           "C"
         ],
         "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "route_transition",
+        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -832,10 +1089,10 @@
       "requirement": "标为条件式/部分草案并列缺口，不给具体购买或高影响执行指令",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导变化后重审完整原条件与逐代固定回复；不外推账号、设备或未观察输入",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
         "sha256": "8f3801b4d6b402779a7d9fb488fc895255c5142220622f8d90afd9c85f4701aa",
         "layers": [
@@ -843,6 +1100,13 @@
           "C"
         ],
         "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -871,10 +1135,10 @@
       "requirement": "系统题仅 **Mac/Windows**（另有手机/未知出口）；不把系统题置于已明确的新入口之前，也没有长平台问卷",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer native payment eligibility or unseen host responses.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
         "sha256": "ac003c14e6a9d2ad17d2a7d57803b57666a15c6ac2c85d7a40c49003ca61b5e8",
         "layers": [
@@ -883,6 +1147,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "entry_and_environment_intake",
+        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1051,10 +1322,10 @@
       "requirement": "问 Q-C08 目标套餐；不问 Q-C07、Q-P02、Q-A06 或旧套餐/旧购买渠道",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant runtime, guidance or evidence changes require exact replay and full original L+C review again.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
         "sha256": "74979d1eab88d6c2ec73772246ffd06cd14ce4643e9cca8638a0737a9cb5df5e",
         "layers": [
@@ -1062,6 +1333,13 @@
           "C"
         ],
         "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1070,10 +1348,10 @@
       "requirement": "仍是 first_subscription，可采用简洁解释；不能推定已有付费权益",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer generated prose or actual paid entitlement.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
         "sha256": "8b7052ec894f37df13c54000b056489942bfcc394735e1918980c83511138b0a",
         "layers": [
@@ -1082,6 +1360,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and substantive explanation-depth guidance review; no generated model dialogue, actual account entitlement or native claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1090,10 +1375,10 @@
       "requirement": "进入 returning_subscription；询问目标套餐，不重问是否有有效订阅，旧账单仅相关时处理",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review complete original conditions and pinned source changes; retain conditional compatibility, reported subscription and separate action authority.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
         "sha256": "84fa95b46e3183b58f5ba1b7ea9c07a69aa85a4c57497df4ac2a9e52e488fdcf",
         "layers": [
@@ -1102,6 +1387,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Independent fixed-fact full state/question replays, actual offline CLI runs and substantive source/guidance review; no generated dialogue, real entitlement, commercial compatibility, payment, refund, native or cleanup action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1110,10 +1402,10 @@
       "requirement": "不重问开场；按需核实当前套餐/购买渠道和目标套餐，避开注册新购全流程",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导或运行时变化后复核原完整条件、固定对话与当前来源兼容性；不外推真机或未观察输入",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-upgrade-conflict-cases.md",
         "sha256": "0a8b8a724d76bba6e5c4a7a80c1846ce8e6b9608f8a374c784bea5a12925563b",
         "layers": [
@@ -1122,6 +1414,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Observed revision3 trajectories and separately generated revision4 affected paths, with an explicitly sanitized public projection, independent review, exact current-source API/CLI replay and privately retained originals; hashes do not authenticate omitted execution records, no native or actual operation authority."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1130,10 +1429,10 @@
       "requirement": "当前订阅保持 unknown，精简澄清 Q-J02；不把熟练程度当作付费状态",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant task, incident, prompt or guidance changes require exact replay and full original L+C review again.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
         "sha256": "37e0478c50e382f206f6f5214ec9bb9291b8ccddd0bab6724752b3defef137c5",
         "layers": [
@@ -1141,6 +1440,13 @@
           "C"
         ],
         "boundary": "Complete original normalized-host logic and active-guidance review; no arbitrary NLP, native incident detection, credential action or device proof."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1149,10 +1455,10 @@
       "requirement": "进入已有订阅任务分支，保留新手讲解深度，不进入首次购买分支",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer generated prose or actual paid entitlement.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、P",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
         "sha256": "8b7052ec894f37df13c54000b056489942bfcc394735e1918980c83511138b0a",
         "layers": [
@@ -1161,6 +1467,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and substantive explanation-depth guidance review; no generated model dialogue, actual account entitlement or native claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1169,10 +1482,10 @@
       "requirement": "标记实际冲突，仅澄清相关账户/订阅状态；未解决不重复扣款，不审问账号归属",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关指导或运行时变化后复核原完整条件、固定对话与当前来源兼容性；不外推真机或未观察输入",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-upgrade-conflict-cases.md",
         "sha256": "0a8b8a724d76bba6e5c4a7a80c1846ce8e6b9608f8a374c784bea5a12925563b",
         "layers": [
@@ -1181,6 +1494,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Observed revision3 trajectories and separately generated revision4 affected paths, with an explicitly sanitized public projection, independent review, exact current-source API/CLI replay and privately retained originals; hashes do not authenticate omitted execution records, no native or actual operation authority."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1189,10 +1509,10 @@
       "requirement": "同时吸收订阅阶段/系统/方案/目标套餐；只问真正缺口，不顺序重问",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant runtime, guidance or evidence changes require exact replay and full original L+C review again.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
         "sha256": "74979d1eab88d6c2ec73772246ffd06cd14ce4643e9cca8638a0737a9cb5df5e",
         "layers": [
@@ -1200,6 +1520,13 @@
           "C"
         ],
         "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "entry_and_environment_intake",
+        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1208,10 +1535,10 @@
       "requirement": "已停用问项不加载、不改名询问，不把缺少该字段当作就绪阻断",
       "verification_layer": "L+C",
       "scheduling": "conditional_native",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review full original clause and exact guide/runtime pins when relevant bytes change; no native or unspecified historical format claim.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、U",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-legacy-retirement.md",
         "sha256": "f48f1af5369396e9095e411706f6baeb4fd8be77a4c850f1adb47a7523aa3479",
         "layers": [
@@ -1220,6 +1547,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete deterministic synthetic state replays and independently reviewed active guidance; normalized host facts and supported compact/report migration contract only; no generated dialogue or native action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1228,10 +1562,10 @@
       "requirement": "保留设备/商店/目标账户对应/入口检查；不在 A6/P02/G04 中重新问旧订阅",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Review full original conditions and pinned dependencies after relevant code or guidance changes; do not infer native payment eligibility or unseen host responses.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
         "sha256": "95c564477a08a269f15fc94d5e419ecc67d0d1e087867c64c06f6441962097ea",
         "layers": [
@@ -1240,6 +1574,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "subscription_and_interview_compatibility",
+        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1248,10 +1589,10 @@
       "requirement": "不问想买什么套餐，不把付款列入本次必过项；客户端兼容性确实依赖套餐时才单独查",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review complete original conditions and pinned source changes; retain conditional compatibility, reported subscription and separate action authority.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
         "sha256": "84fa95b46e3183b58f5ba1b7ea9c07a69aa85a4c57497df4ac2a9e52e488fdcf",
         "layers": [
@@ -1260,6 +1601,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Independent fixed-fact full state/question replays, actual offline CLI runs and substantive source/guidance review; no generated dialogue, real entitlement, commercial compatibility, payment, refund, native or cleanup action claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "entry_and_environment_intake",
+        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1738,10 +2086,10 @@
       "requirement": "识别为证书指纹字段语义不匹配；不自动改写节点 TLS 配置",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
         "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
         "layers": [
@@ -1750,6 +2098,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "rule_scope_compatibility",
+        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1758,10 +2113,10 @@
       "requirement": "保留流量方向；不把 Outbound 清单直接编成客户端默认目标规则",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
         "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
         "layers": [
@@ -1770,6 +2125,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "rule_scope_compatibility",
+        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1778,10 +2140,10 @@
       "requirement": "不可表达的 ASN/匹配/动作语义明确报错，不静默丢失",
       "verification_layer": "L + R",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "相关实现/支持测试变化后重新执行回执绑定的转换、拒绝、写入/读回/恢复与回调时序矩阵；不得仅改hash续认",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A、P",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-env40-composition.md",
         "sha256": "bfa5ba5babd96fe93f2d42602b01c2c5eee42c5595a6243430b5221c88d65d1c",
         "layers": [
@@ -1789,6 +2151,13 @@
           "R"
         ],
         "boundary": "Full original format/loss-refusal clause reviewed through pure logic and controlled POSIX temporary-artifact write/readback/restore. No live engine, enclosing configuration or user-device acceptance."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "conversion_recovery_compatibility",
+        "reason": "Repair CLI/execution entry changed. Preserve pure conversion evidence; revalidate the full original L+R composition, temporary-artifact restoration and recovery admission with current entry behavior.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1797,10 +2166,10 @@
       "requirement": "默认不产生跨业务宽泛规则，保留原有策略",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
         "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
         "layers": [
@@ -1809,6 +2178,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "rule_scope_compatibility",
+        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1817,10 +2193,10 @@
       "requirement": "按功能门控，不强制探测/修改该依赖",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
         "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
         "layers": [
@@ -1829,6 +2205,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "rule_scope_compatibility",
+        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -1987,10 +2370,10 @@
       "requirement": "不得因为 D01—D12 已接受，就把尚待评审的新端点/依赖/发布范围编译成默认 apply 动作",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Re-review unchanged whole clause when relevant guidance/helpers change; preserve observed-response limits and deferred native evidence.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
         "sha256": "910fc7dca9cc10989545839ce2585452736b565b2ca91f249e950f3b92a17d1a",
         "layers": [
@@ -1999,6 +2382,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "rule_scope_compatibility",
+        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -2207,10 +2597,10 @@
       "requirement": "只做离线语法/匹配模拟，不为验证规则主动查询目标域名；实际命中仍标后验",
       "verification_layer": "L",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-enforcement-cases.md",
         "sha256": "deb11002f6a89bdae077388bca4666b2f44b384e069c5531cc9de9c1e326d97e",
         "layers": [
@@ -2218,6 +2608,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Executed offline literal-domain and complete workflow-output replays; content review where required. No actual network contact, OS isolation, user-device enforcement or effective-routing claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "workflow_enforcement",
+        "reason": "Workflow, inventory or native-entry gates changed; old complete decision projections no longer establish current behavior. Revalidate original controls and current no-target-I/O/entry boundaries.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -2236,10 +2633,10 @@
       "requirement": "门禁保持 closed；不是标成可选限制后自动登录/购卡",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "Relevant grant, epoch, readiness or guidance changes require exact replay and full original L+C review again.",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-required-controls-case.md",
         "sha256": "afc1f1a5425b40e4a8f0fdbb49c6a315b70483e86f9eff88bf8bcf45a20eff23",
         "layers": [
@@ -2247,6 +2644,13 @@
           "C"
         ],
         "boundary": "Full original clause reviewed through trusted-host workflow logic and active guidance; no native detection or OS isolation proof."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "workflow_enforcement",
+        "reason": "Workflow, inventory or native-entry gates changed; old complete decision projections no longer establish current behavior. Revalidate original controls and current no-target-I/O/entry boundaries.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {
@@ -2335,10 +2739,10 @@
       "requirement": "声明真实 enforcement 层级；搜索/MCP/浏览器等未覆盖范围不冒充 OS 级隔离",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
+      "rebuild_acceptance": "pending_revalidation",
+      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
       "dependencies": "A",
-      "evidence": {
+      "historical_evidence": {
         "path": "docs/evidence/rebuild-enforcement-cases.md",
         "sha256": "deb11002f6a89bdae077388bca4666b2f44b384e069c5531cc9de9c1e326d97e",
         "layers": [
@@ -2347,6 +2751,13 @@
         ],
         "review_date": "2026-10-18",
         "boundary": "Executed offline literal-domain and complete workflow-output replays; content review where required. No actual network contact, OS isolation, user-device enforcement or effective-routing claim."
+      },
+      "revalidation": {
+        "requirement_id": "PRODUCT-ENTRY-20261019",
+        "date": "2026-10-19",
+        "group": "workflow_enforcement",
+        "reason": "Workflow, inventory or native-entry gates changed; old complete decision projections no longer establish current behavior. Revalidate original controls and current no-target-I/O/entry boundaries.",
+        "tracking": "docs/entry-revalidation-status.md"
       }
     },
     {

@@ -8,11 +8,34 @@ or permission to enter PC1. The contact gate remains closed in every outcome.
 
 ## Standalone terminal fallback
 
-On the intended Mac or Windows computer, inside an already trusted local host:
+First establish the current task, explicitly select local / VM / VPS, declare
+the necessary network resources and configuration state, and obtain approval for
+the exact check. A trusted host must assemble the current sanitized
+`guardian-environment-entry-input/0.1` declaration from those actual choices;
+saved interview answers are not an execution grant. See
+[environment entry order](environment-entry-decision.md).
+
+This session's native adapters observe the current local desktop only. Eligible
+VM/VPS declarations do not create an adapter or prove host/guest identity. Unknown,
+withdrawn or otherwise ineligible routes block target reads; route/target changes
+invalidate dependent bindings and plans without discarding recovery obligations.
+
+On the intended Mac, inside an already trusted local host, supply the independently
+prepared declaration through a private, local, hydrated JSON file:
 
 ```sh
-python skills/claude-guardian/scripts/diagnostic_session.py --target-ref my-mac
+python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref my-mac \
+  --entry-file /approved-private-directory/entry.json
 ```
+
+The path is a placeholder, not a bundled file or permission record. The declaration
+must satisfy `environment_entry.require_entry(entry_request, 'offline_precheck',
+'my-mac')`; it establishes entry eligibility only. The current `--entry-file` safe
+reader is POSIX-only. On Windows, a reviewed trusted host must instead pass the
+dictionary explicitly through `run(..., entry_request=...)` or
+`execute(..., entry_request=...)`, retaining all target binding and live consent
+requirements. Do not pass both a file and an in-process declaration. This does not
+claim Windows command-line file support.
 
 The declaration names the intended target; it does not independently identify the
 hardware or prove the process is outside a remote/container namespace. Before
@@ -23,7 +46,7 @@ expires approval after 30 seconds. Windows uses bounded `msvcrt` console polling
 (no blocking stdin readline), rejects redirected/nonstandard input, limits the
 initial type-ahead drain to 80 characters and 250 ms, and cancels on control or
 extended-key input. Nonfinite, invalid or reversed monotonic clocks fail closed. EOF, any other answer, or Ctrl-C cancels.
-There is no `--yes`, request import, environment-variable approval, saved grant,
+There is no `--yes`, approval import, environment-variable approval, saved grant,
 DNS option, client launch, configuration mutation, dependency installation, or
 browser opening. A pseudo-terminal can be automated: this is fresh user-intent
 interaction, not authenticated human identity or host/OS permission.
@@ -56,7 +79,8 @@ JSON goes to stdout. The callable API also returns HTML in memory. To explicitly
 save a dashboard to a new private, local, already-hydrated file:
 
 ```sh
-python skills/claude-guardian/scripts/diagnostic_session.py --target-ref my-mac \
+python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref my-mac \
+  --entry-file /approved-private-directory/entry.json \
   --dashboard-output /approved-local-directory/session.html
 ```
 
@@ -76,8 +100,11 @@ save failure, 3 cancellation. Help is JSON and performs no collection.
 
 ## Trusted-host DNS integration
 
-`execute(target_ref, consent=..., dns_host=..., queries=..., interview=...)` is the
-callable entry point. `DNSHost` requires a typed `os_dns_probe.Binding` plus all
+`execute(target_ref, consent=..., entry_request=..., dns_host=..., queries=...,
+interview=...)` is the callable entry point. Metadata requires the current
+`offline_precheck` entry; every DNS query also requires `active_probe` eligibility
+and its separate live target/endpoint authorization. Declarations are rechecked
+around callbacks; changes block the session. `DNSHost` requires a typed `os_dns_probe.Binding` plus all
 three actual host implementations:
 
 - `verify_binding(binding)`: current selected device, desktop user, filesystem

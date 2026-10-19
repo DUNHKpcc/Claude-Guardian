@@ -323,6 +323,8 @@ def validate_state(state):
         raise InterviewError("Invalid route")
     if ctx["route_selection_basis"] == "accepted_default" and ctx["route"] != "local":
         raise InterviewError("Only local is the default proposal")
+    if ctx['route'] == 'compare' and ctx['route_selection_basis'] != 'default_proposal':
+        raise InterviewError('Comparison cannot establish route confirmation')
     if not isinstance(state["facts"], dict):
         raise InterviewError("Facts must be an object")
     for qid, fact in state["facts"].items():
@@ -384,6 +386,14 @@ def validate_state(state):
             raise InterviewError('Device cleanup category required')
         if qid in {"Q-J01", "Q-J02"} and fact["state"] in RESOLVED and (not isinstance(fact["value"], str) or fact["value"] not in JOURNEYS):
             raise InterviewError("Invalid subscription journey")
+    choice = state['facts'].get('Q-C05')
+    if choice is not None and ctx['route_selection_basis'] != 'default_proposal':
+        selected = 'local' if choice['value'] == 'accepted_default' else choice['value']
+        if choice['state'] not in {'reported', 'observed'} or selected != ctx['route']:
+            # Old schema-1 snapshots can contain the former sticky-context bug.
+            # There is no timestamped host-choice record with which to resolve
+            # this conflict losslessly. Reject instead of rewriting its history.
+            raise InterviewError('Stored route confirmation contradicts Q-C05; a current route reply is required')
     for reference_key in ('cleanup_offer_dismissed_ref', 'device_incident_resolution_ref'):
         reference = ctx.get(reference_key)
         if reference is not None and (type(reference) is not str or
@@ -558,16 +568,37 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
         result["payment_intent"] = {"first_subscription": "new_subscription", "returning_subscription": "resubscribe"}.get(value, "unresolved")
     if qid in {"Q-J01", "Q-J02"} and journey(result) != journey(state):
         _stale_current_plan(result, 'Subscription stage changed; current plan requires a fresh report')
-    if qid == "Q-C05" and state_name in {"reported", "observed"} and value in {"local", "vm", "vps", "compare"}:
-        result["context"].update(route=value, route_selection_basis="explicit_choice" if value != "compare" else "default_proposal")
-    if qid == "Q-C05" and state_name in {"reported", "observed"} and value == "accepted_default":
-        # Accept only the actual local proposal, never silently replace a chosen
-        # VM/VPS or a comparison with a different route. Repeating the same
-        # accepted answer is harmless; it is still not execution permission.
-        context = result["context"]
-        if context["route"] != "local" or context["route_selection_basis"] not in {"default_proposal", "accepted_default"}:
-            raise InterviewError("No current local default proposal to accept")
-        context["route_selection_basis"] = "accepted_default"
+    if qid == 'Q-C05':
+        if state_name in {'reported', 'observed'} and value == 'accepted_default':
+            # Reject a nonexistent proposal before historical evidence can be
+            # demoted to stale and bypass this explicit acceptance check.
+            context = result['context']
+            if context['route'] != 'local' or context['route_selection_basis'] not in {'default_proposal', 'accepted_default'}:
+                raise InterviewError('No current local default proposal to accept')
+        if old and not fresh_reply and state_name in {'reported', 'observed'}:
+            old_time = _validate_date(old['observed_at'])
+            choice_time = _validate_date(fact['observed_at'])
+            if old_time is not None and choice_time is not None and choice_time < old_time:
+                raise InterviewError('Older route evidence requires a fresh current reply')
+        if (old and not fresh_reply and state_name in {'reported', 'observed'}
+                and (old['state'] not in {'reported', 'observed'}
+                     or not isinstance(old['value'], str)
+                     or old['value'] not in {'local', 'vm', 'vps', 'accepted_default'})):
+            fact.update(state='stale', blocker_reason='Withdrawn route requires a fresh current reply')
+        if fact['state'] in {'reported', 'observed'} and value in {'local', 'vm', 'vps'}:
+            result['context'].update(route=value, route_selection_basis='explicit_choice')
+        elif fact['state'] in {'reported', 'observed'} and value == 'accepted_default':
+            # Acceptance applies only to an actual current local proposal, not
+            # to a withdrawn VM/VPS choice or comparison. It grants no action.
+            result['context']['route_selection_basis'] = 'accepted_default'
+        else:
+            # Retract a confirmed choice without silently returning to local.
+            # An unanswered proposal is different: unknown/refusal/defer does
+            # not create agreement, but leaves that actual proposal available
+            # for a later explicit acceptance. Explicit comparison replaces it.
+            if (state['context']['route_selection_basis'] != 'default_proposal'
+                    or fact['state'] in {'reported', 'observed'} and value == 'compare'):
+                result['context'].update(route='compare', route_selection_basis='default_proposal')
     if qid == "Q-C11" and state_name in {"reported", "observed"} and value in ENUM_CONTEXT["task"]:
         if value != result['context']['task']:
             _clear_cleanup_goal(result)
@@ -597,8 +628,7 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
             and not _device_triage(state)):
         _refresh_incident_answers(result)
         result['context'].update(device_incident_resolved=False, device_incident_resolution_ref=None)
-    if result['context']['route'] != state['context']['route']:
-        _invalidate_device_cleanup(result)
+    _invalidate_changed_route(result, state['context'])
     review = result.get('resume_review')
     if review is not None and qid in review['retained_keys']:
         # Only explicit fresh reports retire retained evidence. Re-rendering,
@@ -709,6 +739,9 @@ def set_context(state, **changes):
     account_incident_resolved can independently resolve current account evidence.
     Reporting an incident again after resolution starts a fresh episode unless
     the caller explicitly includes incident_resolved=True in the same update.
+    A different route cannot inherit the prior choice basis. Supply its explicit
+    basis in this call, or use a current Q-C05 answer. A contradictory retained
+    Q-C05 requires the latter; routing flags cannot override that user answer.
     """
     validate_state(state)
     result = deepcopy(state)
@@ -727,14 +760,15 @@ def set_context(state, **changes):
     if {'device_incident_resolution_ref', 'cleanup_offer_dismissed_ref'} & set(changes):
         raise InterviewError('Device episode reference is derived from current history')
     result["context"].update(changes)
+    if 'route' in changes and changes['route'] != state['context']['route'] and 'route_selection_basis' not in changes:
+        result['context']['route_selection_basis'] = 'default_proposal'
     if changes.get('subscription_conflict') is True and not state['context']['subscription_conflict']:
         _start_subscription_review(result, source='host:subscription_conflict', observed_at=_now())
         _stale_current_plan(result, 'Actual subscription conflict requires current-plan clarification')
     if 'device_incident_resolved' in changes:
         result['context']['device_incident_resolution_ref'] = (_device_episode_ref(result)
             if changes['device_incident_resolved'] is True else None)
-    if result['context']['route'] != state['context']['route']:
-        _invalidate_device_cleanup(result)
+    _invalidate_changed_route(result, state['context'], refreshed_context=changes)
     _refresh_resume_binding(result)
     if "incident" in changes:
         result["context"]["incident_origin"] = "host"
@@ -927,6 +961,38 @@ def _invalidate_device_cleanup(state):
             state['facts'][qid].update(state='stale', blocker_reason='target_route_changed', clarification_count=0)
         if qid in state['asked_question_ids']:
             state['asked_question_ids'].remove(qid)
+
+
+def _invalidate_changed_route(state, previous, *, refreshed_context=()):
+    """Retire only route-bound planning evidence, never erase asset history.
+
+    These aliases and facts are interview metadata, not a native TargetBinding
+    or execution capability. The host must separately retire any action plan
+    and target authorization that depended on the former choice.
+    """
+    context = state['context']
+    changed = context['route'] != previous['route']
+    was_confirmed = previous['route_selection_basis'] != 'default_proposal'
+    withdrawn = was_confirmed and context['route_selection_basis'] == 'default_proposal'
+    if not changed and not withdrawn:
+        return
+    _invalidate_device_cleanup(state)
+    if not was_confirmed:
+        return
+    prefix = {'local': 'Q-L', 'vm': 'Q-V', 'vps': 'Q-S'}.get(previous['route'])
+    dependent = {'Q-N02', 'Q-N05', 'Q-Z01', 'Q-Z03', 'Q-Z04'}
+    dependent.update(qid for qid in state['facts'] if prefix and qid.startswith(prefix))
+    for qid in dependent:
+        fact = state['facts'].get(qid)
+        # Do not turn a terminal refusal/unknown into an automatic new question.
+        if fact and fact['state'] in {'reported', 'observed', 'inferred', 'stale', 'conflict', 'not_applicable'}:
+            fact.update(state='stale', blocker_reason='route_choice_changed_or_withdrawn', clarification_count=0)
+            state['asked_question_ids'] = [key for key in state['asked_question_ids'] if key != qid]
+    for flag in ('existing_test', 'compatibility_needed', 'integration_used', 'change_planned'):
+        if flag not in refreshed_context:
+            context[flag] = False
+    if 'plan_compatibility_needed' not in refreshed_context:
+        context.pop('plan_compatibility_needed', None)
 
 
 def _cleanup_mode(state):
@@ -2188,6 +2254,10 @@ def invalidate_facts(state, question_ids, *, reason):
         _stale_current_plan(result, reason)
     if 'Q-D01' in question_ids and 'device_incident_resolved' in result['context']:
         result['context'].update(device_incident_resolved=False, device_incident_resolution_ref=None)
+    if 'Q-C05' in question_ids:
+        result['context'].update(route='compare', route_selection_basis='default_proposal')
+        _invalidate_changed_route(result, state['context'])
+        _refresh_resume_binding(result)
     if any(qid in {"Q-J01", "Q-J02"} for qid in question_ids) and journey(result) == "unknown":
         result["current_subscription"] = {"status": "unknown", "source": None, "observed_at": None}
         result["payment_intent"] = "unresolved"

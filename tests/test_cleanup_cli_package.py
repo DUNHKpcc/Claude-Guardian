@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+from environment_entry_fixture import local_entry
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -98,14 +99,14 @@ class Host:
 
 import io
 host=Host()
-def run(args):
- out=io.StringIO();code=cli.main(args,host=host,stdout=out)
+def run(args, *, entry_request=None):
+ out=io.StringIO();code=cli.main(args,host=host,stdout=out,entry_request=entry_request)
  assert code==0,out.getvalue()
  assert str(base) not in out.getvalue()
  return json.loads(out.getvalue())
 if phase=='quarantine':
- p=run(['plan','--scope',str(base/'scope.json'),'--plan-output',str(base/'plan.json')])
- q=run(['quarantine','--plan-file',str(base/'plan.json'),'--expected-plan-digest',p['document_digest']])
+ p=run(['plan','--scope',str(base/'scope.json'),'--plan-output',str(base/'plan.json')],entry_request=baseline['entry_request'])
+ q=run(['quarantine','--plan-file',str(base/'plan.json'),'--expected-plan-digest',p['document_digest']],entry_request=baseline['entry_request'])
  assert not (base/'app').exists()
  assert 'restore_cleanup' not in events
  result={'phase':phase,'pid':os.getpid(),'plan_digest':p['document_digest'],'recovery_id':q['recovery_id'],'state':q['state']}
@@ -177,7 +178,8 @@ class CleanupCLIPackageTests(unittest.TestCase):
             for name in ('','app','app/data','backup','protected','quarantine','writer-lock'):
                 st=(base/name).lstat();identities[name]=[st.st_dev,st.st_ino,st.st_mode,st.st_uid,st.st_gid]
             import time
-            baseline={'base':str(base),'scope':scope,'identities':identities,'created_at':time.time(),'uid':os.geteuid(),'gid':os.getegid()}
+            baseline={'base':str(base),'scope':scope,'identities':identities,'created_at':time.time(),'uid':os.geteuid(),'gid':os.getegid(),
+                      'entry_request':local_entry(scope['target_ref'])}
             raw=json.dumps(baseline,sort_keys=True).encode('utf-8')
             baseline_path=base/'parent-baseline.json';baseline_path.write_bytes(raw);baseline_path.chmod(0o600)
             script=base/'fixture-runner.py';script.write_text(RUNNER,encoding='utf-8');script.chmod(0o600)

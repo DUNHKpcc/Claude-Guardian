@@ -27,10 +27,24 @@ stage checks remain pending; unrelated invalid requests do not revoke a grant.
 """
 from dataclasses import dataclass, field
 from enum import Enum
+import json
 import math
 import re
 import time
 from typing import Callable, Optional, Tuple
+
+try:
+    import environment_entry as _entry
+except ModuleNotFoundError as _entry_import_error:
+    if _entry_import_error.name != 'environment_entry':
+        raise
+    # Preserve the public standalone file-path import without changing sys.path.
+    import importlib.util as _entry_importlib
+    from pathlib import Path as _EntryPath
+    _entry_spec = _entry_importlib.spec_from_file_location(
+        '_guardian_environment_entry', _EntryPath(__file__).with_name('environment_entry.py'))
+    _entry = _entry_importlib.module_from_spec(_entry_spec)
+    _entry_spec.loader.exec_module(_entry)
 
 
 class Phase(Enum):
@@ -211,6 +225,11 @@ class Readiness:
     g1_gaps: Tuple[str, ...] = ('interview_incomplete',)
     g2_gaps: Tuple[str, ...] = ('planning_incomplete',)
     conflicts: Tuple[str, ...] = ()
+    # Append-only for the original four positional arguments. This is a current
+    # sanitized declaration, never a saved assessment or operation approval.
+    # Validate it per operation: explanations and exact recovery remain usable
+    # without completing the new-action questionnaire.
+    entry_request: Optional[dict] = None
 
     def valid(self):
         return (self.g1_status in ('complete', 'partial', 'paused', 'blocked', 'emergency_deferred')
@@ -294,6 +313,7 @@ class WorkflowGuard:
         self._state = State()
         self._generation = 0
         self._contact_epoch = None
+        self._entry_basis = None
         self._clock = clock
 
     @property
@@ -349,6 +369,68 @@ class WorkflowGuard:
                 and all(isinstance(e, Evidence) for e in evidence)
                 and _finite_time(now))
 
+    def _entry_check(self, readiness, purposes):
+        """Recompute eligibility and target match; never accept cached results.
+
+        Strict schema validation precedes serialization. Keep an immutable copy
+        of every allowed declaration, including resource/entry aliases, because
+        equally eligible assessments may describe different network resources.
+        This in-memory basis is not a credential and is never exported.
+        """
+        if readiness.entry_request is None:
+            return ('ENVIRONMENT_ENTRY_REQUIRED',), None
+        try:
+            purposes = (purposes,) if type(purposes) is str else purposes
+            gaps = []
+            for purpose in dict.fromkeys(purposes):
+                try:
+                    _entry.require_entry(readiness.entry_request, purpose, self.binding.target)
+                except _entry.EntryBlocked as exc:
+                    gaps.extend(exc.gaps)
+            if gaps:
+                return tuple(dict.fromkeys(gaps)), None
+            basis = json.dumps(readiness.entry_request, sort_keys=True, separators=(',', ':'),
+                               allow_nan=False)
+        except _entry.InvalidProjection:
+            return ('INVALID_ENVIRONMENT_ENTRY',), None
+        return (), basis
+
+    @staticmethod
+    def _pure_plan(scope):
+        return (scope.operation is Operation.PLAN and scope.contact is Contact.LOCAL
+                and scope.risk is Risk.READ and not scope.endpoint_refs
+                and not scope.requires_authentication)
+
+    @staticmethod
+    def _local_recovery(scope):
+        # Only restore the exact existing change identified by plan/review.
+        # The trusted adapter/host must verify the original recovery receipt;
+        # declaring ROLLBACK is not evidence that a change is safely reversible.
+        return (scope.operation is Operation.ROLLBACK and scope.contact is Contact.LOCAL
+                and scope.risk in (Risk.CHANGE, Risk.CONTROL_CHANNEL)
+                and not scope.endpoint_refs and not scope.requires_authentication)
+
+    @classmethod
+    def _entry_purposes(cls, scope):
+        if cls._pure_plan(scope) or cls._local_recovery(scope):
+            return ()
+        purposes = []
+        if scope.risk is not Risk.READ or scope.operation in (Operation.APPLY, Operation.ROLLBACK):
+            purposes.append('configuration')
+        if (scope.contact is not Contact.LOCAL or scope.operation is Operation.PROBE
+                or scope.endpoint_refs):
+            purposes.append('active_probe')
+        # LOCAL read-only VERIFY can inspect existing metadata; active VERIFY
+        # must declare its contact scope. A contact-changing action needs BOTH
+        # configuration and active-probe entry, never a weaker either/or gate.
+        return tuple(purposes) or ('offline_precheck',)
+
+    def _grant_entry_gaps(self, readiness):
+        gaps, basis = self._entry_check(readiness, 'active_probe')
+        if not gaps and basis != self._entry_basis:
+            gaps = ('ENVIRONMENT_ENTRY_CHANGED',)
+        return gaps
+
     def _evidence(self, stage, evidence, now):
         checks = {CheckStage.PRECONTACT: self.requirements.precontact,
                   CheckStage.CLIENT_UNAUTHENTICATED: self.requirements.client_unauthenticated,
@@ -374,11 +456,13 @@ class WorkflowGuard:
 
     def revoke(self):
         self._generation += 1
+        self._entry_basis = None
         self._state = State(self.state.phase, GateState.REVOKED, (), self.state.observed_contact)
 
     def _grant_prerequisite_gaps(self, phase, readiness, evidence, now):
         """Current grant basis only; later-stage pending checks are not waivers."""
-        gaps = readiness.gaps() + self._evidence(CheckStage.PRECONTACT, evidence, now)
+        gaps = (readiness.gaps() + self._grant_entry_gaps(readiness)
+                + self._evidence(CheckStage.PRECONTACT, evidence, now))
         if phase is Phase.PC2:
             gaps += self._evidence(CheckStage.CLIENT_UNAUTHENTICATED, evidence, now)
         return gaps
@@ -399,6 +483,7 @@ class WorkflowGuard:
         """
         self._generation += 1
         self._contact_epoch = _ContactEpoch()
+        self._entry_basis = None
         self._state = State(self.state.phase, GateState.REVOKED, (), 'observed')
 
     def rebind(self, binding):
@@ -406,6 +491,7 @@ class WorkflowGuard:
             raise ValueError('INVALID_BINDING')
         self._generation += 1
         self.binding = binding
+        self._entry_basis = None
         if self._contact_epoch is not None:
             self._contact_epoch = _ContactEpoch()
         self._state = State(observed_contact=self.state.observed_contact)
@@ -417,6 +503,7 @@ class WorkflowGuard:
         Caller may separately revalidate observations and request fresh handoffs.
         """
         self._generation += 1
+        self._entry_basis = None
         history = 'previous_contact_reported' if isinstance(saved, dict) and (
             saved.get('phase') in (Phase.PC1.value, Phase.PC2.value)
             or saved.get('observed_contact') != 'not_measured') else self.state.observed_contact
@@ -440,7 +527,12 @@ class WorkflowGuard:
             return self._decision(('INVALID_TRANSITION',))
         if type(scopes) is not tuple or not scopes or len(scopes) > 128 or not all(isinstance(s, Scope) and s.valid() for s in scopes):
             return self._decision(('INVALID_SCOPE',))
-        gaps = list(readiness.gaps())
+        purposes = ('active_probe',) + tuple(purpose for scope in scopes
+                                             for purpose in self._entry_purposes(scope))
+        entry_gaps, entry_basis = self._entry_check(readiness, purposes)
+        gaps = list(readiness.gaps() + entry_gaps)
+        if self.state.gate is GateState.OPEN:
+            gaps.extend(self._grant_entry_gaps(readiness))
         gaps.extend(self._evidence(CheckStage.PRECONTACT, evidence, now))
         if phase is Phase.PC2:
             gaps.extend(self._evidence(CheckStage.CLIENT_UNAUTHENTICATED, evidence, now))
@@ -465,7 +557,11 @@ class WorkflowGuard:
         self._state = State(self.state.phase, GateState.AWAITING, (), self.state.observed_contact)
         gaps, checked_at = self._approval(ApprovalRequest('handoff:' + phase.value, self.binding, scopes, '', '', now))
         if not gaps:
-            gaps = self._evidence(CheckStage.PRECONTACT, evidence, checked_at)
+            entry_gaps, current_entry_basis = self._entry_check(readiness, purposes)
+            gaps = readiness.gaps() + entry_gaps
+            if not entry_gaps and current_entry_basis != entry_basis:
+                gaps += ('ENVIRONMENT_ENTRY_CHANGED',)
+            gaps += self._evidence(CheckStage.PRECONTACT, evidence, checked_at)
             if phase is Phase.PC2:
                 gaps += self._evidence(CheckStage.CLIENT_UNAUTHENTICATED, evidence, checked_at)
         if gaps:
@@ -478,6 +574,7 @@ class WorkflowGuard:
                 else:
                     self._state = State(self.state.phase, GateState.CLOSED, (), self.state.observed_contact)
             return self._decision(gaps)
+        self._entry_basis = entry_basis
         self._state = State(phase, GateState.OPEN, scopes, self.state.observed_contact)
         return self._decision(pending=self.requirements.client_unauthenticated + self.requirements.client_authenticated
                               if phase is Phase.PC1 else self.requirements.client_authenticated)
@@ -485,8 +582,11 @@ class WorkflowGuard:
     def evaluate(self, action, readiness, evidence, now):
         """G3 eligibility only; caller must enforce the resulting exact scope.
 
-        Read-only audits/plans can continue while G1/G2 are incomplete. Probes and
-        changes require the applicable readiness. Login/payment scopes describe
+        Read-only audits require selected-target entry but can continue while
+        G1/G2 are incomplete. Pure local read-only planning and exact local
+        recovery do not require the new-action entry questionnaire. All recovery
+        protections and fresh exact approval still apply. Probes and changes
+        require the applicable readiness. Login/payment scopes describe
         user handoffs only; the module never authorizes automated credentials or
         purchasing. Neutral endpoints cannot grant Claude contact permissions.
         """
@@ -497,6 +597,11 @@ class WorkflowGuard:
                 or not isinstance(action.binding, Binding) or not action.binding.valid()):
             return self._decision(('INVALID_ACTION',))
         s = action.scope
+        purposes = self._entry_purposes(s)
+        entry_gaps, entry_basis = self._entry_check(readiness, purposes) if purposes else ((), None)
+        if (self.state.gate is GateState.OPEN and s in self.state.scopes
+                and s.contact in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF)):
+            entry_gaps += self._grant_entry_gaps(readiness)
         gaps = []
         if action.binding != self.binding:
             gaps.append('TARGET_BINDING_MISMATCH')
@@ -508,8 +613,10 @@ class WorkflowGuard:
             gaps.append('EXACT_PLAN_REQUIRED')
         if action.permissions_verified is not True:
             gaps.append('HOST_OS_PERMISSION_REQUIRED')
-        if s.operation not in (Operation.AUDIT, Operation.PLAN):
+        if not (self._pure_plan(s) or self._local_recovery(s)
+                or (s.operation is Operation.AUDIT and s.risk is Risk.READ)):
             gaps.extend(readiness.gaps())
+        gaps.extend(entry_gaps)
         if s.contact is Contact.NEUTRAL and not s.endpoint_refs:
             gaps.append('EXACT_ENDPOINTS_REQUIRED')
         if s.operation in (Operation.AUDIT, Operation.PLAN) and s.contact is not Contact.LOCAL:
@@ -530,7 +637,7 @@ class WorkflowGuard:
         if s.contact in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF):
             current_grant_action = (self.state.gate is GateState.OPEN and s in self.state.scopes
                 and action.facts_contact_epoch is self._contact_epoch
-                and all(gap in ('G1_INCOMPLETE', 'G2_INCOMPLETE', 'KNOWN_CONFLICT') for gap in gaps))
+                and all(gap in readiness.gaps() + entry_gaps for gap in gaps))
             if action.facts_contact_epoch is not self._contact_epoch:
                 gaps.append('CONTACT_FACTS_REVALIDATION_REQUIRED')
             if self.state.phase is Phase.PC0 or self.state.gate is not GateState.OPEN or s not in self.state.scopes:
@@ -548,9 +655,15 @@ class WorkflowGuard:
                 self._invalidate_failed_grant(readiness, evidence, now)
         if gaps:
             return self._decision(gaps)
+        approval_generation = self._generation
         gaps, checked_at = self._approval(ApprovalRequest('action:' + s.operation.value, self.binding,
                                             (s,), action.plan_ref, action.review_ref, now))
         if not gaps:
+            if purposes:
+                entry_gaps, current_entry_basis = self._entry_check(readiness, purposes)
+                gaps += entry_gaps
+                if not entry_gaps and current_entry_basis != entry_basis:
+                    gaps += ('ENVIRONMENT_ENTRY_CHANGED',)
             if not _fresh(action.facts_at, action.facts_expires_at, checked_at):
                 gaps += ('STALE_OR_INVALID_FACTS',)
             if s.contact in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF):
@@ -569,4 +682,15 @@ class WorkflowGuard:
             # Retain its primary denial; do not retain a now-expired grant.
             # Failure/invalid-clock/context-change results supply no such basis.
             self._invalidate_failed_grant(readiness, evidence, checked_at)
+        if (gaps and self._generation == approval_generation
+                and self.state.gate is GateState.OPEN and s in self.state.scopes
+                and s.contact in (Contact.CLAUDE, Contact.LOGIN_HANDOFF, Contact.PAYMENT_HANDOFF)
+                and action.binding == self.binding
+                and action.facts_contact_epoch is self._contact_epoch
+                and self._grant_entry_gaps(readiness)):
+            # Route/resource withdrawal is independently observable even if the
+            # host callback raised or supplied an invalid elapsed clock. Do not
+            # keep that grant open, and never overwrite a newer/reentrant grant.
+            self._contact_epoch = _ContactEpoch()
+            self.revoke()
         return self._decision(gaps)

@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from environment_entry_fixture import local_entry
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills/claude-guardian/scripts/guardian.py"
@@ -245,18 +246,18 @@ class FileAndCLITests(unittest.TestCase):
         args = g.parser().parse_args(["check", "--target-ref", "device-1", "--target-os", "macos", "--confirm-target", "--authorize-audit", "--namespace", "desktop", "--execution-location", "native_local", "--user-context", "same"])
         with patch.object(g.sys, "platform", "linux"):
             with self.assertRaisesRegex(g.GuardianError, "TARGET_USER_CONTEXT_MISMATCH"):
-                g.native_check(args)
+                g.native_check(args, entry_request=local_entry('device-1'))
 
     def test_authorization_required_before_collection(self):
         args = g.parser().parse_args(["check", "--target-ref", "device-1", "--target-os", "macos", "--confirm-target"])
         with self.assertRaisesRegex(g.GuardianError, "AUTHORIZATION_MISSING"):
-            g.native_check(args)
+            g.native_check(args, entry_request=local_entry('device-1'))
 
     def test_mocked_native_report_to_analysis_and_plan(self):
         # Mocking macOS dispatch on Linux verifies control flow, NOT native API validity.
         args = g.parser().parse_args(["check", "--target-ref", "device-1", "--target-os", "macos", "--confirm-target", "--authorize-audit", "--namespace", "desktop", "--execution-location", "native_local", "--user-context", "same"])
         with patch.object(g.sys, "platform", "darwin"), patch.object(g, "extended_inventory", return_value=([], [])), patch.object(g.os, "uname", return_value=type("Uname", (), {"release": "24.1.0"})(), create=True):
-            report = g.native_check(args)
+            report = g.native_check(args, entry_request=local_entry('device-1'))
         for planning in (False, True):
             result = g.analyze(copy.deepcopy(report), "device-1", planning)
             self.assertEqual(len(result["facts"]), 3)
@@ -280,7 +281,7 @@ class FileAndCLITests(unittest.TestCase):
     def test_confirmation_required(self):
         args = g.parser().parse_args(["check", "--target-ref", "device-1", "--target-os", "macos", "--authorize-audit"])
         with self.assertRaisesRegex(g.GuardianError, "TARGET_NOT_BOUND"):
-            g.native_check(args)
+            g.native_check(args, entry_request=local_entry('device-1'))
 
     def test_explicit_save_and_no_overwrite(self):
         with tempfile.TemporaryDirectory() as d:

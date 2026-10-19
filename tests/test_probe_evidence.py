@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from environment_entry_fixture import local_entry
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / 'skills/claude-guardian/scripts'
@@ -161,7 +162,8 @@ class ProbeEvidenceTests(unittest.TestCase):
                 return network.Response(200, b'{"ip":"8.8.8.8"}')
         with patch('socket.socket', side_effect=AssertionError('no sockets')), patch('subprocess.Popen', side_effect=AssertionError('no subprocess')):
             result = network.probe_https_ip('ipify_v4', approved_endpoints=[network.ENDPOINTS['ipify_v4'][0]],
-                approved_paths=[PATH], target_ref='private-device', transport=Transport())
+                approved_paths=[PATH], target_ref='private-device', transport=Transport(),
+                entry_request=local_entry('private-device'))
             obj = bundle(dict(result=result, expected_path_kind=PATH))
             html = dashboard.render(report(), datetime.now(timezone.utc), obj)
         self.assertIn('已记录成功声明', html)

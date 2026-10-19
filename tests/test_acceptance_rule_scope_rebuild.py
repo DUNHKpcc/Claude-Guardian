@@ -9,6 +9,7 @@ import os
 import subprocess
 import sys
 import unittest
+from acceptance_runtime_compat import historical_baseline
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -31,6 +32,12 @@ def private(call):
 
 
 class RuleScopeRetainedEvidenceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        context = historical_baseline(ROOT)
+        cls.HISTORICAL_ROOT = context.__enter__()
+        cls.addClassCleanup(context.__exit__, None, None, None)
+
     def test_exact_original_corpus_manifest_and_all_hashes(self):
         manifest = OBS / 'SHA256SUMS'
         self.assertEqual(replay.sha(manifest.read_bytes()),
@@ -58,10 +65,10 @@ class RuleScopeRetainedEvidenceTests(unittest.TestCase):
         for name in ('original-clauses.json', 'evaluation-rubric.json'):
             self.assertEqual(replay.sha((DATA / name).read_bytes()), frozen['review-only/' + name])
         clauses = replay.read_json(DATA / 'original-clauses.json')
-        source = ROOT / clauses['source']['path']
+        source = self.HISTORICAL_ROOT / clauses['source']['path']
         self.assertEqual(replay.sha(source.read_bytes()), clauses['source']['sha256'])
         source_rows = source.read_text(encoding='utf-8').splitlines(keepends=True)
-        tracker_rows = (ROOT / clauses['tracker']['path']).read_text(encoding='utf-8').splitlines(keepends=True)
+        tracker_rows = (self.HISTORICAL_ROOT / clauses['tracker']['path']).read_text(encoding='utf-8').splitlines(keepends=True)
         for row in clauses['cases']:
             self.assertEqual(source_rows[row['D_ENV_line'] - 1], row['D_ENV_verbatim_row'])
             self.assertEqual(tracker_rows[row['tracker_line'] - 1], row['tracker_verbatim_row'])
@@ -70,15 +77,15 @@ class RuleScopeRetainedEvidenceTests(unittest.TestCase):
             start, end = item['lines']
             self.assertEqual(''.join(source_rows[start - 1:end]), item['text'])
 
-    def test_current_sources_equal_exact_snapshots_and_prior_known_pins(self):
+    def test_historical_sources_equal_exact_snapshots_and_prior_known_pins(self):
         provenance = replay.read_json(OBS / 'provenance-manifest.json')
         prior = replay.read_json(DATA / 'pre-generation-baseline-source-pins.json')['sha256']
         guides = replay.read_json(DATA / 'pre-generation-guidance-source-pins.json')['files']
         self.assertEqual(len(provenance['source_hashes']), 14)
         for source in provenance['source_hashes']:
             name = source['repository_path']
-            self.assertEqual(replay.sha((ROOT / name).read_bytes()), source['sha256'], name)
-            self.assertEqual((ROOT / name).read_bytes(), (OBS / source['saved_copy']).read_bytes())
+            self.assertEqual(replay.sha((self.HISTORICAL_ROOT / name).read_bytes()), source['sha256'], name)
+            self.assertEqual((self.HISTORICAL_ROOT / name).read_bytes(), (OBS / source['saved_copy']).read_bytes())
             self.assertEqual(source['hash_capture_stage'],
                              'final packaging; no initial pre-call source hash was separately logged')
             if name in guides:
@@ -269,8 +276,8 @@ class RuleScopeRetainedEvidenceTests(unittest.TestCase):
             self.assertFalse(result['apply_supported'])
             self.assertEqual([item['kind'] for item in result['proposed_changes']], ['bind_selected_rules'])
 
-    def test_frozen_reviewer_supplement_replays_exactly_and_stays_distinct(self):
-        actual = replay.replay_supplement(ROOT, DATA)
+    def test_historical_frozen_reviewer_supplement_replays_exactly_and_stays_distinct(self):
+        actual = replay.replay_supplement(self.HISTORICAL_ROOT, DATA)
         self.assertEqual(len(actual), 10)
         self.assertEqual(actual, replay.read_json(DATA / 'supplemental/observed-results.json'))
         self.assertTrue(all(call.startswith('review-') for call in actual))
@@ -278,6 +285,39 @@ class RuleScopeRetainedEvidenceTests(unittest.TestCase):
                          'PROTECTED_RULE_PRIORITY_CONFLICT')
         self.assertEqual(actual['review-ENV-T58-fixed-selector-baseline']['output'],
                          actual['review-ENV-T58-fixed-selector-untrusted-fields']['output'])
+
+    def test_current_supplement_has_exact_entry_template_delta_without_historical_source_claim(self):
+        actual = replay.replay_supplement(ROOT, DATA, source_kind='current_runtime')
+        expected = replay.read_json(DATA / 'supplemental/observed-results.json')
+        # Independently specified product-entry delta, never copied from actual.
+        # Every other member of all ten complete recorded results stays exact.
+        prior_command = ['python', 'scripts/repair_cli.py', 'preflight', '--request',
+                         '<private-request.json>', '--target-path', '<owned-extension>',
+                         '--target-ref', '<target-alias>']
+        current_command = prior_command + ['--entry-file', '<sanitized-entry.json>']
+        for call in ('review-ENV-T58-fixed-selector-baseline',
+                     'review-ENV-T58-fixed-selector-untrusted-fields'):
+            actions = expected[call]['output']['result']['actions']
+            self.assertEqual(len(actions), 1)
+            self.assertEqual(actions[0]['action_id'], 'plan-rules')
+            self.assertEqual(actions[0]['command_template'], prior_command)
+            actions[0]['command_template'] = list(current_command)
+        self.assertEqual(actual, expected)
+        self.assertEqual(len(actual), 10)
+        self.assertTrue(all(item['arguments_unchanged'] for item in actual.values()))
+        self.assertTrue(all(not any(item['instrumented_api_call_counts'].values()) for item in actual.values()))
+        # Exact historical source validation still rejects the live implementation.
+        with self.assertRaises(AssertionError):
+            replay.replay_supplement(ROOT, DATA, source_kind='historical_source')
+        with self.assertRaises(ValueError):
+            replay.replay_supplement(ROOT, DATA, source_kind='ambiguous')
+
+    def test_historical_then_current_loads_cannot_reuse_cached_other_tree_functions(self):
+        for source in (ROOT, self.HISTORICAL_ROOT, ROOT):
+            functions = replay.load_functions(source)
+            for name, function in functions.items():
+                expected = source / 'skills/claude-guardian/scripts' / (name.split('.')[0] + '.py')
+                self.assertEqual(Path(function.__globals__['__file__']).resolve(), expected.resolve())
 
     def test_independent_review_covers_each_original_clause_and_response_lines(self):
         review = replay.read_json(DATA / 'independent-case-review.json')
@@ -308,9 +348,15 @@ class RuleScopeRetainedEvidenceTests(unittest.TestCase):
         process = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, timeout=60)
         self.assertEqual(process.returncode, 0, process.stderr.decode('ascii', errors='backslashreplace'))
         result = json.loads(process.stdout.decode('ascii'))
+        self.assertEqual(result['source_kind'], 'current_runtime')
+        self.assertEqual(result['historical_source_compatibility'], 'not_established')
+        self.assertEqual(result['current_whole_case_acceptance'], 'pending')
+        self.assertEqual(result['source_sha256'], replay.source_identity(ROOT, DATA))
         self.assertEqual(len(result['observed_calls']), 22)
         self.assertEqual(len(result['reviewer_supplemental_calls']), 10)
         self.assertEqual(result['observed_calls'], replay.replay_observed(ROOT, DATA))
+        self.assertEqual(result['reviewer_supplemental_calls'],
+                         replay.replay_supplement(ROOT, DATA, source_kind='current_runtime'))
 
     def test_reviewer_records_remain_byte_pinned(self):
         manifest = DATA / 'reviewer-data-sha256.json'

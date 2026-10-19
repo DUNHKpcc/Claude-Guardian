@@ -2,15 +2,107 @@
 
 依据 D-SPEC v0.1.10 §1、§7 与 D-ENV v0.3 §3、§5.6、§20；历史“只写 Spec”不阻止实现。实际权限与逐项验收继续有效。
 
+具体支持2.5.8独占rules扩展的单个DOMAIN变更时，见 [应用编辑任务与内容核验](agent-rules-task.md)。它复用原候选与归属校验，供Agent执行实际获准的应用动作；不调用内置生产写入器。
+
 ## 一次任务的闭环
 
-1. 复用访谈事实并确认目标主机。获准后调用 diagnostic_session.py 采集有限元数据；已有合法报告可直接进入解释，不强制重复全套访谈
+1. 复用访谈事实，先确认本轮 local／VM／VPS 路线，再按下述完整环境入口声明绑定目标。获准后调用 diagnostic_session.py 采集有限元数据；已有合法报告可直接进入解释，不强制重复全套访谈
 2. 解释每个发现的证据、时间、程序/地址族/作用域。未知或采集失败不是错误配置。静态配置不等于实际流量
 3. 调用固定选择器：`python scripts/agent_remediation.py select --input <本地报告.json> --target-ref <目标别名>`。接受 guardian-report/0.1、env-inventory/0.2 或下述 Agent 归一化信封。`catalog` 列出全部动作与代码映射
 4. Agent 将输出的 command_template 作为参数数组模板审阅，替换已核实参数后调用固定内置脚本，不拼接任意 shell。清单是建议，不是执行授权。缺少目标、当前证据、精确许可时先补该项；无关只读工作不必等待整个 macOS 文件事务适配
 5. 需要修改时展示具体目标、原值→新值、影响、保留对象、备份及恢复方法，取得该次确认。只调用已开放的匹配执行器。当前内置生产配置写入未开放，不能将 candidate_only/host_library_only/agent_investigation 当成内置可执行修复。脚本修不了时Agent继续检查用户实际环境，按下述独立修复分支推进，不以“自动修复”泛授权代替具体确认
 6. 执行后先核对写入结果，再对同一目标/程序/路径重测。联网复测需单独范围许可。不得以退出码、文件哈希改变或发现消失宣称问题解决
 7. 分别报告：未改动、已改但未复测、限定范围复测通过、仍有问题、证据不足、取消、执行失败待恢复。记录具体未测项；已改未验时不要自动重复写入。恢复只撤回本次精确变更，不覆盖后续用户修改
+
+<a id="environment-entry"></a>
+## 当前环境入口：完整声明与实际调用
+
+先确定当前任务，再显式选择执行路线，最后补所选网络资源和配置状态。已有 VPS、推荐默认值或旧访谈答案都不自动构成本轮选择；订阅解释、路线比较和不接触设备的纯内存计划无需先填环境问卷。当前没有把旧访谈自动转成入口声明的接口，宿主应依据本轮明确选择构造完整 `guardian-environment-entry-input/0.1` 对象，不能为通过校验把 unknown 改成 selected。
+
+以下是完整、虚构的合法输入示例：已选择本地 `device-1`，资源和配置仍未知。只有 `offline_precheck` 具备进入原门禁的资格，配置／主动探测仍阻塞；不要求先购买代理。`client` 是本轮已明确的用途，不代表启动或访问 Claude Code。
+
+```json
+{
+  "schema_version": "guardian-environment-entry-input/0.1",
+  "route": {"choice": "local", "state": "selected"},
+  "targets": [{"role": "local", "target_ref": "device-1"}],
+  "network": {
+    "possession": "unknown", "selection": "unknown",
+    "configuration": "unknown", "path": "unknown"
+  },
+  "local_entry": {"kind": "unknown"},
+  "final_egress": {"kind": "unknown", "protocol": "unknown"},
+  "client": "claude_code"
+}
+```
+
+声明只接收规定的枚举和非识别性别名。不得加入真实主机名、IP、订阅 URL、UUID、密码、token、原配置或授权布尔值；别名语法校验也不保证隐私，宿主仍须脱敏。`effective` 仅是报告的配置状态，不是原生观察。`eligible_for_existing_gate` 不证明设备／用户／命名空间，不授予读取、写入、联网或 PC0 接触权限。
+
+### 文件与宿主入口
+
+下面所有路径都是占位示例。先在获准的私有本地已水合目录准备 UTF-8 JSON，再替换成经过核实的规范绝对路径；不能从真实用户目录猜位置。入口文件安全读取复用 `inventory_cli.read_request`：最多 65,536 字节、拒绝重复 JSON 键及非有限数值、非普通文件、硬链接和包括祖先在内的符号链接；文件读取期间的身份／大小／时间变化会拒绝。文件的本地性、已水合状态及读取许可仍由宿主建立。
+
+该文件读取器目前仅支持具备相应安全文件能力的 POSIX 环境，Windows 返回能力缺口，不能以改平台标记或不安全读取绕过。已审阅宿主可直接传当前 dict；`guardian.native_check(args, entry_request=entry_request)` 与 `diagnostic_session.execute(target_ref, consent=live_consent, entry_request=entry_request)` 保留各自原有的平台、目标及许可校验，dict 不补齐原生能力。
+
+已确认本地 macOS、真实读取许可及当前宿主绑定后，命令形式如下。`--confirm-target`、`--authorize-audit` 不是替用户做确认；只有真实前提成立才使用。
+
+```sh
+python /trusted/claude-guardian/scripts/guardian.py check --target-ref device-1 --target-os macos --target-kind local --namespace desktop --execution-location native_local --user-context same --confirm-target --authorize-audit --entry-file /private/guardian-task/entry.json
+python /trusted/claude-guardian/scripts/diagnostic_session.py --target-ref device-1 --entry-file /private/guardian-task/entry.json
+python /trusted/claude-guardian/scripts/repair_cli.py preflight --request /private/guardian-task/repair-request.json --target-path /private/guardian-task/selected-extension.yaml --target-ref device-1 --candidate-kind merge-policy --entry-file /private/guardian-task/entry.json
+```
+
+`guardian check` 和诊断入口缺 entry 默认禁止，不再隐含选择本机；`--target-kind local` 本身也不能替代 entry。诊断终端仍要求新鲜随机挑战的实时范围同意，没有自动同意或 DNS CLI 开关。宿主 DNS 查询还须 `active_probe` 资格和逐查询的目标／运行时／中性端点核验；HTTPS 宿主 `network_probes.probe_https_ip(..., entry_request=entry_request)` 仍要求独立的精确端点与路径许可。上述 unknown 示例不能进行这些主动探测。
+
+`repair_cli.py` 的 `plan`、`preflight`、`diff`、`execute` 都必需 `--entry-file`；前三者使用 `offline_precheck`，execute 使用 `configuration`。预检还要符合原请求格式、候选类型、精确路径、版本和所有权条件；合法 entry 不使生产写入可用，原生执行适配仍未准入。宿主 merge-policy 预检使用 `repair_cli.preflight(request_path, target_path, target_ref, entry_request=entry_request)`；不可把入口 JSON 当作 repair request。
+
+### 静态 inventory 的 /2 信封
+
+`inventory_cli.py static-audit` 不使用 `--entry-file`，而在完整 `guardian-static-cli-request/2` 请求的顶层嵌入 `entry_request`；旧 /1 不再接受。下面是完整虚构格式，文件路径也只是占位值：
+
+```json
+{
+  "schema_version": "guardian-static-cli-request/2",
+  "target_ref": "device-1",
+  "entry_request": {
+    "schema_version": "guardian-environment-entry-input/0.1",
+    "route": {"choice": "local", "state": "selected"},
+    "targets": [{"role": "local", "target_ref": "device-1"}],
+    "network": {
+      "possession": "unknown", "selection": "unknown",
+      "configuration": "unknown", "path": "unknown"
+    },
+    "local_entry": {"kind": "unknown"},
+    "final_egress": {"kind": "unknown", "protocol": "unknown"},
+    "client": "claude_code"
+  },
+  "target_binding": {
+    "target_ref": "device-1", "binding_state": "bound", "declared_os": "macos",
+    "execution_location": "native_local", "desktop_user_relation": "same",
+    "filesystem_namespace": "host_desktop"
+  },
+  "application": {
+    "product": "clash-verge-rev", "gui_version": "2.5.5", "core_version": "1.19.0"
+  },
+  "files": [
+    {"source_ref": "profile-1", "kind": "profile", "path": "/private/guardian-task/selected-profile.yaml"}
+  ]
+}
+```
+
+```sh
+python /trusted/claude-guardian/scripts/inventory_cli.py static-audit --request /private/guardian-task/inventory-request.json --target-ref device-1
+```
+
+这个静态 CLI 当前仍限定上述 macOS／产品版本和原终端确认，字段中的 bound 只是调用者声明，不能伪造来补能力。全部请求先校验、范围确认后再复核；转入原 inventory 库时移除 entry 字段，不保存为授权。Windows 静态文件读取、自动发现和控制器访问不会因 /2 而开放。
+
+### 路线与失败边界
+
+- 本地执行配 VPS 出口仍是 `route.choice=local`；资源持有、选择、导入和生效分开记录。明确 direct 时无需购买代理：`selection=direct`、`path=direct`、`local_entry.kind=none`、`final_egress.kind=direct`、`protocol=unknown`，但不得凭格式修改来改变用户实际选路
+- 本地和 VM 的入口评估建议适用的详细检查；VM 必须同时声明不同别名的 `vm_host` 与 `vm_guest`，分别绑定实际宿主和来宾，不能用宿主结果代表来宾。VPS 使用 `vps` 目标角色，仅基础、非侵入检查；不扩展到部署、配置变更或 quarantine。纯入口评估支持这些声明，不等于已有对应执行适配；当前 guardian native、diagnostic session 和 static inventory 只接纳 local 角色，不能自动 SSH、套用本机结果或把 VM 改称 local 来通过
+- 缺失／畸形 entry、路线未选、撤销、冲突、陈旧或目标不属于当前路线都阻塞相关新动作；保留固定错误并重新核对当前范围，不能退回隐含路线或自动复用旧确认。调用期间变化停止后续依赖步骤；已有材料只保留其真实历史状态，不能当作当前权限
+- repair 与 cleanup 的保留计划跨调用绑定生成时的完整入口声明。路线、目标、所选资源或配置声明变化后，必须重新生成并审阅计划；新的合法 entry 不能继续执行旧计划，也不能手改计划中的绑定摘要来通过。未保留该入口绑定的历史清理计划仅可用于已有工作的精确 reconcile／恢复，不允许启动新 quarantine；保存的摘要始终不是许可
+- 已有回执的精确恢复不要求重新建立这项新动作 entry；`recovery_cli.py` 的既有恢复及 cleanup 的 reconcile／restore 保留原回执、摘要、当前目标、单独恢复许可、冲突和备份核验。撤销路线不能让既有恢复义务消失，也不能把恢复例外用于新配置、扩大清理或主动探测
 
 ## 输入与状态
 
@@ -258,7 +350,7 @@ private_output = result.private_material()["output_bytes"]
 
 Agent先核对当前目标和独立明确的 `Q-D02=full_claude_data_reset`（评估为 `C5-full-claude-data-reset`）。这仅进入 `scope_inventory`：暂停、事故优先、延期、未完成续接复核或前提失败仍停止依赖步骤。先取得限定盘点许可，核实精确 Claude 专属根、保留项、独立备份及恢复，再准备 `mode=C5-full-local-data` 的私有操作清单。清单声明和摘要本身不证明归属或同意。
 
-实际入口为 `cleanup_cli.main(argument_list, host=reviewed_live_host)`，使用受信任安装路径导入；选择器不会调用它。现有参数如下，只能通过独立审阅的进程内宿主桥执行目标操作：
+实际入口为 `cleanup_cli.main(argument_list, host=reviewed_live_host, entry_request=current_entry)`，使用受信任安装路径导入；选择器不会调用它。plan／quarantine 必须传与清理目标一致的本轮 entry；它只检查 `offline_precheck`，不代替逐操作清理许可，VPS quarantine 明确阻塞。已有计划／回执的 reconcile／restore 不要求新 entry，仍须全套恢复核验。现有参数如下，只能通过独立审阅的进程内宿主桥执行目标操作：
 
 ```text
 plan --scope <private-scope> --plan-output <new-private-plan>

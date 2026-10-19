@@ -15,6 +15,7 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+from environment_entry_fixture import local_entry
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'skills/claude-guardian/scripts'))
@@ -543,7 +544,8 @@ class OrderedPolicyTransactions(unittest.TestCase):
             'changed': True, 'verification_scope': 'exact_file_bytes_only'})
         with patch.object(repair_cli, '_load_request', side_effect=AssertionError('unexpected read')) as read:
             with self.assertRaisesRegex(repair_cli.RepairError, '^UNSUPPORTED_CANDIDATE_KIND$'):
-                repair_cli.preflight('not-read', 'not-read', REF, candidate_kind='policy-conversion')
+                repair_cli.preflight('not-read', 'not-read', REF, candidate_kind='policy-conversion',
+                                     entry_request=local_entry(REF))
             read.assert_not_called()
         with self.assertRaisesRegex(tx.TransactionError, '^NATIVE_REPAIR_ADAPTER_UNAVAILABLE$'):
             with repair_execution._native_session({}):

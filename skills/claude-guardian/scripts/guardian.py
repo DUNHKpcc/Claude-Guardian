@@ -33,6 +33,18 @@ import stat
 import sys
 import time
 
+try:
+    import environment_entry
+except ModuleNotFoundError as _entry_import_error:
+    if _entry_import_error.name != 'environment_entry':
+        raise
+    # Keep the standalone file-path import API without changing sys.path.
+    import importlib.util as _entry_importlib
+    _entry_spec = _entry_importlib.spec_from_file_location(
+        '_guardian_environment_entry', Path(__file__).with_name('environment_entry.py'))
+    environment_entry = _entry_importlib.module_from_spec(_entry_spec)
+    _entry_spec.loader.exec_module(environment_entry)
+
 VERSION = "0.2.0-foundations"
 INPUT_SCHEMA = "guardian-offline/0.1"
 STATES = {"observed", "reported", "derived", "unknown", "blocked", "not_applicable", "not_found_in_scope", "conflict", "stale"}
@@ -744,7 +756,15 @@ def extended_inventory(actual, runner=run_fixed):
     return results, errors
 
 
-def native_check(args):
+def native_check(args, *, entry_request=None):
+    # A route declaration is an additional prerequisite, never target proof or
+    # audit authorization. Missing input fails before any target observation.
+    try:
+        entry = environment_entry.require_entry(entry_request, 'offline_precheck', args.target_ref)
+    except (environment_entry.InvalidProjection, environment_entry.EntryBlocked) as exc:
+        raise GuardianError(str(exc), 3) from None
+    if entry['target_role'] != 'local':
+        raise GuardianError('TARGET_USER_CONTEXT_MISMATCH', 3)
     report = base("audit", args.target_ref)
     report["schema_version"] = "env-inventory/0.2"
     report["module_ids"] = ["ENV-01", "ENV-02"]
@@ -894,6 +914,7 @@ def parser():
         if command != "interview":
             sub.add_argument("--target-ref", required=True, help="Task alias, not username or hostname")
         if command == "check":
+            sub.add_argument("--entry-file", help="Explicit absolute local hydrated environment-entry JSON; POSIX reader only, never authorization")
             sub.add_argument("--target-os", choices=["macos", "windows"], required=True)
             sub.add_argument("--target-kind", choices=["local", "vm", "vps"], default="local")
             sub.add_argument("--namespace", choices=["desktop", "sandbox", "guest", "remote", "unknown"], default="unknown")
@@ -947,7 +968,16 @@ def main(argv=None):
         if target:
             alias(target)
         if args.command == "check":
-            report = native_check(args)
+            entry_request = None
+            if args.entry_file:
+                import inventory_cli
+                try:
+                    entry_request = inventory_cli.read_request(args.entry_file)
+                except inventory_cli.InputError as exc:
+                    raise GuardianError(exc.code, 3) from None
+                except (OSError, ValueError, TypeError, RecursionError):
+                    raise GuardianError('INPUT_OR_RESPONSE_INVALID') from None
+            report = native_check(args, entry_request=entry_request)
         else:
             obj = load_json(args.input) if args.input else {}
             report = interview(obj) if args.command == "interview" else analyze(obj, target, args.command == "plan")

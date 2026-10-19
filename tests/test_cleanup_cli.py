@@ -16,6 +16,7 @@ SCRIPTS = Path(__file__).resolve().parents[1]/'skills/claude-guardian/scripts'
 sys.path.insert(0, str(SCRIPTS))
 import cleanup_cli as cli
 from cleanup_fixture_host import FixtureHost
+from environment_entry_fixture import local_entry
 
 @unittest.skipUnless(os.name == 'posix', 'POSIX synthetic fixture only')
 class CleanupCLITests(unittest.TestCase):
@@ -23,6 +24,7 @@ class CleanupCLITests(unittest.TestCase):
         self.host=FixtureHost();self.addCleanup(self.host.close)
         self.base=self.host.base
         self.scope=copy.deepcopy(self.host.scope)
+        self.entry=local_entry(self.scope['target_ref'])
         self.scopefile=self.base/'scope.json';self.save(self.scopefile,self.scope)
         self.planfile=self.base/'plan.json';self.receiptfile=self.base/'receipt.json'
 
@@ -31,7 +33,8 @@ class CleanupCLITests(unittest.TestCase):
 
     def run_cli(self,args,host=True):
         out=io.StringIO()
-        code=cli.main(args,host=self.host if host else None,stdout=out)
+        entry=self.entry if args[0] in ('plan','quarantine') else None
+        code=cli.main(args,host=self.host if host else None,stdout=out,entry_request=entry)
         result=json.loads(out.getvalue())
         self.assertNotIn(str(self.base),out.getvalue())
         self.assertNotIn('synthetic',out.getvalue())
@@ -214,7 +217,7 @@ class CleanupCLITests(unittest.TestCase):
 
     def test_detached_actual_dispatcher_roundtrip_under_isolated_python(self):
         installed=self.base/'installed';installed.mkdir(mode=0o700)
-        for name in ('cleanup_cli.py','cleanup_transactions.py','transactions.py'):
+        for name in ('cleanup_cli.py','cleanup_transactions.py','transactions.py','environment_entry.py'):
             shutil.copyfile(SCRIPTS/name,installed/name)
         helper=Path(__file__).with_name('cleanup_fixture_host.py')
         script=self.base/'runner.py'
@@ -225,11 +228,14 @@ def load(name,path):
  s=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 cli=load('detached_cli',Path(sys.argv[1])/'cleanup_cli.py')
 fixtures=load('fixtures',sys.argv[2]);host=fixtures.FixtureHost()
+entry_fixtures=load('entry_fixtures',Path(sys.argv[2]).with_name('environment_entry_fixture.py'))
+entry=entry_fixtures.local_entry(host.scope['target_ref'])
 assert before==sys.path and 'yaml' not in sys.modules
 try:
  p=host.base;scope=p/'scope.json';scope.write_text(json.dumps(host.scope),encoding="utf-8");scope.chmod(0o600)
  def run(args):
-  out=io.StringIO();status=cli.main(args,host=host,stdout=out);assert status==0,out.getvalue();return json.loads(out.getvalue())
+  current_entry=entry if args[0] in ('plan','quarantine') else None
+  out=io.StringIO();status=cli.main(args,host=host,stdout=out,entry_request=current_entry);assert status==0,out.getvalue();return json.loads(out.getvalue())
  plan=run(['plan','--scope',str(scope),'--plan-output',str(p/'plan.json')])
  common=['--plan-file',str(p/'plan.json'),'--expected-plan-digest',plan['document_digest']]
  q=run(['quarantine']+common);assert not (p/'app').exists()

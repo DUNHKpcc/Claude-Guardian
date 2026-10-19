@@ -17,6 +17,16 @@ description: 为 Claude 订阅准备、账号与客户端异常、代理和运�
 6. 只在获准目标范围内使用已实现 CLI 检查（先查看 `scripts/guardian.py --help`）。缺依赖不静默安装；未支持的检查记为未知。内置功能未开放时，Agent继续调查实际环境；不得用临时命令绕过权限拒绝、PC0或既有执行门禁。独立Agent修复须按 [agent-remediation.md](references/agent-remediation.md) 取得具体动作许可并提供最小差异、备份与复测。
 7. 交付具体问题、目标范围、证据、未知项、最小修复建议、保留项及下一步。`pass/fail/unknown/not_applicable/blocked/skipped` 只描述指定检查。盘点完成不等于 PC-G1 通过；离线测试不证明平台支持或网络隔离。
 
+## 环境入口顺序（2026-10-19 用户确认更新）
+
+先明确本轮任务和本机／VM／VPS 运行路线，再了解网络资源与配置状态，最后进入目标环境检测或修复。未选、比较、拒绝、撤回、冲突、陈旧路线只做访谈和解释，不启动目标检查；本机默认建议必须得到明确接受。拥有 VPS 不等于选择 VPS，作为出口的 VPS 不会把本机运行路线变成 VPS。
+
+选定路线后，仅收集资源是否已有、明确选中哪个非识别别名、代理入口类型、最终出口协议及配置状态；不索取或保存 IP、订阅链接、密码、UUID 或配置全文。HTTP/mixed 本地入口和 SOCKS5 最终出口是不同层；Claude Code 不直接使用 SOCKS 入口。配置已导入不等于已经生效，可经独立授权探测核验。
+
+本机与 VM 做适用的详细检查，VM 宿主和客机分别绑定；VPS 本阶段只做基础非侵入检查，选购指南和部署技能留待后续。选定路线但没有代理资源、不清楚资源或选择直连，仍可在具体目标和原授权下做离线预检，不要求先购买。
+
+调用 `scripts/environment_entry.py` 的 `assess_entry` / `require_entry` 严格校验当前投影，再走原有目标、PC0、权限及逐动作授权门。入口资格不是许可或原生绑定证据，不把保存的报告恢复成许可。CLI 的 `--entry-file` 只读取明确提供的有界本地投影，Windows 此文件适配尚未开放；可信宿主可传已校验的字典。路线／资源改变必须使旧适用性和计划失效，不能复用旧检查结论。既有精确恢复义务仍按原回执、目标、保护和本次批准处理，不被新问卷阻断。
+
 ## Claude 目标流量默认仅允许 IPv4
 
 已确认的新产品要求 `PRODUCT-IPV4-20261018`：所选 Claude 应用／目标流量采用 `IPv4_ONLY`，禁止 IPv6 fallback；IPv4 失败就报告该策略下不可用，不静默改回双栈。它更新历史 D05 的当前推荐，不改写原规格或历史验收。网络准备即使没有已观察到的 IPv6 旁路，也要检查这个策略缺口；不再让用户重复选择协议偏好。
@@ -33,6 +43,8 @@ AAAA 为空、`curl -4`、单次 IPv4 HTTPS 成功或 IPv6 超时都不是强制
 
 ## Agent内部修复入口（按动作能力分流）
 
+已核实目标使用2.5.8且选定独占rules扩展时，可用 [Agent 应用编辑任务](references/agent-rules-task.md) 生成单个DOMAIN变更的私有候选和供给内容核验。实际保存／重载由Agent通过受支持应用界面执行，须具体许可；该辅助接口不执行写入或证明实际网络效果。
+
 `scripts/repair_cli.py`提供精确文件的`preflight / plan / diff / execute`接口。`plan`显式指定`--plan-file`和`--backup-directory`才写入新的私有计划文件，不修改目标；`--private-review`可在获准的私有Agent会话中非交互展示选定规则及policy前后差异，不输出无关配置。私有差异不得混入公开报告。
 
 已确认交互是Agent展示具体改动、目标、影响、备份及恢复路径，用户在对话确认后，由可信宿主核对该次授权并调用固定内部脚本；不要求第二次终端确认码。宿主将确切`retained_plan_digest`、目标与备份范围绑定到本次操作；摘要只是完整性检查，不是授权。不能用JSON布尔值、任意回调、临时shell改写或终端模拟绕过权限。
@@ -43,7 +55,7 @@ AAAA 为空、`curl -4`、单次 IPv4 HTTPS 成功或 IPv6 超时都不是强制
 
 `--candidate-kind rules-prepend`提供独立的rules扩展候选：必须显式给出`--base-path`、`--app-info`、`--profile-index`及`--extension-uid`，经安全读取核对所提供的2.5.8声明链和当前基础profile路径。只向现有空`prepend: []`插入用户明确排序的DOMAIN/DOMAIN-SUFFIX规则；`delete`必须为空，`append`与其他字节保持不变。拒绝已知受保护规则冲突，不把调用方声明的控制路径或优先级当作验证。私有差异包含已知优先级影响；未知链和原生执行继续阻塞。
 
-保留计划格式为`guardian-retained-repair/0.2`，绑定候选类型、UID和基础配置/plist/索引的精确路径、父目录及文件快照。执行参数必须一致，提交前与读回后复核；旧0.1计划必须重建并重新展示确认。完整输入格式及命令见仓库`docs/rules-extension-plan.md`。不得用此入口初始化空merge、替换完整rules数组或绕过xattr限制。
+保留计划格式为`guardian-retained-repair/0.3`，绑定当前环境入口摘要、候选类型、UID和基础配置/plist/索引的精确路径、父目录及文件快照。执行参数必须一致，提交前与读回后复核；旧0.1/0.2计划必须重建并重新展示确认。完整输入格式及命令见仓库`docs/rules-extension-plan.md`。不得用此入口初始化空merge、替换完整rules数组或绕过xattr限制。
 
 ## 限定静态盘点入口
 

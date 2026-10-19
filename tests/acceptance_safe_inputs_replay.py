@@ -2,6 +2,9 @@
 
 The original responses/provenance remain unchanged in the evidence directory;
 this wrapper reruns only the separate CLI/helper checks, not model/native behavior.
+The default historical_source mode preserves old exact pins. Explicit
+current_runtime mode executes live paths and records their actual identities; it
+does not accept source compatibility or the full original cases.
 
 Python 3.10+ standard library only. All files are synthetic and under --output.
 This runner reads the selected source tree but never edits it.
@@ -45,31 +48,44 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--source-kind', choices=('historical_source', 'current_runtime'),
+                        default='historical_source')
     args = parser.parse_args()
     args.source = args.source.resolve()
     args.output = args.output.resolve()
     pins = read_json(HERE / 'source-pins.json')
     actual_sources = {}
+    historical_pin_matches = {}
     for relative, expected in pins['source_sha256'].items():
         path = args.source / relative
+        if path.is_symlink() or not path.is_file():
+            raise SystemExit('Missing or aliased source: ' + relative)
         content = path.read_bytes()
         actual = hashlib.sha256(content).hexdigest()
-        if relative == SKILL_PATH:
-            try:
-                if path.is_symlink():
-                    raise ValueError('Aliased SKILL path')
-                actual = checked_registry_wording_sha256(content, expected)
-            except ValueError as exc:
-                raise SystemExit('Pinned source changed: ' + relative + '; ' + str(exc)) from None
-        elif actual != expected:
-            raise SystemExit('Pinned source changed: ' + relative)
+        historical_pin_matches[relative] = actual == expected
+        if args.source_kind == 'historical_source':
+            if relative == SKILL_PATH:
+                try:
+                    actual = checked_registry_wording_sha256(content, expected)
+                except ValueError as exc:
+                    raise SystemExit('Pinned source changed: ' + relative + '; ' + str(exc)) from None
+            elif actual != expected:
+                raise SystemExit('Pinned source changed: ' + relative)
         actual_sources[relative] = actual
+    if args.source_kind == 'current_runtime':
+        # The live guardian gained this dependency; report its real bytes too.
+        relative = 'skills/claude-guardian/scripts/environment_entry.py'
+        path = args.source / relative
+        if path.is_symlink() or not path.is_file():
+            raise SystemExit('Missing or aliased current dependency: ' + relative)
+        actual_sources[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
     historical_pin_file = {
         'path': 'docs/evidence/t11-t12-safe-inputs-v1/source-pins.json',
         'sha256': hashlib.sha256((HERE / 'source-pins.json').read_bytes()).hexdigest()}
     compatibility = ({'documentation_compatibility': {
         'path': SUPPLEMENT_RELATIVE, 'sha256': SUPPLEMENT_SHA256}}
-        if actual_sources[SKILL_PATH] != pins['source_sha256'][SKILL_PATH] else {})
+        if args.source_kind == 'historical_source'
+        and actual_sources[SKILL_PATH] != pins['source_sha256'][SKILL_PATH] else {})
     args.output.mkdir(parents=True, exist_ok=False)
     script = args.source / 'skills/claude-guardian/scripts/guardian.py'
     guardian = module('safe_input_guardian', script)
@@ -157,11 +173,15 @@ def main():
         'limits': 'Only this pure helper invocation; not a host response, general sandbox, or tool-policy audit.'})
     write_json(args.output / 'execution-record.json', {
         'executed_at_utc': stamp, 'python_version': sys.version, 'platform': sys.platform,
+        'source_kind': args.source_kind,
+        'historical_source_compatibility': ('strict_pins_with_prior_wording_bridge'
+            if args.source_kind == 'historical_source' else 'not_established'),
+        'historical_pin_matches': historical_pin_matches,
         'source_sha256': actual_sources, 'historical_source_pin_file': historical_pin_file,
         **compatibility, 'cases': traces,
         'status': 'supporting_runtime_cases_passed; full_T11_T12_acceptance_pending',
         'limits': pins['limits']})
-    print(json.dumps({'cli_cases_passed': len(traces), 'pure_source_helper_checked': True,
+    print(json.dumps({'source_kind': args.source_kind, 'cli_cases_passed': len(traces), 'pure_source_helper_checked': True,
         'raw_log_redaction_is_not_universal': redaction['raw_log_sentinel_remains'],
         'full_T11_T12_acceptance': 'pending', 'output': str(args.output)}, ensure_ascii=True))
 

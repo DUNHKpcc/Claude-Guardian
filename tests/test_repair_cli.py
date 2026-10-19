@@ -14,6 +14,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts'
 sys.path.insert(0, str(SCRIPTS))
 import repair_cli as r
 from test_config_edit_plan import RAW, inputs
+from environment_entry_fixture import local_entry
 
 
 @unittest.skipUnless(os.name == 'posix', 'POSIX exact-file preflight only')
@@ -28,6 +29,10 @@ class RepairCLI(unittest.TestCase):
         request, binding = inputs()
         self.document = {'schema_version': r.SCHEMA, 'remedy_request': request, 'binding': binding}
         self.request = self.root / 'request.json'
+        self.entry = local_entry('mac-a')
+        self.entry_file = self.root / 'entry.json'
+        self.entry_file.write_text(json.dumps(self.entry), encoding='utf-8')
+        self.entry_file.chmod(0o600)
         self.save()
 
     def save(self):
@@ -35,12 +40,13 @@ class RepairCLI(unittest.TestCase):
         self.request.chmod(0o600)
 
     def prepare(self, **kwargs):
-        return r.preflight(str(self.request), str(self.target), 'mac-a', **kwargs)
+        return r.preflight(str(self.request), str(self.target), 'mac-a',
+                           entry_request=self.entry, **kwargs)
 
     def run_cli(self, command='preflight', *extra):
         return subprocess.run([sys.executable, '-B', str(SCRIPTS / 'repair_cli.py'), command,
                                '--request', str(self.request), '--target-path', str(self.target),
-                               '--target-ref', 'mac-a', *extra], capture_output=True,
+                               '--target-ref', 'mac-a', '--entry-file', str(self.entry_file), *extra], capture_output=True,
                               text=True, timeout=10)
 
     def tree(self):
@@ -256,7 +262,8 @@ class RepairCLI(unittest.TestCase):
     def test_target_mismatch_before_target_read(self):
         with patch.object(r.tx, '_read', side_effect=AssertionError('target read')):
             with self.assertRaisesRegex(r.RepairError, '^TARGET_MISMATCH$'):
-                r.preflight(str(self.request), str(self.target), 'different')
+                r.preflight(str(self.request), str(self.target), 'different',
+                            entry_request=local_entry('different'))
 
     def test_stale_original_rejected(self):
         self.target.write_bytes(RAW + b'# later edit\n')
@@ -320,7 +327,7 @@ class RepairCLI(unittest.TestCase):
         other = self.root / 'alias'
         other.symlink_to(self.target)
         with self.assertRaises(r.tx.TransactionError):
-            r.preflight(str(self.request), str(other), 'mac-a')
+            r.preflight(str(self.request), str(other), 'mac-a', entry_request=self.entry)
         self.request.chmod(0o644)
         with self.assertRaisesRegex(r.tx.TransactionError, '^UNSAFE_RECEIPT_FILE$'):
             self.prepare()

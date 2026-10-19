@@ -12,6 +12,8 @@ import pickle
 import sys
 import unittest
 
+from environment_entry_fixture import local_entry
+
 
 PATH = Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts/workflow_guard.py'
 spec = importlib.util.spec_from_file_location('workflow_contact_epoch', PATH)
@@ -24,7 +26,7 @@ class ContactEpochTests(unittest.TestCase):
     def setUp(self):
         self.binding = w.Binding('device', 'user', 'native', 'profile', 'cfg', 'net', 'v1')
         self.requirements = w.Requirements(('network', 'protection'), ('client-path',), ('auth-path',))
-        self.ready = w.Readiness('complete', (), (), ())
+        self.ready = w.Readiness('complete', (), (), (), local_entry(self.binding.target))
         self.local = w.Scope('ENV-01', w.Operation.AUDIT, 'metadata', 'os', 'v1', 'native', 'macos')
         self.plan = replace(self.local, operation=w.Operation.PLAN, action='recovery-plan')
         self.neutral = replace(self.local, operation=w.Operation.PROBE, action='neutral-probe',
@@ -247,10 +249,14 @@ class ContactEpochTests(unittest.TestCase):
         self.assertFalse(self.guard.evaluate(payment, self.ready, unauth + old_client, 20).allowed)
         self.assertTrue(self.guard.evaluate(payment, self.ready, current, 20).allowed)
 
-    def test_local_audit_plan_and_neutral_recovery_remain_available(self):
+    def test_selected_target_audit_pure_plan_and_scoped_neutral_recovery_remain_available(self):
         self.guard.record_observed_contact()
-        for scope in (self.local, self.plan):
-            self.assertTrue(self.guard.evaluate(self.action(scope), w.Readiness(), (), 20).allowed)
+        self.assertEqual(self.guard.evaluate(self.action(self.local), w.Readiness(), (), 20).gaps,
+                         ('ENVIRONMENT_ENTRY_REQUIRED',))
+        self.assertEqual(self.requests, [])
+        incomplete = w.Readiness(entry_request=local_entry(self.binding.target))
+        self.assertTrue(self.guard.evaluate(self.action(self.local), incomplete, (), 20).allowed)
+        self.assertTrue(self.guard.evaluate(self.action(self.plan), w.Readiness(), (), 20).allowed)
         self.assertTrue(self.guard.evaluate(self.action(self.neutral), self.ready, (), 20).allowed)
         self.assertEqual(self.guard.state.gate, w.GateState.REVOKED)
         self.assertFalse(self.guard.evaluate(self.action(self.neutral), w.Readiness(), (), 20).allowed)

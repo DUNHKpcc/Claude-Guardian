@@ -16,6 +16,7 @@ import repair_execution as e
 import test_repair_execution as transport_fixtures
 from test_rules_extension_plan import RAW, BASE, inputs
 from test_clash_verge_258 import INFO
+from environment_entry_fixture import local_entry
 
 INDEX = b'''current: profile-a
 items:
@@ -43,6 +44,10 @@ class RulesRepairCLI(unittest.TestCase):
         self.index = self.root / 'profiles.yaml'
         self.info = self.root / 'Info.plist'
         self.request = self.root / 'request.json'
+        self.entry = local_entry('mac-a')
+        self.entry_file = self.root / 'entry.json'
+        self.entry_file.write_text(json.dumps(self.entry), encoding='utf-8')
+        self.entry_file.chmod(0o600)
         semantic, binding = inputs()
         self.document = {'schema_version': r.SCHEMA, 'remedy_request': semantic, 'binding': binding}
         for path, raw in ((self.target, RAW), (self.base, BASE), (self.index, INDEX),
@@ -58,12 +63,14 @@ class RulesRepairCLI(unittest.TestCase):
         self.plan = self.root / 'plan.json'
 
     def preflight(self, **changes):
-        return r.preflight(str(self.request), str(self.target), 'mac-a', **dict(self.scope, **changes))
+        return r.preflight(str(self.request), str(self.target), 'mac-a',
+                           entry_request=self.entry, **dict(self.scope, **changes))
 
     def args(self, command):
         return [sys.executable, '-B', str(SCRIPTS / 'repair_cli.py'), command,
                 '--request', str(self.request), '--target-path', str(self.target),
-                '--target-ref', 'mac-a', '--candidate-kind', 'rules-prepend',
+                '--target-ref', 'mac-a', '--entry-file', str(self.entry_file),
+                '--candidate-kind', 'rules-prepend',
                 '--base-path', str(self.base), '--app-info', str(self.info),
                 '--profile-index', str(self.index), '--extension-uid', 'rules-a']
 
@@ -75,7 +82,7 @@ class RulesRepairCLI(unittest.TestCase):
         digest = e.retain(prepared, plan_path=str(self.plan), backup_directory=str(self.backups))
         return dict(request_path=str(self.request), plan_path=str(self.plan), plan_digest=digest,
                     target_path=str(self.target), target_ref='mac-a', backup_directory=str(self.backups),
-                    **self.scope)
+                    entry_request=self.entry, **self.scope)
 
     def matching_snapshot(self):
         candidate = r.rules_edits.compile_rules_extension(RAW, BASE, *inputs())
@@ -203,7 +210,8 @@ class RulesRepairCLI(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         private, public = map(json.loads, result.stdout.splitlines())
         document = json.loads(self.plan.read_text())
-        self.assertEqual(document['schema_version'], 'guardian-retained-repair/0.2')
+        self.assertEqual(document['schema_version'], 'guardian-retained-repair/0.3')
+        self.assertEqual(document['entry_digest'], e.tx.digest(self.entry))
         self.assertEqual(private['retained_plan_digest'], e.tx.digest(document))
         self.assertEqual(document['base_source']['path'], str(self.base))
         self.assertEqual(document['metadata_sources']['app_info']['path'], str(self.info))

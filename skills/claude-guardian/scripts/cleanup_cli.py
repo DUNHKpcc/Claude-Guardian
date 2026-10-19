@@ -12,6 +12,17 @@ import hashlib
 import json
 import os
 import sys
+try:
+    import environment_entry
+except ModuleNotFoundError as exc:
+    if exc.name != 'environment_entry':
+        raise
+    import importlib.util
+    from pathlib import Path
+    _entry_spec = importlib.util.spec_from_file_location('_guardian_cleanup_entry',
+                Path(__file__).with_name('environment_entry.py'))
+    environment_entry = importlib.util.module_from_spec(_entry_spec)
+    _entry_spec.loader.exec_module(environment_entry)
 
 try:
     import cleanup_transactions as core
@@ -28,6 +39,9 @@ except ModuleNotFoundError as exc:
 tx = core.tx
 SCOPE = 'guardian-cleanup-operator-scope/0.1'
 DOCUMENT = 'guardian-cleanup-operator-document/0.1'
+# Only new-action plans gain an entry binding. Existing core journals and
+# recovery receipts retain their original schema and exact recovery checks.
+PLAN_DOCUMENT = 'guardian-cleanup-operator-document/0.2'
 SCOPE_LIMIT = 65536
 SCOPE_KEYS = {'schema_version', 'target_ref', 'mode', 'roots', 'protected_paths',
               'quarantine_directory', 'backup_ref', 'host_context_ref'}
@@ -112,9 +126,13 @@ def _save(path, value, identity, budget):
         raise
 
 
-def _envelope(kind, material, bindings):
-    result = {'schema_version': DOCUMENT, 'kind': kind,
+def _envelope(kind, material, bindings, *, entry_digest=None):
+    result = {'schema_version': PLAN_DOCUMENT if kind == 'plan' else DOCUMENT, 'kind': kind,
               'material': material, 'bindings': bindings}
+    if kind == 'plan':
+        if not core._hex(entry_digest, 64):
+            fail('ENVIRONMENT_ENTRY_PLAN_BINDING_REQUIRED')
+        result['entry_digest'] = entry_digest
     core._encode(result)
     return result
 
@@ -123,8 +141,20 @@ def _document(path, expected, kind):
     if not core._hex(expected, 64):
         fail('INVALID_DIGEST')
     value = _load(path)
-    core._keys(value, ('schema_version', 'kind', 'material', 'bindings'))
-    if value['schema_version'] != DOCUMENT or value['kind'] != kind:
+    if type(value) is not dict or value.get('kind') != kind:
+        fail('INVALID_DOCUMENT')
+    version = value.get('schema_version')
+    fields = ('schema_version', 'kind', 'material', 'bindings')
+    if kind == 'plan' and version == PLAN_DOCUMENT:
+        fields += ('entry_digest',)
+        core._keys(value, fields)
+        if not core._hex(value['entry_digest'], 64):
+            fail('INVALID_DOCUMENT')
+    elif version == DOCUMENT:
+        # Legacy plans are still needed to reconcile an interrupted old
+        # quarantine. Only dispatch's new-quarantine path rejects that schema.
+        core._keys(value, fields)
+    else:
         fail('INVALID_DOCUMENT')
     core._keys(value['bindings'], ('backup_ref', 'host_context_ref'))
     for item in value['bindings'].values():
@@ -227,8 +257,18 @@ def _parser():
     return parser
 
 
-def dispatch(args, host=None):
+def dispatch(args, host=None, *, entry_request=None):
     command = args.command
+    entry_basis = copy.deepcopy(entry_request)
+    def entry_check(target):
+        if entry_request != entry_basis:
+            fail('ENVIRONMENT_ENTRY_CHANGED')
+        try:
+            environment_entry.require_entry(entry_request, 'offline_precheck', target)
+            if command == 'quarantine' and entry_request['route']['choice'] == 'vps':
+                fail('VPS_QUARANTINE_OUTSIDE_BASIC_CHECK_SCOPE')
+        except (environment_entry.InvalidProjection, environment_entry.EntryBlocked):
+            fail('ENVIRONMENT_ENTRY_REQUIRED')
     if command == 'capabilities':
         return {'native_acceptance':'not_run', 'host_adapter_available':host is not None,
                 'permanent_purge':'unsupported', 'scope':'explicit_selected_active_roots',
@@ -238,16 +278,25 @@ def dispatch(args, host=None):
         return {'state':'scope_structure_valid','root_count':len(scope['roots']),
                 'ownership':'unverified','native_acceptance':'not_run'}
     _host(host)
-    budget = core._Budget(30, lambda: _cancel(host))
+    def checked_cancel():
+        stopped = _cancel(host)
+        if command in ('plan', 'quarantine') and entry_request != entry_basis:
+            fail('ENVIRONMENT_ENTRY_CHANGED')
+        return stopped
+    budget = core._Budget(30, checked_cancel)
     if command == 'plan':
         scope = _scope(_load(args.scope,SCOPE_LIMIT)); bindings = _bindings(scope)
+        entry_check(scope['target_ref'])
         _approval(host,'read_hash_scope',scope,scope['target_ref'],budget)
         def verify(target, scope_digest):
-            return _verify(host,{'target_ref':target,'scope_digest':scope_digest},bindings,budget)
+            entry_check(target)
+            verified = _verify(host,{'target_ref':target,'scope_digest':scope_digest},bindings,budget)
+            entry_check(target)
+            return verified
         result = core.plan(scope['roots'],scope['protected_paths'],scope['quarantine_directory'],
                            scope['target_ref'],host_check=verify,cancelled=lambda:(budget.check() or False))
         material = result.private_material();_reserve_wrapper(material,bindings)
-        envelope = _envelope('plan',material,bindings)
+        envelope = _envelope('plan',material,bindings,entry_digest=digest(entry_basis))
         output_identity = _preflight_output(args.plan_output,material)
         _approval(host,'save_plan',{'document':envelope,'output_path':args.plan_output},material['target_ref'],budget)
         _verify(host,material,bindings,budget)
@@ -260,11 +309,22 @@ def dispatch(args, host=None):
     else:
         envelope, document = _document(args.receipt_file,args.expected_receipt_digest,'receipt')
         plan = document.private_material()['plan']
+    if command == 'quarantine':
+        entry_check(plan['target_ref'])
+        if envelope['schema_version'] != PLAN_DOCUMENT:
+            fail('ENVIRONMENT_ENTRY_PLAN_BINDING_REQUIRED')
+        if envelope['entry_digest'] != digest(entry_basis):
+            fail('ENVIRONMENT_ENTRY_PLAN_MISMATCH')
     bindings = envelope['bindings'];_reserve_wrapper(plan,bindings)
     def verify(target, scope_digest):
+        if command == 'quarantine':
+            entry_check(target)
         if target != plan['target_ref'] or scope_digest != plan['scope_digest']:
             fail('HOST_BINDING_MISMATCH')
-        return _verify(host,plan,bindings,budget)
+        verified = _verify(host,plan,bindings,budget)
+        if command == 'quarantine':
+            entry_check(target)
+        return verified
     verify(plan['target_ref'],plan['scope_digest'])
     if command == 'reconcile':
         output_identity = _preflight_output(args.receipt_output,plan)
@@ -318,14 +378,14 @@ def dispatch(args, host=None):
     return response
 
 
-def main(argv=None, *, host=None, stdout=None):
+def main(argv=None, *, host=None, stdout=None, entry_request=None):
     output = sys.stdout if stdout is None else stdout
     try:
         values = sys.argv[1:] if argv is None else argv
         if type(values) is not list or len(values)>16 or any(type(v) is not str or len(v)>4096 for v in values):
             fail('INVALID_ARGUMENTS')
         args = _parser().parse_args(values)
-        result = dispatch(args,host)
+        result = dispatch(args,host,entry_request=entry_request)
         code = 0
     except core.CleanupError as exc:
         result={'status':'blocked','code':exc.code,'recovery_id':exc.recovery_id,

@@ -1,0 +1,52 @@
+# C5 cleanup CLI usage and host boundary
+
+The installed `scripts/cleanup_cli.py` is a dispatcher over the real POSIX quarantine/restore core. An ordinary invocation has **no host adapter**: capabilities and private scope-document structural validation work; selected-root plan/quarantine/reconcile/restore return `HOST_ADAPTER_UNAVAILABLE`. Flags, saved JSON and digests cannot supply ownership verification or operation permission.
+
+## Commands
+
+From the installed Skill, use an absolute script path when running from elsewhere:
+
+```sh
+python -I -S -B /trusted/claude-guardian/scripts/cleanup_cli.py capabilities
+python -I -S -B /trusted/claude-guardian/scripts/cleanup_cli.py validate-scope --scope /private/operator-scope.json
+```
+
+The remaining exact argument forms are intended for a reviewed in-process Agent host bridge. Running them through the ordinary script entry remains blocked:
+
+```text
+plan --scope /private/operator-scope.json --plan-output /private/new-plan.json
+quarantine --plan-file /private/new-plan.json --expected-plan-digest PLAN_DOCUMENT_DIGEST
+reconcile --plan-file /private/new-plan.json --expected-plan-digest PLAN_DOCUMENT_DIGEST --receipt-output /private/new-receipt.json
+restore --receipt-file /private/new-receipt.json --expected-receipt-digest RECEIPT_DOCUMENT_DIGEST
+```
+
+Use the returned **document_digest** for the wrapper command, not the underlying core's action_digest. A digest verifies selected bytes; it is not authorization. Existing outputs are never overwritten. Private records require appropriate same-user/group 0600 files and 0700 directories; outputs cannot be inside selected, protected or quarantine trees. Review the precise core path/metadata limits before selecting real objects.
+
+## Trusted Agent bridge
+
+The integration point is `cleanup_cli.main(argument_list, host=reviewed_live_host)`. Import from a trusted installed scripts directory or use isolated file-path loading; exact sibling dependencies are supported without modifying sys.path. There is no plugin-path or “yes/verified” flag.
+
+The host must implement:
+
+- `verify(target_ref, core_scope_digest, bindings)`: freshly and permissibly verify actual device/user/namespace, exact Claude-owned scope, inactive applications/databases, protected/shared exclusions and an independently verified backup. Return the core's fixed success value only after those checks
+- `approve(operation, digest, target_ref, private_review)`: show exact private scope, consequences and recovery; check current operation-specific consent bound to the full wrapper/save review. Repeated calls revalidate that same live consent. Quarantine approval never approves restore
+- `exclusive(target_ref, core_scope_digest, bindings)`: hold actual writer exclusion throughout mutation and verification. This is a real host obligation, not a boolean supplied by the model
+- `cancelled()`: reflect cancellation; revoked consent or changed context must stop further steps
+
+`bindings` contains backup_ref and host_context_ref. These are live lookup references, not serialized evidence or privileges. Read/hash scope, private persistence, mutation and restore permissions remain distinct. The host privately displays details; ordinary stdout intentionally contains only fixed states, counts, digests and generated recovery identifiers. The implementation itself provides no native Claude discovery or inactivity verifier.
+
+## Operator document and recovery
+
+The bounded operator JSON has exactly schema_version=`guardian-cleanup-operator-scope/0.1`, target_ref, mode=`C5-full-local-data`, ordered roots, protected_paths, quarantine_directory, backup_ref and host_context_ref. Each root has root_ref, canonical absolute path and data_kind (`cli_app_data` or `desktop_app_data`). Declaration is not ownership proof. An independent content-verified backup is required from the host; quarantine is a recoverable move, not a backup copy.
+
+Retain the private plan, its reviewed document digest and the core's quarantine batch. After an interruption, re-establish host identity/ownership/inactivity/backup checks, reconcile against the retained plan and current batch, then obtain separate approval for the new receipt before restore. Exceptions may follow real moves. Use recovery_id, moved_count and stage; never infer “nothing happened” from failure. Interrupted record persistence can report private_record_may_exist=true. Preserve these records and inspect through the authorized recovery path; do not retry with overwrite or delete journals to force success.
+
+Successful quarantine removes **all selected verified roots from their active locations**. Private quarantine data, recovery journals and independent backups remain. Report exact selected/excluded categories and partial completion. This does not certify discovery of every Claude object, permanent secure erasure, credential/browser cleanup, uninstall, account reset or removal of remote restrictions. Permanent purge is unsupported and would require a separate implementation and per-action approval.
+
+## Installed-package evidence
+
+`tests/test_cleanup_cli_package.py` builds and extracts the real release ZIP, checks that the test-only fixture helper is absent, and runs ordinary script commands from an unrelated directory under `-I -S -B`. Without a host all root operations are blocked before reading the supplied missing paths.
+
+A separate test parent creates and captures the exact private fixture identities and backup bytes. One child interpreter plans and quarantines; after it exits, a different interpreter independently rechecks those live bindings, reloads the retained plan using the parent-held digest, reconciles and restores under new stage-specific synthetic consent. The fixture's cooperating writer lock and known absence of an application apply only to this disposable test. No saved approval is reused. Original/protected/backup content and retained records are checked afterward.
+
+This is an observed two-process synthetic recovery exercise, not a native ownership adapter or proof about real Claude processes, arbitrary external writers, macOS application behavior or Windows cleanup. Native acceptance remains `not_run`.

@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+from environment_entry_fixture import local_entry
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts'))
 import diagnostic_session as m
@@ -35,6 +36,7 @@ class AdapterBoundaryTests(unittest.TestCase):
     def execute(self, **kwargs):
         kwargs.setdefault('consent', self.consent)
         kwargs.setdefault('cancelled', self.cancel)
+        kwargs.setdefault('entry_request', local_entry('target'))
         result = m.execute('target', **kwargs)
         self.assertEqual(result['gate_state'], 'closed')
         self.assertEqual(result['contact_phase'], 'precontact')
@@ -207,7 +209,8 @@ class AdapterBoundaryTests(unittest.TestCase):
                 patch.object(m.guardian, 'save_new', wraps=m.guardian.save_new) as save:
             path = Path(directory) / 'cancelled.html'
             output = io.StringIO()
-            code = m.run(['--target-ref', 'target', '--dashboard-output', str(path)], outgoing=output)
+            code = m.run(['--target-ref', 'target', '--dashboard-output', str(path)], outgoing=output,
+                         entry_request=local_entry('target'))
             self.assertEqual(code, 3)
             self.assertEqual(json.loads(output.getvalue())['status'], 'cancelled')
             self.assertNotIn('dashboard_saved', json.loads(output.getvalue()))
@@ -221,7 +224,8 @@ class AdapterBoundaryTests(unittest.TestCase):
                 patch.object(m.TerminalConsent, '__call__', return_value=True):
             path = Path(directory) / 'blocked.html'
             output = io.StringIO()
-            code = m.run(['--target-ref', 'target', '--dashboard-output', str(path)], outgoing=output)
+            code = m.run(['--target-ref', 'target', '--dashboard-output', str(path)], outgoing=output,
+                         entry_request=local_entry('target'))
             self.assertEqual(code, 2)
             self.assertTrue(json.loads(output.getvalue())['dashboard_saved'])
             self.assertIn('<html', path.read_text(encoding='utf-8'))

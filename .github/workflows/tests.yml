@@ -30,6 +30,10 @@ jobs:
         env:
           GUARDIAN_NATIVE_CONTEXT_CI: "1"
         run: python -m unittest discover -s tests -p test_native_context_smoke.py -v
+      - name: Owned Darwin private-read fixtures (not user-device acceptance)
+        if: runner.os == 'macOS'
+        timeout-minutes: 2
+        run: python -B tools/macos_private_read_probe.py
       - name: Synthetic WebRTC lifecycle regression (no network)
         run: node tests/webrtc-lifecycle.cjs
       - name: Compile runtime
@@ -45,10 +49,28 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import json,subprocess,sys
+          import json, subprocess, sys
           target = 'macos' if sys.platform == 'darwin' else 'windows'
-          cmd = [sys.executable, 'skills/claude-guardian/scripts/guardian.py', 'check', '--target-ref', 'ci-runner', '--target-os', target, '--target-kind', 'local', '--namespace', 'desktop', '--execution-location', 'native_local', '--user-context', 'same', '--confirm-target', '--authorize-audit']
-          result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+          child = """
+          import json, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('skills/claude-guardian/scripts').resolve()))
+          import guardian
+          target = 'macos' if sys.platform == 'darwin' else 'windows'
+          args = guardian.parser().parse_args(['check', '--target-ref', 'ci-runner', '--target-os', target, '--target-kind', 'local', '--namespace', 'desktop', '--execution-location', 'native_local', '--user-context', 'same', '--confirm-target', '--authorize-audit'])
+          # CI owns this process. A declaration adds no permission or native certification.
+          entry = {'schema_version': 'guardian-environment-entry-input/0.1',
+                   'route': {'choice': 'local', 'state': 'selected'},
+                   'targets': [{'role': 'local', 'target_ref': 'ci-runner'}],
+                   'network': {'possession': 'none', 'selection': 'direct', 'configuration': 'not_applicable', 'path': 'direct'},
+                   'local_entry': {'kind': 'none'},
+                   'final_egress': {'kind': 'direct', 'protocol': 'unknown'},
+                   'client': 'claude_code'}
+          # In-process input is explicit; no unsupported Windows entry-file read is implied.
+          report = guardian.native_check(args, entry_request=entry)
+          print(json.dumps(report))
+          """
+          result = subprocess.run([sys.executable, '-c', child], capture_output=True, text=True, timeout=60)
           assert result.returncode == 0, 'Native metadata collector did not complete'
           report = json.loads(result.stdout)
           assert report['contact_control']['gate_state'] == 'closed'

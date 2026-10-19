@@ -80,12 +80,14 @@ class MacOSMetadataObserverPackagingTests(unittest.TestCase):
             check=True, capture_output=True, text=True, timeout=30,
         )
 
-    def test_explicit_64_member_package_contains_observer_and_no_audits(self):
+    def test_explicit_67_member_package_contains_observer_and_no_audits(self):
         expected = {'claude-guardian/' + path for path in self.paths}
         expected.add('claude-guardian/LICENSE')
         self.assertEqual(self.paths.count(OBSERVER), 1)
-        self.assertEqual(len(expected), 64)
-        self.assertEqual(len(self.members), 64)
+        self.assertEqual(self.paths.count("scripts/agent_rules_task.py"), 1)
+        self.assertEqual(self.paths.count("references/agent-rules-task.md"), 1)
+        self.assertEqual(len(expected), 67)
+        self.assertEqual(len(self.members), 67)
         self.assertEqual(set(self.members), expected)
         self.assertEqual(self.members, sorted(self.members))
         self.assertFalse(any('docs/' in name or 'tests/' in name for name in self.members))
@@ -106,16 +108,16 @@ class MacOSMetadataObserverPackagingTests(unittest.TestCase):
                          hashlib.sha256(second.read_bytes()).digest())
 
     def test_exact_builder_transition_preserves_the_historical_proof(self):
-        from test_acceptance_subscription_boundaries import verify_metadata_observer_packager_transition
+        from package_manifest_transition import verify_current_packager_transition
         current = (ROOT / 'tools/package_skill.py').read_bytes()
         proof_bytes = (ROOT / 'docs/evidence/subscription-boundaries/package-inventory-proof.json').read_bytes()
-        historical = verify_metadata_observer_packager_transition(current, proof_bytes)
+        historical = verify_current_packager_transition(current, proof_bytes)
         self.assertNotIn(OBSERVER.encode('ascii'), historical)
         self.assertEqual(hashlib.sha256(historical).hexdigest(),
                          json.loads(proof_bytes)['package_builder_sha256']['after'])
 
     def test_builder_transition_rejects_extra_changes_and_missing_or_duplicate_observer(self):
-        import test_acceptance_subscription_boundaries as subscription
+        import package_manifest_transition as subscription
         current = (ROOT / 'tools/package_skill.py').read_bytes()
         proof_bytes = (ROOT / 'docs/evidence/subscription-boundaries/package-inventory-proof.json').read_bytes()
         entry = b'"scripts/macos_metadata_observer.py", '
@@ -130,16 +132,16 @@ class MacOSMetadataObserverPackagingTests(unittest.TestCase):
             with self.subTest(change=label):
                 self.assertNotEqual(changed, current)
                 with self.assertRaisesRegex(AssertionError, 'Unreviewed current package builder'):
-                    subscription.verify_metadata_observer_packager_transition(changed, proof_bytes)
+                    subscription.verify_current_packager_transition(changed, proof_bytes)
                 # Even repinning a proposed current hash cannot hide a second
                 # change or permit a missing/duplicate exact manifest entry.
-                with mock.patch.object(subscription, 'METADATA_OBSERVER_PACKAGER_SHA256',
+                with mock.patch.object(subscription, 'CURRENT_PACKAGE_BUILDER_SHA256',
                                        hashlib.sha256(changed).hexdigest()):
                     with self.assertRaises(AssertionError):
-                        subscription.verify_metadata_observer_packager_transition(changed, proof_bytes)
+                        subscription.verify_current_packager_transition(changed, proof_bytes)
 
     def test_builder_transition_rejects_rewritten_historical_proof(self):
-        from test_acceptance_subscription_boundaries import verify_metadata_observer_packager_transition
+        from package_manifest_transition import verify_current_packager_transition
         current = (ROOT / 'tools/package_skill.py').read_bytes()
         proof_bytes = (ROOT / 'docs/evidence/subscription-boundaries/package-inventory-proof.json').read_bytes()
         proof = json.loads(proof_bytes)
@@ -147,7 +149,7 @@ class MacOSMetadataObserverPackagingTests(unittest.TestCase):
         for changed in (proof_bytes + b'\n', json.dumps(proof).encode('utf-8')):
             with self.subTest(proof_sha256=hashlib.sha256(changed).hexdigest()):
                 with self.assertRaisesRegex(AssertionError, 'Historical package proof changed'):
-                    verify_metadata_observer_packager_transition(current, changed)
+                    verify_current_packager_transition(current, changed)
 
     def test_missing_observer_is_not_silently_omitted(self):
         observer = self.skill / OBSERVER

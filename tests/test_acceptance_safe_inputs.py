@@ -9,35 +9,41 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from acceptance_runtime_compat import historical_baseline
 from test_acceptance_skill_registry_wording import (
     SKILL_PATH, SUPPLEMENT_RELATIVE, SUPPLEMENT_SHA256, checked_registry_wording_sha256)
 
 ROOT = Path(__file__).resolve().parents[1]
 HERE = ROOT / 'docs/evidence/t11-t12-safe-inputs-v1'
 PINS = json.loads((HERE / 'source-pins.json').read_text(encoding='utf-8'))
-SOURCE = Path(os.environ.get('GUARDIAN_REPOSITORY_ROOT', str(ROOT)))
 
 
 class SafeInputsCandidateTests(unittest.TestCase):
-    def test_exact_reviewed_source_bytes_and_original_conditions(self):
+    @classmethod
+    def setUpClass(cls):
+        context = historical_baseline(ROOT)
+        cls.HISTORICAL_ROOT = context.__enter__()
+        cls.addClassCleanup(context.__exit__, None, None, None)
+
+    def test_exact_historical_source_bytes_and_original_conditions(self):
         for relative, expected in PINS['source_sha256'].items():
             with self.subTest(source=relative):
-                path = SOURCE / relative
+                path = self.HISTORICAL_ROOT / relative
                 if relative == SKILL_PATH:
                     self.assertFalse(path.is_symlink())
                     checked_registry_wording_sha256(path.read_bytes(), expected)
                 else:
                     self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), expected)
-        design = (SOURCE / 'skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md').read_text(encoding='utf-8')
+        design = (self.HISTORICAL_ROOT / 'skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md').read_text(encoding='utf-8')
         for case_id, row in PINS['original_conditions'].items():
             self.assertEqual(next(line for line in design.splitlines() if line.startswith('| ' + case_id + ' |')), row)
         self.assertEqual(PINS['verification_layer'], 'L+C')
 
-    def test_replay_reexecutes_bounded_supporting_paths(self):
+    def test_historical_replay_reexecutes_bounded_supporting_paths(self):
         with tempfile.TemporaryDirectory(prefix='guardian-safe-input-replay-') as temporary:
             output = Path(temporary) / 'traces'
             result = subprocess.run([sys.executable, '-B', str(ROOT / 'tests/acceptance_safe_inputs_replay.py'),
-                '--source', str(SOURCE), '--output', str(output)], capture_output=True,
+                '--source', str(self.HISTORICAL_ROOT), '--output', str(output)], capture_output=True,
                 text=True, encoding='utf-8', errors='strict', timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
             summary = json.loads(result.stdout)
@@ -45,7 +51,7 @@ class SafeInputsCandidateTests(unittest.TestCase):
             self.assertTrue(summary['pure_source_helper_checked'])
             self.assertEqual(summary['full_T11_T12_acceptance'], 'pending')
             record = json.loads((output / 'execution-record.json').read_text(encoding='utf-8'))
-            actual_sources = {relative: hashlib.sha256((SOURCE / relative).read_bytes()).hexdigest()
+            actual_sources = {relative: hashlib.sha256((self.HISTORICAL_ROOT / relative).read_bytes()).hexdigest()
                               for relative in PINS['source_sha256']}
             self.assertEqual(record['source_sha256'], actual_sources)
             self.assertEqual(record['historical_source_pin_file'], {
@@ -59,7 +65,7 @@ class SafeInputsCandidateTests(unittest.TestCase):
             self.assertEqual(len(record['cases']), 9)
             self.assertTrue(all(all(case['checks'].values()) for case in record['cases']))
 
-    def test_replay_non_ascii_output_path_with_cp1252_stdio(self):
+    def test_historical_replay_non_ascii_output_path_with_cp1252_stdio(self):
         with tempfile.TemporaryDirectory(prefix='guardian-safe-input-encoding-') as temporary:
             # Preserve the same non-ASCII pathname bytes even when this test
             # itself runs with ASCII filesystem decoding on POSIX.
@@ -70,7 +76,7 @@ class SafeInputsCandidateTests(unittest.TestCase):
                                PYTHONCOERCECLOCALE='0', LC_ALL='C',
                                PYTHONDONTWRITEBYTECODE='1')
             result = subprocess.run([sys.executable, '-B', str(ROOT / 'tests/acceptance_safe_inputs_replay.py'),
-                '--source', str(SOURCE), '--output', str(output)], env=environment,
+                '--source', str(self.HISTORICAL_ROOT), '--output', str(output)], env=environment,
                 capture_output=True, text=True, encoding='utf-8', errors='strict', timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue(result.stdout.isascii())
@@ -81,7 +87,7 @@ class SafeInputsCandidateTests(unittest.TestCase):
             # bytes as surrogates. Compare path bytes without hiding that fact.
             self.assertEqual(os.fsencode(summary['output']), os.fsencode(str(output.resolve())))
             record = json.loads((output / 'execution-record.json').read_text(encoding='utf-8'))
-            actual_sources = {relative: hashlib.sha256((SOURCE / relative).read_bytes()).hexdigest()
+            actual_sources = {relative: hashlib.sha256((self.HISTORICAL_ROOT / relative).read_bytes()).hexdigest()
                               for relative in PINS['source_sha256']}
             self.assertEqual(record['source_sha256'], actual_sources)
             self.assertEqual(record['historical_source_pin_file'], {
@@ -97,13 +103,13 @@ class SafeInputsCandidateTests(unittest.TestCase):
             helper = json.loads((output / 'opaque-source-trace.json').read_text(encoding='utf-8'))
             self.assertTrue(all(count == 0 for count in helper['observed_calls_to_instrumented_functions'].values()))
 
-    def test_replay_rejects_other_source_drift_before_running(self):
+    def test_historical_replay_rejects_other_source_drift_before_running(self):
         with tempfile.TemporaryDirectory(prefix='guardian-safe-input-source-drift-') as temporary:
             source = Path(temporary) / 'source'
             for relative in PINS['source_sha256']:
                 target = source / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(SOURCE / relative, target)
+                shutil.copyfile(self.HISTORICAL_ROOT / relative, target)
             runtime = source / 'skills/claude-guardian/scripts/guardian.py'
             runtime.write_bytes(runtime.read_bytes() + b'\n')
             output = Path(temporary) / 'must-not-be-created'
@@ -113,6 +119,53 @@ class SafeInputsCandidateTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn('Pinned source changed: skills/claude-guardian/scripts/guardian.py', result.stderr)
             self.assertFalse(output.exists())
+
+    def test_current_runtime_reexecutes_all_supporting_paths_without_source_acceptance(self):
+        # Reuse all original handwritten case/check expectations on the actual
+        # current runtime, never silently substitute historical source bytes.
+        for portable in (False, True):
+            with self.subTest(forced_cp1252=portable), tempfile.TemporaryDirectory(
+                    prefix='guardian-current-safe-input-') as temporary:
+                output_name = os.fsdecode('当前-é-traces'.encode('utf-8'))
+                output = Path(temporary) / output_name
+                environment = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
+                if portable:
+                    environment.update(PYTHONIOENCODING='cp1252', PYTHONUTF8='0',
+                                       PYTHONCOERCECLOCALE='0', LC_ALL='C')
+                result = subprocess.run([sys.executable, '-B',
+                    str(ROOT / 'tests/acceptance_safe_inputs_replay.py'),
+                    '--source', str(ROOT), '--output', str(output),
+                    '--source-kind', 'current_runtime'], env=environment,
+                    capture_output=True, text=True, encoding='utf-8', errors='strict', timeout=30)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertTrue(result.stdout.isascii())
+                summary = json.loads(result.stdout)
+                self.assertEqual(summary['source_kind'], 'current_runtime')
+                self.assertEqual(summary['cli_cases_passed'], 9)
+                self.assertTrue(summary['pure_source_helper_checked'])
+                self.assertEqual(summary['full_T11_T12_acceptance'], 'pending')
+                self.assertEqual(os.fsencode(summary['output']), os.fsencode(str(output.resolve())))
+                record = json.loads((output / 'execution-record.json').read_text(encoding='utf-8'))
+                self.assertEqual(record['source_kind'], 'current_runtime')
+                self.assertEqual(record['historical_source_compatibility'], 'not_established')
+                self.assertNotIn('documentation_compatibility', record)
+                expected_sources = set(PINS['source_sha256']) | {
+                    'skills/claude-guardian/scripts/environment_entry.py'}
+                self.assertEqual(set(record['source_sha256']), expected_sources)
+                self.assertEqual(record['source_sha256'], {
+                    name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+                    for name in expected_sources})
+                self.assertEqual(record['historical_pin_matches'], {
+                    name: record['source_sha256'][name] == expected
+                    for name, expected in PINS['source_sha256'].items()})
+                self.assertFalse(record['historical_pin_matches'][SKILL_PATH])
+                self.assertFalse(record['historical_pin_matches']['skills/claude-guardian/scripts/guardian.py'])
+                self.assertEqual(len(record['cases']), 9)
+                self.assertTrue(all(all(case['checks'].values()) for case in record['cases']))
+                self.assertTrue(all(case['argv'][2] == str(ROOT / 'skills/claude-guardian/scripts/guardian.py')
+                                    for case in record['cases']))
+                helper = json.loads((output / 'opaque-source-trace.json').read_text(encoding='utf-8'))
+                self.assertTrue(all(count == 0 for count in helper['observed_calls_to_instrumented_functions'].values()))
 
     def test_candidate_uses_python_310_grammar(self):
         for name in ('acceptance_safe_inputs_replay.py', 'test_acceptance_safe_inputs.py'):

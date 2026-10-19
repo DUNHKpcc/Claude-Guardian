@@ -1,5 +1,26 @@
 # 版本记录
 
+## 2026-10-19 — Agent-supported single-rule task
+
+- Reuse the pinned 2.5.8 compiler and linkage checks for one dedicated rules extension and one DOMAIN change; provide private candidate material and fixed Agent steps
+- Compare supplied content without claiming Save, application activation, routing, authorization or native execution; retain independent scoped recovery review
+- Add the helper and focused usage reference to the explicit 67-member package; keep production transaction and cleanup admission unchanged
+
+## 2026-10-19 — Internal Darwin private-read subset
+
+- Add one shared descriptor-only metadata guard for private control documents and parents; distinguish absent, empty and nonempty ACLs without exposing principals or values
+- Add opt-in owned temporary fixture experiments and a macOS-only CI step; synthetic results remain separate from native and user-device evidence
+- Keep existing CLI, transaction/cleanup gates and the 65-member installed package unchanged; selected-receipt integration awaits applicable native validation
+
+
+## 2026-10-19 — Explicit execution-route and resource entry
+
+- Require a current local / VM / VPS choice and bounded resource declarations before target inspection or remediation; resource ownership alone never selects a route
+- Recheck entry state around host callbacks and invalidate withdrawn contact grants; retain narrowly scoped recovery protections and routes
+- Separate local/VM detailed eligibility from VPS basic non-intrusive scope, and distinguish local HTTP/mixed proxy entry from a SOCKS upstream
+- Add the entry module to the 65-member package; preserve historical 51-case evidence with explicit current revalidation status rather than rewriting original clauses or old results
+- Native metadata write support, application activation and actual device acceptance remain pending
+
 ## 2026-10-19 — Bounded read-only Darwin metadata observation
 
 - Add inherited-fd observation with fixed categories/counts, bounded native name listing, ownership/state checks and privacy-safe errors

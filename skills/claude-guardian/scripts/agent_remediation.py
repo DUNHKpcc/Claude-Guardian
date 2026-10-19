@@ -33,7 +33,7 @@ CATALOG = {
     'reaudit': action('read_only_script', 'ENV-01', '重新获取当前限定元数据，不能沿用失效快照',
                      ['确认本次只读范围', '调用内置会话；保留采集失败原因'],
                      ['可信本机宿主', '当前只读授权'], ['比较同一目标的新旧证据，不因采集成功判网络通过'],
-                     ['python', 'scripts/diagnostic_session.py', '--target-ref', '<target-alias>']),
+                     ['python', 'scripts/diagnostic_session.py', '--target-ref', '<target-alias>', '--entry-file', '<sanitized-entry.json>']),
     'collect-proxy': action('read_only_script', 'ENV-02', '补充选定代理实例及配置证据',
                            ['先查看实际支持范围', '仅对获准精确文件使用 static-audit；版本不支持则Agent通过已核实的宿主只读接口读取必要字段'],
                            ['产品/版本', '活动配置/端口归属', '精确文件读取授权'],
@@ -53,7 +53,7 @@ CATALOG = {
                         ['规则根因', '精确文件/版本/活动扩展归属', '请求与binding', '合并优先级'],
                         ['候选解析→合并解释→内核校验→GUI读回→实际路径→订阅更新复验'],
                         ['python', 'scripts/repair_cli.py', 'preflight', '--request', '<private-request.json>',
-                         '--target-path', '<owned-extension>', '--target-ref', '<target-alias>']),
+                         '--target-path', '<owned-extension>', '--target-ref', '<target-alias>', '--entry-file', '<sanitized-entry.json>']),
     'probe-plan': action('host_library_only', 'ENV-03', '准备指定程序和路径的中性探测',
                          ['选定中性端点、地址族、程序、预算与披露范围',
                           '只有可信宿主满足network_probes.py契约并取得本次授权才能探测；无通用网络CLI',
@@ -159,11 +159,21 @@ CATALOG['plan-prepend']['command_template'] += [
     '--candidate-kind', 'rules-prepend', '--app-info', '<authorized-Info.plist>',
     '--profile-index', '<authorized-profiles.yaml>', '--extension-uid', '<selected-rules-uid>',
     '--base-path', '<authorized-base-profile>']
+CATALOG['plan-prepend']['host_handoff'] = {
+    'capability': 'clash258_single_domain_rules_task',
+    'entry_point': 'agent_rules_task.prepare_rules_task',
+    'readback_entry_point': 'agent_rules_task.assess_supplied_readback',
+    'invocation': 'in_process_supplied_snapshots',
+    'executor': 'agent_supported_application',
+    'execution_authorized': False,
+    'builtin_apply_supported': False,
+    'documentation': 'references/agent-rules-task.md',
+}
 
 GROUPS = {
     'ipv4-only-policy': 'IPV4_ONLY_SCOPE_UNBOUND IPV4_ONLY_SCOPE_UNSUPPORTED IPV4_ONLY_ENFORCEMENT_UNKNOWN IPV4_ONLY_IPV6_FALLBACK_NOT_EXCLUDED IPV4_ONLY_PRESERVED_SCOPE_CONFLICT IPV4_ONLY_VERIFICATION_NOT_RUN IPV4_ONLY_INTENT_CONFLICT IPV4_ONLY_CONFIGURATION_STALE',
     'stop': 'USER_CANCELLED CANCELLED DECLINED CONSENT_TIMEOUT AUTHORIZATION_CANCELLED APPROVAL_CANCELLED APPROVAL_TIMEOUT',
-    'bind-target': 'TARGET_NOT_BOUND TARGET_USER_CONTEXT_MISMATCH ROUTE_OR_TARGET_NEEDS_CLARIFICATION CONTEXT_CHANGED CONTEXT_EXPIRED CONTEXT_FOREIGN CONTEXT_INACTIVE CONTEXT_INACTIVE_OR_REMOTE CONTEXT_UNKNOWN CONSOLE_ACCOUNT_EQUALITY_UNPROVEN CONTROLLER_NOT_BOUND RESPONSE_CONTEXT_MISMATCH APPROVAL_CONTEXT_CHANGED INVALID_CONTEXT NATIVE_CONTEXT_NOT_BOUND',
+    'bind-target': 'ENVIRONMENT_ENTRY_REQUIRED ENVIRONMENT_ENTRY_CHANGED ENVIRONMENT_ENTRY_PLAN_MISMATCH ENVIRONMENT_ENTRY_PLAN_BINDING_REQUIRED TARGET_NOT_BOUND TARGET_USER_CONTEXT_MISMATCH ROUTE_OR_TARGET_NEEDS_CLARIFICATION CONTEXT_CHANGED CONTEXT_EXPIRED CONTEXT_FOREIGN CONTEXT_INACTIVE CONTEXT_INACTIVE_OR_REMOTE CONTEXT_UNKNOWN CONSOLE_ACCOUNT_EQUALITY_UNPROVEN CONTROLLER_NOT_BOUND RESPONSE_CONTEXT_MISMATCH APPROVAL_CONTEXT_CHANGED INVALID_CONTEXT NATIVE_CONTEXT_NOT_BOUND',
     'reaudit': 'STALE_EVIDENCE_REAUDIT_REQUIRED SNAPSHOT_CHANGED_DURING_AUDIT PLAN_REQUIRES_STABLE_SNAPSHOT_AND_ROUTE_FACTS',
     'collect-proxy': 'LIMITED_METADATA_ONLY MINIMAL_METADATA_ONLY MISSING_ENVIRONMENT_EVIDENCE',
     'proxy-port': 'PROXY_PORT_ASSOCIATION_CONFLICT',

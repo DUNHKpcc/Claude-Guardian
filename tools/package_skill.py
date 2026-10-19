@@ -14,11 +14,11 @@ def main():
     args = parser.parse_args()
     skill = ROOT / 'skills' / 'claude-guardian'
     release_paths = [
-        "SKILL.md", "scripts/traffic_policy.py", "scripts/guardian.py", "scripts/agent_remediation.py", "scripts/interview_flow.py", "scripts/interview_cli.py", "scripts/interview_migration.py", "scripts/source_evidence.py",
-        "scripts/native_context.py", "scripts/windows_native_context.py", "scripts/macos_metadata_observer.py", "scripts/diagnostic_session.py", "scripts/status_dashboard.py", "scripts/probe_evidence.py", "scripts/dns_probe.py", "scripts/mihomo_dns_probe.py", "scripts/os_dns_probe.py", "scripts/windows_dns_probe.py", "scripts/inventory_cli.py", "scripts/clash_inventory.py", "scripts/controller_inventory.py",
+        "SKILL.md", "scripts/traffic_policy.py", "scripts/guardian.py", "scripts/agent_remediation.py", "scripts/agent_rules_task.py", "scripts/interview_flow.py", "scripts/interview_cli.py", "scripts/interview_migration.py", "scripts/source_evidence.py",
+        "scripts/native_context.py", "scripts/windows_native_context.py", "scripts/macos_metadata_observer.py", "scripts/environment_entry.py", "scripts/diagnostic_session.py", "scripts/status_dashboard.py", "scripts/probe_evidence.py", "scripts/dns_probe.py", "scripts/mihomo_dns_probe.py", "scripts/os_dns_probe.py", "scripts/windows_dns_probe.py", "scripts/inventory_cli.py", "scripts/clash_inventory.py", "scripts/controller_inventory.py",
         "scripts/windows_listener_binding.py", "scripts/windows_transactions.py", "scripts/workflow_guard.py", "scripts/remedy_plans.py", "scripts/config_edit_plan.py", "scripts/rules_extension_plan.py", "scripts/rule_source_import.py", "scripts/rule_format_conversion.py", "scripts/rule_policy_conversion.py",
         "scripts/recovery_cli.py", "scripts/repair_cli.py", "scripts/repair_execution.py", "scripts/clash_verge_258.py", "scripts/stun_probe.py", "scripts/network_probes.py", "scripts/transactions.py", "scripts/cleanup_transactions.py", "scripts/cleanup_cli.py", "scripts/serve_webrtc.py", "assets/webrtc-probe.html",
-        "references/cleanup-cli-usage.md", "references/agent-remediation.md", "references/intake.md", "references/contact-and-safety.md",
+        "references/cleanup-cli-usage.md", "references/agent-remediation.md", "references/agent-rules-task.md", "references/intake.md", "references/contact-and-safety.md",
         "references/routes-and-platforms.md", "references/network-and-remedies.md", "references/macos-dns-case-lessons.md",
         "references/accounts-and-payments.md", "references/incidents-and-integrations.md",
         "references/evidence-policy.md", "references/source-library.md", "sources/manifest.json",
