@@ -6,7 +6,18 @@
 2. Resume the Mac repair delivery path: bounded metadata support, exact approved writing, application activation, effective-state verification, and conflict-safe failure recovery. The read-only observer does not complete this path. Native adapter and real-device evidence remain necessary; no assumption that the user's Mac stays online.
 3. Retain Windows native verification and the C5 full scoped Claude-data cleanup / recovery acceptance work. Neither is removed by the new entry workflow. The complete original specification remains the final project goal; a narrowly declared Mac trial scope is a delivery milestone only.
 
-## Current candidate: thirty-eighth entry-order integration, 2026-10-19
+## Current work: bounded Darwin private reads, 2026-10-19
+
+The internal descriptor-only helper and disposable fixture experiment implement
+a narrow read capability, not a production transaction writer. Existing CLIs and
+the installable package remain unchanged; hosted native evidence and eventual
+user-device validation are separately pending. See [private control-document
+read scope](macos-private-control-read.md). The entry-order batch is published at
+`6238504a8351c8c5c3d630479fc7da8195e1829c`; its Windows test-fixture portability
+failure remains recorded and is being corrected independently. No native or
+original-case acceptance is added by this helper's synthetic tests.
+
+## Preceding checkpoint: thirty-eighth entry-order integration, 2026-10-19
 
 The published baseline 95015be completed all four CI platforms and preview successfully. This candidate implements the new entry-order decision. Historical 51-case evidence is preserved; current applicability is being revalidated and must not be read as 51 current passes. See [entry decision](environment-entry-decision.md).
 

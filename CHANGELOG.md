@@ -1,5 +1,12 @@
 # 版本记录
 
+## 2026-10-19 — Internal Darwin private-read subset
+
+- Add one shared descriptor-only metadata guard for private control documents and parents; distinguish absent, empty and nonempty ACLs without exposing principals or values
+- Add opt-in owned temporary fixture experiments and a macOS-only CI step; synthetic results remain separate from native and user-device evidence
+- Keep existing CLI, transaction/cleanup gates and the 65-member installed package unchanged; selected-receipt integration awaits applicable native validation
+
+
 ## 2026-10-19 — Explicit execution-route and resource entry
 
 - Require a current local / VM / VPS choice and bounded resource declarations before target inspection or remediation; resource ownership alone never selects a route
