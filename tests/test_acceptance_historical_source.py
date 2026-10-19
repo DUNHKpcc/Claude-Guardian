@@ -36,10 +36,26 @@ class HistoricalSourceFixtureControls(unittest.TestCase):
         self.assertEqual(manifest['release_commit'], '95015be0fc70d2a1b143b43aab09e7a7ab7a7565')
         self.assertEqual(manifest['release_tree'], '0fbe23a5fe52dd28706f933e4c9df94c077ae688')
         self.assertEqual(len(manifest['sources']), 64)
-        self.assertEqual(manifest['snapshot_files'], 11)
-        self.assertEqual(manifest['snapshot_bytes'], 552015)
+        self.assertEqual(manifest['snapshot_files'], 12)
+        self.assertEqual(manifest['snapshot_bytes'], 562019)
         self.assertEqual({entry['origin'] for entry in manifest['sources'].values()},
                          {'snapshot', 'repository'})
+
+    def test_rules_document_preservation_changes_origin_without_repinning_history(self):
+        # Reverse only this explicit preservation step, not historical content.
+        previous = json.loads(json.dumps(MANIFEST))
+        entry = previous['sources']['docs/rules-extension-plan.md']
+        self.assertEqual(entry, {'origin': 'snapshot', 'size_bytes': 10004,
+            'sha256': 'bc851c13dffd4670ab6e6f471eabd38f3087a22f146dc2ad67cc8913aa12f057'})
+        previous['sources']['docs/rules-extension-plan.md']['origin'] = 'repository'
+        previous['snapshot_files'] = 11
+        previous['snapshot_bytes'] = 552015
+        previous['readme_sha256'] = 'a6db0f53654784c01af5d471c4694a95908de81fece0a9ca9117472a21acc9af'
+        raw = (json.dumps(previous, ensure_ascii=True, sort_keys=True, indent=2) + '\n').encode('utf-8')
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),
+                         '8e2d5eef42f8c9b1a90a59794e54626b2b3d31da79e918ffe03e58802df48427')
+        snapshot = ROOT / compatibility.SNAPSHOT_REL / 'source/docs/rules-extension-plan.md'
+        self.assertNotEqual(snapshot.read_bytes(), (ROOT / 'docs/rules-extension-plan.md').read_bytes())
 
     def test_every_snapshot_byte_and_inventory_member_is_required(self):
         relatives = ['manifest.json', 'README.md'] + ['source/' + relative

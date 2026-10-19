@@ -21,11 +21,13 @@ or every case needs another generated dialogue.
 The first impact audit found T03, T05, T09 and T18's reviewed sources unchanged.
 Its six diagnostic-evidence, eight appeal-evidence and fourteen source-helper
 checks passed. The subsequent entry guidance and package additions changed that
-source basis, so those four were first marked pending too. The separate
-[limited current review](evidence/entry-order-limited-revalidation.md) now records
-whole-clause semantic review, exact insertion reconstructions, current source
-pins and 23 freshly rerun source/helper/package checks. It restores only T03,
-T05, T09 and T18. Original diagnostic/appeal replies remain historical; no new
+source basis, so those four were first marked pending too. The preceding
+[entry-order limited review](evidence/entry-order-limited-revalidation.md) remains
+historical with its original pins and observations. The current
+[Agent-task limited review](evidence/agent-rules-limited-revalidation.md) records
+whole-clause semantic review, exact full-file transitions, current source pins
+and freshly rerun source/helper/package checks. Only T03, T05, T09 and T18 retain
+current acceptance. Original diagnostic/appeal replies remain historical; no new
 model dialogue is claimed. Further source drift still invalidates applicability.
 
 All original 218 IDs, scenarios, full requirements and literal verification
@@ -130,7 +132,9 @@ Current execution remains separate:
   other's cached helper functions.
 - The asset-route normalized behavioral suite remains on the current runtime.
   Separate inventory assertions retain the historical 64-member package and
-  check the current 65-member package's exact additional entry-script member.
+  check that checkpoint's 65-member package. The current 67-member inventory additionally
+  verifies the two Agent-task entries and reconstructs that exact prior 65-member
+  builder before applying the unchanged historical checks.
 
 The six adapted suites plus the ledger ran **70 tests, all passed, zero skips**
 both normally and under forced cp1252/C-locale settings. The untouched current

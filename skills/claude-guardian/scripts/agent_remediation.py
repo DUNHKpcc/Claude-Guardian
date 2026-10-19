@@ -159,6 +159,16 @@ CATALOG['plan-prepend']['command_template'] += [
     '--candidate-kind', 'rules-prepend', '--app-info', '<authorized-Info.plist>',
     '--profile-index', '<authorized-profiles.yaml>', '--extension-uid', '<selected-rules-uid>',
     '--base-path', '<authorized-base-profile>']
+CATALOG['plan-prepend']['host_handoff'] = {
+    'capability': 'clash258_single_domain_rules_task',
+    'entry_point': 'agent_rules_task.prepare_rules_task',
+    'readback_entry_point': 'agent_rules_task.assess_supplied_readback',
+    'invocation': 'in_process_supplied_snapshots',
+    'executor': 'agent_supported_application',
+    'execution_authorized': False,
+    'builtin_apply_supported': False,
+    'documentation': 'references/agent-rules-task.md',
+}
 
 GROUPS = {
     'ipv4-only-policy': 'IPV4_ONLY_SCOPE_UNBOUND IPV4_ONLY_SCOPE_UNSUPPORTED IPV4_ONLY_ENFORCEMENT_UNKNOWN IPV4_ONLY_IPV6_FALLBACK_NOT_EXCLUDED IPV4_ONLY_PRESERVED_SCOPE_CONFLICT IPV4_ONLY_VERIFICATION_NOT_RUN IPV4_ONLY_INTENT_CONFLICT IPV4_ONLY_CONFIGURATION_STALE',

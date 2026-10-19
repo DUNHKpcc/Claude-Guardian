@@ -80,12 +80,14 @@ class MacOSMetadataObserverPackagingTests(unittest.TestCase):
             check=True, capture_output=True, text=True, timeout=30,
         )
 
-    def test_explicit_65_member_package_contains_observer_and_no_audits(self):
+    def test_explicit_67_member_package_contains_observer_and_no_audits(self):
         expected = {'claude-guardian/' + path for path in self.paths}
         expected.add('claude-guardian/LICENSE')
         self.assertEqual(self.paths.count(OBSERVER), 1)
-        self.assertEqual(len(expected), 65)
-        self.assertEqual(len(self.members), 65)
+        self.assertEqual(self.paths.count("scripts/agent_rules_task.py"), 1)
+        self.assertEqual(self.paths.count("references/agent-rules-task.md"), 1)
+        self.assertEqual(len(expected), 67)
+        self.assertEqual(len(self.members), 67)
         self.assertEqual(set(self.members), expected)
         self.assertEqual(self.members, sorted(self.members))
         self.assertFalse(any('docs/' in name or 'tests/' in name for name in self.members))

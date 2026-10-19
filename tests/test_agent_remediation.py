@@ -22,6 +22,22 @@ def report(*codes):
 
 
 class SelectionTests(unittest.TestCase):
+    def test_rules_task_discovery_does_not_override_barriers_or_no_change(self):
+        selected = ar.select(report('RULE_PREPEND_REQUIRED'), 'device-1')
+        task = selected['actions'][0]['host_handoff']
+        self.assertEqual(task['entry_point'], 'agent_rules_task.prepare_rules_task')
+        self.assertFalse(task['execution_authorized'])
+        self.assertFalse(task['builtin_apply_supported'])
+        self.assertEqual(selected['authority'], 'none')
+        for barrier in ('USER_CANCELLED', 'PERMISSION_DENIED', 'ENVIRONMENT_ENTRY_REQUIRED'):
+            blocked = ar.select(report('RULE_PREPEND_REQUIRED', barrier), 'device-1')
+            self.assertTrue(all(item['agent_fallback'] == 'none' for item in blocked['actions']))
+        unchanged = ar.select(report('RULE_PREPEND_REQUIRED', 'NO_CHANGE_TO_EXECUTE'), 'device-1')
+        self.assertEqual([item['action_id'] for item in unchanged['actions']], ['no-change'])
+        self.assertNotIn('host_handoff', unchanged['actions'][0])
+        selected['actions'][0]['host_handoff']['execution_authorized'] = True
+        self.assertFalse(ar.CATALOG['plan-prepend']['host_handoff']['execution_authorized'])
+
     def test_implemented_guardian_findings_and_errors_are_mapped(self):
         tree = ast.parse((SCRIPTS / 'guardian.py').read_text(encoding='utf-8'))
         codes = set()

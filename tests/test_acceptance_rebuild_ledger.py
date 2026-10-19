@@ -55,8 +55,57 @@ HISTORICALLY_ACCEPTED = {
 
 # This checkpoint's current decisions are explicit, never inferred from test totals.
 CURRENTLY_ACCEPTED = frozenset({'T03', 'T05', 'T09', 'T18'})
-LIMITED_CURRENT_REVIEW = 'docs/evidence/entry-order-limited-revalidation.md'
-LIMITED_CURRENT_REVIEW_SHA256 = 'b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d'
+PRIOR_LIMITED_REVIEW = 'docs/evidence/entry-order-limited-revalidation.md'
+PRIOR_LIMITED_REVIEW_SHA256 = 'b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d'
+LIMITED_CURRENT_REVIEW = 'docs/evidence/agent-rules-limited-revalidation.md'
+LIMITED_CURRENT_REVIEW_SHA256 = 'e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900'
+TRANSITION = 'docs/evidence/agent-rules-limited-transition.json'
+TRANSITION_SHA256 = '06fa421e121dba098770eb202ddd6acb0d4dae61e228957157f38ff3a1faedaf'
+PRIOR_TRANSITION_SOURCES = {
+    'skills/claude-guardian/SKILL.md': 'dd99288827d9597d9b41ae7ad23d5863c155ebbca24ca205808ddf62f7e15766',
+    'tools/package_skill.py': '53701d8087eefeeaca45bb42e384bfa7b1a1752347758f5202639addedf5c389',
+    'docs/rules-extension-plan.md': 'bc851c13dffd4670ab6e6f471eabd38f3087a22f146dc2ad67cc8913aa12f057',
+}
+
+
+def _transition_records():
+    if (ROOT / TRANSITION).is_symlink():
+        raise AssertionError('Exact transition proof is a symlink')
+    raw = (ROOT / TRANSITION).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != TRANSITION_SHA256:
+        raise AssertionError('Unreviewed exact transition proof')
+    proof = json.loads(raw)
+    if (proof['schema'] != 'guardian-agent-rules-review-transition/1'
+            or proof['purpose'] != 'exact_source_transition_only_not_behavioral_acceptance'
+            or proof['prior_review_path'] != PRIOR_LIMITED_REVIEW
+            or proof['prior_review_sha256'] != PRIOR_LIMITED_REVIEW_SHA256
+            or set(proof['sources']) != set(PRIOR_TRANSITION_SOURCES)):
+        raise AssertionError('Exact transition scope changed')
+    for relative, entry in proof['sources'].items():
+        if entry['before_sha256'] != PRIOR_TRANSITION_SOURCES[relative]:
+            raise AssertionError('Prior source pin changed')
+    return proof['sources']
+
+
+def _reverse_exact_transition(raw, entry):
+    if hashlib.sha256(raw).hexdigest() != entry['after_sha256']:
+        raise AssertionError('Unreviewed current transition source')
+    historical = raw
+    for replacement in entry['replacements']:
+        after, before = replacement['after'].encode('utf-8'), replacement['before'].encode('utf-8')
+        if not after or historical.count(after) != 1:
+            raise AssertionError('Exact reviewed replacement is missing or duplicated')
+        historical = historical.replace(after, before, 1)
+    if hashlib.sha256(historical).hexdigest() != entry['before_sha256']:
+        raise AssertionError('Prior whole-file reconstruction changed')
+    return historical
+
+
+def _prior_source_bytes(relative):
+    raw = (ROOT / relative).read_bytes()
+    records = _transition_records()
+    return _reverse_exact_transition(raw, records[relative]) if relative in records else raw
+
 REVALIDATION_GROUPS = {'route_transition': ('T16',
                       'T19',
                       'T20',
@@ -119,7 +168,7 @@ HISTORICAL_PAGE_SHA256 = {'docs/evidence/rebuild-intake-basics.md': 'c8aca9fc6ac
  'docs/evidence/rebuild-enforcement-cases.md': 'deb11002f6a89bdae077388bca4666b2f44b384e069c5531cc9de9c1e326d97e',
  'docs/evidence/rebuild-required-controls-case.md': 'afc1f1a5425b40e4a8f0fdbb49c6a315b70483e86f9eff88bf8bcf45a20eff23'}
 
-# Current pin checks use the separately reviewed current page; old pages keep
+# Current pin checks use the separately reviewed current page; both prior pages keep
 # their original source hashes and cannot be repinned in place.
 LIMITED_INVENTORIES = {
     'skills/claude-guardian/sources': (11, '9c59f9170d22bd4a610a30bf2fd7efeedcc1551a3f184a43d0e86cf4bc243558'),
@@ -185,8 +234,8 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(page.read_bytes()).hexdigest(), LIMITED_CURRENT_REVIEW_SHA256)
         pins = re.findall(r'^\| `([^`]+)` \| `([0-9a-f]{64})` \|$',
                           page.read_text(encoding='utf-8'), re.MULTILINE)
-        self.assertEqual(len(pins), 15)
-        self.assertEqual(len({name for name, _ in pins}), 15)
+        self.assertEqual(len(pins), 19)
+        self.assertEqual(len({name for name, _ in pins}), 19)
         for name, digest in pins:
             with self.subTest(current_reviewed_source=name):
                 path = ROOT / name
@@ -194,8 +243,48 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest,
                                  'Current acceptance requires renewed scoped review after source drift')
 
+    def test_prior_limited_review_and_its_complete_pins_remain_unchanged(self):
+        page = ROOT / PRIOR_LIMITED_REVIEW
+        self.assertFalse(page.is_symlink())
+        self.assertEqual(hashlib.sha256(page.read_bytes()).hexdigest(), PRIOR_LIMITED_REVIEW_SHA256)
+        pins = re.findall(r'^\| `([^`]+)` \| `([0-9a-f]{64})` \|$',
+                          page.read_text(encoding='utf-8'), re.MULTILINE)
+        self.assertEqual(len(pins), 15)
+        self.assertEqual(len({name for name, _ in pins}), 15)
+        for name, digest in pins:
+            with self.subTest(prior_reviewed_source=name):
+                self.assertFalse((ROOT / name).is_symlink())
+                self.assertEqual(hashlib.sha256(_prior_source_bytes(name)).hexdigest(), digest,
+                                 'Preserve the complete previous review basis; never repin it')
+
+    def test_new_review_exact_changes_reconstruct_complete_prior_sources(self):
+        records = _transition_records()
+        self.assertEqual({path: len(entry['replacements']) for path, entry in records.items()}, {
+            'skills/claude-guardian/SKILL.md': 2,
+            'tools/package_skill.py': 2,
+            'docs/rules-extension-plan.md': 1,
+        })
+        for relative, entry in records.items():
+            with self.subTest(source=relative):
+                self.assertEqual(hashlib.sha256(_prior_source_bytes(relative)).hexdigest(),
+                                 PRIOR_TRANSITION_SOURCES[relative])
+
+    def test_exact_source_transition_rejects_extra_bytes_and_changed_replacement(self):
+        for relative, entry in _transition_records().items():
+            raw = (ROOT / relative).read_bytes()
+            with self.subTest(source=relative), self.assertRaisesRegex(AssertionError, 'Unreviewed current'):
+                _reverse_exact_transition(raw + b'\n', entry)
+            changed = json.loads(json.dumps(entry))
+            changed['replacements'][0]['before'] += 'unreviewed'
+            with self.subTest(source=relative), self.assertRaisesRegex(AssertionError, 'whole-file'):
+                _reverse_exact_transition(raw, changed)
+            changed = json.loads(json.dumps(entry))
+            changed['replacements'][0]['after'] = 'not present in reviewed source'
+            with self.subTest(source=relative), self.assertRaisesRegex(AssertionError, 'missing or duplicated'):
+                _reverse_exact_transition(raw, changed)
+
     def test_limited_review_exact_additions_reconstruct_prior_whole_files(self):
-        skill = (ROOT / 'skills/claude-guardian/SKILL.md').read_text(encoding='utf-8')
+        skill = _prior_source_bytes('skills/claude-guardian/SKILL.md').decode('utf-8')
         first = '## 环境入口顺序（2026-10-19 用户确认更新）\n'
         last = '## Claude 目标流量默认仅允许 IPv4\n'
         self.assertEqual(skill.count(first), 1)
@@ -212,7 +301,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         historical = (intake[:start] + intake[end:]).encode('utf-8')
         self.assertEqual(hashlib.sha256(historical).hexdigest(),
                          '3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742')
-        package = (ROOT / 'tools/package_skill.py').read_bytes()
+        package = _prior_source_bytes('tools/package_skill.py')
         member = b', "scripts/environment_entry.py"'
         self.assertEqual(package.count(member), 1)
         historical = package.replace(member, b'', 1)
@@ -263,6 +352,18 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
                 self.assertFalse(path.is_symlink())
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), expected,
                                  'Preserve historical evidence; add a separate current review')
+
+    def test_prior_revalidation_evidence_objects_are_retained_exactly(self):
+        ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))
+        previous = {case['id']: case['prior_revalidation_evidence'] for case in ledger['cases']
+                    if 'prior_revalidation_evidence' in case}
+        self.assertEqual(set(previous), CURRENTLY_ACCEPTED)
+        canonical = json.dumps(previous, ensure_ascii=True, sort_keys=True,
+                               separators=(',', ':')).encode('utf-8')
+        self.assertEqual(hashlib.sha256(canonical).hexdigest(), '725acdbd53f7bbda020f2c116a566d451942db600c87e10b7a6340c659bf716a')
+        for evidence in previous.values():
+            self.assertEqual(evidence['path'], PRIOR_LIMITED_REVIEW)
+            self.assertEqual(evidence['sha256'], PRIOR_LIMITED_REVIEW_SHA256)
 
     def test_scheduling_is_not_current_or_historical_acceptance(self):
         ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))

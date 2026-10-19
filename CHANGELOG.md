@@ -1,5 +1,11 @@
 # 版本记录
 
+## 2026-10-19 — Agent-supported single-rule task
+
+- Reuse the pinned 2.5.8 compiler and linkage checks for one dedicated rules extension and one DOMAIN change; provide private candidate material and fixed Agent steps
+- Compare supplied content without claiming Save, application activation, routing, authorization or native execution; retain independent scoped recovery review
+- Add the helper and focused usage reference to the explicit 67-member package; keep production transaction and cleanup admission unchanged
+
 ## 2026-10-19 — Internal Darwin private-read subset
 
 - Add one shared descriptor-only metadata guard for private control documents and parents; distinguish absent, empty and nonempty ACLs without exposing principals or values

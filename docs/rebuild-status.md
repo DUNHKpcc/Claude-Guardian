@@ -6,16 +6,37 @@
 2. Resume the Mac repair delivery path: bounded metadata support, exact approved writing, application activation, effective-state verification, and conflict-safe failure recovery. The read-only observer does not complete this path. Native adapter and real-device evidence remain necessary; no assumption that the user's Mac stays online.
 3. Retain Windows native verification and the C5 full scoped Claude-data cleanup / recovery acceptance work. Neither is removed by the new entry workflow. The complete original specification remains the final project goal; a narrowly declared Mac trial scope is a delivery milestone only.
 
-## Current work: bounded Darwin private reads, 2026-10-19
+## Current work: Agent-supported application task, 2026-10-19
 
-The internal descriptor-only helper and disposable fixture experiment implement
-a narrow read capability, not a production transaction writer. Existing CLIs and
-the installable package remain unchanged; hosted native evidence and eventual
-user-device validation are separately pending. See [private control-document
-read scope](macos-private-control-read.md). The entry-order batch is published at
-`6238504a8351c8c5c3d630479fc7da8195e1829c`; its Windows test-fixture portability
-failure remains recorded and is being corrected independently. No native or
-original-case acceptance is added by this helper's synthetic tests.
+The narrowly scoped 2.5.8 rules helper reuses the existing compiler and supplied
+metadata linkage checks. It prepares one selected DOMAIN change and compares
+supplied readback; the actual Agent performs separately approved supported UI
+operations. File contents, app load, effective rules, routing and recovery remain
+separate observations. The helper does not reopen the builtin native writer or
+create an app-control bridge. See the shipped [task guide](../skills/claude-guardian/references/agent-rules-task.md).
+
+The common entry and detection core is reused for local/VM/VPS; route changes
+scope and depth, not the probe implementation. After this task interface, the
+next device exercise must bind the actual installed version and a disposable
+selected extension, then separately validate save, application effects, readback
+and scoped restoration. No actual user-network operation is authorized by this
+code delivery. Windows and C5 acceptance remain queued as above.
+
+## Preceding checkpoint: bounded Darwin private reads, 2026-10-19
+
+Published `55c0f7c5e757bd6808634fcfb8743ae996964c16` passed all four CI platforms
+and preview. Its six hosted Darwin fixtures passed: natural and explicit-empty
+cases read exact synthetic bytes; file/parent ACL cases rejected entries; file/
+parent marker cases rejected unexpected attribute names. Both positive cases
+reported `no_acl_reported` on that host, so this does not demonstrate the separate
+`empty_acl` native branch. User-device control documents, application writes and
+restoration remain unverified. The helper remains internal; no production CLI or
+write admission was opened. See [read scope](macos-private-control-read.md).
+
+The preceding entry-order Windows fixture defects were corrected in
+`8f7e03b9676eaadeeee306d723d3769c5195872b`, with all four CI platforms passing.
+The original failed run is retained as historical evidence, not erased. No
+original-case acceptance is added by these helper/fixture tests.
 
 ## Preceding checkpoint: thirty-eighth entry-order integration, 2026-10-19
 

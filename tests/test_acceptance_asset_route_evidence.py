@@ -304,12 +304,18 @@ class AssetRouteEvidenceTests(unittest.TestCase):
                      ROOT / 'tests/fixtures/acceptance-asset-route-cases.json']:
             self.assertFalse(path.resolve().is_relative_to(skill.resolve()))
 
-    def test_current_inventory_adds_only_the_declared_entry_member_to_prior_packager(self):
+    def test_current_inventory_adds_only_exact_entry_and_agent_task_members(self):
         current = (ROOT / 'tools/package_skill.py').read_bytes()
         historical = (self.HISTORICAL_ROOT / 'tools/package_skill.py').read_bytes()
+        prior = current
+        for addition in (b'"scripts/agent_rules_task.py", ', b'"references/agent-rules-task.md", '):
+            self.assertEqual(prior.count(addition), 1)
+            prior = prior.replace(addition, b'', 1)
+        self.assertEqual(hashlib.sha256(prior).hexdigest(),
+                         '53701d8087eefeeaca45bb42e384bfa7b1a1752347758f5202639addedf5c389')
         entry = b', "scripts/environment_entry.py"'
-        self.assertEqual(current.count(entry), 1)
-        self.assertEqual(current.replace(entry, b'', 1), historical)
+        self.assertEqual(prior.count(entry), 1)
+        self.assertEqual(prior.replace(entry, b'', 1), historical)
         tree = ast.parse(current.decode('utf-8'))
         assignments = [node for node in ast.walk(tree) if isinstance(node, ast.Assign)
                        and any(isinstance(t, ast.Name) and t.id == 'release_paths' for t in node.targets)]
@@ -319,8 +325,14 @@ class AssetRouteEvidenceTests(unittest.TestCase):
             inventory.append(source['path'])
             inventory.extend(c['path'] for c in source.get('companions', []))
         inventory.append('LICENSE')
-        self.assertEqual(len(inventory), 65)
-        self.assertEqual(len(set(inventory)), 65)
+        self.assertEqual(len(inventory), 67)
+        self.assertEqual(len(set(inventory)), 67)
+        for added in ('scripts/agent_rules_task.py', 'references/agent-rules-task.md'):
+            self.assertEqual(inventory.count(added), 1)
+        prior_inventory = [path for path in inventory if path not in
+                           ('scripts/agent_rules_task.py', 'references/agent-rules-task.md')]
+        self.assertEqual(len(prior_inventory), 65)
+        self.assertEqual(len(set(prior_inventory)), 65)
         self.assertEqual(inventory.count('scripts/environment_entry.py'), 1)
         self.assertFalse(any('asset-route' in path or 'asset_route' in path for path in inventory))
 

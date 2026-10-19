@@ -1,0 +1,46 @@
+{
+  "prior_review_path": "docs/evidence/entry-order-limited-revalidation.md",
+  "prior_review_sha256": "b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d",
+  "purpose": "exact_source_transition_only_not_behavioral_acceptance",
+  "schema": "guardian-agent-rules-review-transition/1",
+  "sources": {
+    "docs/rules-extension-plan.md": {
+      "after_sha256": "14d8e97ac66a8afa544d93bbf5a69e89dfb731025953fb92b7961f3f0d6c0548",
+      "before_sha256": "bc851c13dffd4670ab6e6f471eabd38f3087a22f146dc2ad67cc8913aa12f057",
+      "replacements": [
+        {
+          "after": "Retained artifact schema `guardian-retained-repair/0.3` binds the current environment-entry digest, candidate kind,",
+          "before": "Retained artifact schema `guardian-retained-repair/0.2` binds candidate kind,"
+        }
+      ]
+    },
+    "skills/claude-guardian/SKILL.md": {
+      "after_sha256": "4d66015c1a0af5a4d325c99e839703ffd1b860a24804df6590d59014f29b1ff6",
+      "before_sha256": "dd99288827d9597d9b41ae7ad23d5863c155ebbca24ca205808ddf62f7e15766",
+      "replacements": [
+        {
+          "after": "已核实目标使用2.5.8且选定独占rules扩展时，可用 [Agent 应用编辑任务](references/agent-rules-task.md) 生成单个DOMAIN变更的私有候选和供给内容核验。实际保存／重载由Agent通过受支持应用界面执行，须具体许可；该辅助接口不执行写入或证明实际网络效果。\n\n",
+          "before": ""
+        },
+        {
+          "after": "保留计划格式为`guardian-retained-repair/0.3`，绑定当前环境入口摘要、候选类型、UID和基础配置/plist/索引的精确路径、父目录及文件快照。执行参数必须一致，提交前与读回后复核；旧0.1/0.2计划必须重建并重新展示确认。完整输入格式及命令见仓库`docs/rules-extension-plan.md`。不得用此入口初始化空merge、替换完整rules数组或绕过xattr限制。",
+          "before": "保留计划格式为`guardian-retained-repair/0.2`，绑定候选类型、UID和基础配置/plist/索引的精确路径、父目录及文件快照。执行参数必须一致，提交前与读回后复核；旧0.1计划必须重建并重新展示确认。完整输入格式及命令见仓库`docs/rules-extension-plan.md`。不得用此入口初始化空merge、替换完整rules数组或绕过xattr限制。"
+        }
+      ]
+    },
+    "tools/package_skill.py": {
+      "after_sha256": "91b78bc2d33024941614f7a4b9377df075888b9d02564620ac1cbe4c78754cee",
+      "before_sha256": "53701d8087eefeeaca45bb42e384bfa7b1a1752347758f5202639addedf5c389",
+      "replacements": [
+        {
+          "after": "\"scripts/agent_rules_task.py\", ",
+          "before": ""
+        },
+        {
+          "after": "\"references/agent-rules-task.md\", ",
+          "before": ""
+        }
+      ]
+    }
+  }
+}

@@ -14,7 +14,7 @@ import tempfile
 REL = 'docs/evidence/fact-copy-compatibility'
 EXPECTED_MANIFEST = '95c7bdeaa430a735f1f154d2748f600ccafc6312e5e11f941aa47ada8b599d5e'
 SNAPSHOT_REL = 'tests/fixtures/historical-fact-copy-95015be'
-EXPECTED_SNAPSHOT_MANIFEST = '8e2d5eef42f8c9b1a90a59794e54626b2b3d31da79e918ffe03e58802df48427'
+EXPECTED_SNAPSHOT_MANIFEST = '696c39044e3711a6594bfc3861d20396b9ff462c097a6d9afb5cd8070a38e692'
 
 
 def _safe_path(root, relative):

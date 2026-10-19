@@ -129,7 +129,7 @@ no insertion. Unrelated
 configuration is omitted. Required source arguments are checked before reads;
 request and selected scope still need the trusted host's actual permission.
 
-Retained artifact schema `guardian-retained-repair/0.2` binds candidate kind,
+Retained artifact schema `guardian-retained-repair/0.3` binds the current environment-entry digest, candidate kind,
 selected UID and each source's exact path, parent identity and file snapshot,
 alongside the target plan and backup destination. Execute takes the same exact
 source arguments and reviewed digest; it recompiles and rejects changes,

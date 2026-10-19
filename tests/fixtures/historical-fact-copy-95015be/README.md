@@ -5,7 +5,7 @@ This sparse fixture preserves public source bytes from release
 `0fbe23a5fe52dd28706f933e4c9df94c077ae688`). It is not the current runtime,
 not a new acceptance decision, and not a new model-response generation.
 
-11 changed source files are retained verbatim (552,015 bytes). Every other
+12 changed source files are retained verbatim (562,019 bytes). Every other
 required source has one explicit repository origin and must still match the
 recorded whole-file hash and size. There is no fallback, hash substitution, or
 symlink to current code. A repository-origin source change requires an explicit
@@ -27,6 +27,13 @@ pinned old boundary trace with only those explicit lists replaced. No field
 is dropped, and no expectation is generated from current output.
 
 The historical package builder describes 64 installed members; the current
-65-member package is tested independently. This fixture is test-only and is
+67-member package is tested independently. This fixture is test-only and is
 excluded from the explicit Skill release list. It contains no private logs,
 authentication material, machine records, or coordination records.
+
+The additional stored source is the original 10,004-byte
+`docs/rules-extension-plan.md`, SHA-256
+`bc851c13dffd4670ab6e6f471eabd38f3087a22f146dc2ad67cc8913aa12f057`.
+The current document clarifies retained schema 0.3; this historical source keeps
+schema 0.2 exactly. Only its explicit origin changes from repository to snapshot;
+its old hash and size, all other source records, and historical receipts stay fixed.
