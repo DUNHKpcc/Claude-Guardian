@@ -482,7 +482,7 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
     count = old.get("clarification_count", 0) + int(clarification)
     if count > 1:
         raise InterviewError("Clarification exhausted; permit unknown, decline or pause")
-    fact = {"value": value, "state": state_name, "source": source,
+    fact = {"value": deepcopy(value), "state": state_name, "source": source,
             "subject_ref": subject_ref or state["account_alias" if qid in ACCOUNT_QUESTIONS else "target_alias"], "observed_at": observed_at if observed_at is not None else _now(),
             "applies_when": "current task and target", "required_for": ["intake", "plan"],
             "sensitivity": "low", "clarification_count": count, "blocker_reason": blocker_reason}

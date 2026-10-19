@@ -1,0 +1,218 @@
+{
+  "schema_version": "guardian-asset-route-evidence/1",
+  "review_date": "2026-10-19",
+  "manifest_role": "Integration inventory of reviewed public evidence, not a new execution record or independent execution telemetry.",
+  "evidence_type": "retained_actual_synthetic_dialogues_plus_independent_semantic_review_and_separate_normalized_logic",
+  "original_rows_sha256": "84975325686c368a191b8232a0564518f1ba32ad7055ce4742d32cc4c26c77b9",
+  "cases": {
+    "T26": {
+      "scenario": "用户仅提到有 VPS 或装过 VM",
+      "requirement": "只记资产信息；主动询问实际目标和方案，不把资产当选择，也不静默开始本机部署",
+      "verification_layer": "L+C",
+      "literal_design_row": "| T26 | 用户仅提到有 VPS 或装过 VM | 只记资产信息；主动询问实际目标和方案，不把资产当选择，也不静默开始本机部署 |",
+      "literal_tracker_row": "| T26 | 用户仅提到有 VPS 或装过 VM | 只记资产信息；主动询问实际目标和方案，不把资产当选择，也不静默开始本机部署 | L+C | 待建立 |",
+      "review_result": "accepted_revalidated"
+    },
+    "T33": {
+      "scenario": "用户不懂 VM/VPS 区别",
+      "requirement": "给简短比较，允许接受本机建议；不进行术语考试，不把不知道当选择",
+      "verification_layer": "L+C",
+      "literal_design_row": "| T33 | 用户不懂 VM/VPS 区别 | 给简短比较，允许接受本机建议；不进行术语考试，不把不知道当选择 |",
+      "literal_tracker_row": "| T33 | 用户不懂 VM/VPS 区别 | 给简短比较，允许接受本机建议；不进行术语考试，不把不知道当选择 | L+C | 待建立 |",
+      "review_result": "accepted_revalidated"
+    }
+  },
+  "artifact_sha256": {
+    "dialogues-projection-public.json": "34d91c661ae36492f0477c1ea46aa3d0f5d6f2d5f2b88e40ebb853db6c253b12",
+    "final-semantic-review.json": "72dbb2e28569405e90471b2b1062b5c338fc503bc765c01ab22b4f32429cdacc",
+    "final-semantic-review.md": "1b6de6b44d5762694f16d56adab1c1cfd39c24f6fb1abbae63bcc1cda143c12d"
+  },
+  "artifact_bytes": {
+    "dialogues-projection-public.json": 13750,
+    "final-semantic-review.json": 8288,
+    "final-semantic-review.md": 1499
+  },
+  "source_sha256": {
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+    "skills/claude-guardian/SKILL.md": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "skills/claude-guardian/references/intake.md": "3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742",
+    "skills/claude-guardian/references/routes-and-platforms.md": "dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984",
+    "skills/claude-guardian/scripts/interview_flow.py": "9f5237846756759a90e907eebe096f9263c0d938e78aecf4173fafb3912ede25"
+  },
+  "dialogue_source_mapping": {
+    "Skill guide": "skills/claude-guardian/SKILL.md",
+    "Intake guide": "skills/claude-guardian/references/intake.md",
+    "Routes and platforms guide": "skills/claude-guardian/references/routes-and-platforms.md"
+  },
+  "logic_evidence_sha256": {
+    "tests/test_acceptance_asset_route_cases.py": "5853987865d68ce43b9864a31eaa4085506b19cf49e802267e845e793afbd574",
+    "tests/fixtures/acceptance-asset-route-cases.json": "500e81fe4433f67e2d41651d4ffa6eae2c3ce515a5c25df5d8b2cbaa9d315a70"
+  },
+  "provenance_limits_sha256": "a88d65fdfacdeb66b5fad2f31a7bf33ae6cd57a817b75634683f131e98013e83",
+  "observed_turns": [
+    {
+      "conversation": 1,
+      "turn": 1,
+      "case": "T26",
+      "collection_stage": "original_six",
+      "user_sha256": "b1e9b062015d81bdd07c141bdda1148f9a2b5bddc20a44bb301e079419bdea74",
+      "response_sha256": "49e85c8e96fc0eb00984ee315d8fdb78687f876bb0849f540feb43af86b7f63e"
+    },
+    {
+      "conversation": 1,
+      "turn": 2,
+      "case": "T26",
+      "collection_stage": "original_six",
+      "user_sha256": "823b8e88bd721f49c27f0a32256732ab816bfc2e2a633df074365d44a62eec56",
+      "response_sha256": "a3d4eee5a09b90d7b8b901859bdacf5109785b530761a1071718f47460c0a9df"
+    },
+    {
+      "conversation": 1,
+      "turn": 3,
+      "case": "T26",
+      "collection_stage": "later_two",
+      "user_sha256": "80ae5b21bb219d738d94333e62078b69e6be23619de50ed5bbc9b5b3873baf22",
+      "response_sha256": "9beb45ceb93f22736dfae2f3253b461c438b68c1e29777662b0ba79ba7751207"
+    },
+    {
+      "conversation": 2,
+      "turn": 1,
+      "case": "T26",
+      "collection_stage": "original_six",
+      "user_sha256": "2341ec9d7164be0ab774a1fec92f0206df287c5bf284a3b12eb2f057c3e46fce",
+      "response_sha256": "fffcd3673e5cbcf92850f1d541a03cc49c0f19e561d8877bbd6a3437cb23c6b9"
+    },
+    {
+      "conversation": 2,
+      "turn": 2,
+      "case": "T26",
+      "collection_stage": "original_six",
+      "user_sha256": "b6eddc1acf959244013805dff073979f8faf028b7f94bafb23df8925964ee9e2",
+      "response_sha256": "357b4ac5728c46da45999666b99eeccab58d2df8c1261bf1a9d6291c465c0a17"
+    },
+    {
+      "conversation": 2,
+      "turn": 3,
+      "case": "T26",
+      "collection_stage": "later_two",
+      "user_sha256": "131cb3c2788c43e2912f65827e674fdfbdf0e7cbe9054efb8a5ff23cb7f08bbc",
+      "response_sha256": "f4669dc43e3f5fae1ea6c1adbefbfc0eb195f12e5282834b5435ebfe93289c68"
+    },
+    {
+      "conversation": 3,
+      "turn": 1,
+      "case": "T33",
+      "collection_stage": "original_six",
+      "user_sha256": "a1fb9fe2607abd7ec52fca48d49c55cfd3728cd06575793ec33d32074c2301aa",
+      "response_sha256": "c780ac0b18ba1bd6276913b4dfd192982da9a894b269400bee6ab419bfd32e2b"
+    },
+    {
+      "conversation": 3,
+      "turn": 2,
+      "case": "T33",
+      "collection_stage": "original_six",
+      "user_sha256": "6dcf0cf911e2b3612ce954f01a4ecbfa48b8927f332838e7247f2a233f24524e",
+      "response_sha256": "6b347bedd0ab8c49d1e57b175a5992064377a3aa6f7a8a49e0fe4e23c2fa30f0"
+    },
+    {
+      "conversation": 4,
+      "turn": 1,
+      "case": "T26",
+      "collection_stage": "fresh_ninth",
+      "user_sha256": "cfd8b79e6d07ccea16f4990490703915e50ac103ece01372d5aca43ba3d3e6b5",
+      "response_sha256": "abcc445696dc8f345743553270a2a22be0ed07030449e4e19e405fecd54fc1e2"
+    }
+  ],
+  "collection_stages": [
+    {
+      "stage": "original_six",
+      "frozen_at": "2026-10-19T01:08:30.769218Z",
+      "turns": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ]
+      ],
+      "adaptive": false
+    },
+    {
+      "stage": "later_two",
+      "frozen_at": "2026-10-19T01:13:48.926246Z",
+      "turns": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "adaptive": true,
+      "retrospective_source_tool_exchange_retained_in_context": true
+    },
+    {
+      "stage": "fresh_ninth",
+      "frozen_at": "2026-10-19T01:16:17.577745Z",
+      "turns": [
+        [
+          4,
+          1
+        ]
+      ],
+      "adaptive": true,
+      "fresh_context": true,
+      "goal_fully_specified": true,
+      "input_explicitly_says_asset_is_not_choice": true
+    }
+  ],
+  "coverage_history": {
+    "original_six": "T26 仅部分覆盖；T33 在该序列内满足。",
+    "later_two": "T26 仍部分覆盖；没有把相关目的澄清强行判为超时失败。",
+    "fresh_ninth": "独立用途充分案例补到路线询问；不把它回填成原八份已问路线。",
+    "collection_design": "六份初始回复、两份后来继续回复、一份后来独立回复分三阶段冻结。后两阶段按早先结果补充；后续两轮保留过各自来源说明的上下文。所有历史回复和早期审阅结论保留；这不是事前一起冻结的九回复实验。"
+  },
+  "source_provenance": {
+    "source_reads": "retrospective_responder_reports_not_independent_raw_tool_event_exports",
+    "source_boundary": "instruction_limited_shared_filesystem_not_physical_isolation",
+    "reported_truncated_tokens": 4620,
+    "reported_rereads_cover_gap": true,
+    "full_file_hash_proves_full_read": false,
+    "reported_helper_invoked_in_observed_dialogues": false,
+    "helper_generates_observed_responses": false
+  },
+  "claim_limits": [
+    "All user, asset, subscription, device, project and service facts are fictional reports, not observations of a real user or machine.",
+    "Original six, later two and fresh ninth responses were collected in three documented stages. Later stages were adaptive, not nine turns frozen together up front; all captured input and response bytes remain unchanged.",
+    "T26 purpose questions and asset/route separation were observed in the first two conversations, but their original and continuation responses did not supply a route-choice question. The fresh ninth response supplies that question only for its fully specified goal and explicit asset-disclaimer input; it does not replace ordinary asset-mention evidence or retroactively repair the earlier coverage.",
+    "T33 comparison and explicit acceptance were observed in the third conversation. Acceptance is within that dialogue, not a claim of persistent storage.",
+    "Independent whole-response semantic review combines these sampled observations with separate normalized logic evidence. This is not one end-to-end integrated dialogue, automatic prose extraction, universal behavior, or a future-output guarantee.",
+    "Source reads, gap rereads and absence of product-helper or external operations are retrospective responder reports. Source separation was instruction-limited on a shared filesystem, not physical isolation or an independently complete tool transcript.",
+    "The normalized suite checks host-supplied facts, state transitions and gates; it neither generated nor participated in the captured dialogues. Pure API I/O sentinels exclude initial source/fixture loading and are not an operating-system sandbox.",
+    "The one-line fact deepcopy correction and its regression are independently reviewed. Final aggregate regression and prior-source compatibility remain separate integration gates, not consequences of dialogue acceptance.",
+    "No installed-package, deployed-model, native-device, live-network/service, actual-operation authorization or whole-project completion claim. Original T26/T33 IDs, full requirements and L+C layers remain unchanged; no adjacent row is accepted by this packet.",
+    "Integrity regressions preserve these records and source identities; they do not generate fresh model output or replace semantic review. Relevant drift requires renewed review, not automatic repinning."
+  ]
+}

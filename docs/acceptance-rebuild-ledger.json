@@ -1,7 +1,7 @@
 {
   "schema_version": "guardian-acceptance-rebuild/1",
   "baseline_commit": "584064fc9c210e684ba4a0e11b79db74f1946155",
-  "date": "2026-10-18",
+  "date": "2026-10-19",
   "original_rows_sha256": "84975325686c368a191b8232a0564518f1ba32ad7055ce4742d32cc4c26c77b9",
   "notes": [
     "This is a scheduling and revalidation ledger, not a new native result.",
@@ -10,7 +10,7 @@
     "Existing baseline subtest and dated native evidence remains valid within its original scope.",
     "Mac and Windows native execution is deferred by owner; cloud logic tests cannot replace it.",
     "The full original requirement is authoritative; scheduling next_steps are not substitute assertions or relaxed acceptance conditions.",
-    "Forty-seven original cases have reviewed, pinned evidence under unchanged original layers; remaining171 are pending_revalidation. Latest T77/T80 combine actual revision3 dialogues with two independently regenerated revision4 affected trajectories and exact current-source compatibility. Historical failures remain immutable; no unseen-output or native guarantee."
+    "Fifty-one original cases have reviewed, pinned evidence under unchanged original layers; remaining167 are pending_revalidation. Latest T26/T33 combine nine unchanged captured synthetic responses collected adaptively in three stages, independent whole-response semantic review and separate normalized logic. Earlier T26 route-question coverage remains partial; the fresh ninth case supplies a route question for its fully specified goal and explicit asset disclaimer. Source/tool provenance remains retrospective self-report; no integrated helper dialogue, unseen-output, native or actual-operation guarantee. Aggregate and prior-source compatibility remain separate integration gates."
   ],
   "cases": [
     {
@@ -24,7 +24,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
-        "sha256": "9655ca582fa3da9f1629688641637c9f71f792be312226118f7ed580a5cc08ee",
+        "sha256": "c8aca9fc6acaef50deb2d1704d73cf7c9f742d1598bb17c1df0b10533710c22d",
         "layers": [
           "L",
           "C"
@@ -44,7 +44,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
-        "sha256": "9655ca582fa3da9f1629688641637c9f71f792be312226118f7ed580a5cc08ee",
+        "sha256": "c8aca9fc6acaef50deb2d1704d73cf7c9f742d1598bb17c1df0b10533710c22d",
         "layers": [
           "L",
           "C"
@@ -244,7 +244,7 @@
       "dependencies": "A、P、U",
       "evidence": {
         "path": "docs/evidence/rebuild-resume-completion.md",
-        "sha256": "dbe3a96a41f157e9416ea73d0c6b605070789dc1acf213e810129fe0905befee",
+        "sha256": "d7fba982e8b5933e6160332ffc60c637577ddde79db2d8397ae1978e77bd52f5",
         "layers": [
           "L",
           "C"
@@ -294,7 +294,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "e434dad2616d636e0e3eac92415d50ca7b81e5195af193eeed9d0692d9ee6e4f",
+        "sha256": "1a611f4c646835469a42f6df5e0e91b2aeca1f26e0a7e33a462c407f2995aa1f",
         "layers": [
           "L",
           "C"
@@ -314,7 +314,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "e434dad2616d636e0e3eac92415d50ca7b81e5195af193eeed9d0692d9ee6e4f",
+        "sha256": "1a611f4c646835469a42f6df5e0e91b2aeca1f26e0a7e33a462c407f2995aa1f",
         "layers": [
           "L",
           "C"
@@ -334,7 +334,7 @@
       "dependencies": "A、V、B",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "e434dad2616d636e0e3eac92415d50ca7b81e5195af193eeed9d0692d9ee6e4f",
+        "sha256": "1a611f4c646835469a42f6df5e0e91b2aeca1f26e0a7e33a462c407f2995aa1f",
         "layers": [
           "L",
           "C"
@@ -349,9 +349,19 @@
       "requirement": "留在 `R-LOCAL`，缩减基础解释，不自动推荐 VM/VPS 迁移",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导或运行时变化后重新审阅原完整条件、固定实际对话和独立逻辑证据；不外推未观察输入、当前外部事实或真机操作",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-local-incident-cases.md",
+        "sha256": "57c0be1d6fd953f01ad0de69f08bfc92527c1939ea3fa1341bec0d662d170561",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Seven actual frozen synthetic responses independently reviewed against full original T22/T25 L+C clauses, with separate normalized logic tests. No helper was invoked in these dialogues; source reads are responder-reported with a retained 329-token cleanup omission. Integrity checks do not generate new responses or establish native, current-service, repair or recovery evidence."
+      }
     },
     {
       "id": "T23",
@@ -364,7 +374,7 @@
       "dependencies": "A、B、N、L",
       "evidence": {
         "path": "docs/evidence/rebuild-local-egress.md",
-        "sha256": "5f1ce85e09a22b81f7f91cd02e0c3a20bead87b58aa25040e5623739e82d32e9",
+        "sha256": "46b31dbdd4cd61b35d53d65940167c9dc43baa18ee1bdb624ea4b368fc3991db",
         "layers": [
           "L",
           "C"
@@ -384,7 +394,7 @@
       "dependencies": "A、V、U",
       "evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
-        "sha256": "e434dad2616d636e0e3eac92415d50ca7b81e5195af193eeed9d0692d9ee6e4f",
+        "sha256": "1a611f4c646835469a42f6df5e0e91b2aeca1f26e0a7e33a462c407f2995aa1f",
         "layers": [
           "L",
           "C"
@@ -399,9 +409,19 @@
       "requirement": "先在原方案进行专项诊断，不自动购买 VPS、重建 VM 或迁移账号",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "相关指导或运行时变化后重新审阅原完整条件、固定实际对话和独立逻辑证据；不外推未观察输入、当前外部事实或真机操作",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-local-incident-cases.md",
+        "sha256": "57c0be1d6fd953f01ad0de69f08bfc92527c1939ea3fa1341bec0d662d170561",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Seven actual frozen synthetic responses independently reviewed against full original T22/T25 L+C clauses, with separate normalized logic tests. No helper was invoked in these dialogues; source reads are responder-reported with a retained 329-token cleanup omission. Integrity checks do not generate new responses or establish native, current-service, repair or recovery evidence."
+      }
     },
     {
       "id": "T26",
@@ -409,9 +429,19 @@
       "requirement": "只记资产信息；主动询问实际目标和方案，不把资产当选择，也不静默开始本机部署",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导、状态契约或相关入口变化后，重审链接中的逐条件回应与API轨迹",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Relevant guidance or runtime changes require renewed whole-clause review and the separate aggregate/source-compatibility gates; preserve adaptive collection history and do not generalize to unseen outputs or native behavior.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-asset-route-cases.md",
+        "sha256": "8e31a9f34aaa5ed191a2eee6721a7633d9754724da156304a23c75f9dd485459",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Nine unchanged captured synthetic responses collected adaptively in three stages, independent whole-response semantic review and separate normalized logic. Original six/later two T26 route-question coverage remains partial; a fresh fully specified-goal case with an explicit asset disclaimer supplies the route question. No integrated helper dialogue, native or universal-output claim; aggregate/source compatibility remain separate gates."
+      }
     },
     {
       "id": "T27",
@@ -444,7 +474,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
-        "sha256": "4b9700cb9f0fe297559a55336e9072afdfd01cd12d844b331af6fc645615e447",
+        "sha256": "ac003c14e6a9d2ad17d2a7d57803b57666a15c6ac2c85d7a40c49003ca61b5e8",
         "layers": [
           "L",
           "C"
@@ -474,7 +504,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
-        "sha256": "f3c5ccf0654f5fb0fe5ff58824907ff22881c80ac346ed791255e6a7d6e72b8e",
+        "sha256": "0777b57ce8189a47cb5c1565108c979f5f8afd4d93ae0058b4f405a2f119031b",
         "layers": [
           "L",
           "C"
@@ -499,9 +529,19 @@
       "requirement": "给简短比较，允许接受本机建议；不进行术语考试，不把不知道当选择",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导、状态契约或相关入口变化后，重审链接中的逐条件回应与API轨迹",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "Relevant guidance or runtime changes require renewed whole-clause review and the separate aggregate/source-compatibility gates; preserve adaptive collection history and do not generalize to unseen outputs or native behavior.",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/rebuild-asset-route-cases.md",
+        "sha256": "8e31a9f34aaa5ed191a2eee6721a7633d9754724da156304a23c75f9dd485459",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Nine unchanged captured synthetic responses collected adaptively in three stages, independent whole-response semantic review and separate normalized logic. Original six/later two T26 route-question coverage remains partial; a fresh fully specified-goal case with an explicit asset disclaimer supplies the route question. No integrated helper dialogue, native or universal-output claim; aggregate/source compatibility remain separate gates."
+      }
     },
     {
       "id": "T34",
@@ -514,7 +554,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "53b376e36c01b853a0748b489498638b3f2636875fe29b87130551c19f452ef4",
+        "sha256": "37e0478c50e382f206f6f5214ec9bb9291b8ccddd0bab6724752b3defef137c5",
         "layers": [
           "L",
           "C"
@@ -631,7 +671,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "53b376e36c01b853a0748b489498638b3f2636875fe29b87130551c19f452ef4",
+        "sha256": "37e0478c50e382f206f6f5214ec9bb9291b8ccddd0bab6724752b3defef137c5",
         "layers": [
           "L",
           "C"
@@ -689,7 +729,7 @@
       "dependencies": "A、U",
       "evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
-        "sha256": "f3c5ccf0654f5fb0fe5ff58824907ff22881c80ac346ed791255e6a7d6e72b8e",
+        "sha256": "0777b57ce8189a47cb5c1565108c979f5f8afd4d93ae0058b4f405a2f119031b",
         "layers": [
           "L",
           "C"
@@ -709,7 +749,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "53b376e36c01b853a0748b489498638b3f2636875fe29b87130551c19f452ef4",
+        "sha256": "37e0478c50e382f206f6f5214ec9bb9291b8ccddd0bab6724752b3defef137c5",
         "layers": [
           "L",
           "C"
@@ -728,7 +768,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
-        "sha256": "0111d4d6d09865f449e8a42d4dea7ad3c0688207afbefcc273829b56f5ae4727",
+        "sha256": "95c564477a08a269f15fc94d5e419ecc67d0d1e087867c64c06f6441962097ea",
         "layers": [
           "L",
           "C"
@@ -778,7 +818,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "d36d881a718a95bfc2b195a42a41880a68600b631e2a265f22821226d59f6b83",
+        "sha256": "74979d1eab88d6c2ec73772246ffd06cd14ce4643e9cca8638a0737a9cb5df5e",
         "layers": [
           "L",
           "C"
@@ -836,7 +876,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
-        "sha256": "4b9700cb9f0fe297559a55336e9072afdfd01cd12d844b331af6fc645615e447",
+        "sha256": "ac003c14e6a9d2ad17d2a7d57803b57666a15c6ac2c85d7a40c49003ca61b5e8",
         "layers": [
           "L",
           "C"
@@ -1016,7 +1056,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "d36d881a718a95bfc2b195a42a41880a68600b631e2a265f22821226d59f6b83",
+        "sha256": "74979d1eab88d6c2ec73772246ffd06cd14ce4643e9cca8638a0737a9cb5df5e",
         "layers": [
           "L",
           "C"
@@ -1035,7 +1075,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
-        "sha256": "39e98668fac7e1618a9f61eceec371a06b6e1acff9820d93203161b5976ce314",
+        "sha256": "8b7052ec894f37df13c54000b056489942bfcc394735e1918980c83511138b0a",
         "layers": [
           "L",
           "C"
@@ -1055,7 +1095,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
-        "sha256": "9f89929b8a233fa16033994d1d0afe5512c7855596147b11a7a1927d71a3860f",
+        "sha256": "84fa95b46e3183b58f5ba1b7ea9c07a69aa85a4c57497df4ac2a9e52e488fdcf",
         "layers": [
           "L",
           "C"
@@ -1095,7 +1135,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
-        "sha256": "53b376e36c01b853a0748b489498638b3f2636875fe29b87130551c19f452ef4",
+        "sha256": "37e0478c50e382f206f6f5214ec9bb9291b8ccddd0bab6724752b3defef137c5",
         "layers": [
           "L",
           "C"
@@ -1114,7 +1154,7 @@
       "dependencies": "A、P",
       "evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
-        "sha256": "39e98668fac7e1618a9f61eceec371a06b6e1acff9820d93203161b5976ce314",
+        "sha256": "8b7052ec894f37df13c54000b056489942bfcc394735e1918980c83511138b0a",
         "layers": [
           "L",
           "C"
@@ -1154,7 +1194,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
-        "sha256": "d36d881a718a95bfc2b195a42a41880a68600b631e2a265f22821226d59f6b83",
+        "sha256": "74979d1eab88d6c2ec73772246ffd06cd14ce4643e9cca8638a0737a9cb5df5e",
         "layers": [
           "L",
           "C"
@@ -1173,7 +1213,7 @@
       "dependencies": "A、U",
       "evidence": {
         "path": "docs/evidence/rebuild-legacy-retirement.md",
-        "sha256": "4f1bb67f0ded6fbe715761b5feae642305378b1b22835356fd8c103697d7d689",
+        "sha256": "f48f1af5369396e9095e411706f6baeb4fd8be77a4c850f1adb47a7523aa3479",
         "layers": [
           "L",
           "C"
@@ -1193,7 +1233,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
-        "sha256": "0111d4d6d09865f449e8a42d4dea7ad3c0688207afbefcc273829b56f5ae4727",
+        "sha256": "95c564477a08a269f15fc94d5e419ecc67d0d1e087867c64c06f6441962097ea",
         "layers": [
           "L",
           "C"
@@ -1213,7 +1253,7 @@
       "dependencies": "A",
       "evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
-        "sha256": "9f89929b8a233fa16033994d1d0afe5512c7855596147b11a7a1927d71a3860f",
+        "sha256": "84fa95b46e3183b58f5ba1b7ea9c07a69aa85a4c57497df4ac2a9e52e488fdcf",
         "layers": [
           "L",
           "C"

@@ -1,5 +1,20 @@
 # 版本记录
 
+## 2026-10-19 — Asset-route evidence and fact-value isolation
+
+- Revalidate original T26/T33 with separately observed synthetic dialogue and normalized logic, retaining initial partial coverage and adaptive later observations
+- Copy incoming fact values to prevent caller-owned mutable dictionaries/lists from silently changing recorded evidence; five regressions fail on the previous runtime and pass after the one-line correction
+- Preserve all historical evidence packets; an exact-source compatibility supplement reconstructs the old runtime and independently reruns current semantic traces instead of relabeling historical records
+- No native operations, deployment or real account/network actions; no change to original 218 requirements or layers
+
+
+## 2026-10-19 重建第三十四批
+
+- 按原 L+C 验收 T22 本机专家 Code 范围和 T25 原方案专项诊断；累计49/218，169项待验收
+- 保留三段对话七条实际回复、完整独立审阅与九项独立的规范化逻辑回归；实际对话未调用辅助器
+- 公开证据只含合成材料，明确来源读取为答复者报告及329-token清理材料遗漏；不冒充完整工具记录或物理隔离
+- 运行时、原218条款/层级和安装包不变；未新增真机、当前账号/服务、修复、恢复或实际操作权限
+
 ## 2026-10-18 重建第三十三批
 
 - 已有订阅升级只核对相关订单与目标缺口；实际订阅冲突绑定当前 episode，未解决不能重复购买

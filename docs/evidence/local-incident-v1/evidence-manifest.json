@@ -1,0 +1,127 @@
+{
+  "schema_version": "guardian-local-incident-evidence/1",
+  "review_date": "2026-10-19",
+  "evidence_type": "retained_actual_synthetic_dialogues_plus_independent_semantic_review_and_separate_normalized_logic",
+  "manifest_role": "Integration inventory of reviewed public evidence, not a new execution record or independent execution telemetry.",
+  "original_rows_sha256": "84975325686c368a191b8232a0564518f1ba32ad7055ce4742d32cc4c26c77b9",
+  "cases": {
+    "T22": {
+      "scenario": "L4 只处理本机 Code",
+      "requirement": "留在 `R-LOCAL`，缩减基础解释，不自动推荐 VM/VPS 迁移",
+      "verification_layer": "L+C",
+      "literal_design_row": "| T22 | L4 只处理本机 Code | 留在 `R-LOCAL`，缩减基础解释，不自动推荐 VM/VPS 迁移 |",
+      "literal_tracker_row": "| T22 | L4 只处理本机 Code | 留在 `R-LOCAL`，缩减基础解释，不自动推荐 VM/VPS 迁移 | L+C | 待建立 |",
+      "review_result": "accepted_revalidated"
+    },
+    "T25": {
+      "scenario": "本机出现错误或账号受限",
+      "requirement": "先在原方案进行专项诊断，不自动购买 VPS、重建 VM 或迁移账号",
+      "verification_layer": "L+C",
+      "literal_design_row": "| T25 | 本机出现错误或账号受限 | 先在原方案进行专项诊断，不自动购买 VPS、重建 VM 或迁移账号 |",
+      "literal_tracker_row": "| T25 | 本机出现错误或账号受限 | 先在原方案进行专项诊断，不自动购买 VPS、重建 VM 或迁移账号 | L+C | 待建立 |",
+      "review_result": "accepted_revalidated"
+    }
+  },
+  "artifact_sha256": {
+    "dialogues-projection-public.json": "be04d06826c162ecb7e2fc68c71342bb849374bc20eb8555f60685a206f2157e",
+    "independent-review.md": "b104c249aaa56b6c9d5ff7a3931b77701aef968c59cb4a3c367ed878e6e6e90b"
+  },
+  "source_sha256": {
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+    "docs/implementation-tracker.md": "8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50",
+    "skills/claude-guardian/SKILL.md": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "skills/claude-guardian/references/contact-and-safety.md": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+    "skills/claude-guardian/references/intake.md": "3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742",
+    "skills/claude-guardian/references/routes-and-platforms.md": "dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984",
+    "skills/claude-guardian/references/incidents-and-integrations.md": "37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2",
+    "skills/claude-guardian/references/network-and-remedies.md": "a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b",
+    "skills/claude-guardian/scripts/interview_flow.py": "691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9",
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6"
+  },
+  "logic_evidence_sha256": {
+    "tests/test_acceptance_local_incident_cases.py": "22c13c0a917bcf9c9aadae3e3aee4e8a66509bf3837f0e44a5d0d0c2bc82b2e1",
+    "tests/fixtures/acceptance-local-incident-cases.json": "f021362b207a6ec29eea7e62a8cf6a7ebbc70eb1797fc2eef5dceeb6d2aed4bc"
+  },
+  "dialogue_source_mapping": {
+    "shipped_skill": "skills/claude-guardian/SKILL.md",
+    "contact_and_safety": "skills/claude-guardian/references/contact-and-safety.md",
+    "routes_and_platforms": "skills/claude-guardian/references/routes-and-platforms.md",
+    "incidents_and_integrations": "skills/claude-guardian/references/incidents-and-integrations.md",
+    "network_and_remedies": "skills/claude-guardian/references/network-and-remedies.md"
+  },
+  "observed_conversations": [
+    {
+      "scenario": "expert-local-code",
+      "case_id": "T22",
+      "turns": [
+        {
+          "turn": 1,
+          "user_sha256": "76f6984db71e5649e783d157ac4d8fce5c1e29b1cd4d64c9ebb7153efcffceb2",
+          "response_sha256": "4d4be99f4f69dfb45224fbe7840c1a312007ebeeb6fb65ee709d1316dab0b302"
+        },
+        {
+          "turn": 2,
+          "user_sha256": "0b77294251d8a5630e65e9adc79e0171b807234842fefdcfa4168ff4eae3d762",
+          "response_sha256": "5d76604a56e0d980b3fa9470692284fc2c25556d96a610e0ceb4563fb75f8469"
+        }
+      ]
+    },
+    {
+      "scenario": "local-proxy-error",
+      "case_id": "T25",
+      "turns": [
+        {
+          "turn": 1,
+          "user_sha256": "3aef27ea8c94b30de2ad19189fbe752ad56827f9671ce9f6db74005b3a3ca268",
+          "response_sha256": "aabb641a21c7442258a829db2d0768216436804ee372c1f7610effb67f4eaa03"
+        },
+        {
+          "turn": 2,
+          "user_sha256": "6dc619107a44f5692eb9ab5fa86df29fffa1504201d8128064cd8498083e87b4",
+          "response_sha256": "8ebb68cb2e142b45101c8b4dd1dbda4672800a7f22c182564a7c24e7002b073a"
+        },
+        {
+          "turn": 3,
+          "user_sha256": "c757a78729f46956a797591451aa2cf9b0f9d95521ba9460bc70713b86883447",
+          "response_sha256": "3831f56b0755ce2268c3f0f9ec919a3554e8b880a482bee6c4db15d25e5b9959"
+        }
+      ]
+    },
+    {
+      "scenario": "current-restriction",
+      "case_id": "T25",
+      "turns": [
+        {
+          "turn": 1,
+          "user_sha256": "c615794fdda3bfd6b40ef04ffc2fe773049de8977ce59936adb331103fed3e8a",
+          "response_sha256": "66c4424310b9672e358f68aabc60a896162d9ba7589980ce895475cd633fff7d"
+        },
+        {
+          "turn": 2,
+          "user_sha256": "ea7c0efbe41c595afaefe2a09cbfe88babef78ab830922b22296ed903b8c0398",
+          "response_sha256": "aac06e8767886a3b4c1fe445b12af85579982d2783d2615bce3030daed06081b"
+        }
+      ]
+    }
+  ],
+  "source_provenance": {
+    "source_reads": "responder_reported_not_independent_complete_tool_transcript",
+    "source_boundary": "instruction_enforced_not_physical_isolation",
+    "omitted_cleanup_tokens": 329,
+    "omitted_material_reread": false,
+    "full_file_hash_proves_full_read": false,
+    "helper_invoked_in_observed_dialogues": false
+  },
+  "claim_limits": [
+    "All account, device, operating-system, proxy, project, and incident facts are fictional synthetic user reports, not verified facts about a real person or device.",
+    "Seven actual responses from three separate synthetic conversations are retained without editing. All user turns were frozen before generation; each follow-up was supplied only when its turn arrived.",
+    "The supplied source scope was the pinned shipped Skill and ordinary references. The source boundary was instruction-enforced, not physical isolation; this does not prove inaccessible files or an isolated process.",
+    "No interview helper was invoked in these conversations. Separate normalized runtime evidence must not be attributed to these responders.",
+    "Source-reading provenance is responder-reported from retained call records, not an independently exported complete tool transcript. One source-read result omitted 329 tokens of cleanup material; that omitted text was not reread or claimed as read. Pinned full files do not imply every section was read.",
+    "Acceptance is limited to original T22/T25 in these frozen L+C scenarios. Seven observed outputs are not a guarantee for unseen prompts or future stochastic responses.",
+    "Normalized helper input/state/question assertions do not parse user prose or generate the seven retained replies. I/O sentinels are not an operating-system sandbox; module and fixture loading occur outside their boundary.",
+    "No native, current external service/account, actual client/network, official procedure, repair, recovery or cleanup-operation acceptance. Mac/Windows fixture labels establish normalized logic only; T04 and adjacent cases remain outside this decision.",
+    "Integrity regression checks retained evidence and current source identity; it does not rerun or generate model responses. Relevant source drift requires renewed semantic review, not automatic hash refresh."
+  ]
+}

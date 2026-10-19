@@ -77,7 +77,7 @@ The corrected migration document is pinned at its candidate bytes; all runtime a
 |---|---|
 | `skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md` | `6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562` |
 | `skills/claude-guardian/sources/design/D-ENV-v0.3.md` | `ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4` |
-| `skills/claude-guardian/scripts/interview_flow.py` | `691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9` |
+| `skills/claude-guardian/scripts/interview_flow.py` | `9f5237846756759a90e907eebe096f9263c0d938e78aecf4173fafb3912ede25` |
 | `skills/claude-guardian/scripts/traffic_policy.py` | `8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd` |
 | `skills/claude-guardian/SKILL.md` | `f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3` |
 | `skills/claude-guardian/references/intake.md` | `3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742` |
@@ -142,3 +142,10 @@ Detailed approved preservation records: [batch33 current-guide/runtime bridge](b
 ### 2026-10-18 revision4 exact-source compatibility
 
 The active dependency rows above identify revision4; prior revision3 review and historical hashes remain in the preceding dated record. The scoped P02 terminal-retention fix preserves a known complement without filling the refused/unknown/deferred gap, re-questioning it, changing provenance, or opening G2/G3. Retained-plan interruption review remains separate. All105 affected page tests pass and all12 complete original-case replays are byte-identical to revision3; complete current helper15-call equality and historical packet18-test integrity also pass. See `batch33-subscription-preservation/preservation-review.md`, its exact freeze/portable receipts and the independent runtime and engineering approval. This is current compatibility evidence, not new model generation or added acceptance; the existing218 clauses/layers and45 accepted statuses are unchanged. Independent source4 runtime and engineering clearance support preservation of the existing45 only; integration application remains separately reviewed and T77/T80 are not newly accepted.
+
+
+## Current runtime preservation review, 2026-10-19
+
+The runtime pin above now identifies the narrow caller-value copy correction. Prior recorded runs and model responses remain historical; they were not regenerated or relabeled. The prior runtime SHA-256 was `691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9`; the current SHA-256 is `9f5237846756759a90e907eebe096f9263c0d938e78aecf4173fafb3912ede25`. The only runtime change copies incoming fact values so later caller mutations cannot silently alter recorded evidence.
+
+The [exact-transition compatibility review](fact-copy-compatibility/REVIEW.md) documents newly executed side-by-side normalized replays and unchanged full outputs for the existing supported scenarios. Its strict checker reconstructs and verifies the exact historical source for historical checks, and separately checks the live runtime and mandatory fresh replays. This preserves the original case scope; it does not establish model behavior on new prompts, user-device operation, or a resolution of an actual incident. The mutable-caller regression is separately tested as a newly corrected case.

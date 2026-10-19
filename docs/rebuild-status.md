@@ -1,9 +1,9 @@
 # Reconstruction and deferred acceptance
 
-## Current checkpoint: thirty-third rebuild, 2026-10-18
+## Current checkpoint: thirty-fifth rebuild, 2026-10-19
 
-The current ledger records 47 freshly accepted original cases and 171 pending:
-T77, T80, T36, T38, T46, T54, ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58, T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
+The current ledger records 51 freshly accepted original cases and 167 pending:
+T26, T33, T22, T25, T77, T80, T36, T38, T46, T54, ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58, T76, T84, T11, T12, T75, T79, T29, T57, T49, T83, T31, T47, T82, T01, T02, T03, T05, T16, T18, T23, T09, T19, T20, T21, T24, T34, T43, T48, T53, T74, T78, T81, ENV-T79,
 ENV-T81, ENV-T90 and ENV-T40. Original conditions and layers are unchanged; every accepted
 case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
@@ -40,6 +40,10 @@ or native cleanup evidence is inferred. Runtime remains unchanged.
 This is not full-project or user-device acceptance.
 
 The thirty-third adds focused upgrade-order facts and episode-bound subscription conflict review. Two original L+C cases are accepted using retained observed dialogues, a separately regenerated refusal correction and exact current-source compatibility. No historical output is relabeled as newly generated; missing/refused information remains bounded, and complete interview coverage does not resolve an actual conflict. Evidence remains outside the 63-member installed Skill.
+
+The thirty-fourth revalidates original T22/T25 using seven captured synthetic responses in three conversations and separately replayed normalized helper behavior. Independent review finds concise expert local-Code guidance and targeted diagnosis on the existing route. No runtime change was needed. Source-read provenance is responder-reported, including a retained 329-token cleanup-material omission; no complete tool-transcript or physical-isolation claim is made. The helper was not invoked in those conversations, and no native inspection, current official procedure, repair or recovery is accepted. The installed Skill remains unchanged.
+
+The thirty-fifth revalidates original T26/T33 with nine captured synthetic responses and separate normalized state tests. The T26 portions of the original six responses, plus the two later continuations, preserve undecided assets/routes but leave route elicitation unobserved; an adaptively added fresh, fully specified-purpose case supplies that missing observation. Earlier partial coverage is retained, not relabeled. One narrow runtime correction copies incoming fact values so later caller mutation cannot silently alter recorded evidence. Five old-runtime failures reproduce this defect. Historical packets remain unchanged; the exact-transition supplement separately reconstructs historical source and reruns current normalized traces. This is bounded L+C evidence, not arbitrary dialogue, user-device inspection or deployment.
 
 ## Basis
 

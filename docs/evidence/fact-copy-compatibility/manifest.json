@@ -1,0 +1,87 @@
+{
+  "files": {
+    "REVIEW.md": "c9b1f92a2fbb9a641e93768f53bd0bfdcc8d39fe4e4c1bae1f572f7f631f726c",
+    "replay-receipt.json": "39f5b81fb4ff552582d110c7f96e316c86f56dbe6f0332a06b7749ef122b99f6",
+    "verify.py": "decd94c0e5a8848b7937ca23e4e5d0a0926e7968b09e2a2c5560068fcc640bd3"
+  },
+  "historical_packet_inventories": {
+    "docs/evidence/batch33-subscription-preservation": {
+      "canonical_inventory_sha256": "2fcfcf7c1d08c608229bba1bf517899fb4bace56d58d5cf6755c0edd5f3a7d83",
+      "files": 44
+    },
+    "docs/evidence/local-incident-v1": {
+      "canonical_inventory_sha256": "bb9bf2d5b041bea855abd45a10673a78859090c90540cb7cd9236a418eab8b6c",
+      "files": 3
+    },
+    "docs/evidence/subscription-boundaries": {
+      "canonical_inventory_sha256": "0acdb4da7227b2ae54351838d9c15cd67fa3382fca789e3712a0ff8598486961",
+      "files": 173
+    },
+    "docs/evidence/subscription-upgrade-conflict": {
+      "canonical_inventory_sha256": "49d09ea967739646f823d5fdc692c7d8693dcad064b621f5fedf11fc2f4b8646",
+      "files": 12
+    }
+  },
+  "historical_records_unchanged": true,
+  "new_model_generation": false,
+  "schema": "guardian-fact-copy-compatibility/1",
+  "transition": {
+    "after_sha256": "9f5237846756759a90e907eebe096f9263c0d938e78aecf4173fafb3912ede25",
+    "before_sha256": "691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9",
+    "new_line": "    fact = {\"value\": deepcopy(value), \"state\": state_name, \"source\": source,\n",
+    "old_line": "    fact = {\"value\": value, \"state\": state_name, \"source\": source,\n",
+    "path": "skills/claude-guardian/scripts/interview_flow.py"
+  },
+  "unchanged_source_pins": {
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+    "docs/cleanup-full-data.md": "e4688baa07da244413232bffdf767cccb77395567c44f5f2e7b08c1eae1a6c1c",
+    "docs/implementation-tracker.md": "8056f8d999a73a66dcdb7960dd724cd9e0c7404d769b00650e6936f21703fd50",
+    "docs/interview-migration.md": "9c70baad590bfc6ccdf99c1c5d93c4f32b1062e840d3098599143197675087ea",
+    "docs/interview-resume.md": "0c8325daad9e5d56093819068001617024c226cd934aca8fd195f2c280210691",
+    "skills/claude-guardian/SKILL.md": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "skills/claude-guardian/references/accounts-and-payments.md": "ec855e1ffe5daaffa8001fa39056d03c8b3e0441d6c6b38fcfddb376c742ede8",
+    "skills/claude-guardian/references/agent-remediation.md": "1c772512b25dc24a8d24589eb916ee6bf3d0dca697acd5d08ade498165c8f0a1",
+    "skills/claude-guardian/references/cleanup-cli-usage.md": "08be1e07744fd3b3efd05291722a753b1bd6fd14ddefe19f42750673d9fe3faa",
+    "skills/claude-guardian/references/contact-and-safety.md": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+    "skills/claude-guardian/references/evidence-policy.md": "8afb262a1d85050a897c6c9a89f54afbc96a653874b7308472dbeec4c3ea1838",
+    "skills/claude-guardian/references/incidents-and-integrations.md": "37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2",
+    "skills/claude-guardian/references/intake.md": "3eb0c795948d916804addfed31e8bcbb19502ec2447c8db2b0551f8d931e5742",
+    "skills/claude-guardian/references/macos-dns-case-lessons.md": "2b2b153a803630192853571ac9d5c78e17dff3f5a24cdd24da2d51d020f9daef",
+    "skills/claude-guardian/references/network-and-remedies.md": "a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b",
+    "skills/claude-guardian/references/routes-and-platforms.md": "dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984",
+    "skills/claude-guardian/references/source-library.md": "636c7b08c48e82f137e78f2d341d7c7eeeef52d84c89fc5800d7a868766a682c",
+    "skills/claude-guardian/scripts/cleanup_transactions.py": "42b1586eae6d67dbdfa59ffb398a445bd717d3da304bc19c3cd64a6b34ea797e",
+    "skills/claude-guardian/scripts/guardian.py": "f15f01a1a26406ff30c523577569d599f662f18f6ad4b1fab0a99d7b2afaddfa",
+    "skills/claude-guardian/scripts/interview_cli.py": "d23708f043b7701ba05ff75851a75ad3f81c6facb37e57a728214b4e3ac06b5d",
+    "skills/claude-guardian/scripts/interview_migration.py": "a52e4b7530fd99650579d418aac387231fd2e632ba8f3b407f5b94cfe1da86fd",
+    "skills/claude-guardian/scripts/traffic_policy.py": "8abb87e212b96f2dc80f59d065b13256257211b4743340438090aca8bd53d9fd",
+    "skills/claude-guardian/scripts/transactions.py": "53c1fa7a3f2e2fff2737ba3dbe96d0dbe748bfdbbed73b2a7d15f05c723190cd",
+    "skills/claude-guardian/scripts/workflow_guard.py": "68aa99db78a70d0387a3901d4f3ba25a9c4dcee19fa2ff3a584706419ccfeed0",
+    "skills/claude-guardian/sources/S01-server-glossary.md": "e2660c1b049d73e7a927594743f079cb0a5f10be9f72bad7928f10a5838bb68b",
+    "skills/claude-guardian/sources/S04-claude-guide.md": "281b2881c5a016b5188aa71c1e7162e1742c98170d9685f2a4e24503ee7a5992",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "tests/fixtures/acceptance-local-incident-cases.json": "f021362b207a6ec29eea7e62a8cf6a7ebbc70eb1797fc2eef5dceeb6d2aed4bc",
+    "tests/fixtures/acceptance-routes-rebuild.json": "073ad74ba195fd1c72bcab61887f24f1ce5cbeaef6ff6036d9ff76a713154a80",
+    "tests/test_acceptance_entry_order.py": "dddec93b13acd22cb94b86cebcad7228e88a2dc1addae6f4b55fac9fc51df5d5",
+    "tests/test_acceptance_experience_status.py": "65ae3f20f12c8ebe070d1747b8b35d4bf98c7f0fc69a2717536c990c5324ec15",
+    "tests/test_acceptance_history_pause.py": "6448142f9b43f7851ce81297322a3652d0e37f68d3ed2bf8621f238df4cfaa76",
+    "tests/test_acceptance_intake_basics.py": "43826153de254466367fadd3c9f279ef47896a25935de723fbe22b5486ac1bdb",
+    "tests/test_acceptance_intake_rebuild.py": "d1480db2071fd5429fb63768043c96ca4f8b5b93a2f2b15854c3cbf423cb12eb",
+    "tests/test_acceptance_legacy_retirement.py": "22e4a208acc0c768af0469e6cd864fdf927586531899a0703ec5d874b12192a8",
+    "tests/test_acceptance_local_egress.py": "f191e857eec5c8b6221ba2a2f8a9c97bf8b632a3f2e09a018d8f7d08655c3959",
+    "tests/test_acceptance_local_incident_cases.py": "22c13c0a917bcf9c9aadae3e3aee4e8a66509bf3837f0e44a5d0d0c2bc82b2e1",
+    "tests/test_acceptance_mobile_route.py": "4faf1dc143ac5066e55f86acc749d11c536dcedc2f94368c493b9c39e55f6759",
+    "tests/test_acceptance_resume_completion.py": "9b4ff7bc7c98a5f5874f853c1cd921edf05709ffd48764413364e239b0fd5e41",
+    "tests/test_acceptance_routes_rebuild.py": "893329472b97152d69d41d3b352c90e9bddc8dd93d812d334edc1efbebc5428b",
+    "tests/test_acceptance_subscription_original.py": "adc62f1ed88c122f1c1805c1703297affc1a161f996e57f22f4cf1ff57ac6cf0",
+    "tests/test_acceptance_task_scope_rebuild.py": "e5585ba5cd68dc3bf35ca217453f6e2be7835558588fb47006c8d8be7b4f964e",
+    "tests/test_cleanup_transactions.py": "6519b87995b16bdc439a1bbad8e0398c315d79e7d5666558b821bf841c65ce06",
+    "tests/test_interview_cli.py": "a3cbd2c8332d50e6c49fee61ced2bb9c10295b7a3393b39b6de2e89a9a37be4d",
+    "tests/test_interview_flow.py": "a411fe5a8f809ac6aac91ffc58580379056b2b158a334646b07647c22ced7bbe",
+    "tests/test_interview_migration.py": "6c4e6bf32875b83ea179ffc836f140141f161240b478b359b62b304767063618",
+    "tests/test_interview_resume.py": "081036b33c3b9a97a476d1e7894b2876ffe0b07d3bdf148b36fe1f370b47d442",
+    "tests/test_interview_subscription_repairs.py": "6d055244b184d3c96974c3090f7d0fe8b70def3197ca11e7ea6e6e7a01a6022f",
+    "tests/test_interview_upgrade_conflict.py": "0e9ec23aa2feefc5fdf3dd80ff356b89e41cf25b306f460ec2e4cfa0f166dfce"
+  }
+}

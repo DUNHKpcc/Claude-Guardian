@@ -1,0 +1,63 @@
+{
+  "schema": "guardian-asset-route-acceptance/1",
+  "evidence_kind": "synthetic_normalized_host_inputs_not_executed_model_dialogue",
+  "original_requirements": {
+    "T26": {"scenario": "用户仅提到有 VPS 或装过 VM", "requirement": "只记资产信息；主动询问实际目标和方案，不把资产当选择，也不静默开始本机部署", "layers": "L+C"},
+    "T33": {"scenario": "用户不懂 VM/VPS 区别", "requirement": "给简短比较，允许接受本机建议；不进行术语考试，不把不知道当选择", "layers": "L+C"}
+  },
+  "source_pins": {
+    "AGENTS.md": "32612bdd03fa4c7c7337935b8add82793ca5faa2e1d7f57a1021b1844ae971b6",
+    "skills/claude-guardian/sources/design/D-SPEC-v0.1.10.md": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
+    "skills/claude-guardian/sources/design/D-ENV-v0.3.md": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4"
+  },
+  "base_observed_at": "2026-10-19T00:00:00Z",
+  "asset_observed_at": "2026-10-19T00:01:00Z",
+  "reply_observed_at": "2026-10-19T00:02:00Z",
+  "base_source": "synthetic:existing-subscriber-environment",
+  "target_alias": "asset-device",
+  "account_alias": "asset-account",
+  "task_id": "asset-route-task",
+  "common_facts": {
+    "Q-J01": "existing_subscriber", "Q-C11": "environment", "Q-C02": "macos",
+    "Q-OS03": "reported_macos_version_not_checked", "Q-C03": "no_incident_reported",
+    "Q-C04": "active", "Q-C06": "official_login_reported_not_checked",
+    "Q-C09": "reported_region_not_eligibility_verified",
+    "Q-N01": "existing_connection_reported_not_tested",
+    "Q-N02": "client_locations_not_deployed",
+    "Q-N03": "no_network_change_reported", "Q-N04": "no_concurrent_client_use_reported",
+    "Q-N06": "no_management_restriction_reported",
+    "Q-C12": "preserve_projects_configuration_and_history", "Q-Z01": "plan_only",
+    "Q-C10": "novice_step_by_step"
+  },
+  "goal": "prepare_code_environment_plan_without_deployment",
+  "asset_cases": {
+    "vps_only": {
+      "user_text": "我有一台 VPS。", "source": "synthetic:asset-vps-only",
+      "facts": {"Q-S02": {"asset": "owned_vps_reported", "workspace_role": "not_chosen", "resources": {"known": ["server_exists"], "current_details": "not_supplied"}}}
+    },
+    "vm_history_only": {
+      "user_text": "我以前装过虚拟机。", "source": "synthetic:asset-vm-history-only",
+      "facts": {"Q-V01": {"history": "installed_vm_before", "current_workspace": "not_chosen", "details": ["no_current_guest_claim"]}}
+    },
+    "mixed_assets": {
+      "user_text": "我有 VPS，也装过 VM，会用 SSH；这不表示我要在它们上面部署。", "source": "synthetic:asset-mixed",
+      "facts": {
+        "Q-S02": {"asset": "owned_vps_reported", "workspace_role": "not_chosen", "resources": {"known": ["server_exists"], "current_details": "not_supplied"}},
+        "Q-V01": {"history": "installed_vm_before", "current_workspace": "not_chosen", "details": ["no_current_guest_claim"]}
+      }
+    }
+  },
+  "host_review_examples": {
+    "T26": {"scope": "Authored review example, never a generated-helper result", "text": "记下了你已有的设备和经历。这次主要想用 Claude 做什么？目标明确后，我们再选本机、虚拟机或 VPS；有设备不代表已经选它。"},
+    "T33": {"scope": "Authored review example, never a generated-helper result", "text": "本机是在你现有电脑上用；本地 VM 是电脑里的独立虚拟系统；VPS 是远端服务器上的工作区。可以先按本机建议来，不需要先学会这些术语。你想接受本机建议，还是继续比较？"}
+  },
+  "limits": [
+    "The host extracts real user meaning. These fixtures do not execute a language model or prove extraction.",
+    "A reported asset-only Q-V01/Q-S02 value is retained evidence; the host must clarify current route prerequisites if the user later selects that route.",
+    "Comparison wording is a host obligation. next_question returns registry prompts and does not generate the authored examples.",
+    "After compare, an actual renewed local proposal is represented by set_context(route='local', route_selection_basis='default_proposal'); only the subsequent explicit user acceptance is accepted_default.",
+    "Explicit local choice after comparison uses Q-C05='local'; accepting a default must not overwrite a selected VM/VPS.",
+    "Private replay contains synthetic state only. Serialization opt-in is a test fixture, not user storage or execution permission.",
+    "No native device, model dialogue, network, provisioning, account access, deployment, or action authorization is established. Original L+C requirements are unchanged."
+  ]
+}

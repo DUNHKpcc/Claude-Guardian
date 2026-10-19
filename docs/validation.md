@@ -1588,3 +1588,41 @@ jobs do not replace user-device acceptance or prove unseen Agent conversations.
 最终主执行完整套件1989项，1981通过、8跳过，59.995秒，退出0；日志SHA-256为 `57120593597d59b73ca672978dccdfee38726e6466c1490447916ac8e918c7f2`。独立最终套件同为1989项，1981通过、8跳过，59.680秒，退出0；日志SHA-256为 `0a10625541bec333fc0ee0475aa02bcc745975c746b09337dde3aefa675cf054`。独立强制C-locale、UTF8 mode关闭、cp1252:strict的40项公开证据/兼容性检查全部通过，1.813秒，退出0。前一中间投影全量也通过，但未通过隐私终审，不作为最终发布证据。
 
 Node两项合成检查和编译通过；两次打包字节一致，SHA-256仍为 `d05fbc0aa35e2a8e12fd753c94ad9a5b410c803c8e1b60ee7bbf29f5184f26ca`，63成员不含项目审核材料。两个公开包的独立隐私与来源语义复核通过；这不等于发布授权。本地Python3.10静态兼容检查不代替原生执行，托管CI以实际提交为准，用户Mac/Windows及真实账户/网络操作仍未验收。
+
+
+## 重建第三十四批：本机专家 Code 与原方案专项诊断
+
+2026-10-19，仅新增 T22/T25 合成证据、测试和验收登记，运行时与安装内容不变。[案例页](evidence/rebuild-local-incident-cases.md)与[最小公开证据包](evidence/local-incident-v1/evidence-manifest.json)保留三段对话七条实际回复及完整独立审阅；投影 SHA-256 `be04d06826c162ecb7e2fc68c71342bb849374bc20eb8555f60685a206f2157e`，审阅 SHA-256 `b104c249aaa56b6c9d5ff7a3931b77701aef968c59cb4a3c367ed878e6e6e90b`。所有场景事实均为虚构的用户报告，不是设备或账户实测。辅助器未参与实际对话；九项规范化逻辑回归与回复审阅分别提供证据，不把数量当作完整行为证明。
+
+独立审阅按原完整 L+C 条件通过 T22/T25，本次台账仅这两行从待验收变为验收；累计49/218，169项待验收。所有原场景、条款、层级及75/113/30调度分类不变，218行身份 SHA-256 仍为 `84975325686c368a191b8232a0564518f1ba32ad7055ce4742d32cc4c26c77b9`。保留来源读取为答复者报告、非完整独立工具记录，以及329-token清理材料遗漏且未重读的限制；全文件哈希不证明逐节读取，指令范围限制不等于物理隔离。未新增未观察输入保证、T04或相邻案例、真机、当前官方流程、网络、修复或恢复验收。
+
+定向 Linux 检查全部退出0、无跳过：`test_acceptance_local_incident*.py` 共22项（九项逻辑与13项证据完整性/隐私），3.924秒，日志 SHA-256 `3c0cf4a68b47a3636e414670b3f945d9c1380e0c8a86a46a7a784d54c0ffa83e`；台账3项，0.027秒，日志 `21329db5531fe9d3fb4bf2af6ad12e0782d89851d0a366da455012a34ade1e31`；可移植性2项，0.659秒，日志 `a103359e3f007e8556b86a8e81d03c94b18b43f4da61d80d7fbc85d562c6e44e`。强制C-locale、UTF8 mode与locale coercion关闭、缺省文件编码cp1252、标准输出cp1252:strict下，22项新证据/逻辑加3项台账共25项通过，3.959秒，日志 `87c3053f8422fccc2eddb2558f8c24e7168bbae9d361655c412ebf74c8ee3a62`。负向控制拒绝改写并重算内嵌哈希的回复、输入/顺序/来源/边界漂移、额外元数据及私有路径/标识注入；这些是固定证据的防漂移检查，不重新生成或重放模型回复。
+
+单次打包验证63成员，SHA-256仍为 `d05fbc0aa35e2a8e12fd753c94ad9a5b410c803c8e1b60ee7bbf29f5184f26ca`；测试与公开审阅包未进入安装包。tracked diff与新增文件空白检查通过。本节只记录上述定向检查，最终全量、重复打包及托管CI以实际后续记录为准；本地3.10语法/API检查不冒充原生3.10或用户Mac/Windows验证。风险限定为证据登记/文档误标，源变动须重新语义审阅；回滚本批证据、测试、文档及两行登记即可，不涉及设备状态、凭据或用户数据恢复。
+
+
+## Thirty-fourth rebuild aggregate, 2026-10-19
+
+The original T22/T25 evidence-only candidate ran `python -m unittest discover -s tests -v`: **2,011 total, 2,003 passed, 8 skipped**, 63.800 seconds, exit 0. Aggregate log SHA-256: `a1fa41524fd8d14846f50679254573ece782e97ccb65c885d28fd5dc002aa38d`. The independent semantic review and scoped normalized tests remain separate evidence; test counts alone do not establish original-case acceptance.
+
+Strict C locale with UTF-8 mode disabled and cp1252 output reran the 22 new logic/evidence tests: 22 passed, 0 skipped, 3.850 seconds, exit 0; log SHA-256 `b88ca0788e89015c9cf9094b87ac1e80d30830178a6df0c923cbd2d5e26d697e`. New Python files parse under Python 3.10 grammar and all new text reads/writes specify encoding. These checks are not a native Python 3.10 run.
+
+Both existing Node synthetic suites and script compilation passed. An initial dashboard check used a nonexistent filename and returned MODULE_NOT_FOUND; no code was changed for that command error. The corrected existing `tests/dashboard-interaction-protocol.cjs` suite passed; the failed invocation and successful correction are retained in the verification receipt. WebRTC lifecycle log SHA-256: `68fb032c2716f26c3fa8c4082d024784629adce51ef79c603ffbb0a94eea343c`; corrected dashboard log: `7166f8ddcd27ec9cc9cff26b9cd751b5242c6868d6b9e5285bc2b6b4b9548365`.
+
+Two package builds are byte-identical to the preceding published Skill: 63 members, SHA-256 `d05fbc0aa35e2a8e12fd753c94ad9a5b410c803c8e1b60ee7bbf29f5184f26ca`. No runtime or installed Skill member changed. This candidate has not been published or run in hosted CI; no Mac/Windows user-device result is inferred.
+
+Independent read-only integration verification passed: 13 evidence tests (0.008s), 9 normalized logic tests (4.041s), and 3 ledger tests (0.022s), each exit 0 and zero skips. Log SHA-256 values respectively: `8113cd31b0c939b605c4b9390f4da1eb0f89604ae69954c66f76c5475f3bc8aa`, `4c9ccc9e0fa6295029f915ab507a215b8bca4967053d1ab7770bf3a24e47951c`, `215c7ee5ca4a3af1518913120cb5bca257329f220eec1915e156e4fb167c1009`. Exact comparison found seven new evidence/test files and five modified documentation/ledger files, no deletions, and only T22/T25 acceptance/evidence/next-step fields changed. Original requirements, all scheduling/dependencies and every installed Skill source remain unchanged.
+
+## Thirty-fifth rebuild: asset routing and immutable recorded inputs, 2026-10-19
+
+T26/T33 are supported by nine retained synthetic replies and a separate whole-response review. The initial T26 replies and later continuations left route elicitation unobserved; the adaptively added fresh ninth input supplied a complete goal and explicitly distinguished assets from choice. This limitation remains visible. Normalized helper tests did not generate the replies. Original requirements/layers stay unchanged: 51 accepted, 167 pending. User-device and account behavior are not certified.
+
+The sole runtime change records `deepcopy(value)` to isolate a fact from later mutation of its caller-owned JSON value. Five regressions genuinely fail on the preceding runtime; all 31 normalized tests pass on the candidate. Existing historical evidence remains byte-identical. The exact-source compatibility supplement reconstructs genuine prior bytes and separately compares 13 complete current/historical replays, 15 guarded subscription calls and 163 upgrade calls. It neither substitutes hashes nor regenerates historical dialogue. Independent review verified all 232 retained packet files and 50 prerequisites, including negative drift controls. Arbitrary non-JSON objects and malicious caller mutation of returned state are outside this fix.
+
+The first aggregate was a real failure: 1,982 collected tests, 14 failures, one import error, eight skips, 63.176 seconds, exit 1. Strict source pins rejected the changed runtime; the subscription import error also prevented collection of its remaining tests. These failures were retained. The compatibility supplement and explicit dated source-pin updates were reviewed before the final run; original evidence was not rewritten.
+
+Final full command `python -m unittest discover -s tests -v`: **2,069 total, 2,061 passed, eight skipped**, 93.909 seconds, exit 0. Log SHA-256: `44244c3faf78941f380efd26961f0fe9046291be96b647180fc9e7f3f810a0dc`. Independent integration ran 47 asset logic/integrity tests and three ledger tests, all passed without skips. Strict C locale, disabled UTF-8 mode and cp1252:strict output ran the 47 asset tests successfully. Independent compatibility verification passed 67 tests both with strict cp1252 output and with simulated cp1252 default file decoding. Python 3.10 grammar/API review is not actual Python 3.10 execution.
+
+Both existing Node synthetic suites, compilation and two reproducible package builds passed. The package contains the same 63 members; only interview_flow.py changed. Package SHA-256: `e7077430e9b720bdc82a66547de64a7a18910186f229b94ee8777502fa7e39a8`. Test/evidence material is excluded from the installed Skill. The candidate has not been published or executed in hosted CI. No Mac/Windows user-machine acceptance is inferred. Rollback restores the previous fact-recording line and this batch's evidence/consumer changes; no user data or host configuration was changed.
+
+Public-scope audit found two inherited concrete workspace locations in historical command examples. They are now displayed as `${PROJECT_ROOT}`; the historical records remain unchanged and the presentation-only redaction is stated on that page. After this adjustment, the full suite again ran 2,069 tests: 2,061 passed, eight skipped, 94.212 seconds, exit 0; log SHA-256 `e935005edef393c9f8a9626d56dcd1cde40b236dfe9b2bf2e83a85abb44ccdea`. No new runtime or package change resulted.

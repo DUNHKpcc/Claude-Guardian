@@ -1,0 +1,70 @@
+{
+  "synthetic": true,
+  "source_sha256": {
+    "shipped_skill": "f6cd5e5fc2e9ddda329d70fc0643ff323588858a6ad45d5f36fafb01fb7de1d3",
+    "contact_and_safety": "095caff949dbd3feffb13f19279a2fdce16e528775898d0b0298d5928f69f53c",
+    "routes_and_platforms": "dd671d72e8b16963f6a1708fc953ecb41a5191f42934d68f0404824c17354984",
+    "incidents_and_integrations": "37d1f06a3e46a61fd841455ad40ca4081468c0e6b2b4248d23b345c05d93e9d2",
+    "network_and_remedies": "a13f51b7b996bd2a2c3f920b3a944d8b3f8a059e6a28cb921be5cd84b3f6d48b"
+  },
+  "conversations": [
+    {
+      "scenario": "expert-local-code",
+      "turns": [
+        {
+          "user": "我是维护 SDK 和团队工具的开发者，熟悉 OAuth、代理和进程继承。这次已有有效 Pro，只处理我自己的 Mac 上独立终端里的 Claude Code，不是 IDE 或远端工作区。目标别名是 mac-local，macOS 15、Apple Silicon；原来用官方 OAuth，终端经本机回环 HTTP 代理，不开 TUN，没有 MCP 或额外 hooks。本次没有报错，也不需要购买或登录。我想先审一下现有环境，给我精简的差异检查清单就行。项目有未提交修改，自定义 shell 和代理配置都要保留。你现在是云端 Codex，只根据我说的事实给方案，别读取我的机器、运行 Code 或联网。",
+          "response": "按你提供的基线，mac-local 只做独立终端 Claude Code 的差异审查。以下均为待核对项，尚无本机实测结论：\n\n- 启动入口：核对安装来源、已有版本元数据、arm64／Rosetta 情况，以及 PATH、alias、function、wrapper 是否指向预期安装；不靠运行 Code 获取版本\n- 认证覆盖：以原有官方 OAuth 为基线，检查用户级／项目级配置及启动环境是否额外声明 API key、网关或自定义服务地址；只记来源类别和设置状态，不读取令牌\n- shell 与代理继承：对照 HTTP_PROXY、HTTPS_PROXY、ALL_PROXY、NO_PROXY 及大小写变体，检查启动文件优先级、回环端点和 bypass 范围；变量被继承与客户端实际采用要分开记录\n- 路由与 DNS：分别审查 Code→回环 HTTP 代理、代理→目标服务两段；进入代理仍可能命中 DIRECT，DNS 由谁解析也需单列，不能由“未开 TUN”或“没有报错”推定\n- IPv4 差异：本审查采用所选 Claude 目标流量 IPv4-only、禁止 IPv6 fallback 的要求。回环监听使用 IPv4 不证明目标段已受约束；当前支持能力未知、合规尚未建立。保留代理外层所需 IPv6／UDP、系统 IPv6 和其他应用\n- 故障与保护：代理不可用时会失败还是直连，暂记未验证。保留未提交修改、CLI 配置与历史、自定义 shell／代理配置及 Codex 通道；后续确有差异时才提出精确补丁、私有备份、独立恢复和同范围复测\n\n下一步优先补齐“Code 版本与安装入口、代理程序／核心版本、相关配置层级”即可缩小差异；这份清单不需要启动 Code、登录或联网，也不构成任何修改授权",
+          "response_sha256": "4d4be99f4f69dfb45224fbe7840c1a312007ebeeb6fb65ee709d1316dab0b302"
+        },
+        {
+          "user": "清单里的“终端代理”和“子进程继承”请各展开两句，我对这两项想多了解一点。其他事实和本次范围都没变。",
+          "response": "终端代理：重点是启动 Code 的那个 shell 中，HTTP_PROXY、HTTPS_PROXY、ALL_PROXY 等候选键的设置状态、大小写和覆盖关系，具体支持哪些要按安装版本核对。还要检查 NO_PROXY 的绕过范围，以及代理收到请求后是否命中 DIRECT；配置了回环代理并不自动证明全程走预期出口。\n\n子进程继承：由 shell 启动的 Code 通常取得启动时已导出的环境变量快照，之后修改 shell 变量不会自动更新已运行进程。Code 启动的相关子进程是否继承或覆盖这些变量，以及其网络库是否真正采用代理，是不同检查项，不能仅凭父进程设置就认定已覆盖。",
+          "response_sha256": "5d76604a56e0d980b3fa9470692284fc2c25556d96a610e0ceb4563fb75f8469"
+        }
+      ]
+    },
+    {
+      "scenario": "local-proxy-error",
+      "turns": [
+        {
+          "user": "我现在有有效 Pro，原来通过官方 OAuth 在自己的 Mac 本机独立终端用 Claude Code，目标别名 mac-local，macOS 15、Apple Silicon。今天 2026-10-18 23:40 UTC，在现有会话里提交一个普通代码问题时看到 HTTP 403，没有明确账号停用文字。我只想排查这台 Mac 上的这个问题。终端走本机回环 HTTP 代理，没开 TUN；我当天调整过代理分组，但没改登录方式。项目还有未提交改动，现有配置和历史都要保留。我已停下操作，你现在只根据我已有的信息分析，不要读取机器、运行客户端、复现、联网或修改。先从哪里查？",
+          "response": "先查“这次 403 是哪一层返回的”，再对照当天的代理分组调整。代理变更是优先线索，但目前不能认定它就是原因；单凭 403，也不能判断账号停用\n\n这轮只依据你的描述分析，范围固定为 mac-local：macOS 15、Apple Silicon、本机独立终端中的 Claude Code、已有官方 OAuth 会话。事件时间按你提供的 2026-10-18 23:40 UTC 记录；这些都是你的报告，尚未经机器核实。\n\n建议按这个顺序排查：\n\n1. 先区分响应来源\n   最有用的是当时已显示或保存的少量报错文字：是否提到代理、CONNECT、认证过期、权限不足，或明确的停用通知。403 可能出现在代理建立连接阶段，也可能来自后面的服务，只有状态码还无法分流。有效 Pro 和登录方式未变，也不能单独证明这次请求的会话或权限正常\n\n2. 优先对照代理分组变化\n   后续需要核对的是：当时使用的活动配置、对应目标命中的规则、规则指向的分组，以及分组最终选择的出口。请求到达本机回环代理后，仍可能命中 DIRECT 或不同出口；“走了代理入口”不等于“走了预期出口”。没开 TUN 本身也不是故障证据，不应先靠开启 TUN 试错\n\n3. 分清现有会话与新终端的配置\n   已运行的 Claude Code 会话不会因为另一个终端改了代理变量就自动更新其环境；代理程序内部的分组调整却可能影响后续连接。若以后获准检查，只核对相关代理变量的设置状态、绕过范围和客户端是否实际采用，不输出全量环境变量或凭据\n\n4. 单独保留地址族检查项\n   后续方案需针对这次 Claude Code 的目标流量及相关子进程落实仅 IPv4、失败不回退 IPv6。即使回环入口使用 IPv4，也不能证明代理到目标这一段只用 IPv4。目前实施能力和生效情况都未知，也没有证据说明 IPv6 导致了这次 403；不能因此关闭整机 IPv6 或影响代理外层、其他应用及恢复通道\n\n目前没有足够证据提出具体配置修改。项目和未提交改动、现有配置、历史都应保留；先不做清理、重装、退出登录或反复重试。你已停下交互，但这不等于已证明所有后台活动停止，我也没有检查或停止任何进程。\n\n下一步只需补充你当时已经看到或保存的 403 附近一两行脱敏文字，不含 token、cookie、完整请求头或代码内容。若当时确实只有“HTTP 403”，就先保持原因未知，无需为了补证据重新运行客户端",
+          "response_sha256": "aabb641a21c7442258a829db2d0768216436804ee372c1f7610effb67f4eaa03"
+        },
+        {
+          "user": "我保存的一小段脱敏代理日志是：time=2026-10-18T23:40:12Z；component=local-http-proxy；phase=CONNECT；status=403；reason=policy_denied；upstream_attempted=false。日志是本机代理生成的，不是官方响应；里面只保留了这些字段。",
+          "response": "这段日志把排查重点明确了：按代理自己的记录，这一次 CONNECT 请求被本机策略拒绝，而且尚未尝试上游连接。它不是官方返回的 403，不能据此判断账号或 Pro 权益受限。\n\n下一步应追查“哪条本地策略拒绝了这次 CONNECT”，优先对照当天的代理分组调整：\n- 当时实际生效的是哪个配置，以及调整了什么\n- 相关规则最终指向哪个分组或处理动作\n- 拒绝来自哪一层策略，是否存在优先级或配置合并影响\n\n现有字段没有目的地、命中规则或分组信息，因此还不能锁定具体规则，更不能认定某个节点有问题。upstream_attempted=false 也只描述这一次请求，不代表整台 Mac 没有其他联网活动。\n\n目前无需靠重新登录、清理配置或切换节点来验证。IPv4-only 的落实仍是后续独立检查项，这条日志没有提供地址族证据。\n\n你用的代理软件是什么？当天改的是分组指向、组内节点，还是规则与分组的绑定？凭记忆或已有记录回答即可，不用读取机器或复现",
+          "response_sha256": "8ebb68cb2e142b45101c8b4dd1dbda4672800a7f22c182564a7c24e7002b073a"
+        },
+        {
+          "user": "匹配了哪条规则我不知道，也不清楚那次上游账号状态；我不想再贴日志或配置。按现在的信息给我下一步就行，暂时也不授权任何实际操作。",
+          "response": "下一步先定位本机代理的拒绝策略，上游账号状态可以暂时保持未知。按你提供的日志，这次请求在 CONNECT 阶段被本地策略拦下，尚未尝试上游；账号状态解释不了这条已记录的本地拒绝。\n\n后续顺序如下，目前都只是计划：\n\n1. 限定范围只读核对\n   等你愿意继续时，只在 mac-local 核对代理软件及版本、实际生效的配置、当天分组调整，以及相关规则的优先级和最终处理动作。目标是找出拒绝来源，原始日志和配置可以留在本机\n\n2. 找到原因后再拟最小修复\n   只有确认具体偏差，才提出对应改动、影响、备份和独立恢复办法。不直接回滚整份配置；项目、未提交改动、历史和自定义配置继续保留。若仍找不到命中策略，就停在原因未明，不靠轮换节点试错\n\n3. 验证单独安排\n   未来实际操作和联网验证都需另行明确授权。届时还要分别核对客户端是否采用预期代理，以及代理到目标这一段是否落实仅 IPv4、失败不回退 IPv6；目前这些都未验证，不能由回环代理或这条 403 日志推断\n\n现在保持暂停即可，不需要再提供日志或配置，也不用重新登录、重装或清理数据",
+          "response_sha256": "3831f56b0755ce2268c3f0f9ec919a3554e8b880a482bee6c4db15d25e5b9959"
+        }
+      ]
+    },
+    {
+      "scenario": "current-restriction",
+      "turns": [
+        {
+          "user": "我已有有效 Pro，只在自己的 macOS 15 Mac 本机独立终端使用 Claude Code，目标别名 mac-local，原来是官方 OAuth。2026-10-18 22:15 UTC，我在自己此前打开的官方账号页面看到了“Your account has been disabled.”，现在 Code 也提示账号不可用。这是我对当前提示的转述，不是过去的封禁史；通知没给原因。我已经停止尝试登录。项目有未提交修改，历史、shell 和代理配置都要保留。现在你在云端，只用这些信息分析，不要替我访问官网、启动客户端、读取机器或提交材料。我该先做什么？",
+          "response": "先保全未提交工作和已有证据，再处理官方账号限制；目前没有依据去清理或修改本机环境\n\n按你的转述，2026-10-18 22:15 UTC 官方账号页面明确显示 “Your account has been disabled.”，应按当前账号停用事件处理。原因仍未知，不能据此归因于代理、macOS、OAuth 或所谓“设备黑名单”。本地清理也不能解除服务端停用\n\n建议按这个顺序做：\n\n1. 保住工作\n   保存编辑器中尚未落盘的修改，保留项目、未提交内容、Code 历史与配置、shell 和代理配置。先不要重装、清缓存、删除认证数据，或执行 git reset/clean。若需要备份，先确定具体范围、私有保存位置和恢复方式\n\n2. 维持停止重试\n   你已经停止尝试登录，继续保持即可。不要为了补证据重新打开账号页、启动 Code、运行登录状态或版本检查，也不用重复购买套餐。如果另有自动重试任务，需先确认任务及停止影响，不能直接强杀整个终端或运行时\n\n3. 保留最小事实\n   现有时间、提示原文、出现入口和 Code 不可用的影响，已经足够作为初步材料。已有截图或通知先保留原样，无需重新复现；后续分享时遮掉邮箱、令牌、Cookie、私人对话等无关内容。另存证据包前，再确定内容和保存位置\n\n4. 下一步走官方核查\n   在你决定继续后，核验当前官方支持／申诉入口，请对方说明限制状态、可用复核途径和需要补充的材料。有效 Pro、数据导出和退款可以分别询问，但目前不能保证恢复、导出或退款，也不能认定这是误封\n\n这次我只做离线分析，没有访问官网、启动客户端、读取 mac-local，或保存、提交材料\n\n目前是否已有官方工单或处理指示？只需告诉我有无，以及脱敏后的要求即可",
+          "response_sha256": "66c4424310b9672e358f68aabc60a896162d9ba7589980ce895475cd633fff7d"
+        },
+        {
+          "user": "我没提交过支持工单，也没有 case 编号。手头只有当时的一张截图，其他原因和发生范围我不知道。请给我一个现在能做的具体下一步，先不访问或发送任何东西。",
+          "response": "现在先核对这份最小事件摘要，不用打开网页、启动 Code 或上传截图：\n\n- 看到提示的时间：2026-10-18 22:15 UTC；这不等于实际停用开始时间\n- 来源：你此前打开的官方账号页面，提示为 “Your account has been disabled.”\n- 已知影响：mac-local 上的独立终端 Claude Code 也提示账号不可用；它开始报错的准确时间未知\n- 使用背景：你报告仍有有效 Pro，原先使用官方 OAuth\n- 已采取措施：停止尝试登录\n- 现有证据：一张当时的截图，尚未由我查看；无支持工单、无 case 编号\n- 未知：停用原因、其他受影响范围、官方要求的处理步骤\n\n你现在只需核对这些表述是否准确，尤其不要把“看到提示的时间”写成“账号被停用的时间”。截图先保留原样，项目、历史、shell 和代理配置保持现状；这份摘要目前只在对话中展示，没有另存或发送",
+          "response_sha256": "aac06e8767886a3b4c1fe445b12af85579982d2783d2615bce3030daed06081b"
+        }
+      ]
+    }
+  ],
+  "provenance_limits": [
+    "All account, device, operating-system, proxy, project, and incident facts are fictional synthetic user reports, not verified facts about a real person or device.",
+    "Seven actual responses from three separate synthetic conversations are retained without editing. All user turns were frozen before generation; each follow-up was supplied only when its turn arrived.",
+    "The supplied source scope was the pinned shipped Skill and ordinary references. The source boundary was instruction-enforced, not physical isolation; this does not prove inaccessible files or an isolated process.",
+    "No interview helper was invoked in these conversations. Separate normalized runtime evidence must not be attributed to these responders.",
+    "Source-reading provenance is responder-reported from retained call records, not an independently exported complete tool transcript. One source-read result omitted 329 tokens of cleanup material; that omitted text was not reread or claimed as read. Pinned full files do not imply every section was read.",
+    "This is offline synthetic dialogue evidence only. No real device, UI, native behavior, target client, network path, current official service/account state, repair, or recovery was verified. No acceptance verdict is supplied."
+  ]
+}
