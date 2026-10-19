@@ -14,7 +14,8 @@
     "All original 218 scenario/requirement/layer rows and historical evidence bytes are retained. The dated PRODUCT-ENTRY-20261019 requirement is tracked separately; it does not replace original cases. Existing behavioral and runtime tests remain mandatory and are not deleted or skipped by this status correction.",
     "The fortieth checkpoint separately reviews the Agent application-task link, supplied-snapshot helper/reference, two package additions and retained-schema clarification; docs/evidence/agent-rules-limited-revalidation.md replaces only the current evidence link for the same four cases. The preceding entry review and its evidence objects are retained unchanged. Counts remain 4 accepted / 214 pending; historical source preservation changes an explicit origin, never the old source bytes/hash.",
     "The comment-preserving Agent-task wrapper correction has its own exact three-file transition and whole-clause review in docs/evidence/agent-rules-comments-limited-revalidation.md. The preceding Agent-task review, its nineteen source pins and four evidence objects remain unchanged as historical material. Only T03, T05, T09 and T18 retain current acceptance; counts remain 4 accepted / 214 pending with all 51 historical objects and 218 original rows preserved. No native save or recovery contract is established.",
-    "The 2026-10-19 whole-device network-guidance default has a separate whole-clause review and exact five-file transition in docs/evidence/whole-machine-limited-revalidation.md. The preceding comment review, all nineteen pins and four evidence objects remain unchanged; two historical network references move only from repository to exact snapshots. Only T03, T05, T09 and T18 remain currently accepted. Counts stay 4 accepted / 214 pending with 51 historical objects and all 218 original rows. Prose and synthetic checks do not certify whole-device routing, TUN, persistent enforcement, native recovery or actual authority."
+    "The 2026-10-19 whole-device network-guidance default has a separate whole-clause review and exact five-file transition in docs/evidence/whole-machine-limited-revalidation.md. The preceding comment review, all nineteen pins and four evidence objects remain unchanged; two historical network references move only from repository to exact snapshots. Only T03, T05, T09 and T18 remain currently accepted. Counts stay 4 accepted / 214 pending with 51 historical objects and all 218 original rows. Prose and synthetic checks do not certify whole-device routing, TUN, persistent enforcement, native recovery or actual authority.",
+    "The neutral HTTPS /0.2 and bounded-diagnostic guide addition has a separate exact one-file transition and whole-clause review in docs/evidence/neutral-probe-limited-revalidation.md. The preceding whole-device review, all twenty-two pins and four evidence objects remain unchanged. Only T03, T05, T09 and T18 remain currently accepted: 4 accepted / 214 pending, 51 historical objects and 218 original rows. Synthetic/source checks do not establish native identity, actual network/browser paths, whole-device enforcement, recovery or authority."
   ],
   "cases": [
     {
@@ -78,7 +79,7 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "整机网络指引与原完整条件的限定复核已独立记录；相关指导、来源或打包字节后续变化须重审，不外推整机接管、持续强制、TUN真机能力、保存恢复或未观察输入",
+      "next_steps": "中性probe与诊断指引的原完整条件限定复核已记录；相关指导、来源或打包字节变化须重审，不外推真实身份、网络/浏览器路径、整机强制、恢复或未观察输入",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-t03-t05-guided-responses.md",
@@ -91,14 +92,14 @@
         "boundary": "Actual two-turn synthetic guided responses independently reviewed sentence by sentence; retained-record integrity tests do not generate new responses or prove native/service facts."
       },
       "evidence": {
-        "path": "docs/evidence/whole-machine-limited-revalidation.md",
-        "sha256": "3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2",
+        "path": "docs/evidence/neutral-probe-limited-revalidation.md",
+        "sha256": "4fac3fc047552af4d45ea27aaa7ee6f7b93a08d3219cf4cdecab4a72a822914a",
         "layers": [
           "L",
           "C"
         ],
         "review_date": "2026-10-19",
-        "boundary": "Original complete L+C case preserved by separate exact-source whole-device guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, whole-device enforcement, native TUN/recovery or action claim."
+        "boundary": "Original complete L+C case preserved by separate exact-source neutral-probe/diagnostic guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, native identity/network/browser, whole-device enforcement, recovery or authority claim."
       },
       "prior_revalidation_evidence": {
         "path": "docs/evidence/entry-order-limited-revalidation.md",
@@ -129,6 +130,16 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Original complete L+C case preserved by a separate exact-source comment-wrapper/guidance compatibility review; earlier reviews and observed replies remain historical, current T09 source/package and wrapper checks rerun, no new dialogue or native save/recovery/action claim."
+      },
+      "prior_whole_machine_revalidation_evidence": {
+        "path": "docs/evidence/whole-machine-limited-revalidation.md",
+        "sha256": "3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by separate exact-source whole-device guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, whole-device enforcement, native TUN/recovery or action claim."
       }
     },
     {
@@ -148,7 +159,7 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "整机网络指引与原完整条件的限定复核已独立记录；相关指导、来源或打包字节后续变化须重审，不外推整机接管、持续强制、TUN真机能力、保存恢复或未观察输入",
+      "next_steps": "中性probe与诊断指引的原完整条件限定复核已记录；相关指导、来源或打包字节变化须重审，不外推真实身份、网络/浏览器路径、整机强制、恢复或未观察输入",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-t03-t05-guided-responses.md",
@@ -161,14 +172,14 @@
         "boundary": "Actual two-turn synthetic guided responses independently reviewed sentence by sentence; retained-record integrity tests do not generate new responses or prove native/service facts."
       },
       "evidence": {
-        "path": "docs/evidence/whole-machine-limited-revalidation.md",
-        "sha256": "3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2",
+        "path": "docs/evidence/neutral-probe-limited-revalidation.md",
+        "sha256": "4fac3fc047552af4d45ea27aaa7ee6f7b93a08d3219cf4cdecab4a72a822914a",
         "layers": [
           "L",
           "C"
         ],
         "review_date": "2026-10-19",
-        "boundary": "Original complete L+C case preserved by separate exact-source whole-device guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, whole-device enforcement, native TUN/recovery or action claim."
+        "boundary": "Original complete L+C case preserved by separate exact-source neutral-probe/diagnostic guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, native identity/network/browser, whole-device enforcement, recovery or authority claim."
       },
       "prior_revalidation_evidence": {
         "path": "docs/evidence/entry-order-limited-revalidation.md",
@@ -199,6 +210,16 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Original complete L+C case preserved by a separate exact-source comment-wrapper/guidance compatibility review; earlier reviews and observed replies remain historical, current T09 source/package and wrapper checks rerun, no new dialogue or native save/recovery/action claim."
+      },
+      "prior_whole_machine_revalidation_evidence": {
+        "path": "docs/evidence/whole-machine-limited-revalidation.md",
+        "sha256": "3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by separate exact-source whole-device guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, whole-device enforcement, native TUN/recovery or action claim."
       }
     },
     {
@@ -238,7 +259,7 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "整机网络指引与原完整条件的限定复核已独立记录；相关指导、来源或打包字节后续变化须重审，不外推整机接管、持续强制、TUN真机能力、保存恢复或未观察输入",
+      "next_steps": "中性probe与诊断指引的原完整条件限定复核已记录；相关指导、来源或打包字节变化须重审，不外推真实身份、网络/浏览器路径、整机强制、恢复或未观察输入",
       "dependencies": "A、P",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-source-dedup.md",
@@ -251,14 +272,14 @@
         "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
       },
       "evidence": {
-        "path": "docs/evidence/whole-machine-limited-revalidation.md",
-        "sha256": "3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2",
+        "path": "docs/evidence/neutral-probe-limited-revalidation.md",
+        "sha256": "4fac3fc047552af4d45ea27aaa7ee6f7b93a08d3219cf4cdecab4a72a822914a",
         "layers": [
           "L",
           "C"
         ],
         "review_date": "2026-10-19",
-        "boundary": "Original complete L+C case preserved by separate exact-source whole-device guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, whole-device enforcement, native TUN/recovery or action claim."
+        "boundary": "Original complete L+C case preserved by separate exact-source neutral-probe/diagnostic guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, native identity/network/browser, whole-device enforcement, recovery or authority claim."
       },
       "prior_revalidation_evidence": {
         "path": "docs/evidence/entry-order-limited-revalidation.md",
@@ -289,6 +310,16 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Original complete L+C case preserved by a separate exact-source comment-wrapper/guidance compatibility review; earlier reviews and observed replies remain historical, current T09 source/package and wrapper checks rerun, no new dialogue or native save/recovery/action claim."
+      },
+      "prior_whole_machine_revalidation_evidence": {
+        "path": "docs/evidence/whole-machine-limited-revalidation.md",
+        "sha256": "3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by separate exact-source whole-device guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, whole-device enforcement, native TUN/recovery or action claim."
       }
     },
     {
@@ -429,7 +460,7 @@
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
       "rebuild_acceptance": "accepted_revalidated",
-      "next_steps": "整机网络指引与原完整条件的限定复核已独立记录；相关指导、来源或打包字节后续变化须重审，不外推整机接管、持续强制、TUN真机能力、保存恢复或未观察输入",
+      "next_steps": "中性probe与诊断指引的原完整条件限定复核已记录；相关指导、来源或打包字节变化须重审，不外推真实身份、网络/浏览器路径、整机强制、恢复或未观察输入",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-t18-appeal-facts.md",
@@ -442,14 +473,14 @@
         "boundary": "Observed two-turn synthetic guided response and independent sentence-level content review; integrity tests do not regenerate responses. No native, live-account or sending claim."
       },
       "evidence": {
-        "path": "docs/evidence/whole-machine-limited-revalidation.md",
-        "sha256": "3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2",
+        "path": "docs/evidence/neutral-probe-limited-revalidation.md",
+        "sha256": "4fac3fc047552af4d45ea27aaa7ee6f7b93a08d3219cf4cdecab4a72a822914a",
         "layers": [
           "L",
           "C"
         ],
         "review_date": "2026-10-19",
-        "boundary": "Original complete L+C case preserved by separate exact-source whole-device guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, whole-device enforcement, native TUN/recovery or action claim."
+        "boundary": "Original complete L+C case preserved by separate exact-source neutral-probe/diagnostic guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, native identity/network/browser, whole-device enforcement, recovery or authority claim."
       },
       "prior_revalidation_evidence": {
         "path": "docs/evidence/entry-order-limited-revalidation.md",
@@ -480,6 +511,16 @@
         ],
         "review_date": "2026-10-19",
         "boundary": "Original complete L+C case preserved by a separate exact-source comment-wrapper/guidance compatibility review; earlier reviews and observed replies remain historical, current T09 source/package and wrapper checks rerun, no new dialogue or native save/recovery/action claim."
+      },
+      "prior_whole_machine_revalidation_evidence": {
+        "path": "docs/evidence/whole-machine-limited-revalidation.md",
+        "sha256": "3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-19",
+        "boundary": "Original complete L+C case preserved by separate exact-source whole-device guidance compatibility review; prior reviews and responses remain historical, current source/package and prose checks rerun, no fresh dialogue, whole-device enforcement, native TUN/recovery or action claim."
       }
     },
     {

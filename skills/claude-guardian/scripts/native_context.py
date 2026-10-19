@@ -14,15 +14,28 @@ from dataclasses import dataclass, field
 
 class ContextError(Exception):
     """Only stable, non-sensitive error codes cross this boundary."""
-    def __init__(self, code, *, path_field='unknown', path_reason='unknown'):
+    def __init__(self, code, *, path_field='unknown', path_reason='unknown',
+                 stage='unknown', reason='unknown'):
         super().__init__(code)
         self.path_field = path_field if type(path_field) is str and path_field in PATH_FIELDS else 'unknown'
         self.path_reason = path_reason if type(path_reason) is str and path_reason in PATH_REASONS else 'unknown'
+        self.stage = stage if type(stage) is str and stage in API_STAGES else 'unknown'
+        self.reason = reason if type(reason) is str and reason in API_REASONS else 'unknown'
 
 
 PATH_FIELDS = frozenset({'unknown', 'executable', 'cwd', 'prefix', 'base_prefix'})
 PATH_REASONS = frozenset({'unknown', 'invalid_syntax', 'too_deep', 'symlink',
                           'not_directory', 'not_regular_file'})
+API_STAGES = frozenset({'unknown', 'console_user'})
+API_REASONS = frozenset({'unknown', 'null_result'})
+
+
+def api_diagnostic(error):
+    """Expose the failing API stage, never an inferred identity or native data."""
+    stage = getattr(error, 'stage', 'unknown')
+    reason = getattr(error, 'reason', 'unknown')
+    return {'stage': stage if type(stage) is str and stage in API_STAGES else 'unknown',
+            'reason': reason if type(reason) is str and reason in API_REASONS else 'unknown'}
 
 
 def path_diagnostic(error):
@@ -150,7 +163,9 @@ class _MacAPI:
         uid, gid = ctypes.c_uint32(), ctypes.c_uint32()
         name = self.console(None, ctypes.byref(uid), ctypes.byref(gid))
         if not name:
-            raise ContextError('CONTEXT_INACTIVE')
+            # NULL does not establish whether anyone is logged in, nor why this
+            # API failed to provide the observation. Identity remains unknown.
+            raise ContextError('CONTEXT_UNKNOWN', stage='console_user', reason='null_result')
         # Never convert/copy the returned user's name into Python.
         self.release(name)
         dictionary = self.graphics()

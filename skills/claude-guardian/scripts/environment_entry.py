@@ -21,7 +21,11 @@ import re
 
 
 SCHEMA = 'guardian-environment-entry-input/0.1'
+PROBE_ENTRY_SCHEMA = 'guardian-environment-entry-input/0.2'
+PROBE_CONTEXT_SCHEMA = 'guardian-probe-context/0.1'
+SYSTEM_PROBE_PATH = 'direct_socket_os_route_tun_unknown'
 RESULT_SCHEMA = 'guardian-environment-entry/0.1'
+PROBE_RESULT_SCHEMA = 'guardian-environment-entry/0.2'
 ROUTES = ('local', 'vm', 'vps', 'compare', 'unknown', 'none')
 ROUTE_STATES = ('unasked', 'selected', 'unknown', 'declined', 'conflict',
                 'stale', 'withdrawn')
@@ -87,9 +91,15 @@ def _alias(value):
 def _validate(request):
     fields = ('schema_version', 'route', 'targets', 'network', 'local_entry',
               'final_egress', 'client')
-    _object(request, fields, fields)
-    if type(request['schema_version']) is not str or request['schema_version'] != SCHEMA:
+    _object(request, fields + ('probe_context',), fields)
+    if (type(request['schema_version']) is not str
+            or request['schema_version'] not in (SCHEMA, PROBE_ENTRY_SCHEMA)):
         raise InvalidProjection('E_SCHEMA_VERSION')
+    if request['schema_version'] == PROBE_ENTRY_SCHEMA:
+        _object(request, fields + ('probe_context',), fields + ('probe_context',))
+        validate_probe_context(request['probe_context'])
+    else:
+        _object(request, fields, fields)
     route = request['route']
     _object(route, ('choice', 'state'), ('choice', 'state'))
     _enum(route['choice'], ROUTES)
@@ -131,6 +141,88 @@ def _validate(request):
     _enum(request['client'], ('claude_code', 'browser', 'desktop', 'unknown'))
 
 
+def validate_probe_context(context):
+    """Strict declarations only; no callback or serialized approval is accepted.
+
+    The host supplies current observation/declaration provenance. These labels
+    are not verified observations or authorization. A concrete executor must
+    independently bind the current context using its trusted runtime adapter.
+    """
+    fields = ('schema_version', 'executor', 'transport_path', 'binding', 'resource')
+    _object(context, fields + ('browser', 'entry_ref'), fields)
+    if (type(context['schema_version']) is not str
+            or context['schema_version'] != PROBE_CONTEXT_SCHEMA):
+        raise InvalidProjection('E_PROBE_SCHEMA_VERSION')
+    _enum(context['executor'], ('shell', 'browser'))
+    _enum(context['transport_path'], (SYSTEM_PROBE_PATH, 'explicit_proxy'))
+    binding = context['binding']
+    fields = ('target_ref', 'user_ref', 'namespace_ref', 'source')
+    _object(binding, fields, fields)
+    for key in fields[:-1]:
+        _alias(binding[key])
+    _enum(binding['source'], ('current_host_observation', 'unknown'))
+    resource = context['resource']
+    _object(resource, ('selection', 'source', 'resource_ref'), ('selection', 'source'))
+    _enum(resource['selection'], RESOURCE_SELECTIONS)
+    _enum(resource['source'], ('current_user_declaration', 'current_host_observation', 'unknown'))
+    if 'resource_ref' in resource:
+        _alias(resource['resource_ref'])
+    if context['executor'] == 'browser':
+        if 'browser' not in context:
+            raise InvalidProjection('E_BROWSER_CONTEXT_REQUIRED')
+        browser = context['browser']
+        _object(browser, ('profile_ref', 'origin_ref'), ('profile_ref', 'origin_ref'))
+        _alias(browser['profile_ref'])
+        _alias(browser['origin_ref'])
+    elif 'browser' in context:
+        raise InvalidProjection('E_SHELL_BROWSER_CONTEXT_CONFLICT')
+    if 'entry_ref' in context:
+        _alias(context['entry_ref'])
+        if context['transport_path'] != 'explicit_proxy':
+            raise InvalidProjection('E_UNUSED_PROXY_ENTRY')
+
+
+def _neutral_probe_gaps(request, base_gaps, resource_gaps):
+    context, network = request['probe_context'], request['network']
+    binding, resource = context['binding'], context['resource']
+    gaps = list(base_gaps)
+    if binding['source'] != 'current_host_observation':
+        gaps.append('CURRENT_PROBE_BINDING_SOURCE_REQUIRED')
+    if resource['source'] == 'unknown':
+        gaps.append('CURRENT_RESOURCE_DECLARATION_SOURCE_REQUIRED')
+    if (resource['selection'] != network['selection']
+            or resource.get('resource_ref') != network.get('resource_ref')):
+        gaps.append('PROBE_RESOURCE_DECLARATION_MISMATCH')
+    if binding['target_ref'] not in [target['target_ref'] for target in request['targets']]:
+        gaps.append('PROBE_TARGET_NOT_IN_CURRENT_ROUTE')
+    if network['selection'] not in ('selected', 'direct', 'unknown', 'unselected'):
+        gaps.append('CURRENT_NETWORK_DECLARATION_REQUIRED')
+    if network['configuration'] in ('stale', 'conflict'):
+        gaps.append('CONFIGURATION_STATE_REVIEW_REQUIRED')
+    if context['transport_path'] == SYSTEM_PROBE_PATH:
+        # This is a separately approved OS-route sample, not a claim that it uses
+        # the declared resource or that the unknown path is ISP-direct. Unknown,
+        # unselected and absent resources/configuration are legitimate findings.
+        # An explicitly selected resource must still name the same resource.
+        if network['selection'] == 'selected' and 'resource_ref' not in network:
+            gaps.append('SELECTED_RESOURCE_ALIAS_REQUIRED')
+        if network['selection'] == 'direct' and 'DIRECT_PATH_DECLARATION_CONFLICT' in resource_gaps:
+            gaps.append('DIRECT_PATH_DECLARATION_CONFLICT')
+    else:
+        # Explicit proxy sends cannot substitute the system transport. Require a
+        # current selected resource/listener; its final upstream may be unknown.
+        gaps += resource_gaps
+        if network['selection'] != 'selected' or network['path'] != 'explicit':
+            gaps.append('EXPLICIT_PROXY_RESOURCE_REQUIRED')
+        if network['configuration'] not in ('imported', 'effective'):
+            gaps.append('EFFECTIVE_CONFIGURATION_UNVERIFIED')
+        local = request['local_entry']
+        if (local['kind'] in ('unknown', 'none') or 'entry_ref' not in local
+                or context.get('entry_ref') != local.get('entry_ref')):
+            gaps.append('EXACT_PROXY_ENTRY_BINDING_REQUIRED')
+    return gaps
+
+
 def _gate(gaps, extra_requirements=()):
     return {
         'status': 'blocked' if gaps else 'eligible_for_existing_gate',
@@ -155,7 +247,9 @@ def assess_entry(request):
     ``offline_precheck`` is target-scoped, offline, read-only prechecking under
     the original authorization. ``configuration`` describes entry to separate
     plan/change gates, never an executable plan. ``active_probe`` also requires
-    separately approved concrete endpoints and disclosure. Direct selection
+    separately approved concrete endpoints and disclosure. Version 0.2 scopes
+    this eligibility to the declared neutral sample; client_contact retains the
+    original strict protocol/configuration prerequisites. Direct selection
     needs no purchased proxy. VPS scope stays basic and non-intrusive.
     """
     _validate(request)
@@ -220,6 +314,12 @@ def assess_entry(request):
     elif network['configuration'] not in ('imported', 'effective'):
         probe_gaps.append('EFFECTIVE_CONFIGURATION_UNVERIFIED')
 
+    # Preserve the original client-contact prerequisites independently of the
+    # narrowly scoped neutral sample exception in version 0.2.
+    client_contact_gaps = list(probe_gaps)
+    if request['schema_version'] == PROBE_ENTRY_SCHEMA:
+        probe_gaps = _neutral_probe_gaps(request, base_gaps, resource_gaps)
+
     depth = ('none' if base_gaps else
              'basic_nonintrusive' if route['choice'] == 'vps' else 'detailed')
     scopes = []
@@ -228,7 +328,7 @@ def assess_entry(request):
             target = next(item for item in request['targets'] if item['role'] == role)
             scopes.append({'role': role, 'target_ref': target['target_ref'],
                            'check_depth': depth, 'binding_status': 'declaration_only'})
-    return {
+    result = {
         'schema_version': RESULT_SCHEMA,
         'assessment_kind': 'entry_eligibility_only',
         'evidence_level': 'sanitized_declarations_not_observations',
@@ -266,33 +366,52 @@ def assess_entry(request):
         },
     }
 
+    if request['schema_version'] == PROBE_ENTRY_SCHEMA:
+        result['schema_version'] = PROBE_RESULT_SCHEMA
+        result['gates']['client_contact'] = _gate(client_contact_gaps)
+        result['gates']['active_probe']['host_requirements'].extend((
+            'LIVE_EXACT_PROBE_CONTEXT_BINDING',
+            'SINGLE_CONTEXT_SAMPLE_NOT_WHOLE_MACHINE_ACCEPTANCE'))
+    return result
 
-def require_entry(request, purpose, target_ref):
+
+def require_entry(request, purpose, target_ref, *, probe_executor=None, probe_path=None):
     """Require current operation-specific entry for one declared target.
 
-    ``purpose`` is offline_precheck, configuration, or active_probe. A missing or
-    malformed projection raises InvalidProjection; an ineligible or mismatched
+    ``purpose`` is offline_precheck, configuration, active_probe or client_contact.
+    A missing or malformed projection raises InvalidProjection; an ineligible or mismatched
     target raises EntryBlocked with fixed gaps. The returned record is only an
     entry prerequisite, never authorization. The caller must still check its
-    original exact target/user/namespace, action and contact gates.
+    original exact target/user/namespace, action and contact gates. Version 0.2
+    active probes additionally require the caller's implemented probe_executor
+    and probe_path; unadapted consumers fail closed. These capability selectors
+    are not permission and must not be inferred from untrusted JSON.
 
     Explanations, purely offline plans that inspect no device, and recovery of an
     existing receipt do not use this new-action entry gate. Such recovery must
     retain the original receipt, target, authorization and restoration checks.
     """
-    _enum(purpose, ('offline_precheck', 'configuration', 'active_probe'))
+    _enum(purpose, ('offline_precheck', 'configuration', 'active_probe', 'client_contact'))
     _alias(target_ref)
     assessment = assess_entry(request)
-    gate = assessment['gates'][purpose]
+    gate = assessment['gates'][
+        'active_probe' if purpose == 'client_contact' and request['schema_version'] == SCHEMA
+        else purpose]
     gaps = list(gate['gaps'])
     target = next((scope for scope in assessment['target_scopes']
                    if scope['target_ref'] == target_ref), None)
     if target is None:
         gaps.append('REQUESTED_TARGET_NOT_IN_CURRENT_ROUTE')
+    if purpose == 'active_probe' and request['schema_version'] == PROBE_ENTRY_SCHEMA:
+        context = request['probe_context']
+        if context['binding']['target_ref'] != target_ref:
+            gaps.append('PROBE_TARGET_BINDING_MISMATCH')
+        if probe_executor != context['executor'] or probe_path != context['transport_path']:
+            gaps.append('EXACT_PROBE_ADAPTER_CONTEXT_REQUIRED')
     if gaps:
         raise EntryBlocked(gaps)
     return {
-        'schema_version': RESULT_SCHEMA,
+        'schema_version': assessment['schema_version'],
         'status': 'eligible_for_existing_gate',
         'purpose': purpose,
         'target_ref': target_ref,

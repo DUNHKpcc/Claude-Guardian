@@ -377,8 +377,10 @@ class MacAPITests(unittest.TestCase):
         api = self.api()
         api.session.return_value = 0
         api.console.return_value = None
-        with self.assertRaisesRegex(m.ContextError, 'CONTEXT_INACTIVE'):
+        with self.assertRaisesRegex(m.ContextError, '^CONTEXT_UNKNOWN$') as caught:
             api.read()
+        self.assertEqual(m.api_diagnostic(caught.exception),
+                         {'stage': 'console_user', 'reason': 'null_result'})
         api.graphics.assert_not_called()
         api.release.assert_not_called()
 

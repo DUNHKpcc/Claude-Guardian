@@ -62,8 +62,15 @@ AGENT_TASK_REVIEW = 'docs/evidence/agent-rules-limited-revalidation.md'
 AGENT_TASK_REVIEW_SHA256 = 'e366916c628b95a3fddf620d323b2e7dc27d3ccb970c4a2b59013a54510e8900'
 COMMENT_REVIEW = 'docs/evidence/agent-rules-comments-limited-revalidation.md'
 COMMENT_REVIEW_SHA256 = '93621e537809d78cc7482919bb979a1f8e4c47498933b7943dab524a37ca4900'
-LIMITED_CURRENT_REVIEW = 'docs/evidence/whole-machine-limited-revalidation.md'
-LIMITED_CURRENT_REVIEW_SHA256 = '3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2'
+WHOLE_MACHINE_REVIEW = 'docs/evidence/whole-machine-limited-revalidation.md'
+WHOLE_MACHINE_REVIEW_SHA256 = '3d5ea21a8e4e88b495ba690babe5033bf017d9705fdda0d72d08120dc1220bd2'
+LIMITED_CURRENT_REVIEW = 'docs/evidence/neutral-probe-limited-revalidation.md'
+LIMITED_CURRENT_REVIEW_SHA256 = '4fac3fc047552af4d45ea27aaa7ee6f7b93a08d3219cf4cdecab4a72a822914a'
+NEUTRAL_PROBE_TRANSITION = 'docs/evidence/neutral-probe-limited-transition.json'
+NEUTRAL_PROBE_TRANSITION_SHA256 = 'd27e99a56b0a8426020ff9fdb7f767d8d03ec82d6d5bb02a62c19787c298d354'
+NEUTRAL_PROBE_PRIOR_SOURCES = {
+    'skills/claude-guardian/references/agent-remediation.md': 'b5fb6f00600a3466ba4ab546c86f7665fcea7c6490c01b14b522997b05c7b194',
+}
 WHOLE_MACHINE_TRANSITION = 'docs/evidence/whole-machine-limited-transition.json'
 WHOLE_MACHINE_TRANSITION_SHA256 = '04e401b9721d729359de50b6bc6973c61f5fa3e4e990292c2f389a42ded61d7f'
 WHOLE_MACHINE_PRIOR_SOURCES = {
@@ -172,12 +179,47 @@ def _whole_machine_transition_records():
     return proof['sources']
 
 
+def _neutral_probe_transition_records():
+    path = ROOT / NEUTRAL_PROBE_TRANSITION
+    if path.is_symlink():
+        raise AssertionError('Neutral-probe transition proof is a symlink')
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != NEUTRAL_PROBE_TRANSITION_SHA256:
+        raise AssertionError('Unreviewed neutral-probe transition proof')
+    proof = json.loads(raw)
+    if (set(proof) != {'schema', 'purpose', 'prior_review_path',
+                       'prior_review_sha256', 'sources'}
+            or proof['schema'] != 'guardian-neutral-probe-guidance-transition/1'
+            or proof['purpose'] != 'exact_source_transition_only_not_behavioral_acceptance'
+            or proof['prior_review_path'] != WHOLE_MACHINE_REVIEW
+            or proof['prior_review_sha256'] != WHOLE_MACHINE_REVIEW_SHA256
+            or set(proof['sources']) != set(NEUTRAL_PROBE_PRIOR_SOURCES)):
+        raise AssertionError('Neutral-probe transition scope changed')
+    for relative, entry in proof['sources'].items():
+        if (set(entry) != {'before_sha256', 'after_sha256', 'replacements'}
+                or entry['before_sha256'] != NEUTRAL_PROBE_PRIOR_SOURCES[relative]
+                or len(entry['replacements']) != 1
+                or any(set(item) != {'before', 'after'} for item in entry['replacements'])):
+            raise AssertionError('Prior neutral-probe source pin or replacement shape changed')
+    return proof['sources']
+
+
+def _neutral_probe_prior_source_bytes(relative):
+    """Restore the complete previous guide for historical integrity, not execution."""
+    path = ROOT / relative
+    if path.is_symlink():
+        raise AssertionError('Current neutral-probe transition source is a symlink')
+    raw = path.read_bytes()
+    records = _neutral_probe_transition_records()
+    return _reverse_exact_transition(raw, records[relative]) if relative in records else raw
+
+
 def _whole_machine_prior_source_bytes(relative):
     """Preserve the previous guidance in full; never execute it as new evidence."""
     path = ROOT / relative
     if path.is_symlink():
         raise AssertionError('Current whole-machine transition source is a symlink')
-    raw = path.read_bytes()
+    raw = _neutral_probe_prior_source_bytes(relative)
     records = _whole_machine_transition_records()
     return _reverse_exact_transition(raw, records[relative]) if relative in records else raw
 
@@ -334,6 +376,56 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest,
                                  'Current acceptance requires renewed scoped review after source drift')
 
+    def test_prior_whole_machine_review_and_all_twenty_two_pins_remain_unchanged(self):
+        page = ROOT / WHOLE_MACHINE_REVIEW
+        self.assertFalse(page.is_symlink())
+        self.assertEqual(hashlib.sha256(page.read_bytes()).hexdigest(), WHOLE_MACHINE_REVIEW_SHA256)
+        pins = re.findall(r'^\| `([^`]+)` \| `([0-9a-f]{64})` \|$',
+                          page.read_text(encoding='utf-8'), re.MULTILINE)
+        self.assertEqual(len(pins), 22)
+        self.assertEqual(len({name for name, _ in pins}), 22)
+        for name, digest in pins:
+            with self.subTest(prior_whole_machine_source=name):
+                self.assertEqual(hashlib.sha256(_neutral_probe_prior_source_bytes(name)).hexdigest(), digest,
+                                 'Keep all prior whole-machine pins; never repin the old review')
+
+    def test_neutral_probe_transition_preserves_one_complete_previous_guide(self):
+        records = _neutral_probe_transition_records()
+        self.assertEqual(set(records), set(NEUTRAL_PROBE_PRIOR_SOURCES))
+        for relative, digest in NEUTRAL_PROBE_PRIOR_SOURCES.items():
+            with self.subTest(source=relative):
+                self.assertNotEqual(records[relative]['after_sha256'], digest)
+                self.assertEqual(hashlib.sha256(_neutral_probe_prior_source_bytes(relative)).hexdigest(), digest)
+                self.assertEqual(len(records[relative]['replacements']), 1)
+
+    def test_neutral_probe_transition_rejects_source_drift_and_altered_reverse_spans(self):
+        for relative, entry in _neutral_probe_transition_records().items():
+            raw = (ROOT / relative).read_bytes()
+            with self.subTest(source=relative):
+                with self.assertRaisesRegex(AssertionError, 'Unreviewed current'):
+                    _reverse_exact_transition(raw + b'\n', entry)
+                changed = json.loads(json.dumps(entry))
+                changed['replacements'][0]['before'] += 'unreviewed'
+                with self.assertRaisesRegex(AssertionError, 'whole-file'):
+                    _reverse_exact_transition(raw, changed)
+                changed = json.loads(json.dumps(entry))
+                changed['replacements'][0]['after'] = 'not present in reviewed source'
+                with self.assertRaisesRegex(AssertionError, 'missing or duplicated'):
+                    _reverse_exact_transition(raw, changed)
+
+    def test_neutral_probe_transition_rejects_changed_proof_and_symlink_inputs(self):
+        proof = (ROOT / NEUTRAL_PROBE_TRANSITION).read_bytes()
+        with patch.object(Path, 'read_bytes', return_value=proof + b'\n'):
+            with self.assertRaisesRegex(AssertionError, 'Unreviewed neutral-probe transition'):
+                _neutral_probe_transition_records()
+        with patch.object(Path, 'is_symlink', return_value=True):
+            with self.assertRaisesRegex(AssertionError, 'proof is a symlink'):
+                _neutral_probe_transition_records()
+            for relative in NEUTRAL_PROBE_PRIOR_SOURCES:
+                with self.subTest(source=relative):
+                    with self.assertRaisesRegex(AssertionError, 'source is a symlink'):
+                        _neutral_probe_prior_source_bytes(relative)
+
     def test_prior_comment_review_and_all_nineteen_pins_remain_unchanged(self):
         page = ROOT / COMMENT_REVIEW
         self.assertFalse(page.is_symlink())
@@ -361,7 +453,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
 
     def test_whole_machine_transition_rejects_source_drift_and_altered_reverse_spans(self):
         for relative, entry in _whole_machine_transition_records().items():
-            raw = (ROOT / relative).read_bytes()
+            raw = _neutral_probe_prior_source_bytes(relative)
             with self.subTest(source=relative):
                 with self.assertRaisesRegex(AssertionError, 'Unreviewed current'):
                     _reverse_exact_transition(raw + b'\n', entry)
@@ -583,6 +675,19 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         for evidence in previous.values():
             self.assertEqual(evidence['path'], COMMENT_REVIEW)
             self.assertEqual(evidence['sha256'], COMMENT_REVIEW_SHA256)
+
+    def test_prior_whole_machine_evidence_objects_are_retained_exactly(self):
+        ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))
+        previous = {case['id']: case['prior_whole_machine_revalidation_evidence']
+                    for case in ledger['cases'] if 'prior_whole_machine_revalidation_evidence' in case}
+        self.assertEqual(set(previous), CURRENTLY_ACCEPTED)
+        canonical = json.dumps(previous, ensure_ascii=True, sort_keys=True,
+                               separators=(',', ':')).encode('utf-8')
+        self.assertEqual(hashlib.sha256(canonical).hexdigest(),
+                         '448af13b669906cd75158379d2dad749cac1bb835d88bcf4972ee8aebd36f993')
+        for evidence in previous.values():
+            self.assertEqual(evidence['path'], WHOLE_MACHINE_REVIEW)
+            self.assertEqual(evidence['sha256'], WHOLE_MACHINE_REVIEW_SHA256)
 
     def test_scheduling_is_not_current_or_historical_acceptance(self):
         ledger = json.loads((ROOT / 'docs/acceptance-rebuild-ledger.json').read_text(encoding='utf-8'))

@@ -16,6 +16,7 @@ import re
 import math
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
+from urllib.parse import urlsplit
 
 try:
     import environment_entry
@@ -185,6 +186,16 @@ class SystemRouteTransport:
     """
     path_kind = "direct_socket_os_route_tun_unknown"
 
+    def __init__(self, *, context_reader=None):
+        # A live host callback from the existing target/authorization workflow,
+        # never a deserialized approval, cached plan or automatic alias inference.
+        self._context_reader = context_reader
+
+    def current_probe_context(self):
+        if not callable(self._context_reader):
+            raise ProbeError('probe_context_binding_required')
+        return self._context_reader()
+
     def request(self, url, *, connect_timeout, total_timeout, max_body):
         executable, env, working_directory = _fixed_curl()
         command = [str(executable), "--disable", "--silent", "--show-error",
@@ -288,9 +299,45 @@ class SystemRouteTransport:
         return _parse_curl_response(b"".join(chunks), max_body)
 
 
+def _contains_permission(values, expected):
+    # Built-in containers/plain strings only: final permission checks must not
+    # run caller-defined membership/equality callbacks after entry revalidation.
+    return (type(values) in (list, tuple, set, frozenset)
+            and all(type(value) is str for value in values) and expected in values)
+
+
+def _proxy_endpoint(transport):
+    """Read exact credential-free endpoint from a trusted existing adapter.
+
+    This validates an adapter binding, not protocol support or a proxy executor.
+    Nothing here resolves/connects, and the endpoint is never included in output.
+    """
+    try:
+        value = transport.proxy_endpoint
+        if (type(value) is not str or len(value) > 2048
+                or any(ord(char) < 33 or ord(char) > 126 for char in value)
+                or '%' in value or '\\' in value):
+            raise ValueError()
+        parsed = urlsplit(value)
+        if (parsed.scheme not in ('http', 'https', 'socks5', 'socks5h')
+                or parsed.username is not None or parsed.password is not None
+                or not parsed.hostname or parsed.port is None
+                or not 1 <= parsed.port <= 65535 or parsed.path
+                or parsed.query or parsed.fragment or '?' in value or '#' in value):
+            raise ValueError()
+        host = parsed.hostname
+        if ':' in host:
+            ipaddress.IPv6Address(host)
+        elif re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?', host) is None:
+            raise ValueError()
+    except Exception:
+        raise ProbeError('concrete_proxy_endpoint_binding_required') from None
+    return value
+
+
 def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_ref,
                    path_kind="direct_socket_os_route_tun_unknown", transport=None,
-                   response_clock=None, entry_request=None):
+                   response_clock=None, entry_request=None, approved_proxy_endpoints=None):
     """One request, no retries; approved_endpoints must contain the exact URL.
 
     approved_paths must explicitly include the requested path for this run.
@@ -301,6 +348,17 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
     untrusted; the helper does not verify clock synchronization. Never provide a
     pre-request timestamp. This guidance cannot authorize waiting or another call.
 
+    Version 0.2 requires a trusted adapter current_probe_context() callback with
+    the current, exact versioned context; declarations alone cannot bind runtime.
+    Only shell HTTPS execution is supported here. Browser contexts require their
+    own actual profile/origin adapter and cannot reuse shell evidence. The built-in
+    SystemRouteTransport accepts a live context_reader from the existing host.
+    Version 0.2 explicit_proxy also requires the trusted adapter's credential-free
+    concrete proxy_endpoint in separately approved_proxy_endpoints for this run.
+    No explicit proxy executor is supplied by this module.
+    Unknown upstream protocol remains unknown. This single sample is not whole-
+    machine acceptance. Version 0.1 keeps its previous strict eligibility.
+
     target_ref is a caller-verified local target/context alias, never transmitted.
     An injected transport must expose path_kind and request(url,
     connect_timeout=5,total_timeout=10,max_body=4096) -> Response. Caller must
@@ -310,22 +368,34 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
     Raw address is local evidence; redact/alias it before sharing ordinary reports.
     """
     try:
-        entry = environment_entry.require_entry(entry_request, 'active_probe', target_ref)
+        environment_entry.assess_entry(entry_request)
+        if (entry_request['schema_version'] == environment_entry.PROBE_ENTRY_SCHEMA
+                and entry_request['probe_context']['executor'] != 'shell'):
+            raise ProbeError('unsupported_probe_executor')
+        entry = environment_entry.require_entry(
+            entry_request, 'active_probe', target_ref, probe_executor='shell', probe_path=path_kind)
         entry_snapshot = deepcopy(entry_request)
     except (environment_entry.InvalidProjection, environment_entry.EntryBlocked) as exc:
         raise ProbeError(str(exc)) from None
+    neutral_context = (entry_request['probe_context']
+                       if entry_request['schema_version'] == environment_entry.PROBE_ENTRY_SCHEMA else None)
+    if neutral_context is not None:
+        if neutral_context['executor'] != 'shell':
+            raise ProbeError('unsupported_probe_executor')
+        if neutral_context['transport_path'] != path_kind:
+            raise ProbeError('probe_context_path_mismatch')
     if transport is None and entry['target_role'] != 'local':
         raise ProbeError('target_binding_required')
     if endpoint_id not in ENDPOINTS:
         raise ProbeError("endpoint_not_allowlisted")
     url, expected_family = ENDPOINTS[endpoint_id]
-    if not isinstance(approved_endpoints, (list, tuple, set, frozenset)) or url not in approved_endpoints:
+    if not _contains_permission(approved_endpoints, url):
         raise ProbeError("exact_endpoint_consent_required")
     if not isinstance(target_ref, str) or not target_ref.strip() or len(target_ref) > 128:
         raise ProbeError("target_binding_required")
     if path_kind not in ("direct_socket_os_route_tun_unknown", "explicit_proxy"):
         raise ProbeError("unsupported_path_kind")
-    if not isinstance(approved_paths, (list, tuple, set, frozenset)) or path_kind not in approved_paths:
+    if not _contains_permission(approved_paths, path_kind):
         raise ProbeError("explicit_path_consent_required")
     transport = transport if transport is not None else SystemRouteTransport()
     try:
@@ -334,6 +404,46 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
         raise ProbeError('transport_error') from None
     if adapter_path != path_kind:
         raise ProbeError("transport_path_mismatch")
+    read_context = None
+    if neutral_context is not None:
+        try:
+            read_context = transport.current_probe_context
+        except Exception:
+            raise ProbeError('probe_context_binding_required') from None
+        if not callable(read_context):
+            raise ProbeError('probe_context_binding_required')
+
+    def read_adapter_snapshot():
+        if read_context is None:
+            return None
+        try:
+            current_path = transport.path_kind
+        except Exception:
+            raise ProbeError('transport_error') from None
+        if type(current_path) is not str or current_path != path_kind:
+            raise ProbeError('transport_path_mismatch')
+        try:
+            current = read_context()
+            environment_entry.validate_probe_context(current)
+            # Freeze each field before another descriptor can mutate shared data.
+            current = deepcopy(current)
+        except Exception:
+            raise ProbeError('probe_context_binding_required') from None
+        if current != entry_snapshot['probe_context']:
+            raise ProbeError('probe_context_mismatch')
+        proxy = _proxy_endpoint(transport) if path_kind == 'explicit_proxy' else None
+        if proxy is not None and not _contains_permission(approved_proxy_endpoints, proxy):
+            raise ProbeError('exact_proxy_endpoint_consent_required')
+        return current_path, current, proxy
+
+    adapter_snapshot = read_adapter_snapshot()
+
+    def check_adapter_snapshot():
+        current = read_adapter_snapshot()
+        if current != adapter_snapshot:
+            # Path/context differences already have their own fixed error codes.
+            raise ProbeError('proxy_endpoint_changed')
+
     # Bind once before the final entry check: a request descriptor can invoke a
     # trusted-host callback too. Looking it up at the call site would leave a
     # withdrawal/resource-change gap after that check.
@@ -343,14 +453,37 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
         raise ProbeError('transport_error') from None
     if not callable(send_request):
         raise ProbeError('transport_error')
+    if neutral_context is not None:
+        # Bounded unified checks: initial snapshot above, a post-descriptor
+        # refresh, then one verification sweep for persistent cross-field changes
+        # caused by those refresh callbacks (e.g. endpoint refresh changes the
+        # namespace, or context refresh changes path). Never wait for arbitrary
+        # callbacks to converge. This is a trusted-host adapter boundary, not a
+        # sandbox against malicious Python that defers mutation to the last read.
+        check_adapter_snapshot()
+        check_adapter_snapshot()
     # Trusted adapter properties may run callbacks; revalidate the full current
     # declaration, including resource aliases, before its first transport call.
     try:
-        environment_entry.require_entry(entry_request, 'active_probe', target_ref)
+        environment_entry.require_entry(
+            entry_request, 'active_probe', target_ref, probe_executor='shell', probe_path=path_kind)
     except (environment_entry.InvalidProjection, environment_entry.EntryBlocked) as exc:
         raise ProbeError(str(exc)) from None
     if entry_request != entry_snapshot:
         raise ProbeError('ENTRY_CHANGED')
+    def check_scoped_permissions():
+        # Plain-container checks do not invoke host callbacks.
+        if not _contains_permission(approved_endpoints, url):
+            raise ProbeError('exact_endpoint_consent_required')
+        if not _contains_permission(approved_paths, path_kind):
+            raise ProbeError('explicit_path_consent_required')
+        if (adapter_snapshot is not None and adapter_snapshot[2] is not None
+                and not _contains_permission(approved_proxy_endpoints, adapter_snapshot[2])):
+            raise ProbeError('exact_proxy_endpoint_consent_required')
+
+    # Adapter callbacks cannot withdraw independently scoped permission and then
+    # send under the earlier membership check.
+    check_scoped_permissions()
     result = dict(endpoint=url, endpoint_id=endpoint_id, target_ref=target_ref,
                   sample_type="probe_https", path_kind=path_kind,
                   expected_address_family=expected_family, observed_address_family=None,
@@ -361,6 +494,12 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
                           "retries": 0, "max_header_bytes": MAX_HEADERS},
                   retry_after=None,
                   interpretation="One neutral HTTPS sample; no safety or target-route certification")
+    if neutral_context is not None:
+        result.update(probe_context=deepcopy(entry_snapshot['probe_context']),
+                      final_egress_declaration=deepcopy(entry_snapshot['final_egress']),
+                      resource_declaration=deepcopy(entry_snapshot['network']),
+                      coverage='single_context_sample_not_whole_machine',
+                      probe_binding_status='matched_trusted_host_assertion_not_independently_verified')
     try:
         response = send_request(url, connect_timeout=5, total_timeout=10, max_body=MAX_BODY)
         observed_at, clock_trusted = datetime.now(timezone.utc), False
@@ -394,6 +533,22 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
             raise ProbeError("unexpected_address_family")
         if not parsed.is_global:
             raise ProbeError("non_public_echo_address")
+        if neutral_context is not None:
+            # A response/clock callback can change the current context after the
+            # one request. Do not relabel that old sample as current acceptance.
+            # Later withdrawal does not imply the already-sent request lacked
+            # permission at send time; request_count remains one, with no retry.
+            try:
+                check_adapter_snapshot()
+                check_adapter_snapshot()
+                environment_entry.require_entry(
+                    entry_request, 'active_probe', target_ref,
+                    probe_executor='shell', probe_path=path_kind)
+                if entry_request != entry_snapshot:
+                    raise ValueError()
+                check_scoped_permissions()
+            except Exception:
+                raise ProbeError('probe_context_changed_after_send') from None
         result.update(status="observed", observed_ip=str(parsed), observed_address_family=parsed.version)
     except ProbeError as exc:
         # Only controlled adapter errors should be raised as ProbeError.
@@ -401,7 +556,7 @@ def probe_https_ip(endpoint_id, *, approved_endpoints, approved_paths, target_re
                    "transport_cleanup_failed", "transport_read_failed", "timeout", "dns_error", "connect_error", "tls_error", "transport_error",
                    "invalid_transport_response", "response_too_large_or_invalid",
                    "redirect_rejected", "rate_limited_no_retry", "http_error", "invalid_ip_json",
-                   "unexpected_address_family", "non_public_echo_address"}
+                   "unexpected_address_family", "non_public_echo_address", "probe_context_changed_after_send"}
         result["error"] = str(exc) if str(exc) in allowed else "transport_error"
     except TimeoutError:
         result["error"] = "timeout"

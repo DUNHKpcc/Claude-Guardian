@@ -28,15 +28,16 @@ historical with its original pins and observations. The preceding
 nineteen pins and four evidence objects also remain unchanged. The preceding
 [comment-wrapper limited review](evidence/agent-rules-comments-limited-revalidation.md)
 keeps its nineteen pins, exact three-file transition and four evidence objects.
-The current [whole-device guidance review](evidence/whole-machine-limited-revalidation.md)
-adds a separate whole-clause assessment, exact five-file reversal and twenty-two
-current source pins. Original source/helper/package checks and retained-response
-integrity checks were rerun; the two changed repository-origin historical network
-references retain their exact old bytes as explicit snapshots. Only T03, T05,
-T09 and T18 retain current acceptance. Original diagnostic/appeal replies remain
-historical; no fresh model dialogue, whole-device routing capability, native TUN,
-persistent enforcement or recovery contract is claimed. Further source drift
-still invalidates applicability.
+The preceding [whole-device guidance review](evidence/whole-machine-limited-revalidation.md)
+keeps its twenty-two pins, five-file transition and four evidence objects. The
+current [neutral-probe guidance review](evidence/neutral-probe-limited-revalidation.md)
+adds a separate whole-clause assessment and one-file exact guide reversal, with
+twenty-two current pins. Current source/helper/package, retained-response and
+prose checks were rerun; no historical snapshot or source manifest changes.
+Only T03, T05, T09 and T18 retain current acceptance. Original diagnostic/appeal
+replies remain historical; no fresh model dialogue, native identity, actual
+network/browser path, whole-device enforcement or recovery is claimed. Further
+source drift still invalidates applicability.
 
 All original 218 IDs, scenarios, full requirements and literal verification
 layers remain unchanged. Their original-row SHA-256 remains
@@ -54,8 +55,8 @@ The new dated requirement is separate; it does not rewrite the original rows.
 | Safe-input compatibility, 2 | T11, T12 | Preserve the four original observed replies and review. Rerun the nine bounded supporting CLI/helper paths on reviewed current sources; additionally verify new entry fields reject sensitive/extra data without echo and without granting authority. |
 | Rule-scope compatibility, 5 | ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58 | Preserve the original eleven responses, twenty-two helper calls, six complete candidates and separate reviewer controls. Revalidate helper outputs and changed guardian selector/guidance behavior. Unchanged rule semantics do not require blanket dialogue regeneration. |
 | Conversion/recovery compatibility, 1 | ENV-T40 | Preserve pure conversion evidence. Revalidate the complete original L + R composition, actual temporary-artifact restoration and current repair/recovery entry behavior. Do not substitute pure conversion for integrated recovery. |
-| Narrow guidance compatibility, 3; restored | T03, T05, T18 | Separate current review completed. It covers entry/Agent-task guidance, the comment-preserving wrapper correction and the later whole-device network-guidance default against the original 403-source/auth/permission distinctions, bounded VPS observation and unknown appeal facts. Preserve original responses and whole-response reviews. The separately pinned compatibility supplement restores these cases without unrelated fresh dialogues. |
-| Narrow source/package compatibility, 1; restored | T09 | Separate current review retains the entry context/package addition basis and reviews both the exact comment-wrapper correction and the whole-device guidance change; all 23 source/helper/inventory/package checks, including the extracted helper, passed. Source deduplication evidence remains retained; the addition proves neither source independence nor native readiness. |
+| Narrow guidance compatibility, 3; restored | T03, T05, T18 | Separate current review completed. It covers entry/Agent-task guidance, the comment-preserving wrapper correction, the later whole-device network-guidance default and neutral-probe/diagnostic guidance against the original 403-source/auth/permission distinctions, bounded VPS observation and unknown appeal facts. Preserve original responses and whole-response reviews. The separately pinned compatibility supplement restores these cases without unrelated fresh dialogues. |
+| Narrow source/package compatibility, 1; restored | T09 | Separate current review retains the entry context/package addition basis and reviews the exact comment-wrapper correction, the whole-device guidance change and the later neutral-probe/diagnostic addition; all 23 source/helper/inventory/package checks, including the extracted helper, passed. Source deduplication evidence remains retained; the addition proves neither source independence nor native readiness. |
 
 T21's original route choice and existing/new-server distinctions do not establish
 completion of the currently deferred VPS procurement or deployment skills.

@@ -382,11 +382,30 @@ class WorkflowGuard:
         try:
             purposes = (purposes,) if type(purposes) is str else purposes
             gaps = []
+            assessment = _entry.assess_entry(readiness.entry_request)
             for purpose in dict.fromkeys(purposes):
-                try:
-                    _entry.require_entry(readiness.entry_request, purpose, self.binding.target)
-                except _entry.EntryBlocked as exc:
-                    gaps.extend(exc.gaps)
+                if (purpose == 'active_probe'
+                        and readiness.entry_request['schema_version'] == _entry.PROBE_ENTRY_SCHEMA):
+                    # This pure scheduler evaluates declarations, not runtime
+                    # capability. It does not infer an executor from JSON. The
+                    # exact supported scope and concrete runner's own capability
+                    # selectors/live context checks remain independent gates.
+                    gaps.extend(assessment['gates']['active_probe']['gaps'])
+                else:
+                    try:
+                        _entry.require_entry(readiness.entry_request, purpose, self.binding.target)
+                    except _entry.EntryBlocked as exc:
+                        gaps.extend(exc.gaps)
+            if (readiness.entry_request['schema_version'] == _entry.PROBE_ENTRY_SCHEMA
+                    and 'active_probe' in purposes):
+                context = readiness.entry_request['probe_context']
+                binding = context['binding']
+                if (binding['target_ref'] != self.binding.target
+                        or binding['user_ref'] != self.binding.user
+                        or binding['namespace_ref'] != self.binding.namespace
+                        or (context['executor'] == 'browser'
+                            and context['browser']['profile_ref'] != self.binding.profile)):
+                    gaps.append('PROBE_CONTEXT_BINDING_MISMATCH')
             if gaps:
                 return tuple(dict.fromkeys(gaps)), None
             basis = json.dumps(readiness.entry_request, sort_keys=True, separators=(',', ':'),
@@ -419,14 +438,15 @@ class WorkflowGuard:
             purposes.append('configuration')
         if (scope.contact is not Contact.LOCAL or scope.operation is Operation.PROBE
                 or scope.endpoint_refs):
-            purposes.append('active_probe')
+            purposes.append('active_probe' if scope.contact in (Contact.LOCAL, Contact.NEUTRAL)
+                            else 'client_contact')
         # LOCAL read-only VERIFY can inspect existing metadata; active VERIFY
         # must declare its contact scope. A contact-changing action needs BOTH
         # configuration and active-probe entry, never a weaker either/or gate.
         return tuple(purposes) or ('offline_precheck',)
 
     def _grant_entry_gaps(self, readiness):
-        gaps, basis = self._entry_check(readiness, 'active_probe')
+        gaps, basis = self._entry_check(readiness, 'client_contact')
         if not gaps and basis != self._entry_basis:
             gaps = ('ENVIRONMENT_ENTRY_CHANGED',)
         return gaps
@@ -527,7 +547,7 @@ class WorkflowGuard:
             return self._decision(('INVALID_TRANSITION',))
         if type(scopes) is not tuple or not scopes or len(scopes) > 128 or not all(isinstance(s, Scope) and s.valid() for s in scopes):
             return self._decision(('INVALID_SCOPE',))
-        purposes = ('active_probe',) + tuple(purpose for scope in scopes
+        purposes = ('client_contact',) + tuple(purpose for scope in scopes
                                              for purpose in self._entry_purposes(scope))
         entry_gaps, entry_basis = self._entry_check(readiness, purposes)
         gaps = list(readiness.gaps() + entry_gaps)

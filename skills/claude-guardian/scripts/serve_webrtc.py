@@ -2,14 +2,17 @@
 
 Starting this helper does not open a browser or initiate STUN. The served page
 still requires explicit per-run consent and a user click in the intended browser
-profile. Expiry stops the HTTP listener; it cannot revoke a previously loaded page.
+profile. Expiry initiates listener cleanup; failures leave closure unconfirmed.
+Closing the listener cannot revoke a previously loaded page.
 No results, credentials, request logs, or user data are collected by this server.
 """
 import argparse
+import errno
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import math
 from pathlib import Path
 import socket
+import sys
 import threading
 import time
 
@@ -18,6 +21,63 @@ DEFAULT_DURATION = 300
 MAX_DURATION = 900
 MAX_CONNECTIONS = 8
 ASSET = Path(__file__).resolve().parent.parent / 'assets' / 'webrtc-probe.html'
+_STAGES = frozenset({'startup', 'asset', 'bind', 'publish_url', 'serve', 'cleanup'})
+
+
+def _at_stage(stage, function, *args):
+    """Attach only a fixed phase; preserve the caller's original exception type."""
+    try:
+        return function(*args)
+    except (Exception, KeyboardInterrupt) as error:
+        error._helper_stage = stage
+        raise
+
+
+def _failure_diagnostic(error, stage):
+    observed = getattr(error, '_helper_stage', stage)
+    stage = observed if type(observed) is str and observed in _STAGES else stage
+    stage = stage if type(stage) is str and stage in _STAGES else 'startup'
+    if isinstance(error, KeyboardInterrupt):
+        code = 'INTERRUPTED'
+    elif isinstance(error, PermissionError):
+        code = 'PERMISSION_DENIED'
+    elif isinstance(error, OSError):
+        number = error.errno
+        code = ({errno.EADDRINUSE: 'ADDRESS_IN_USE',
+                 errno.EADDRNOTAVAIL: 'ADDRESS_UNAVAILABLE'}.get(number, 'IO_ERROR')
+                if type(number) is int else 'IO_ERROR')
+    elif isinstance(error, (RuntimeError, ValueError)):
+        code = 'INVALID_STATE'
+    else:
+        code = 'UNEXPECTED_ERROR'
+    return stage, code
+
+
+def _report_failure(error, stage, url_may_be_published):
+    stage, code = _failure_diagnostic(error, stage)
+    state = 'unknown' if url_may_be_published else 'not_started'
+    cleanup = getattr(error, '_helper_cleanup_state', 'unknown')
+    cleanup = cleanup if type(cleanup) is str and cleanup in {'complete', 'unknown'} else 'unknown'
+    message = ('Local WebRTC helper failed; stage=' + stage + '; error=' + code
+               + '; probe_state=' + state + '; cleanup_state=' + cleanup + '.')
+    if cleanup == 'unknown':
+        message += ' Listener closure is unconfirmed.'
+    if url_may_be_published:
+        message += (' Close any loaded probe page; stopping the local server'
+                    ' cannot stop a browser probe.')
+    try:
+        print(message, file=sys.stderr, flush=True)
+    except (OSError, ValueError):
+        pass  # A failed output sink cannot justify a raw exception traceback.
+
+
+def _read_asset():
+    if ASSET.is_symlink() or not ASSET.is_file():
+        raise RuntimeError('Fixed WebRTC asset unavailable')
+    asset = ASSET.read_bytes()
+    if len(asset) > 128 * 1024:
+        raise RuntimeError('Fixed WebRTC asset exceeds size limit')
+    return asset
 
 
 class _AssetHandler(BaseHTTPRequestHandler):
@@ -82,6 +142,7 @@ class _BoundedServer(ThreadingHTTPServer):
     def __init__(self, asset):
         self.asset = asset
         self.connections = set()
+        self._pending_closes = set()
         self.connection_lock = threading.Lock()
         self.closing = False
         super().__init__(('127.0.0.1', 0), _AssetHandler)
@@ -116,46 +177,83 @@ class _BoundedServer(ThreadingHTTPServer):
     def server_close(self):
         with self.connection_lock:
             self.closing = True
-            connections = tuple(self.connections)
+            connections = tuple(self.connections | self._pending_closes)
+        first_error = None
         for connection in connections:
             try:
                 connection.shutdown(socket.SHUT_RDWR)
             except OSError:
-                pass
-            connection.close()
-        super().server_close()
+                pass  # A closed/disconnected socket may reject shutdown.
+            except BaseException as error:
+                if first_error is None:
+                    first_error = error
+            try:
+                connection.close()
+            except BaseException as error:
+                if first_error is None:
+                    first_error = error
+                with self.connection_lock:
+                    self._pending_closes.add(connection)
+            else:
+                with self.connection_lock:
+                    self.connections.discard(connection)
+                    self._pending_closes.discard(connection)
+        # Attempt every owned resource even if an earlier close failed or was
+        # interrupted. Failed connections remain tracked for a later retry.
+        try:
+            super().server_close()
+        except BaseException as error:
+            if first_error is None:
+                first_error = error
+        if first_error is not None:
+            raise first_error
 
 
 class LocalProbeServer:
     """Explicit construction binds 127.0.0.1 on an OS-selected ephemeral port.
 
     Use as a context manager. serve() blocks until a finite deadline or cancellation
-    and always closes listener and active requests. This is a single-use server.
+    and always attempts to close listener and active requests. Failed closure is
+    unconfirmed and close() can retry it. Serving remains single-use.
     There is intentionally no host, port, directory, or asset-path option.
     """
     def __init__(self):
-        if ASSET.is_symlink() or not ASSET.is_file():
-            raise RuntimeError('Fixed WebRTC asset unavailable')
-        asset = ASSET.read_bytes()
-        if len(asset) > 128 * 1024:
-            raise RuntimeError('Fixed WebRTC asset exceeds size limit')
-        self._server = _BoundedServer(asset)
+        asset = _at_stage('asset', _read_asset)
+        self._server = _at_stage('bind', _BoundedServer, asset)
         self._cancel = threading.Event()
         self._started = False
         self._closed = False
+        self._cleanup_state = 'unknown'
         self.url = 'http://' + self._server.authority + ROUTE
 
     def __enter__(self):
         return self
 
-    def __exit__(self, *_args):
-        self.close()
+    def __exit__(self, _kind, error, _traceback):
+        self._close_preserving(error)
+
+    def _close_preserving(self, primary_error):
+        try:
+            self.close()
+        except BaseException:
+            if primary_error is None:
+                raise
+            primary_error._helper_cleanup_state = 'unknown'
+        else:
+            if primary_error is not None:
+                primary_error._helper_cleanup_state = self._cleanup_state
 
     def close(self):
         self._cancel.set()
         if not self._closed:
+            self._cleanup_state = 'unknown'
+            try:
+                _at_stage('cleanup', self._server.server_close)
+            except BaseException as error:
+                error._helper_cleanup_state = 'unknown'
+                raise
             self._closed = True
-            self._server.server_close()
+            self._cleanup_state = 'complete'
 
     def serve(self, duration_seconds=DEFAULT_DURATION, cancel_event=None):
         if (isinstance(duration_seconds, bool) or not isinstance(duration_seconds, (int, float))
@@ -165,6 +263,7 @@ class LocalProbeServer:
             raise RuntimeError('Server is single-use')
         self._started = True
         deadline = time.monotonic() + duration_seconds
+        primary_error = None
         try:
             while not self._cancel.is_set() and not (cancel_event and cancel_event.is_set()):
                 remaining = deadline - time.monotonic()
@@ -176,8 +275,11 @@ class LocalProbeServer:
                 except (OSError, ValueError):
                     if not self._cancel.is_set():
                         raise
+        except BaseException as error:
+            primary_error = error
+            raise
         finally:
-            self.close()
+            self._close_preserving(primary_error)
 
 
 def main(argv=None):
@@ -187,15 +289,22 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if not math.isfinite(args.duration) or not 0 < args.duration <= MAX_DURATION:
         parser.error('duration must be greater than 0 and at most 900 seconds')
+    stage = 'startup'
+    url_may_be_published = False
     try:
         with LocalProbeServer() as server:
+            stage = 'publish_url'
+            # Even a partially failed output write may have disclosed the URL.
+            url_may_be_published = True
             print(server.url, flush=True)
-            print('Open manually in the intended browser profile. No probe runs until consent and click. Ctrl+C stops the local server.', flush=True)
+            print('Open manually in the intended browser profile. No probe runs until consent and click. Ctrl+C requests local server shutdown.', flush=True)
+            stage = 'serve'
             server.serve(args.duration)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as error:
+        _report_failure(error, stage, url_may_be_published)
         return 130
-    except (OSError, RuntimeError):
-        print('Local WebRTC helper unavailable; no probe was started.', flush=True)
+    except Exception as error:
+        _report_failure(error, stage, url_may_be_published)
         return 1
     return 0
 

@@ -33,6 +33,8 @@ DIAGNOSTIC_STAGES = frozenset({'unknown', 'dll_initialization', 'thread_token',
     'token_cleanup', 'identity_validation', 'runtime_paths', 'collection'})
 DIAGNOSTIC_REASONS = frozenset({'unknown', 'api_call_failed', 'return_size_mismatch',
     'sid_pointer_bounds', 'sid_header_invalid', 'sid_size_bounds', 'unexpected_exception'})
+MAC_DIAGNOSTIC_STAGES = frozenset({'unknown', 'console_user'})
+MAC_DIAGNOSTIC_REASONS = frozenset({'unknown', 'null_result'})
 MODULES = {'darwin': 'native_context', 'win32': 'windows_native_context'}
 PATH_FIELDS = frozenset({'unknown', 'executable', 'cwd', 'prefix', 'base_prefix'})
 PATH_REASONS = frozenset({'unknown', 'invalid_syntax', 'too_deep', 'symlink',
@@ -81,6 +83,10 @@ def observe(module):
         result = {'state': 'failed', 'code': code if code in NATIVE_FAILURES else 'NATIVE_ERROR', 'phase': phase}
         if sys.platform == 'win32':
             for field, allowed in (('stage', DIAGNOSTIC_STAGES), ('reason', DIAGNOSTIC_REASONS)):
+                value = getattr(error, field, 'unknown')
+                result[field] = value if type(value) is str and value in allowed else 'unknown'
+        elif sys.platform == 'darwin':
+            for field, allowed in (('stage', MAC_DIAGNOSTIC_STAGES), ('reason', MAC_DIAGNOSTIC_REASONS)):
                 value = getattr(error, field, 'unknown')
                 result[field] = value if type(value) is str and value in allowed else 'unknown'
         return result
@@ -196,9 +202,11 @@ def decode_result(returncode, output):
                 or report['path_field'] not in PATH_FIELDS or report['path_reason'] not in PATH_REASONS):
             raise AssertionError('Native smoke invalid envelope; exit=' + status)
     if 'stage' in report:
+        diagnostic_known = (
+            (report['stage'] in DIAGNOSTIC_STAGES and report['reason'] in DIAGNOSTIC_REASONS)
+            or (report['stage'] in MAC_DIAGNOSTIC_STAGES and report['reason'] in MAC_DIAGNOSTIC_REASONS))
         if (report['state'] != 'failed' or report['code'] not in NATIVE_FAILURES | {'NATIVE_ERROR'}
-                or report['stage'] not in DIAGNOSTIC_STAGES
-                or report['reason'] not in DIAGNOSTIC_REASONS):
+                or not diagnostic_known):
             raise AssertionError('Native smoke invalid envelope; exit=' + status)
         diagnostic = '; stage=' + report['stage'] + '; reason=' + report['reason']
     if report['state'] == 'failed' and (report['code'], report['phase']) in FAILURE_PHASES:
@@ -334,6 +342,33 @@ class SmokeBoundaryTests(unittest.TestCase):
                         'Native smoke child failed; exit=1; code=CONTEXT_UNKNOWN; phase=capture'
                         + '; stage=' + stage + '; reason=' + reason)
 
+    def test_mac_console_null_diagnostic_is_failure_not_headless_skip(self):
+        with mock.patch.object(sys, 'platform', 'darwin'):
+            module = self.module()
+            error = module.ContextError('CONTEXT_UNKNOWN')
+            error.stage, error.reason = 'console_user', 'null_result'
+            module.capture_current_context.side_effect = error
+            report = observe(module)
+        self.assertEqual(report, dict(state='failed', code='CONTEXT_UNKNOWN',
+                                      phase='capture', stage='console_user', reason='null_result'))
+        for status in (0, 1):
+            with self.assertRaises(AssertionError) as failure:
+                decode_result(status, json.dumps(report).encode())
+            self.assertEqual(str(failure.exception),
+                'Native smoke child failed; exit=' + str(status)
+                + '; code=CONTEXT_UNKNOWN; phase=capture; stage=console_user; reason=null_result')
+
+    def test_mac_unknown_native_diagnostic_attributes_are_redacted(self):
+        with mock.patch.object(sys, 'platform', 'darwin'):
+            for value in ('PRIVATE-PATH', [], {}, 123, None):
+                module = self.module()
+                error = module.ContextError('CONTEXT_UNKNOWN')
+                error.stage = error.reason = value
+                module.capture_current_context.side_effect = error
+                report = observe(module)
+                self.assertEqual((report['stage'], report['reason']), ('unknown', 'unknown'))
+                self.assertNotIn('PRIVATE', json.dumps(report))
+
     def test_windows_unknown_attributes_are_redacted(self):
         with mock.patch.object(sys, 'platform', 'win32'):
             for value in ('PRIVATE-PATH', [], {}, 123, None):
@@ -360,6 +395,7 @@ class SmokeBoundaryTests(unittest.TestCase):
             cases.append(missing)
         cases.extend([dict(base, state='blocked', code='CONTEXT_FOREIGN'),
                       dict(base, state='observed', code='CONTINUITY_OBSERVED', phase='recheck'),
+                      dict(base, stage='console_user'), dict(base, reason='null_result'),
                       dict(base, code='LOAD_FAILED'), dict(base, secret='PRIVATE')])
         for report in cases:
             with self.assertRaises(AssertionError) as failure:
