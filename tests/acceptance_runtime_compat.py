@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 REL = 'docs/evidence/fact-copy-compatibility'
-EXPECTED_MANIFEST = '4c8094f966fd798e6fad45d7bceda660c46c908286860cbb035b36c7a7f130c8'
+EXPECTED_MANIFEST = '95c7bdeaa430a735f1f154d2748f600ccafc6312e5e11f941aa47ada8b599d5e'
 
 
 def load(root):

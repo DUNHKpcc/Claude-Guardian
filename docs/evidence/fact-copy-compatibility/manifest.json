@@ -1,8 +1,8 @@
 {
   "files": {
     "REVIEW.md": "c9b1f92a2fbb9a641e93768f53bd0bfdcc8d39fe4e4c1bae1f572f7f631f726c",
-    "replay-receipt.json": "39f5b81fb4ff552582d110c7f96e316c86f56dbe6f0332a06b7749ef122b99f6",
-    "verify.py": "decd94c0e5a8848b7937ca23e4e5d0a0926e7968b09e2a2c5560068fcc640bd3"
+    "replay-receipt.json": "00048fd7aa38afc8d03f42453e9c7618874785152a1f3057d8bfc71888c101e0",
+    "verify.py": "e1366441e452414f343b24f49ea0ff9a267a9d1ff94884ca8bb520c9b9e4bc2d"
   },
   "historical_packet_inventories": {
     "docs/evidence/batch33-subscription-preservation": {

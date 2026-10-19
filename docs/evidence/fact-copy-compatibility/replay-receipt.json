@@ -23,6 +23,14 @@
     "Fixture-embedded historical source pins remain unchanged; the candidate runtime identity is supplied separately here.",
     "No native or external service execution, no new model-response generation, and no new acceptance count."
   ],
+  "platform_addendum": {
+    "coverage_limit": "The skipped cleanup fixture is not Windows cleanup acceptance. It remains mandatory on POSIX, with no skip permitted there. Native Windows confirmation of the fixed verifier is pending CI.",
+    "date": "2026-10-19",
+    "finding": "Native Windows CI compared complete historical and candidate traces equally, then failed against the POSIX-only recorded digest because cleanup_resume is absent.",
+    "new_evidence": "On Linux, isolated historical and candidate subprocesses reproduced the existing non-POSIX decorator outcome: four tests collected, one explicitly skipped, no failures or errors; both complete remaining traces were identical. This is branch simulation, not a new native Windows execution.",
+    "preservation": "The original POSIX full-trace canonical_sha256 remains unchanged. Both platform profiles hash their entire actual trace; no field is discarded or synthesized by the verifier.",
+    "scope": "Only the unchanged resume-completion suite has an existing platform-specific fixture skip; all twelve other full replay hashes remain unchanged."
+  },
   "retained_runtime_checks": {
     "read_only_cli_compared": true,
     "upgrade_lifecycle_states": 46,
@@ -107,6 +115,36 @@
       "canonical_sha256": "9d26f05188be2639ebc3460b6e6d999a5e9f66024d5cdb20871484f29c510063",
       "command": "python -B tests/test_acceptance_resume_completion.py --replay",
       "complete_outputs_equal": true,
+      "execution_profiles": {
+        "nt": {
+          "canonical_sha256": "36137ea56530d83a9dbb9f044a1547ccc0bb98b68b8c0b26d53281bac5ad74af",
+          "trace_keys": [
+            "before_reported_completion",
+            "purchase_resume"
+          ],
+          "unittest": {
+            "skipped": [
+              [
+                "test_partial_cleanup_resume_observes_then_restores_without_redeletion",
+                "POSIX temporary fixture only"
+              ]
+            ],
+            "tests": 4
+          }
+        },
+        "posix": {
+          "canonical_sha256": "9d26f05188be2639ebc3460b6e6d999a5e9f66024d5cdb20871484f29c510063",
+          "trace_keys": [
+            "before_reported_completion",
+            "cleanup_resume",
+            "purchase_resume"
+          ],
+          "unittest": {
+            "skipped": [],
+            "tests": 4
+          }
+        }
+      },
       "historical_exit_code": 0,
       "suite_sha256": "9b4ff7bc7c98a5f5874f853c1cd921edf05709ffd48764413364e239b0fd5e41"
     },

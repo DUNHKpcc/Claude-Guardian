@@ -5,6 +5,7 @@ import importlib.machinery
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path, PurePosixPath
 import shutil
 import subprocess
@@ -17,6 +18,7 @@ BEFORE = '691aa0b634ba7ff1d26d3d13a3a9c58a6e43924047c63338b41b832529e3ffa9'
 AFTER = '9f5237846756759a90e907eebe096f9263c0d938e78aecf4173fafb3912ede25'
 OLD_LINE = '    fact = {"value": value, "state": state_name, "source": source,\n'
 NEW_LINE = '    fact = {"value": deepcopy(value), "state": state_name, "source": source,\n'
+RESUME_SUITE = 'tests/test_acceptance_resume_completion.py'
 
 
 def require(condition, message):
@@ -148,18 +150,52 @@ def module(name, path):
     return value
 
 
-def replay_output(root, suite):
+def replay_output(root, suite, *, expected=None):
     root = Path(root)
     env = dict(os.environ, GUARDIAN_AUDIT_ROOT=str(root), PYTHONDONTWRITEBYTECODE='1',
                PYTHONIOENCODING='utf-8')
     result = subprocess.run([sys.executable, '-B', str(root / suite), '--replay'],
                             cwd=root, env=env, capture_output=True, check=False)
     require(result.returncode == 0, 'Semantic replay failed: ' + suite + '\n' + result.stderr.decode('utf-8'))
+    if suite == RESUME_SUITE:
+        require(expected is not None, 'Resume replay requires its explicit platform receipt')
+        verify_replay_execution(result.stderr.decode('utf-8'), expected)
     return json.loads(result.stdout.decode('utf-8'))
 
 
-def verify_replay_value(value, expected):
-    require(sha(canonical(value)) == expected['canonical_sha256'], 'Semantic replay result mismatch')
+def execution_profile(expected, execution_os_name=None):
+    """Select a complete recorded result; never drop or synthesize trace fields."""
+    profiles = expected.get('execution_profiles')
+    if profiles is None:
+        return expected
+    require(expected['command'] == 'python -B ' + RESUME_SUITE + ' --replay'
+            and set(profiles) == {'posix', 'nt'}, 'Unexpected platform-specific replay')
+    require(profiles['posix']['canonical_sha256'] == expected['canonical_sha256'],
+            'Original complete POSIX replay hash changed')
+    platform = os.name if execution_os_name is None else execution_os_name
+    require(platform in profiles, 'Unreviewed replay execution platform')
+    return profiles[platform]
+
+
+def verify_replay_execution(stderr, expected, execution_os_name=None):
+    """The original suite's exact skip remains visible, never counted as passed."""
+    profile = execution_profile(expected, execution_os_name)
+    require('unittest' in profile, 'Missing platform execution evidence')
+    # Captured unittest logs use platform line endings; trace JSON is untouched.
+    stderr = '\n'.join(stderr.splitlines())
+    runs = re.findall(r'^Ran ([0-9]+) tests? in ', stderr, re.MULTILINE)
+    skips = [list(row) for row in re.findall(
+        r"^(test_[A-Za-z0-9_]+) .* \.\.\. skipped '([^']*)'$", stderr, re.MULTILINE)]
+    require(runs == [str(profile['unittest']['tests'])], 'Replay test inventory changed')
+    require(skips == profile['unittest']['skipped'], 'Replay platform skip inventory changed')
+
+
+def verify_replay_value(value, expected, execution_os_name=None):
+    profile = execution_profile(expected, execution_os_name)
+    if 'trace_keys' in profile:
+        require(isinstance(value, dict) and sorted(value) == profile['trace_keys'],
+                'Replay platform trace inventory changed')
+    require(sha(canonical(value)) == profile['canonical_sha256'], 'Semantic replay result mismatch')
 
 
 def replay_subscription(root):

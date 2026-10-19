@@ -1,5 +1,11 @@
 # 版本记录
 
+## 2026-10-19 — Preserve platform-specific replay coverage
+
+- Correct the compatibility receipt for the original resume suite’s existing Windows skip: compare the complete Windows trace against its own fixed digest, while retaining the complete POSIX digest
+- Verify the exact test/skip inventory, reject missing or changed trace fields, and keep historical/current full-output equality mandatory
+- No runtime, installed package, original test, historical evidence or acceptance-count changes; the initial Windows CI failure remains recorded
+
 ## 2026-10-19 — Asset-route evidence and fact-value isolation
 
 - Revalidate original T26/T33 with separately observed synthetic dialogue and normalized logic, retaining initial partial coverage and adaptive later observations
