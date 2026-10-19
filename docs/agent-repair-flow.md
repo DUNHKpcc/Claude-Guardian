@@ -23,7 +23,7 @@ Python script does not authenticate chat messages. No `approved` JSON field,
 terminal response, plan digest, saved receipt or caller-supplied `native_pass`
 value can establish that approval or certify a native adapter.
 
-The intended execution contract is:
+The intended execution contract for the built-in transaction path is:
 
 1. Bind the selected device, desktop user and filesystem namespace in the host;
    obtain permission for the exact necessary local reads
@@ -108,7 +108,23 @@ to bypass these gates. The existing transaction library remains a lower-level
 exact-file transport, not an application adapter. `workflow_guard` support and
 native-evidence requirements are not relaxed by this design.
 
-## Concurrency, failure and recovery
+This production gate does not make atomic file replacement the only permitted
+repair method. The existing [Agent-assisted application editing task](../skills/claude-guardian/references/agent-rules-task.md)
+is a separate, bounded path for one selected DOMAIN rule in an existing,
+exclusively owned Clash Verge Rev 2.5.8 rules extension, within that task's
+documented content limits. It reuses candidate and linkage checks; its helper neither edits the application nor opens the built-in
+write gate. The host must verify the actual version, target and ownership, obtain
+specific approval covering the change, backup, Save side effects, readback and
+recovery conditions, and use the version's supported editing interface. Preserve
+concurrent/unsaved changes, recheck the current configuration entry and sources
+immediately before Save, and inspect an uncertain result before retrying.
+Application formatting, content readback, load acceptance and actual routing
+remain separate evidence. Capability gaps may lead to this independently reviewed
+path; permission or approval denial, PC0 restrictions, target mismatch, unsafe
+paths, withdrawn scope and recovery conflicts may not be bypassed through another
+tool or UI.
+
+## Built-in transaction concurrency, failure and recovery
 
 Writer exclusion means actually preventing all relevant GUI, service, refresh
 and sync writers for the operation. A Boolean, advisory lock, terminal phrase or
@@ -130,19 +146,36 @@ for the independent terminal route when the Agent is unavailable.
 plan artifact can be retained privately; this writes the new artifact, not the
 target configuration. `repair_execution.py` connects retained-plan validation,
 transactional apply and byte readback behind a fixed native-adapter gate.
-Production execution remains blocked while no native write adapter has been
-admitted. There is no actual-device modification, application reload, network
-contact or effective-routing acceptance in this increment.
+Production execution through this built-in transport remains blocked while no
+native write adapter has been admitted. These CLI capabilities do not establish
+actual-device modification, application reload, network contact or
+effective-routing acceptance. The separate application-editing guidance above
+does not change that admission status.
 
 The separate [rules-extension route](rules-extension-plan.md) handles explicit
 additions into an existing empty prepend list, with mandatory registry, app-info
 and base-source inputs. It is selected explicitly and retains all native gates.
-Retained artifacts now use schema 0.2; old schema 0.1 plans require fresh planning
-and review, not in-place migration or restored permission.
+Retained artifacts use `guardian-retained-repair/0.3`, including an `entry_digest`
+binding to the complete environment-entry declaration used for planning. Old
+schema 0.1/0.2 plans require fresh planning and review, not in-place migration or
+restored permission. A changed route, target, resource selection or configuration
+declaration also requires a new reviewed plan; a new eligible entry cannot
+rebind an old plan, and its digest is not authorization.
 
 ### Internal invocation
 
-The host first authorizes reading the explicitly selected request and target.
+The host first binds the selected device/user/namespace and authorizes reading
+the explicitly selected entry file, request and target. All four CLI commands
+(`preflight`, `diff`, `plan`, `execute`) require `--entry-file`, containing a
+complete `guardian-environment-entry-input/0.1` object whose selected target
+matches `--target-ref`. See the [environment-entry format and file requirements](../skills/claude-guardian/references/agent-remediation.md#environment-entry).
+The first three commands require `offline_precheck` eligibility; `execute`
+requires `configuration`. Unknown resource/configuration states can permit an
+offline precheck but do not permit configuration execution. Entry eligibility
+is not actual target binding, read/write permission or native adapter admission;
+missing, invalid, changed, withdrawn or mismatched entry must not fall back to
+an implicit local route. Keep the entry separate from the repair request.
+
 The request has exactly `schema_version: guardian-repair-request/0.1`,
 `remedy_request` and `binding`; the latter two follow
 [the candidate compiler contract](config-edit-plan.md). It is a private,
@@ -154,7 +187,7 @@ For read-only preflight:
 
 ```sh
 python3 -B skills/claude-guardian/scripts/repair_cli.py preflight \
-  --request /private/review/request.json \
+  --request /private/review/request.json --entry-file /private/review/entry.json \
   --target-path /private/config/owned-extension.yaml --target-ref selected-device
 ```
 
@@ -163,7 +196,7 @@ the existing private backup directory, retain and review the same artifact:
 
 ```sh
 python3 -B skills/claude-guardian/scripts/repair_cli.py plan \
-  --request /private/review/request.json \
+  --request /private/review/request.json --entry-file /private/review/entry.json \
   --target-path /private/config/owned-extension.yaml --target-ref selected-device \
   --plan-file /private/review/plan.json --backup-directory /private/recovery \
   --private-review
@@ -177,14 +210,20 @@ The private review JSON is followed by the ordinary redacted result JSON.
 Do not send this private output to public logs, repository artifacts or unrelated
 services. Unrelated configuration values are not included.
 
+An exact no-change candidate reports `no_change_in_supplied_snapshot` and
+`artifact_write: not_created_no_change`; even `plan --plan-file` creates no plan,
+action identity, backup or recovery receipt for it. This ends the write task for
+that supplied snapshot, without certifying native acceptance or effective routing.
+
 The future admitted execution command uses those same exact arguments with
 `execute`, omits `--private-review`, and supplies
 `--plan-digest FULL_RETAINED_PLAN_DIGEST`. Use `retained_plan_digest`, not the
 inner transaction's separate `plan_digest`. The digest is an integrity binding,
-not permission. Today this command fails with
-`NATIVE_REPAIR_ADAPTER_UNAVAILABLE`; no terminal phrase or request flag removes
-that blocker. Rebuilding a plan after expiry or a changed target requires review
-and approval of the new scope, not reuse of the old decision.
+not permission. After current-entry and retained-plan validation, production
+execution still stops at `NATIVE_REPAIR_ADAPTER_UNAVAILABLE`; invalid inputs or
+entry/plan mismatches can fail earlier. No terminal phrase or request flag removes
+that blocker. Rebuilding a plan after expiry or a changed target/entry requires
+review and approval of the new scope, not reuse of the old decision.
 
 The current development tests use private temporary synthetic files only.
 Final CLI invocation details and verified regression evidence are recorded with
