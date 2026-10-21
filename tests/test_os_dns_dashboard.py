@@ -137,8 +137,10 @@ class OSDnsDashboardTests(unittest.TestCase):
         self.assertEqual(self.project(obj)['status'], 'target_mismatch')
         obj = item(); obj['context']['path_kind'] = 'mihomo_dns_query'
         self.assertEqual(self.project(obj)['status'], 'path_mismatch')
-        obj = item(); obj['result'].update(verified=True, authorized=True, provenance='trusted_host')
-        self.assertEqual(self.project(obj)['provenance'], 'unverified_import')
+        forged = item(); forged['result'].update(verified=True, authorized=True, provenance='trusted_host')
+        with self.assertRaises(evidence.GuardianError):  # forged authority members are refused, not ignored
+            self.project(forged)
+        self.assertEqual(self.project(item())['provenance'], 'unverified_import')
         obj = item(result(error='CANCELLED')); obj.pop('captured_at')
         self.assertEqual(self.project(obj)['status'], 'cancelled')
         self.assertIsNone(self.project(obj)['observed_at'])

@@ -118,7 +118,9 @@ class MihomoDashboardTests(unittest.TestCase):
         obj = item(); obj.pop('expected_path_kind')
         self.assertEqual(self.project(obj)['status'], 'context_unknown')
         obj = item(); obj.update(authorized=True, verified=True, provenance='trusted_host')
-        self.assertEqual(self.project(obj)['provenance'], 'unverified_import')
+        with self.assertRaises(evidence.GuardianError):  # forged authority members are refused, not ignored
+            self.project(obj)
+        self.assertEqual(self.project(item())['provenance'], 'unverified_import')
 
     def test_time_missing_future_stale_cancel_remains_explicit(self):
         for at, expected in [(None, 'time_invalid'), ('SECRET', 'time_invalid'),
@@ -161,7 +163,11 @@ class MihomoDashboardTests(unittest.TestCase):
 
     def test_unexpected_strings_html_secrets_never_echoed(self):
         marker = '</style><script>SECRET_SENTINEL</script>'
-        obj = item(); obj['result']['extra'] = marker
+        unknown = item(); unknown['result']['extra'] = marker
+        with self.assertRaises(evidence.GuardianError) as ctx:  # unknown result member: refused, not echoed
+            dashboard.render(report(), NOW, bundle(unknown))
+        self.assertNotIn('SECRET_SENTINEL', ctx.exception.code)
+        obj = item()
         obj['result']['facts'][0]['value'].update(secret=marker, question_ref=marker, cache_origin=marker, fake_ip_assessment=marker)
         obj['context']['target_ref'] = marker
         raw = bundle(obj); raw['target_ref'] = marker

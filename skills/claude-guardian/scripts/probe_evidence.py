@@ -11,6 +11,28 @@ from guardian import GuardianError
 
 SCHEMA = 'guardian-probe-evidence/0.1'
 MAX_SAMPLES = 64
+# Closed member vocabulary (ENV-T121): unknown members are rejected, not ignored. These are the members
+# the shipped producers emit; provenance/approval/verified-style members are not in any set.
+BUNDLE_KEYS = frozenset({'schema_version', 'target_ref', 'samples'})
+ITEM_KEYS = frozenset({'result', 'expected_path_kind', 'captured_at', 'context'})
+CONTEXT_KEYS = frozenset({'target_ref', 'path_kind'})
+# Exactly the members network_probes.py (HTTPS) and stun_probe.py (STUN) emit. path_association and
+# browser_path are producer-written constants; their values are never trusted by the projection.
+SAMPLE_RESULT_KEYS = {
+    'probe_https': frozenset({'endpoint', 'endpoint_id', 'target_ref', 'sample_type', 'path_kind',
+                              'expected_address_family', 'observed_address_family', 'observed_ip', 'status',
+                              'http_status', 'error', 'path_association', 'browser_path', 'started_at',
+                              'finished_at', 'request_count', 'limits', 'retry_after', 'interpretation',
+                              'probe_context', 'final_egress_declaration', 'resource_declaration',
+                              'coverage', 'probe_binding_status'}),
+    'independent_stun': frozenset({'status', 'error', 'sends', 'received', 'rejected', 'polls', 'observed_ip',
+                                   'observed_port', 'observed_address_family', 'path_kind', 'path_association',
+                                   'browser_path', 'target_path', 'endpoint', 'target_ref', 'sample_type',
+                                   'authenticated', 'cleanup'}),
+}
+DNS_RESULT_KEYS = frozenset({'schema_version', 'operation', 'contact_phase', 'gate_state', 'changes',
+                             'execution_status', 'error_code', 'facts', 'requests_attempted', 'coverage',
+                             'not_tested'})
 PATHS = {'direct_socket_os_route_tun_unknown': '系统路由（TUN 未知）',
          'explicit_proxy': '显式代理（链路关联未知）'}
 ENDPOINTS = {'ipify_v4': ('https://api.ipify.org?format=json', 4),
@@ -218,13 +240,18 @@ def project_samples(bundle, now):
     """
     if (type(bundle) is not dict or bundle.get('schema_version') != SCHEMA
             or not _ref(bundle.get('target_ref')) or type(bundle.get('samples')) is not list
-            or len(bundle['samples']) > MAX_SAMPLES):
+            or len(bundle['samples']) > MAX_SAMPLES or set(bundle) - BUNDLE_KEYS):
         raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
     output = []
     for index, item in enumerate(bundle['samples'], 1):
-        if type(item) is not dict or type(item.get('result')) is not dict:
+        if (type(item) is not dict or type(item.get('result')) is not dict or set(item) - ITEM_KEYS
+                or (type(item.get('context')) is dict and set(item['context']) - CONTEXT_KEYS)):
             raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
         raw = item['result']
+        known = (DNS_RESULT_KEYS if raw.get('schema_version') in OS_DNS_SCHEMAS or raw.get('schema_version') == MIHOMO_SCHEMA
+                 else SAMPLE_RESULT_KEYS.get(raw.get('sample_type')))
+        if known is not None and set(raw) - known:
+            raise GuardianError('DASHBOARD_PROBE_REPORT_INVALID')
         if type(raw.get('schema_version')) is str and raw['schema_version'] in OS_DNS_SCHEMAS:
             output.append(_os_dns_sample(item, bundle['target_ref'], index, now))
             continue

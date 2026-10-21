@@ -398,5 +398,57 @@ class SelectionTests(unittest.TestCase):
             self.assertEqual(list(Path(tmp).iterdir()), [p])
 
 
+class UnknownMemberRejectionTests(unittest.TestCase):
+    """ENV-T121: a saved report carrying members outside the release vocabulary is
+    rejected at the input boundary, not silently ignored. Markers are synthetic."""
+    MARKER = 'SYNTHSECRETQ7Z9K2'
+    SCHEMAS = ('guardian-report/0.1', 'env-inventory/0.2')
+
+    def full_report(self, schema):
+        import guardian
+        obj = guardian.base('audit', 'device-1')
+        obj['schema_version'] = schema
+        obj['findings'] = [{'code': 'STALE_EVIDENCE_REAUDIT_REQUIRED', 'module_id': 'ENV-01'}]
+        obj['facts'] = [{'id': 'S01', 'value': 'macos', 'state': 'observed', 'context_ref': 'device-1',
+                         'observed_at': '2026-10-15T00:00:00Z', 'layer': 'os_query', 'source_ref': 'synthetic-os'}]
+        return obj
+
+    def test_unknown_members_rejected_without_echo(self):
+        places = [(None, 'proxy_password'), (None, 'subscription_url'), (None, 'command'),
+                  ('snapshot', 'token'), ('target_binding', 'secret'), ('privacy', 'url'),
+                  ('limits', 'endpoint'), ('contact_control', 'password'),
+                  ('facts', 'password'), ('findings', 'detail')]
+        for schema in self.SCHEMAS:
+            for where, key in places:
+                with self.subTest(schema=schema, where=where, key=key):
+                    obj = self.full_report(schema)
+                    holder = obj if where is None else (obj[where][0] if where in ('facts', 'findings') else obj[where])
+                    holder[key] = self.MARKER
+                    with self.assertRaises(ar.guardian.GuardianError) as ctx:
+                        ar.select(obj, 'device-1')
+                    self.assertEqual(ctx.exception.code, 'INPUT_OR_RESPONSE_INVALID')
+
+    def test_known_members_report_still_selected(self):
+        for schema in self.SCHEMAS:
+            with self.subTest(schema=schema):
+                self.assertEqual(ar.select(self.full_report(schema), 'device-1')['changes'], [])
+
+    def test_findings_schema_is_unchanged(self):
+        """The module's own minimal findings schema keeps its existing contract."""
+        self.assertEqual(ar.select(report('STALE_EVIDENCE_REAUDIT_REQUIRED'), 'device-1')['changes'], [])
+
+    def test_cli_rejects_unknown_member_without_echo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / 'report.json'
+            obj = self.full_report('guardian-report/0.1')
+            obj['proxy_password'] = self.MARKER
+            source.write_text(json.dumps(obj), encoding='utf-8')
+            result = subprocess.run([sys.executable, str(SCRIPTS / 'agent_remediation.py'), 'select',
+                                     '--input', str(source), '--target-ref', 'device-1'],
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertNotIn(self.MARKER, result.stdout + result.stderr)
+
+
 if __name__ == '__main__':
     unittest.main()

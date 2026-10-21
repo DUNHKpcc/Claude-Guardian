@@ -16,6 +16,8 @@ import guardian
 
 SCHEMA = 'guardian-remediation-selection/0.1'
 INPUT_SCHEMA = 'guardian-remediation-findings/0.1'
+# Fixed root members diagnostic_codes() reads beyond the shared report vocabulary.
+REPORT_EXTRA_ROOT = frozenset({'errors', 'code', 'error_code', 'cancelled', 'status'})
 
 
 def action(kind, module, summary, steps, evidence, verify, command=None):
@@ -336,6 +338,9 @@ def select(report, target_ref):
             or report.get('schema_version') not in {
             INPUT_SCHEMA, 'guardian-report/0.1', 'env-inventory/0.2'}):
         raise guardian.GuardianError('INPUT_OR_RESPONSE_INVALID')
+    if report['schema_version'] != INPUT_SCHEMA:
+        # Saved guardian reports: unknown (possibly secret-bearing) members are rejected, not ignored.
+        guardian.reject_unknown_report_members(report, extra_root=REPORT_EXTRA_ROOT)
     if report.get('target_ref') != target_ref:
         raise guardian.GuardianError('TARGET_NOT_BOUND')
     codes = diagnostic_codes(report)

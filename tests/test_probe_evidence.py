@@ -48,7 +48,10 @@ class ProbeEvidenceTests(unittest.TestCase):
 
     def test_success_is_only_imported_declaration(self):
         obj = bundle(sample(), sample('independent_stun'))
-        obj.update(authorized=True, verified=True, provenance='trusted_host')
+        # Forged authority members are refused outright rather than ignored (ENV-T121).
+        forged = dict(obj, authorized=True, verified=True, provenance='trusted_host')
+        with self.assertRaises(evidence.GuardianError):
+            dashboard.project(report(), NOW, forged)
         view = dashboard.project(report(), NOW, obj)
         cards = {c['key']: c for c in view['cards']}
         self.assertEqual(cards['ipv4']['samples'][0]['status'], 'observed')
@@ -137,7 +140,9 @@ class ProbeEvidenceTests(unittest.TestCase):
 
     def test_no_secret_address_identity_or_markup_survives(self):
         marker = '</style><script>SECRET_SENTINEL</script>'
-        obj = sample(); obj['result'].update(extra=marker, target_ref=marker, error=marker, path_association='verified')
+        # Unknown members are rejected (UnknownMemberRejectionTests); known members with hostile values
+        # are projected away here.
+        obj = sample(); obj['result'].update(target_ref=marker, error=marker)
         raw = bundle(obj); raw['target_ref'] = marker
         html = dashboard.render(report(), NOW, raw)
         for secret in ('SECRET_SENTINEL', 'private-device', '8.8.8.8', '<script', 'https://api.ipify.org'):
@@ -198,6 +203,70 @@ class ProbeEvidenceTests(unittest.TestCase):
             result = subprocess.run(cmd, capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse(output.exists())
+
+
+class UnknownMemberRejectionTests(unittest.TestCase):
+    """ENV-T121: probe evidence with members outside the release vocabulary is rejected, never ignored.
+
+    JSON provenance/approval/verified members remain unable to grant authority because they are
+    refused outright. Markers are synthetic.
+    """
+    MARKER = 'SYNTHSECRETQ7Z9K2'
+
+    def check(self, mutate, kind='probe_https'):
+        raw = bundle(sample(kind))
+        mutate(raw)
+        with self.assertRaises(evidence.GuardianError) as ctx:
+            evidence.project_samples(raw, NOW)
+        self.assertEqual(ctx.exception.code, 'DASHBOARD_PROBE_REPORT_INVALID')
+
+    def test_unknown_members_rejected_at_every_level(self):
+        marker = self.MARKER
+        cases = {
+            'bundle': lambda r: r.update(proxy_password=marker),
+            'sample item': lambda r: r['samples'][0].update(subscription_url=marker),
+            'sample verified flag': lambda r: r['samples'][0].update(verified=True),
+            'context': lambda r: r['samples'][0].update(context={'target_ref': 'private-device', 'token': marker}),
+            'https result': lambda r: r['samples'][0]['result'].update(command=marker),
+            'https result verified flag': lambda r: r['samples'][0]['result'].update(verified=True),
+        }
+        for name, mutate in cases.items():
+            with self.subTest(level=name):
+                self.check(mutate)
+
+    def test_unknown_member_in_stun_and_dns_results_rejected(self):
+        self.check(lambda r: r['samples'][0]['result'].update(secret=self.MARKER), kind='independent_stun')
+        for result in ({'schema_version': 'guardian-os-dns-probe/0.1', 'operation': 'probe', 'gate_state': 'closed',
+                        'coverage': 'macos_system_resolution_sample_only', 'facts': [], 'requests_attempted': 0,
+                        'execution_status': 'blocked', 'error_code': 'AUTHORIZATION_MISSING',
+                        'password': self.MARKER},
+                       {'schema_version': 'guardian-mihomo-dns-probe/0.1', 'operation': 'probe', 'gate_state': 'closed',
+                        'coverage': 'mihomo_dns_query_sample_only', 'facts': [], 'requests_attempted': 0,
+                        'execution_status': 'blocked', 'error_code': 'AUTHORIZATION_MISSING',
+                        'password': self.MARKER}):
+            with self.subTest(schema=result['schema_version']):
+                raw = bundle(dict(result=result, captured_at=NOW.isoformat()))
+                with self.assertRaises(evidence.GuardianError) as ctx:
+                    evidence.project_samples(raw, NOW)
+                self.assertEqual(ctx.exception.code, 'DASHBOARD_PROBE_REPORT_INVALID')
+
+    def test_known_member_samples_still_projected(self):
+        for kind in ('probe_https', 'independent_stun'):
+            with self.subTest(kind=kind):
+                self.assertEqual(len(evidence.project_samples(bundle(sample(kind)), NOW)), 1)
+
+    def test_cli_rejects_unknown_probe_member_without_html_or_echo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / 'report.json').write_text(json.dumps(report()), encoding='utf-8')
+            raw = bundle(sample()); raw['samples'][0]['result']['command'] = self.MARKER
+            (root / 'probes.json').write_text(json.dumps(raw), encoding='utf-8')
+            result = subprocess.run([sys.executable, str(SCRIPTS / 'status_dashboard.py'), '--input', str(root / 'report.json'),
+                                     '--probes', str(root / 'probes.json'), '--output', str(root / 'out.html')],
+                                    capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((root / 'out.html').exists())
+            self.assertNotIn(self.MARKER, result.stdout + result.stderr)
 
 
 if __name__ == '__main__':

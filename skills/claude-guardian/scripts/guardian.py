@@ -349,6 +349,52 @@ def _validate_report_policy(obj):
         raise GuardianError('INPUT_OR_RESPONSE_INVALID')
 
 
+def report_member_vocabulary():
+    """Allowed member names per level for saved guardian-report/0.1 and env-inventory/0.2 reports.
+
+    Derived from the producers' own template so it cannot drift; a few members that
+    individual producers add are listed explicitly. Used as a subset check: older
+    fixtures may omit members, but no name outside this release's vocabulary is accepted.
+    """
+    template = base("audit", "device-1")
+    return {
+        "root": set(template) | {"plan", "question", "state"},
+        "snapshot": set(template["snapshot"]),
+        "contact_control": set(template["contact_control"]),
+        "privacy": set(template["privacy"]),
+        # system_dns_sample: diagnostic_session; the two command_* members: native_check.
+        "limits": set(template["limits"]) | {"command_timeout_seconds", "command_stdout_max_bytes",
+                                             "system_dns_sample"},
+        "target_binding": {"declared_os", "desktop_user_relation", "filesystem_namespace", "execution_location",
+                           "binding_state", "requested_role", "network_namespace"},
+        "fact": {"id", "value", "state", "context_ref", "observed_at", "layer", "source_ref", "source_refs",
+                 "reason_code", "coverage"},
+        "finding": {"code", "module_id"},
+    }
+
+
+def reject_unknown_report_members(report, code="INPUT_OR_RESPONSE_INVALID", extra_root=frozenset()):
+    """Reject unrecognized members at the input boundary (ENV-T121).
+
+    Dropping them later in a display or selection layer is not a substitute. Raises a
+    fixed code only; the offending name or value is never echoed. A consumer that reads
+    additional fixed root members declares exactly those names in extra_root.
+    """
+    allowed = report_member_vocabulary()
+    if type(report) is not dict or set(report) - allowed["root"] - set(extra_root):
+        raise GuardianError(code)
+    for key in ("snapshot", "contact_control", "privacy", "limits", "target_binding"):
+        value = report.get(key)
+        if type(value) is dict and set(value) - allowed[key]:
+            raise GuardianError(code)
+    for key, kind in (("facts", "fact"), ("findings", "finding")):
+        items = report.get(key)
+        if type(items) is list:
+            for item in items:
+                if type(item) is dict and set(item) - allowed[kind]:
+                    raise GuardianError(code)
+
+
 def validate_inventory_envelope(obj):
     """Validate this release's public inventory shape before lossy projection.
 
