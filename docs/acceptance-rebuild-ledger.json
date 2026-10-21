@@ -17,7 +17,15 @@
     "The 2026-10-19 whole-device network-guidance default has a separate whole-clause review and exact five-file transition in docs/evidence/whole-machine-limited-revalidation.md. The preceding comment review, all nineteen pins and four evidence objects remain unchanged; two historical network references move only from repository to exact snapshots. Only T03, T05, T09 and T18 remain currently accepted. Counts stay 4 accepted / 214 pending with 51 historical objects and all 218 original rows. Prose and synthetic checks do not certify whole-device routing, TUN, persistent enforcement, native recovery or actual authority.",
     "The neutral HTTPS /0.2 and bounded-diagnostic guide addition has a separate exact one-file transition and whole-clause review in docs/evidence/neutral-probe-limited-revalidation.md. The preceding whole-device review, all twenty-two pins and four evidence objects remain unchanged. Only T03, T05, T09 and T18 remain currently accepted: 4 accepted / 214 pending, 51 historical objects and 218 original rows. Synthetic/source checks do not establish native identity, actual network/browser paths, whole-device enforcement, recovery or authority.",
     "The 2026-10-21 input-boundary review in docs/evidence/input-boundary-revalidation.md registers ENV-T34 and ENV-T121, two cases that were never historically accepted, as accepted_revalidated on layer L with their own evidence objects. The four limited-review cases and their evidence objects are unchanged. Counts are now 6 accepted / 212 pending, with 51 historical objects and all 218 original rows preserved. The evidence is a deterministic synthetic-sentinel matrix over listed paths; it does not establish arbitrary-secret recognition, unlisted paths, native or device behavior, or any other case.",
-    "The 2026-10-21 workflow-enforcement review in docs/evidence/workflow-enforcement-revalidation.md re-registers ENV-T79, ENV-T81 and ENV-T90 as accepted_revalidated. Their historical_evidence objects are retained unchanged and the entry-gate revalidation markers are removed. The evidence reruns the offline matching and required-control replays (hashes equal the historical ones, which alone is not revalidation) and reads the current guidance clause by clause; the C part is author-side only, with no model dialogue or independent reviewer. Counts are now 9 accepted / 209 pending. No native, rule-priority, actual-hit or OS-isolation claim is made."
+    "The 2026-10-21 workflow-enforcement review in docs/evidence/workflow-enforcement-revalidation.md re-registers ENV-T79, ENV-T81 and ENV-T90 as accepted_revalidated. Their historical_evidence objects are retained unchanged and the entry-gate revalidation markers are removed. The evidence reruns the offline matching and required-control replays (hashes equal the historical ones, which alone is not revalidation) and reads the current guidance clause by clause; the C part is author-side only, with no model dialogue or independent reviewer. Counts are now 9 accepted / 209 pending. No native, rule-priority, actual-hit or OS-isolation claim is made.",
+    "The 2026-10-21 safe-input review in docs/evidence/safe-input-revalidation.md re-registers T11 and T12 (safe_input_compatibility) as accepted_revalidated. The four observed responses and their historical_evidence objects are unchanged. It reruns the nine CLI paths in current_runtime mode, adds a closed entry-schema boundary test, and re-reads the cited guidance; the pinned bytes of SKILL.md and guardian.py cannot be recovered, so the change is assessed by behavior. No new model response, arbitrary-log sanitization or independent reviewer for the current wording is claimed.",
+    "The 2026-10-21 rule-scope review in docs/evidence/rule-scope-revalidation.md re-registers ENV-T38, ENV-T39, ENV-T41, ENV-T42 and ENV-T58 as accepted_revalidated. The retained corpus, 22 helper calls and independent review are unchanged historical_evidence. It reruns the 18 retained-evidence tests and the deterministic replay and re-reads the current guidance against each clause; the C part is author-side with no new model response or independent reviewer, and no current external fact is claimed.",
+    "The 2026-10-21 conversion and recovery review in docs/evidence/conversion-recovery-revalidation.md re-registers ENV-T40 as accepted_revalidated at its original L + R layers. The historical composition page is retained as historical_evidence. The 200-test supporting suites pass, and the current repair entry is shown not to admit a policy-conversion candidate or a native session; restoration is proven on POSIX temporary artifacts only.",
+    "The 2026-10-21 route-transition review in docs/evidence/route-transition-revalidation.md re-registers T19, T22, T25, T26, T33, T34 and T53 as accepted_revalidated. The retained observed responses and their historical_evidence objects are unchanged. It reruns the six acceptance suites and their deterministic replays (pinned hashes unchanged) and re-reads the current route and entry-order guidance; the C part is author-side with no new model response or independent reviewer.",
+    "The 2026-10-21 interview compatibility review in docs/evidence/interview-compatibility-revalidation.md re-registers T31, T36, T38, T46, T48, T49, T54, T74, T75, T76, T77, T78, T79, T80 and T83 as accepted_revalidated. The retained observed dialogues and historical_evidence objects are unchanged. It reruns eight acceptance suites (six replay hashes unchanged) and re-reads the current guidance per case; the C part is author-side with no new model response or independent reviewer.",
+    "The 2026-10-21 entry and intake review in docs/evidence/intake-entry-revalidation.md re-registers T01, T02, T29, T43, T57, T81 and T84 as accepted_revalidated. The retained replays and reviews stay as historical_evidence. It reruns five acceptance suites (all replay hashes unchanged) and reads the current guidance, including the 2026-10-19 entry order, against each clause; the C part is author-side with no new model response or independent reviewer.",
+    "The 2026-10-21 cloud flow review in docs/evidence/cloud-flow-cases-review.md registers T14, T30, T32, T52, T56, T68, ENV-T02, ENV-T36, ENV-T92 and ENV-T96, which had no earlier evidence, as accepted_revalidated at their original L + C layers. The evidence is a deterministic module (tests/test_acceptance_cloud_flow.py, replay hash recorded) plus an author-side reading of the current guidance; no generated response or independent reviewer was used. T41 and T85 are exercised by the same module but stay pending because their original rows carry the X layer.",
+    "The 2026-10-21 cloud guidance review in docs/evidence/cloud-guidance-cases-review.md registers T65, T71 and ENV-T124, which had no earlier evidence, as accepted_revalidated at their original L + C layers (deterministic module plus author-side guidance reading; no generated response, no independent reviewer). ENV-T43 stays pending: no domain-list diff exists and the current official list is an X-layer fact."
   ],
   "cases": [
     {
@@ -26,8 +34,8 @@
       "requirement": "先分首次/重订/已有订阅；问目标套餐和相关前提，本机默认建议；不询问账号归属，不推荐无关 VPS/企业开户/脚本",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "entry/intake 兼容复核已记录；入口顺序、访谈运行时或 intake 指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
@@ -39,12 +47,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete deterministic interview replays and sentence-level active-guidance review under original L+C; no native or actual action authorization claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "entry_and_environment_intake",
-        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/intake-entry-revalidation.md",
+        "sha256": "d13a9db80af224e5bfab36e331f96ae96609123b4c66adfd605e66ef2da6fb5e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained basics replay rerun (hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -53,8 +64,8 @@
       "requirement": "复用信息，不反复问基础问题；仍保留必要授权",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "entry/intake 兼容复核已记录；入口顺序、访谈运行时或 intake 指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-basics.md",
@@ -66,12 +77,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete deterministic interview replays and sentence-level active-guidance review under original L+C; no native or actual action authorization claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "entry_and_environment_intake",
-        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/intake-entry-revalidation.md",
+        "sha256": "d13a9db80af224e5bfab36e331f96ae96609123b4c66adfd605e66ef2da6fb5e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained full-environment reuse replay rerun (hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -340,8 +354,8 @@
       "requirement": "输出脱敏，不把秘密带入报告、模板或公共仓库",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "safe-input 兼容复核已记录；输入入口、guardian.py 或 SKILL.md 保护条款变化后须重跑 current_runtime 回放与入口边界测试并重审，不外推任意日志脱敏、真机或新的模型回复",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-t11-t12-safe-inputs.md",
@@ -353,12 +367,15 @@
         "review_date": "2026-10-18",
         "boundary": "Four retained generated responses, independent line-level original-clause review, and bounded supporting CLI/helper replays; no universal secret sanitizer, publication enforcement, native execution or independent reconstruction of generator telemetry."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "safe_input_compatibility",
-        "reason": "The guardian source pin changed. Preserve the original observed replies; rerun all bounded CLI/helper input checks and review sensitive-data and authority behavior on the current entry paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/safe-input-revalidation.md",
+        "sha256": "bbbe55079289a060e8144910aeb09f7fa364e2c93ac4dc6a2447d43b85bc5642",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Original four observed responses retained; nine current-runtime CLI paths, the documented raw-string redaction limit and a closed entry-schema boundary test rerun; guidance re-read by the author only, no new model response or independent reviewer; no arbitrary-log sanitization, real credential or device claim."
       }
     },
     {
@@ -367,8 +384,8 @@
       "requirement": "当作不可信文本，不执行或改变权限",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "safe-input 兼容复核已记录；输入入口、guardian.py 或 SKILL.md 保护条款变化后须重跑 current_runtime 回放与入口边界测试并重审，不外推任意日志脱敏、真机或新的模型回复",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-t11-t12-safe-inputs.md",
@@ -380,12 +397,15 @@
         "review_date": "2026-10-18",
         "boundary": "Four retained generated responses, independent line-level original-clause review, and bounded supporting CLI/helper replays; no universal secret sanitizer, publication enforcement, native execution or independent reconstruction of generator telemetry."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "safe_input_compatibility",
-        "reason": "The guardian source pin changed. Preserve the original observed replies; rerun all bounded CLI/helper input checks and review sensitive-data and authority behavior on the current entry paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/safe-input-revalidation.md",
+        "sha256": "bbbe55079289a060e8144910aeb09f7fa364e2c93ac4dc6a2447d43b85bc5642",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Original observed responses retained; injected command, URL, phase, gate and instruction-as-fact inputs rerun on the current runtime with the gate closed; guidance re-read by the author only, no new model response or independent reviewer; no installed-host, real network or device claim."
       }
     },
     {
@@ -404,9 +424,19 @@
       "requirement": "不运行登录、支付、系统修改或清理脚本",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "变更时复核原条件、指导/来源路径及专页工作实例，重跑支持回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Plan-only request keeps G2/G3 closed in PC0 with no action authorization (interview flow replay). Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "T15",
@@ -531,8 +561,8 @@
       "requirement": "本机仅为默认候选，先询问选择/接受建议；未答时为 `unconfirmed`，不是已选本机",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "route-transition 兼容复核已记录；路线选择、撤回、续接逻辑或入口顺序指导变化后须重跑回放与测试并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-route-cases.md",
@@ -544,12 +574,15 @@
         "review_date": "2026-10-18",
         "boundary": "Deterministic normalized-input logic replay and active guidance content review; no model integration, native deployment, network or production safety claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "route_transition",
-        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/route-transition-revalidation.md",
+        "sha256": "741ae43042959b57aefb6db43a5deb5484f7a2e68de8c3d574694a38c53dbb9c",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained clause review and the current deterministic trace (hash equal to the last recorded replay) agree; guidance re-read by the author only, no new model response or independent reviewer; no native, parsing or real-service claim."
       }
     },
     {
@@ -612,8 +645,8 @@
       "requirement": "留在 `R-LOCAL`，缩减基础解释，不自动推荐 VM/VPS 迁移",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "route-transition 兼容复核已记录；路线选择、撤回、续接逻辑或入口顺序指导变化后须重跑回放与测试并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-local-incident-cases.md",
@@ -625,12 +658,15 @@
         "review_date": "2026-10-19",
         "boundary": "Seven actual frozen synthetic responses independently reviewed against full original T22/T25 L+C clauses, with separate normalized logic tests. No helper was invoked in these dialogues; source reads are responder-reported with a retained 329-token cleanup omission. Integrity checks do not generate new responses or establish native, current-service, repair or recovery evidence."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "route_transition",
-        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/route-transition-revalidation.md",
+        "sha256": "741ae43042959b57aefb6db43a5deb5484f7a2e68de8c3d574694a38c53dbb9c",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained seven observed responses and nine logic regressions rerun; guidance re-read by the author only, no new model response or independent reviewer; no native device, official procedure or cleanup claim."
       }
     },
     {
@@ -693,8 +729,8 @@
       "requirement": "先在原方案进行专项诊断，不自动购买 VPS、重建 VM 或迁移账号",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "route-transition 兼容复核已记录；路线选择、撤回、续接逻辑或入口顺序指导变化后须重跑回放与测试并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-local-incident-cases.md",
@@ -706,12 +742,15 @@
         "review_date": "2026-10-19",
         "boundary": "Seven actual frozen synthetic responses independently reviewed against full original T22/T25 L+C clauses, with separate normalized logic tests. No helper was invoked in these dialogues; source reads are responder-reported with a retained 329-token cleanup omission. Integrity checks do not generate new responses or establish native, current-service, repair or recovery evidence."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "route_transition",
-        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/route-transition-revalidation.md",
+        "sha256": "741ae43042959b57aefb6db43a5deb5484f7a2e68de8c3d574694a38c53dbb9c",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained observed incident responses and logic regressions rerun; guidance re-read by the author only, no new model response or independent reviewer; no current account state, official procedure, repair or native claim."
       }
     },
     {
@@ -720,8 +759,8 @@
       "requirement": "只记资产信息；主动询问实际目标和方案，不把资产当选择，也不静默开始本机部署",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "route-transition 兼容复核已记录；路线选择、撤回、续接逻辑或入口顺序指导变化后须重跑回放与测试并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-asset-route-cases.md",
@@ -733,12 +772,15 @@
         "review_date": "2026-10-19",
         "boundary": "Nine unchanged captured synthetic responses collected adaptively in three stages, independent whole-response semantic review and separate normalized logic. Original six/later two T26 route-question coverage remains partial; a fresh fully specified-goal case with an explicit asset disclaimer supplies the route question. No integrated helper dialogue, native or universal-output claim; aggregate/source compatibility remain separate gates."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "route_transition",
-        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/route-transition-revalidation.md",
+        "sha256": "741ae43042959b57aefb6db43a5deb5484f7a2e68de8c3d574694a38c53dbb9c",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained nine observed responses (route-question gap for ordinary asset mentions stays partial as recorded) and 31 regressions rerun; guidance re-read by the author only, no new model response or independent reviewer; no native or real-service claim."
       }
     },
     {
@@ -767,8 +809,8 @@
       "requirement": "第一问订阅阶段，随后系统/目标套餐/账号经历/方案；不直接给安装付款教程，不通问已有权益",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "entry/intake 兼容复核已记录；入口顺序、访谈运行时或 intake 指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
@@ -780,12 +822,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "entry_and_environment_intake",
-        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/intake-entry-revalidation.md",
+        "sha256": "d13a9db80af224e5bfab36e331f96ae96609123b4c66adfd605e66ef2da6fb5e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained entry-order replay rerun (hash unchanged) against the 2026-10-19 entry order; guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -794,9 +839,19 @@
       "requirement": "同时吸收全部字段，只追问缺口，不按固定表重问",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、宿主交接及调度器边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "One batch of five facts is absorbed and none is asked again while the rest of the flow is drained. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "T31",
@@ -804,8 +859,8 @@
       "requirement": "当前状态和历史经历分开记录，历史事实不自动改变方案",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-history-and-pause.md",
@@ -817,12 +872,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete deterministic synthetic state replays and independently reviewed active guidance; normalized host facts and supported compact/report migration contract only; no generated dialogue or native action claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained deterministic history/pause traces rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -831,9 +889,19 @@
       "requirement": "先辨识对象/提示，转付款诊断，不能定为 Claude 账号停用",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导、状态契约或相关入口变化后，重审链接中的逐条件回应与API轨迹",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "A suspension claim is routed to the object-identifying triage question and a recorded card decline leaves no emergency state; the host must supply the correction. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "T33",
@@ -841,8 +909,8 @@
       "requirement": "给简短比较，允许接受本机建议；不进行术语考试，不把不知道当选择",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "route-transition 兼容复核已记录；路线选择、撤回、续接逻辑或入口顺序指导变化后须重跑回放与测试并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-asset-route-cases.md",
@@ -854,12 +922,15 @@
         "review_date": "2026-10-19",
         "boundary": "Nine unchanged captured synthetic responses collected adaptively in three stages, independent whole-response semantic review and separate normalized logic. Original six/later two T26 route-question coverage remains partial; a fresh fully specified-goal case with an explicit asset disclaimer supplies the route question. No integrated helper dialogue, native or universal-output claim; aggregate/source compatibility remain separate gates."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "route_transition",
-        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/route-transition-revalidation.md",
+        "sha256": "741ae43042959b57aefb6db43a5deb5484f7a2e68de8c3d574694a38c53dbb9c",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained observed comparison and acceptance sequence and 31 regressions rerun; guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native or real-service claim."
       }
     },
     {
@@ -868,8 +939,8 @@
       "requirement": "默认候选不升为已确认；只允许受限比较/初步建议",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "route-transition 兼容复核已记录；路线选择、撤回、续接逻辑或入口顺序指导变化后须重跑回放与测试并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
@@ -880,12 +951,15 @@
         ],
         "boundary": "Complete original normalized-host logic and active-guidance review; no arbitrary NLP, native incident detection, credential action or device proof."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "route_transition",
-        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/route-transition-revalidation.md",
+        "sha256": "741ae43042959b57aefb6db43a5deb5484f7a2e68de8c3d574694a38c53dbb9c",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained unanswered, skipped, unknown, declined and compare trajectories reproduce with an unchanged replay hash; guidance re-read by the author only, no new model response or independent reviewer; no deployment-refusal path executed."
       }
     },
     {
@@ -904,8 +978,8 @@
       "requirement": "区分设备、Apple 账户和商店地区，不直接通过礼品卡前提",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
@@ -916,12 +990,15 @@
         ],
         "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained observed Apple-scope responses and offline helper controls rerun (31 tests); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -940,8 +1017,8 @@
       "requirement": "记录付款前提缺失，不把设备存在当作内购就绪，不重新调查账号归属",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
@@ -952,12 +1029,15 @@
         ],
         "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained observed responses (failed v1 kept, v2 reviewed) and offline controls rerun (31 tests); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1006,8 +1086,8 @@
       "requirement": "不问新目标套餐或支付渠道；记录本次未处理购买，不将其当成订阅准备默认场景",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "entry/intake 兼容复核已记录；入口顺序、访谈运行时或 intake 指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
@@ -1018,12 +1098,15 @@
         ],
         "boundary": "Complete original normalized-host logic and active-guidance review; no arbitrary NLP, native incident detection, credential action or device proof."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "entry_and_environment_intake",
-        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/intake-entry-revalidation.md",
+        "sha256": "d13a9db80af224e5bfab36e331f96ae96609123b4c66adfd605e66ef2da6fb5e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained existing-subscriber local-only trace rerun (hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1052,8 +1135,8 @@
       "requirement": "记录拒绝与阻断范围，可给一般解释，不猜测其资格或强迫回答",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
@@ -1064,12 +1147,15 @@
         ],
         "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained declined-field responses and controls rerun (31 tests); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1105,8 +1191,8 @@
       "requirement": "最小必要分流优先，其余主题标延期，不以付款问卷拖延保护",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
@@ -1117,12 +1203,15 @@
         ],
         "boundary": "Complete original normalized-host logic and active-guidance review; no arbitrary NLP, native incident detection, credential action or device proof."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained urgent-triage trace rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1131,8 +1220,8 @@
       "requirement": "运行环境与付款设备分开，读取对应分支，不强制网页银行卡",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
@@ -1144,12 +1233,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained VPS-plus-phone-payment trace rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1178,9 +1270,19 @@
       "requirement": "先区分是否不同设备/账号或时点，不盲目采用旧记忆或静默覆盖",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Cross-device and wrong-role answers are refused, host-flagged conflicts are kept and asked once, new devices and accounts do not inherit device facts; same-target newer answers replace the value unless the host flags a conflict. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "T53",
@@ -1188,8 +1290,8 @@
       "requirement": "记录 `accepted_default`，不再增加一次无意义确认；执行授权仍单独处理",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "route-transition 兼容复核已记录；路线选择、撤回、续接逻辑或入口顺序指导变化后须重跑回放与测试并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
@@ -1200,12 +1302,15 @@
         ],
         "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "route_transition",
-        "reason": "Route choice, withdrawal, dependent-fact invalidation or resume behavior changed; rerun the original whole cases and review current guidance plus the dated entry requirement.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/route-transition-revalidation.md",
+        "sha256": "741ae43042959b57aefb6db43a5deb5484f7a2e68de8c3d574694a38c53dbb9c",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained accept-default trace reproduces with an unchanged replay hash; guidance re-read by the author only, no new model response or independent reviewer; no native or real-service claim."
       }
     },
     {
@@ -1214,8 +1319,8 @@
       "requirement": "标为条件式/部分草案并列缺口，不给具体购买或高影响执行指令",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/subscription-boundaries/CURRENT-REVIEW.md",
@@ -1226,12 +1331,15 @@
         ],
         "boundary": "Observed synthetic multi-turn responses and separately labeled offline helper controls; failed T38 v1 retained, v2 freshly reviewed; no native, account, eligibility or action claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained draft-with-unknowns responses and controls rerun (31 tests); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1250,9 +1358,19 @@
       "requirement": "只计算适用分支覆盖，不要求填未选路线，不使用问卷分数当免封评分",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "No completion score exists; G1 reports status and unresolved fields only and a deferred branch is not counted as unasked. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "T57",
@@ -1260,8 +1378,8 @@
       "requirement": "系统题仅 **Mac/Windows**（另有手机/未知出口）；不把系统题置于已明确的新入口之前，也没有长平台问卷",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "entry/intake 兼容复核已记录；入口顺序、访谈运行时或 intake 指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-entry-order.md",
@@ -1273,12 +1391,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "entry_and_environment_intake",
-        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/intake-entry-revalidation.md",
+        "sha256": "d13a9db80af224e5bfab36e331f96ae96609123b4c66adfd605e66ef2da6fb5e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained system-question replay rerun (hash unchanged) against the 2026-10-19 entry order; guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1357,9 +1478,19 @@
       "requirement": "显示社区结论有冲突、无可靠封禁因果，不建议改成与实际使用情况不符的时区",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "变更时复核原条件、指导/来源路径及专页工作实例，重跑支持回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud guidance 复核已记录；agent_remediation、guardian、status_dashboard 或相关指导变化后须重跑 test_acceptance_cloud_guidance 与回放并重审，不外推新的模型回复、真实封禁机制或平台验证",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-guidance-cases-review.md",
+        "sha256": "8db110ee51a6892869db1426954a2435c9994ca1358d7aec2b1ea666061498f5",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Selector keeps egress-timezone difference as no_change with no target; explicit timezone goal never follows egress region; guidance anchors asserted. Guidance re-read by the author only: no generated response, no independent reviewer, no claim about real ban mechanisms."
+      }
     },
     {
       "id": "T66",
@@ -1387,9 +1518,19 @@
       "requirement": "明确本机平台首批未覆盖；可提供限定通用说明或选择独立 VM/VPS，不假装支持 Linux 本机",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、历史与当前边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Declared Linux local target is blocked by the analyzer with UNSUPPORTED_PRODUCT_OR_VERSION and the interview asks only Mac or Windows; no Linux guidance content is claimed. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "T69",
@@ -1417,9 +1558,19 @@
       "requirement": "区分社区自述与官方技术限制，不把任一贴当作封号原因或成功率证明",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "变更时复核原条件、指导/来源路径及专页工作实例，重跑支持回归",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud guidance 复核已记录；agent_remediation、guardian、status_dashboard 或相关指导变化后须重跑 test_acceptance_cloud_guidance 与回放并重审，不外推新的模型回复、真实封禁机制或平台验证",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-guidance-cases-review.md",
+        "sha256": "8db110ee51a6892869db1426954a2435c9994ca1358d7aec2b1ea666061498f5",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Guidance separates community self-reports from official/version-scoped statements and adopts no post as cause or success proof (verbatim anchors asserted). Author-side reading only: no generated response, no independent reviewer, no claim about the posts themselves."
+      }
     },
     {
       "id": "T72",
@@ -1447,8 +1598,8 @@
       "requirement": "问 Q-C08 目标套餐；不问 Q-C07、Q-P02、Q-A06 或旧套餐/旧购买渠道",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
@@ -1459,12 +1610,15 @@
         ],
         "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained first-subscription trace rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1473,8 +1627,8 @@
       "requirement": "仍是 first_subscription，可采用简洁解释；不能推定已有付费权益",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
@@ -1486,12 +1640,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and substantive explanation-depth guidance review; no generated model dialogue, actual account entitlement or native claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained experience-versus-subscription trace rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1500,8 +1657,8 @@
       "requirement": "进入 returning_subscription；询问目标套餐，不重问是否有有效订阅，旧账单仅相关时处理",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
@@ -1513,12 +1670,15 @@
         "review_date": "2026-10-18",
         "boundary": "Independent fixed-fact full state/question replays, actual offline CLI runs and substantive source/guidance review; no generated dialogue, real entitlement, commercial compatibility, payment, refund, native or cleanup action claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained returning-subscription trace and offline CLI runs rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1527,8 +1687,8 @@
       "requirement": "不重问开场；按需核实当前套餐/购买渠道和目标套餐，避开注册新购全流程",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-upgrade-conflict-cases.md",
@@ -1540,12 +1700,15 @@
         "review_date": "2026-10-18",
         "boundary": "Observed revision3 trajectories and separately generated revision4 affected paths, with an explicitly sanitized public projection, independent review, exact current-source API/CLI replay and privately retained originals; hashes do not authenticate omitted execution records, no native or actual operation authority."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained upgrade trajectories and 10 regressions rerun (no replay mode); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1554,8 +1717,8 @@
       "requirement": "当前订阅保持 unknown，精简澄清 Q-J02；不把熟练程度当作付费状态",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-task-scope-cases.md",
@@ -1566,12 +1729,15 @@
         ],
         "boundary": "Complete original normalized-host logic and active-guidance review; no arbitrary NLP, native incident detection, credential action or device proof."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained experience-only trace rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1580,8 +1746,8 @@
       "requirement": "进入已有订阅任务分支，保留新手讲解深度，不进入首次购买分支",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A、P",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-experience-and-subscription.md",
@@ -1593,12 +1759,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and substantive explanation-depth guidance review; no generated model dialogue, actual account entitlement or native claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained existing-subscriber depth trace rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1607,8 +1776,8 @@
       "requirement": "标记实际冲突，仅澄清相关账户/订阅状态；未解决不重复扣款，不审问账号归属",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-upgrade-conflict-cases.md",
@@ -1620,12 +1789,15 @@
         "review_date": "2026-10-18",
         "boundary": "Observed revision3 trajectories and separately generated revision4 affected paths, with an explicitly sanitized public projection, independent review, exact current-source API/CLI replay and privately retained originals; hashes do not authenticate omitted execution records, no native or actual operation authority."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained conflict trajectories and 10 regressions rerun (no replay mode); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1634,8 +1806,8 @@
       "requirement": "同时吸收订阅阶段/系统/方案/目标套餐；只问真正缺口，不顺序重问",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "entry/intake 兼容复核已记录；入口顺序、访谈运行时或 intake 指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-intake-cases.md",
@@ -1646,12 +1818,15 @@
         ],
         "boundary": "Fresh exact normalized-host offline replay and complete active-guidance review; no NLP integration, native environment, current catalog or purchase proof."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "entry_and_environment_intake",
-        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/intake-entry-revalidation.md",
+        "sha256": "d13a9db80af224e5bfab36e331f96ae96609123b4c66adfd605e66ef2da6fb5e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained one-sentence intake replay rerun (hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1687,8 +1862,8 @@
       "requirement": "保留设备/商店/目标账户对应/入口检查；不在 A6/P02/G04 中重新问旧订阅",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "subscription/interview 兼容复核已记录；共享访谈运行时、订阅/入口指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析、真实权益或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-mobile-route.md",
@@ -1700,12 +1875,15 @@
         "review_date": "2026-10-18",
         "boundary": "Complete normalized-host API replays and sentence-level active-guidance review; no generated host dialogue, native account/device test or purchase eligibility claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "subscription_and_interview_compatibility",
-        "reason": "Shared interview runtime or its exact compatibility bridge changed. Preserve original observed dialogues; rerun complete affected normalized traces and review scoped compatibility, including pause, urgent triage and subscription-only paths.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/interview-compatibility-revalidation.md",
+        "sha256": "076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained in-app purchase trace rerun (replay hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1714,8 +1892,8 @@
       "requirement": "不问想买什么套餐，不把付款列入本次必过项；客户端兼容性确实依赖套餐时才单独查",
       "verification_layer": "L+C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "entry/intake 兼容复核已记录；入口顺序、访谈运行时或 intake 指导变化后须重跑套件与回放并重审，不外推新的模型回复、自然语言解析或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-subscription-original-cases.md",
@@ -1727,12 +1905,15 @@
         "review_date": "2026-10-18",
         "boundary": "Independent fixed-fact full state/question replays, actual offline CLI runs and substantive source/guidance review; no generated dialogue, real entitlement, commercial compatibility, payment, refund, native or cleanup action claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "entry_and_environment_intake",
-        "reason": "Environment-entry ordering and current readiness affect intake or environment-task integration; preserve supplied facts and subscription-only explanations, then revalidate original whole-case behavior and authorization separation.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/intake-entry-revalidation.md",
+        "sha256": "d13a9db80af224e5bfab36e331f96ae96609123b4c66adfd605e66ef2da6fb5e",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained existing-subscriber repair replay and offline CLI runs rerun (hash unchanged); guidance re-read by the author only, no new model response or independent reviewer; no natural-language parsing, native, real-entitlement or purchase claim."
       }
     },
     {
@@ -1851,9 +2032,19 @@
       "requirement": "复用全部已知答案，只问未绑定设备的缺口",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、宿主交接及调度器边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Known answers are not re-asked; a different device keeps only the subscription fact and asks the unbound-device gaps. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "ENV-T03",
@@ -2200,9 +2391,19 @@
       "requirement": "不恢复账号归属问项，不重复问已有订阅/旧套餐",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "First-time environment-stage flow lists and asks no retired, old-entitlement or old-plan question. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "ENV-T37",
@@ -2220,8 +2421,8 @@
       "requirement": "识别为证书指纹字段语义不匹配；不自动改写节点 TLS 配置",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "rule-scope 兼容复核已记录；选择器、规则助手或相关指导变化后须重跑 18 项测试与回放并重审，不外推新的模型回复、外部事实或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
@@ -2233,12 +2434,15 @@
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "rule_scope_compatibility",
-        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/rule-scope-revalidation.md",
+        "sha256": "49c791bfc8a30dca27abdce345c2d76830edfe4adb3c1b06f1ea2c843075583b",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained observed responses and recorded helper calls reproduce on the current helpers; current guidance re-read by the author only, no new model response or independent reviewer; no live-engine or native claim."
       }
     },
     {
@@ -2247,8 +2451,8 @@
       "requirement": "保留流量方向；不把 Outbound 清单直接编成客户端默认目标规则",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "rule-scope 兼容复核已记录；选择器、规则助手或相关指导变化后须重跑 18 项测试与回放并重审，不外推新的模型回复、外部事实或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
@@ -2260,12 +2464,15 @@
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "rule_scope_compatibility",
-        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/rule-scope-revalidation.md",
+        "sha256": "49c791bfc8a30dca27abdce345c2d76830edfe4adb3c1b06f1ea2c843075583b",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained responses and helper calls reproduce; Inbound/Outbound directions are the frozen 2026-10-15 source values, not a fresh external check; guidance re-read by the author only; no independent reviewer or native claim."
       }
     },
     {
@@ -2274,8 +2481,8 @@
       "requirement": "不可表达的 ASN/匹配/动作语义明确报错，不静默丢失",
       "verification_layer": "L + R",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "conversion/recovery 兼容复核已记录；转换器、事务、恢复或 repair 入口变化后须重跑 200 项套件并重审，不外推真实配置、实际引擎、Windows 或用户设备",
       "dependencies": "A、P",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-env40-composition.md",
@@ -2286,12 +2493,15 @@
         ],
         "boundary": "Full original format/loss-refusal clause reviewed through pure logic and controlled POSIX temporary-artifact write/readback/restore. No live engine, enclosing configuration or user-device acceptance."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "conversion_recovery_compatibility",
-        "reason": "Repair CLI/execution entry changed. Preserve pure conversion evidence; revalidate the full original L+R composition, temporary-artifact restoration and recovery admission with current entry behavior.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/conversion-recovery-revalidation.md",
+        "sha256": "5427f90054da06162a92154dc44cd84bb9ba8cf5552fcbde1727ad0e8a90f694",
+        "layers": [
+          "L",
+          "R"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Conversion errors, exact bytes and provenance, and actual write/readback/rollback on dedicated POSIX temporary artifacts rerun (200 tests); current repair entry refuses policy-conversion candidates and native sessions; no real configuration, live engine, Windows or user-device recovery claim."
       }
     },
     {
@@ -2300,8 +2510,8 @@
       "requirement": "默认不产生跨业务宽泛规则，保留原有策略",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "rule-scope 兼容复核已记录；选择器、规则助手或相关指导变化后须重跑 18 项测试与回放并重审，不外推新的模型回复、外部事实或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
@@ -2313,12 +2523,15 @@
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "rule_scope_compatibility",
-        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/rule-scope-revalidation.md",
+        "sha256": "49c791bfc8a30dca27abdce345c2d76830edfe4adb3c1b06f1ea2c843075583b",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained responses and helper calls reproduce; current guidance re-read by the author only, no new model response or independent reviewer; no live-engine or effective-routing claim."
       }
     },
     {
@@ -2327,8 +2540,8 @@
       "requirement": "按功能门控，不强制探测/修改该依赖",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "rule-scope 兼容复核已记录；选择器、规则助手或相关指导变化后须重跑 18 项测试与回放并重审，不外推新的模型回复、外部事实或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
@@ -2340,12 +2553,15 @@
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "rule_scope_compatibility",
-        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/rule-scope-revalidation.md",
+        "sha256": "49c791bfc8a30dca27abdce345c2d76830edfe4adb3c1b06f1ea2c843075583b",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained responses and helper calls reproduce; feature-gating guidance re-read by the author only, no new model response or independent reviewer; no native or version-installed claim."
       }
     },
     {
@@ -2504,8 +2720,8 @@
       "requirement": "不得因为 D01—D12 已接受，就把尚待评审的新端点/依赖/发布范围编译成默认 apply 动作",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "保留历史完整证据；按 docs/entry-revalidation-status.md 的对应分组重跑原完整条件、审阅当前受影响行为及指导后，另行登记当前验收；不只更新哈希，不外推真机或未观察输入",
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "rule-scope 兼容复核已记录；选择器、规则助手或相关指导变化后须重跑 18 项测试与回放并重审，不外推新的模型回复、外部事实或真机",
       "dependencies": "A",
       "historical_evidence": {
         "path": "docs/evidence/rebuild-rule-scope-guided-responses.md",
@@ -2517,12 +2733,15 @@
         "review_date": "2026-10-18",
         "boundary": "Eleven observed model-authored turns, 22 recorded pure-helper calls with exact independent replay, six full candidates and ten separately labeled reviewer controls. Source hashes were captured at final packaging; no historical instrumentation, universal response, current external source, native/contact/apply authority claim."
       },
-      "revalidation": {
-        "requirement_id": "PRODUCT-ENTRY-20261019",
-        "date": "2026-10-19",
-        "group": "rule_scope_compatibility",
-        "reason": "The guardian selector source pin changed while historical rule-helper evidence remains retained. Revalidate exact original helper calls, complete candidates and supplemental controls, and review changed selector/guidance semantics.",
-        "tracking": "docs/entry-revalidation-status.md"
+      "evidence": {
+        "path": "docs/evidence/rule-scope-revalidation.md",
+        "sha256": "49c791bfc8a30dca27abdce345c2d76830edfe4adb3c1b06f1ea2c843075583b",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retained responses and helper calls reproduce; pending-recommendation guidance re-read by the author only, no new model response or independent reviewer; no apply, native or external-source claim."
       }
     },
     {
@@ -2918,9 +3137,19 @@
       "requirement": "Q-C07 不复活；首次订阅不问旧权益；当前是否正常仅自述，不提前启动 Claude 求证",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Retired Q-C07 is refused in saved state and as a fact; first-subscription flow asks no old entitlement; login status stays self-reported. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "ENV-T93",
@@ -2958,9 +3187,19 @@
       "requirement": "复用已有事实，只请求缺少的检查授权，不重问 Q-J01/Q-C02/Q-C08 或恢复 Q-C07。",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "指导/相关代码变更时复核精确原句、宿主交接及调度器边界，重跑专页支持案例",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud flow 复核已记录；interview_flow、analyzer 或相关指导变化后须重跑 test_acceptance_cloud_flow 与回放并重审，不外推新的模型回复、自然语言解析、真机或真实账号",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-flow-cases-review.md",
+        "sha256": "f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Supplied stage, OS, route and plan are never asked again and the check-scope question stays separate; other genuinely missing facts are still asked. Guidance re-read by the author only: no generated response, no independent reviewer, no natural-language parsing, native, real-account or authorization claim."
+      }
     },
     {
       "id": "ENV-T97",
@@ -3247,9 +3486,19 @@
       "requirement": "只报告 contract fixture 的验证范围；不得据此关闭平台 VAL 或宣传全机已测。",
       "verification_layer": "L + C",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "cloud guidance 复核已记录；agent_remediation、guardian、status_dashboard 或相关指导变化后须重跑 test_acceptance_cloud_guidance 与回放并重审，不外推新的模型回复、真实封禁机制或平台验证",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/cloud-guidance-cases-review.md",
+        "sha256": "8db110ee51a6892869db1426954a2435c9994ca1358d7aec2b1ea666061498f5",
+        "layers": [
+          "L",
+          "C"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Synthetic fixture analysis and dashboard report only fixture scope: record_kind synthetic_example, native_platform_validation not_run, no environment pass. Does not run the 56-case attachment suite, close platform validation or claim whole-machine testing."
+      }
     }
   ],
   "dependency_definitions": [

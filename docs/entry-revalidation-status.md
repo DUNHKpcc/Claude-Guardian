@@ -55,6 +55,16 @@ historical ones, so the review rests on re-reading each clause against current o
 hash. The C part is an author-side reading of the shipped guidance, with no model dialogue and no independent
 reviewer. No native, rule-priority, actual-hit or operating-system isolation claim is made.
 
+**Update, 2026-10-21 (later cloud groups).** After the workflow-enforcement paragraph above, further cloud-only
+reviews were registered, each with a dated evidence page and a SHA-256 pin in the ledger: rule scope, conversion
+recovery (ENV-T40), safe input (T11, T12), route transition, interview compatibility, intake entry, and two groups of
+cases with no earlier evidence (`cloud-flow-cases-review.md`, `cloud-guidance-cases-review.md`). The ledger now records
+**59 accepted / 159 pending**; the counts in the earlier paragraphs above are superseded. The C part of the
+never-evidenced cases is an author-side reading of the current guidance, with no generated model response and no
+independent reviewer. Still pending: all real-device cases, the conditional-native cases with history (need a real
+Codex host or VM/VPS), and the cloud cases that depend on current external facts (X layer) or active network access (N),
+such as T41, T85 and ENV-T43; none is claimed by the cloud evidence.
+
 All original 218 IDs, scenarios, full requirements and literal verification
 layers remain unchanged. Their original-row SHA-256 remains
 `84975325686c368a191b8232a0564518f1ba32ad7055ce4742d32cc4c26c77b9`.

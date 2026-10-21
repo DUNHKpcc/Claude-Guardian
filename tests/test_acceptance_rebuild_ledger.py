@@ -56,14 +56,54 @@ HISTORICALLY_ACCEPTED = {
 
 # This checkpoint's current decisions are explicit, never inferred from test totals.
 CURRENTLY_ACCEPTED = frozenset({'T03', 'T05', 'T09', 'T18'})
-# Never historically accepted; registered by the separately dated input-boundary review (layer L only).
-NEWLY_ACCEPTED = frozenset({'ENV-T34', 'ENV-T121'})
-INPUT_BOUNDARY_REVIEW = 'docs/evidence/input-boundary-revalidation.md'
-INPUT_BOUNDARY_REVIEW_SHA256 = 'ef1fe6f802f7e2a1b9350afcc1956846ee84d87574eb7219378448c975fa626e'
+# Never historically accepted; each is registered by a separately dated review that owns its evidence page.
+# BEGIN NEWLY_ACCEPTED_BY_REVIEW (maintained by the registration helper; one entry per reviewed case)
+NEWLY_ACCEPTED_BY_REVIEW = {
+    **{case: {'original_layer': 'L', 'path': 'docs/evidence/input-boundary-revalidation.md',
+              'sha256': 'ef1fe6f802f7e2a1b9350afcc1956846ee84d87574eb7219378448c975fa626e', 'layers': ['L']}
+       for case in ('ENV-T34', 'ENV-T121')},
+    **{case: {'original_layer': original, 'path': 'docs/evidence/cloud-flow-cases-review.md',
+              'sha256': 'f1e8e960e7ed1edf0284e333034f118189da3bf97342ced752558e9223fd5dad', 'layers': layers}
+       for case, original, layers in (('T14', 'L+C', ['L', 'C']), ('T30', 'L+C', ['L', 'C']), ('T32', 'L+C', ['L', 'C']), ('T52', 'L+C', ['L', 'C']), ('T56', 'L+C', ['L', 'C']), ('T68', 'L+C', ['L', 'C']), ('ENV-T02', 'L + C', ['L', 'C']), ('ENV-T36', 'L + C', ['L', 'C']), ('ENV-T92', 'L + C', ['L', 'C']), ('ENV-T96', 'L + C', ['L', 'C']),)},
+    **{case: {'original_layer': original, 'path': 'docs/evidence/cloud-guidance-cases-review.md',
+              'sha256': '8db110ee51a6892869db1426954a2435c9994ca1358d7aec2b1ea666061498f5', 'layers': layers}
+       for case, original, layers in (('T65', 'L+C', ['L', 'C']), ('T71', 'L+C', ['L', 'C']), ('ENV-T124', 'L + C', ['L', 'C']),)},
+}
+# END NEWLY_ACCEPTED_BY_REVIEW
+NEWLY_ACCEPTED = frozenset(NEWLY_ACCEPTED_BY_REVIEW)
 # Historically accepted cases that a later dated review restored; they keep historical_evidence.
-RESTORED_BY_REVIEW = {'ENV-T79': ['L'], 'ENV-T81': ['L', 'C'], 'ENV-T90': ['L', 'C']}
-WORKFLOW_ENFORCEMENT_REVIEW = 'docs/evidence/workflow-enforcement-revalidation.md'
-WORKFLOW_ENFORCEMENT_REVIEW_SHA256 = 'fe8c4d115fadd12e380a850408625586002e7513ccfda62f24b15c2df558a87d'
+# BEGIN RESTORED_BY_REVIEW (maintained by the registration helper; one entry per reviewed case)
+RESTORED_BY_REVIEW = {
+    **{case: {'group': 'workflow_enforcement', 'path': 'docs/evidence/workflow-enforcement-revalidation.md',
+              'sha256': 'fe8c4d115fadd12e380a850408625586002e7513ccfda62f24b15c2df558a87d',
+              'layers': layers}
+       for case, layers in (('ENV-T79', ['L']), ('ENV-T81', ['L', 'C']), ('ENV-T90', ['L', 'C']))},
+    **{case: {'group': 'safe_input_compatibility', 'path': 'docs/evidence/safe-input-revalidation.md',
+              'sha256': 'bbbe55079289a060e8144910aeb09f7fa364e2c93ac4dc6a2447d43b85bc5642',
+              'layers': layers}
+       for case, layers in (('T11', ['L', 'C']), ('T12', ['L', 'C']))},
+    **{case: {'group': 'rule_scope_compatibility', 'path': 'docs/evidence/rule-scope-revalidation.md',
+              'sha256': '49c791bfc8a30dca27abdce345c2d76830edfe4adb3c1b06f1ea2c843075583b',
+              'layers': layers}
+       for case, layers in (('ENV-T38', ['L', 'C']), ('ENV-T39', ['L', 'C']), ('ENV-T41', ['L', 'C']), ('ENV-T42', ['L', 'C']), ('ENV-T58', ['L', 'C']))},
+    **{case: {'group': 'conversion_recovery_compatibility', 'path': 'docs/evidence/conversion-recovery-revalidation.md',
+              'sha256': '5427f90054da06162a92154dc44cd84bb9ba8cf5552fcbde1727ad0e8a90f694',
+              'layers': layers}
+       for case, layers in (('ENV-T40', ['L', 'R']),)},
+    **{case: {'group': 'route_transition', 'path': 'docs/evidence/route-transition-revalidation.md',
+              'sha256': '741ae43042959b57aefb6db43a5deb5484f7a2e68de8c3d574694a38c53dbb9c',
+              'layers': layers}
+       for case, layers in (('T19', ['L', 'C']), ('T22', ['L', 'C']), ('T25', ['L', 'C']), ('T26', ['L', 'C']), ('T33', ['L', 'C']), ('T34', ['L', 'C']), ('T53', ['L', 'C']),)},
+    **{case: {'group': 'subscription_and_interview_compatibility', 'path': 'docs/evidence/interview-compatibility-revalidation.md',
+              'sha256': '076329892953f183066c311c834091b752e367284a2dce871ed5b3ca1b68b907',
+              'layers': layers}
+       for case, layers in (('T31', ['L', 'C']), ('T36', ['L', 'C']), ('T38', ['L', 'C']), ('T46', ['L', 'C']), ('T48', ['L', 'C']), ('T49', ['L', 'C']), ('T54', ['L', 'C']), ('T74', ['L', 'C']), ('T75', ['L', 'C']), ('T76', ['L', 'C']), ('T77', ['L', 'C']), ('T78', ['L', 'C']), ('T79', ['L', 'C']), ('T80', ['L', 'C']), ('T83', ['L', 'C']),)},
+    **{case: {'group': 'entry_and_environment_intake', 'path': 'docs/evidence/intake-entry-revalidation.md',
+              'sha256': 'd13a9db80af224e5bfab36e331f96ae96609123b4c66adfd605e66ef2da6fb5e',
+              'layers': layers}
+       for case, layers in (('T01', ['L', 'C']), ('T02', ['L', 'C']), ('T29', ['L', 'C']), ('T43', ['L', 'C']), ('T57', ['L', 'C']), ('T81', ['L', 'C']), ('T84', ['L', 'C']),)},
+}
+# END RESTORED_BY_REVIEW
 PRIOR_LIMITED_REVIEW = 'docs/evidence/entry-order-limited-revalidation.md'
 PRIOR_LIMITED_REVIEW_SHA256 = 'b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d'
 AGENT_TASK_REVIEW = 'docs/evidence/agent-rules-limited-revalidation.md'
@@ -712,32 +752,34 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
             self.assertEqual(case['rebuild_acceptance'],
                              'accepted_revalidated' if accepted else 'pending_revalidation')
             if case_id in NEWLY_ACCEPTED:
+                new = NEWLY_ACCEPTED_BY_REVIEW[case_id]
                 self.assertNotIn('historical_evidence', case)
                 self.assertNotIn('revalidation', case)
-                self.assertEqual(case['verification_layer'], 'L')
+                self.assertEqual(case['verification_layer'], new['original_layer'])
                 evidence = case['evidence']
-                self.assertEqual(evidence['path'], INPUT_BOUNDARY_REVIEW)
-                self.assertEqual(evidence['layers'], ['L'])
+                self.assertEqual(evidence['path'], new['path'])
+                self.assertEqual(evidence['layers'], new['layers'])
                 self.assertEqual(evidence['review_date'], '2026-10-21')
                 self.assertTrue(evidence['boundary'])
-                self.assertEqual(evidence['sha256'], INPUT_BOUNDARY_REVIEW_SHA256)
+                self.assertEqual(evidence['sha256'], new['sha256'])
                 self.assertEqual(evidence['sha256'],
-                                 hashlib.sha256((ROOT / INPUT_BOUNDARY_REVIEW).read_bytes()).hexdigest())
+                                 hashlib.sha256((ROOT / new['path']).read_bytes()).hexdigest())
             elif case_id in RESTORED_BY_REVIEW:
-                self.assertEqual(groups[case_id], 'workflow_enforcement')
+                restored = RESTORED_BY_REVIEW[case_id]
+                self.assertEqual(groups[case_id], restored['group'])
                 self.assertNotIn('revalidation', case)
                 self.assertIn('historical_evidence', case)
                 self.assertEqual(case['historical_evidence']['path'],
                                  HISTORICALLY_ACCEPTED[case_id][0])
                 self.assertEqual(case['verification_layer'], HISTORICALLY_ACCEPTED[case_id][1])
                 evidence = case['evidence']
-                self.assertEqual(evidence['path'], WORKFLOW_ENFORCEMENT_REVIEW)
-                self.assertEqual(evidence['layers'], RESTORED_BY_REVIEW[case_id])
+                self.assertEqual(evidence['path'], restored['path'])
+                self.assertEqual(evidence['layers'], restored['layers'])
                 self.assertEqual(evidence['review_date'], '2026-10-21')
                 self.assertTrue(evidence['boundary'])
-                self.assertEqual(evidence['sha256'], WORKFLOW_ENFORCEMENT_REVIEW_SHA256)
+                self.assertEqual(evidence['sha256'], restored['sha256'])
                 self.assertEqual(evidence['sha256'], hashlib.sha256(
-                    (ROOT / WORKFLOW_ENFORCEMENT_REVIEW).read_bytes()).hexdigest())
+                    (ROOT / restored['path']).read_bytes()).hexdigest())
             elif accepted:
                 self.assertNotIn('revalidation', case)
                 expected_path, original_layer, reviewed_layers = HISTORICALLY_ACCEPTED[case_id]
@@ -772,7 +814,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
             if 'N' in case['verification_layer']:
                 self.assertIn(case['scheduling'], ('deferred_native', 'conditional_native'))
         self.assertEqual(counts, {'cloud_only': 75, 'deferred_native': 113, 'conditional_native': 30})
-        self.assertEqual(statuses, {'accepted_revalidated': 9, 'pending_revalidation': 209})
+        self.assertEqual(statuses, {'accepted_revalidated': 59, 'pending_revalidation': 159})
 
 
 if __name__ == '__main__':
