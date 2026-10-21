@@ -140,9 +140,9 @@ class ProbeEvidenceTests(unittest.TestCase):
 
     def test_no_secret_address_identity_or_markup_survives(self):
         marker = '</style><script>SECRET_SENTINEL</script>'
-        # Unknown members are rejected (UnknownMemberRejectionTests); known members with hostile values
-        # are projected away here.
-        obj = sample(); obj['result'].update(target_ref=marker, error=marker)
+        # Unknown members are rejected (UnknownMemberRejectionTests); known members with hostile or forged
+        # values (path_association is a producer-written member) are projected away here.
+        obj = sample(); obj['result'].update(target_ref=marker, error=marker, path_association='verified')
         raw = bundle(obj); raw['target_ref'] = marker
         html = dashboard.render(report(), NOW, raw)
         for secret in ('SECRET_SENTINEL', 'private-device', '8.8.8.8', '<script', 'https://api.ipify.org'):

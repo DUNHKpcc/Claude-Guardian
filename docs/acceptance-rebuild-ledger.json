@@ -15,7 +15,8 @@
     "The fortieth checkpoint separately reviews the Agent application-task link, supplied-snapshot helper/reference, two package additions and retained-schema clarification; docs/evidence/agent-rules-limited-revalidation.md replaces only the current evidence link for the same four cases. The preceding entry review and its evidence objects are retained unchanged. Counts remain 4 accepted / 214 pending; historical source preservation changes an explicit origin, never the old source bytes/hash.",
     "The comment-preserving Agent-task wrapper correction has its own exact three-file transition and whole-clause review in docs/evidence/agent-rules-comments-limited-revalidation.md. The preceding Agent-task review, its nineteen source pins and four evidence objects remain unchanged as historical material. Only T03, T05, T09 and T18 retain current acceptance; counts remain 4 accepted / 214 pending with all 51 historical objects and 218 original rows preserved. No native save or recovery contract is established.",
     "The 2026-10-19 whole-device network-guidance default has a separate whole-clause review and exact five-file transition in docs/evidence/whole-machine-limited-revalidation.md. The preceding comment review, all nineteen pins and four evidence objects remain unchanged; two historical network references move only from repository to exact snapshots. Only T03, T05, T09 and T18 remain currently accepted. Counts stay 4 accepted / 214 pending with 51 historical objects and all 218 original rows. Prose and synthetic checks do not certify whole-device routing, TUN, persistent enforcement, native recovery or actual authority.",
-    "The neutral HTTPS /0.2 and bounded-diagnostic guide addition has a separate exact one-file transition and whole-clause review in docs/evidence/neutral-probe-limited-revalidation.md. The preceding whole-device review, all twenty-two pins and four evidence objects remain unchanged. Only T03, T05, T09 and T18 remain currently accepted: 4 accepted / 214 pending, 51 historical objects and 218 original rows. Synthetic/source checks do not establish native identity, actual network/browser paths, whole-device enforcement, recovery or authority."
+    "The neutral HTTPS /0.2 and bounded-diagnostic guide addition has a separate exact one-file transition and whole-clause review in docs/evidence/neutral-probe-limited-revalidation.md. The preceding whole-device review, all twenty-two pins and four evidence objects remain unchanged. Only T03, T05, T09 and T18 remain currently accepted: 4 accepted / 214 pending, 51 historical objects and 218 original rows. Synthetic/source checks do not establish native identity, actual network/browser paths, whole-device enforcement, recovery or authority.",
+    "The 2026-10-21 input-boundary review in docs/evidence/input-boundary-revalidation.md registers ENV-T34 and ENV-T121, two cases that were never historically accepted, as accepted_revalidated on layer L with their own evidence objects. The four limited-review cases and their evidence objects are unchanged. Counts are now 6 accepted / 212 pending, with 51 historical objects and all 218 original rows preserved. The evidence is a deterministic synthetic-sentinel matrix over listed paths; it does not establish arbitrary-secret recognition, unlisted paths, native or device behavior, or any other case."
   ],
   "cases": [
     {
@@ -2169,9 +2170,18 @@
       "requirement": "脱敏检查不通过，不导出秘密",
       "verification_layer": "L",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "input-boundary 复核已记录；新增输入/导出路径、词汇表成员或相关代码变化后须重跑 tests/test_secret_boundary_matrix.py 并重审，不外推真机、未列路径或任意秘密识别",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/input-boundary-revalidation.md",
+        "sha256": "ef1fe6f802f7e2a1b9350afcc1956846ee84d87574eb7219378448c975fa626e",
+        "layers": [
+          "L"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Deterministic synthetic-sentinel matrix over the listed public input and export paths plus unknown-member rejection at the dashboard, selector and probe-evidence boundaries; no model dialogue, native device, real host pipeline, arbitrary-secret recognition or unlisted path claimed."
+      }
     },
     {
       "id": "ENV-T35",
@@ -3189,9 +3199,18 @@
       "requirement": "输入/输出 schema 与本地过滤拒绝；不能靠展示层打码补救。",
       "verification_layer": "L",
       "scheduling": "cloud_only",
-      "rebuild_acceptance": "pending_revalidation",
-      "next_steps": "复核精确原句、活动指导、来源和支持测试；内容或行为变化时重新审阅",
-      "dependencies": "A"
+      "rebuild_acceptance": "accepted_revalidated",
+      "next_steps": "input-boundary 复核已记录；新增输入/导出路径、词汇表成员或相关代码变化后须重跑 tests/test_secret_boundary_matrix.py 并重审，不外推真机、未列路径或任意秘密识别",
+      "dependencies": "A",
+      "evidence": {
+        "path": "docs/evidence/input-boundary-revalidation.md",
+        "sha256": "ef1fe6f802f7e2a1b9350afcc1956846ee84d87574eb7219378448c975fa626e",
+        "layers": [
+          "L"
+        ],
+        "review_date": "2026-10-21",
+        "boundary": "Deterministic synthetic-sentinel matrix over the listed public input and export paths plus unknown-member rejection at the dashboard, selector and probe-evidence boundaries; no model dialogue, native device, real host pipeline, arbitrary-secret recognition or unlisted path claimed."
+      }
     },
     {
       "id": "ENV-T122",

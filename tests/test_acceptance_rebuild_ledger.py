@@ -56,6 +56,10 @@ HISTORICALLY_ACCEPTED = {
 
 # This checkpoint's current decisions are explicit, never inferred from test totals.
 CURRENTLY_ACCEPTED = frozenset({'T03', 'T05', 'T09', 'T18'})
+# Never historically accepted; registered by the separately dated input-boundary review (layer L only).
+NEWLY_ACCEPTED = frozenset({'ENV-T34', 'ENV-T121'})
+INPUT_BOUNDARY_REVIEW = 'docs/evidence/input-boundary-revalidation.md'
+INPUT_BOUNDARY_REVIEW_SHA256 = 'ef1fe6f802f7e2a1b9350afcc1956846ee84d87574eb7219378448c975fa626e'
 PRIOR_LIMITED_REVIEW = 'docs/evidence/entry-order-limited-revalidation.md'
 PRIOR_LIMITED_REVIEW_SHA256 = 'b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d'
 AGENT_TASK_REVIEW = 'docs/evidence/agent-rules-limited-revalidation.md'
@@ -699,10 +703,22 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         counts, statuses = {}, {}
         for case in ledger['cases']:
             case_id = case['id']
-            accepted = case_id in CURRENTLY_ACCEPTED
+            accepted = case_id in CURRENTLY_ACCEPTED or case_id in NEWLY_ACCEPTED
             self.assertEqual(case['rebuild_acceptance'],
                              'accepted_revalidated' if accepted else 'pending_revalidation')
-            if accepted:
+            if case_id in NEWLY_ACCEPTED:
+                self.assertNotIn('historical_evidence', case)
+                self.assertNotIn('revalidation', case)
+                self.assertEqual(case['verification_layer'], 'L')
+                evidence = case['evidence']
+                self.assertEqual(evidence['path'], INPUT_BOUNDARY_REVIEW)
+                self.assertEqual(evidence['layers'], ['L'])
+                self.assertEqual(evidence['review_date'], '2026-10-21')
+                self.assertTrue(evidence['boundary'])
+                self.assertEqual(evidence['sha256'], INPUT_BOUNDARY_REVIEW_SHA256)
+                self.assertEqual(evidence['sha256'],
+                                 hashlib.sha256((ROOT / INPUT_BOUNDARY_REVIEW).read_bytes()).hexdigest())
+            elif accepted:
                 self.assertNotIn('revalidation', case)
                 expected_path, original_layer, reviewed_layers = HISTORICALLY_ACCEPTED[case_id]
                 evidence = case['evidence']
@@ -736,7 +752,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
             if 'N' in case['verification_layer']:
                 self.assertIn(case['scheduling'], ('deferred_native', 'conditional_native'))
         self.assertEqual(counts, {'cloud_only': 75, 'deferred_native': 113, 'conditional_native': 30})
-        self.assertEqual(statuses, {'accepted_revalidated': 4, 'pending_revalidation': 214})
+        self.assertEqual(statuses, {'accepted_revalidated': 6, 'pending_revalidation': 212})
 
 
 if __name__ == '__main__':

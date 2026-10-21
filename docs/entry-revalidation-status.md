@@ -39,6 +39,13 @@ replies remain historical; no fresh model dialogue, native identity, actual
 network/browser path, whole-device enforcement or recovery is claimed. Further
 source drift still invalidates applicability.
 
+**Update, 2026-10-21.** The [input-boundary review](evidence/input-boundary-revalidation.md) registers
+ENV-T34 and ENV-T121, which were never historically accepted, as accepted on layer L with their own evidence objects.
+The ledger now records **6 accepted / 212 pending**. The four limited-review cases and the 51 historical evidence
+objects above are unchanged, and the figures in the preceding paragraphs describe the state before this update. The
+two new acceptances come from a synthetic-sentinel matrix over listed paths; they establish no native behavior and do
+not restore any of the 47 entry-affected cases.
+
 All original 218 IDs, scenarios, full requirements and literal verification
 layers remain unchanged. Their original-row SHA-256 remains
 `84975325686c368a191b8232a0564518f1ba32ad7055ce4742d32cc4c26c77b9`.
