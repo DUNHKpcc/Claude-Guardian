@@ -215,7 +215,9 @@ class DashboardTests(unittest.TestCase):
 
     def test_no_arbitrary_text_or_secrets_survive(self):
         marker = '</style><script>alert("SECRET_SENTINEL")</script>'
-        obj = report(); obj.update(target_ref=marker, next_actions=[marker], evidence=[marker], secrets=marker)
+        # Arbitrary values under known keys are projected away. Unknown keys are rejected instead
+        # (see UnknownFieldRejectionTests), so no 'secrets' member is injected here.
+        obj = report(); obj.update(target_ref=marker, next_actions=[marker], evidence=[marker])
         obj['facts'][0].update(value=marker, source_ref=marker, context_ref=marker)
         obj['findings'] = [{'code': marker, 'module_id': marker}]
         obj['snapshot']['observed_at'] = marker
@@ -269,6 +271,78 @@ class DashboardTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertFalse(target.exists())
                 self.assertNotIn('SECRET_SENTINEL', result.stderr)
+
+
+class UnknownFieldRejectionTests(unittest.TestCase):
+    """ENV-T121: unknown (possibly secret-bearing) members are rejected at the input boundary.
+
+    Display-layer omission is not a substitute. Markers are synthetic.
+    """
+    MARKER = 'SYNTHSECRETQ7Z9K2'
+    SCHEMAS = ('guardian-report/0.1', 'env-inventory/0.2')
+
+    def injected(self, schema, where, key, value=None):
+        obj = report()
+        obj['schema_version'] = schema
+        obj.setdefault('target_binding', {'declared_os': 'macos', 'desktop_user_relation': 'same',
+                                          'filesystem_namespace': 'host_desktop', 'execution_location': 'native_local'})
+        obj.setdefault('contact_control', {'contact_phase': 'precontact', 'gate_state': 'closed',
+                                           'pc_g1': 'not_verified', 'pc_g2': 'not_run'})
+        obj.setdefault('privacy', {'shareable': False})
+        obj.setdefault('limits', {'environment_pass_claim': False})
+        obj['findings'] = [{'code': 'STALE_EVIDENCE_REAUDIT_REQUIRED', 'module_id': 'ENV-01'}]
+        target = obj if where == 'root' else (obj[where][0] if where in ('facts', 'findings') else obj[where])
+        target[key] = self.MARKER if value is None else value
+        return obj
+
+    def test_unknown_members_rejected_everywhere_without_echo(self):
+        places = [('root', 'proxy_password'), ('root', 'subscription_url'), ('root', 'command'),
+                  ('root', 'url_to_test'), ('root', 'secrets'), ('snapshot', 'token'),
+                  ('target_binding', 'secret'), ('contact_control', 'url'), ('privacy', 'token'),
+                  ('limits', 'endpoint'), ('facts', 'password'), ('facts', 'command'),
+                  ('findings', 'detail')]
+        for schema in self.SCHEMAS:
+            for where, key in places:
+                with self.subTest(schema=schema, where=where, key=key):
+                    obj = self.injected(schema, where, key)
+                    with self.assertRaises(dashboard.GuardianError) as ctx:
+                        dashboard.project(obj, NOW)
+                    self.assertEqual(ctx.exception.code, 'DASHBOARD_REPORT_INVALID')
+                    self.assertNotIn(self.MARKER, ctx.exception.code)
+
+    def test_injected_report_with_only_known_members_is_still_accepted(self):
+        for schema in self.SCHEMAS:
+            with self.subTest(schema=schema):
+                obj = self.injected(schema, 'root', 'next_actions', [])
+                self.assertIn('overall', dashboard.project(obj, NOW))
+
+    def test_cli_rejects_unknown_member_without_html_or_echo(self):
+        for where, key in [('root', 'proxy_password'), ('facts', 'secret')]:
+            with self.subTest(where=where), tempfile.TemporaryDirectory() as tmp:
+                source, target = Path(tmp)/'report.json', Path(tmp)/'status.html'
+                source.write_text(json.dumps(self.injected('guardian-report/0.1', where, key)), encoding='utf-8')
+                result = subprocess.run([sys.executable, str(SCRIPTS/'status_dashboard.py'), '--input', str(source),
+                                         '--output', str(target)], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 2)
+                self.assertFalse(target.exists())
+                self.assertEqual(result.stderr.strip(), 'DASHBOARD_REPORT_INVALID')
+                self.assertNotIn(self.MARKER, result.stdout + result.stderr)
+
+    def test_reports_from_real_producers_remain_accepted(self):
+        """Positive control: the shipped analyze/plan producers' output is not rejected."""
+        fixture = ROOT / 'tests/fixtures/proxy-port-conflict.json'
+        for command in ('analyze', 'plan'):
+            with self.subTest(command=command), tempfile.TemporaryDirectory() as tmp:
+                saved = Path(tmp)/'report.json'
+                made = subprocess.run([sys.executable, str(SCRIPTS/'guardian.py'), command, '--input', str(fixture),
+                                       '--target-ref', 'device-1', '--output', str(saved)],
+                                      capture_output=True, text=True)
+                self.assertEqual(made.returncode, 0, made.stderr)
+                html = Path(tmp)/'status.html'
+                result = subprocess.run([sys.executable, str(SCRIPTS/'status_dashboard.py'), '--input', str(saved),
+                                         '--output', str(html)], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertTrue(html.exists())
 
 
 if __name__ == '__main__':

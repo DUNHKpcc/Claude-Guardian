@@ -9,7 +9,7 @@ import re
 from traffic_policy import policy_projection
 import sys
 
-from guardian import GuardianError, PROXY_SUMMARY, load_json, save_new
+from guardian import GuardianError, PROXY_SUMMARY, base, load_json, save_new
 from probe_evidence import project_samples, sample_text, STATUS_LABELS
 
 STATES = {
@@ -109,11 +109,55 @@ def safe_facts(facts):
     return list(dict.fromkeys(details))
 
 
+def _closed_member_sets():
+    """Allowed member names per level, derived from the producers' own template.
+
+    Subset check only: producers and older fixtures may omit optional members, but no
+    member outside this release's vocabulary is accepted (ENV-T121).
+    """
+    template = base("audit", "device-1")
+    return {
+        "root": set(template) | {"plan", "question", "state"},
+        "snapshot": set(template["snapshot"]),
+        "contact_control": set(template["contact_control"]),
+        "privacy": set(template["privacy"]),
+        # system_dns_sample is written by diagnostic_session; the two command_* members by native_check.
+        "limits": set(template["limits"]) | {"command_timeout_seconds", "command_stdout_max_bytes",
+                                             "system_dns_sample"},
+        "target_binding": {"declared_os", "desktop_user_relation", "filesystem_namespace", "execution_location",
+                           "binding_state", "requested_role", "network_namespace"},
+        "fact": {"id", "value", "state", "context_ref", "observed_at", "layer", "source_ref", "source_refs",
+                 "reason_code", "coverage"},
+        "finding": {"code", "module_id"},
+    }
+
+
+def reject_unknown_members(report):
+    """Reject unrecognized members instead of silently dropping them in the display layer.
+
+    Fixed error code only; the offending name or value is never echoed.
+    """
+    allowed = _closed_member_sets()
+    if set(report) - allowed["root"]:
+        raise GuardianError("DASHBOARD_REPORT_INVALID")
+    for key in ("snapshot", "contact_control", "privacy", "limits", "target_binding"):
+        value = report.get(key)
+        if isinstance(value, dict) and set(value) - allowed[key]:
+            raise GuardianError("DASHBOARD_REPORT_INVALID")
+    for key, kind in (("facts", "fact"), ("findings", "finding")):
+        items = report.get(key)
+        if isinstance(items, list):
+            for item in items:
+                if isinstance(item, dict) and set(item) - allowed[kind]:
+                    raise GuardianError("DASHBOARD_REPORT_INVALID")
+
+
 def project(report, now=None, probe_report=None):
     """Project only enums/counts/dates. No arbitrary text, values or identifiers survive."""
     now = now or datetime.now(timezone.utc)
     if not isinstance(report, dict) or report.get("schema_version") not in ("guardian-report/0.1", "env-inventory/0.2"):
         raise GuardianError("DASHBOARD_REPORT_UNSUPPORTED")
+    reject_unknown_members(report)
     facts, findings = report.get("facts", []), report.get("findings", [])
     if not isinstance(facts, list) or not isinstance(findings, list) or len(facts) > 1000 or len(findings) > 1000:
         raise GuardianError("DASHBOARD_REPORT_INVALID")

@@ -317,7 +317,12 @@ class PolicyIntegrationTests(unittest.TestCase):
         report = guardian.base('audit', 'device-a')
         report['traffic_policy'] = {'policy': 'dual_stack', 'compliance': 'verified',
                                     'native_pass': True, 'private': '<script>SECRET</script>'}
-        report.update(AAAA_empty=True, curl4_success=True, https_success=True, ipv6_timeout=True)
+        # Forged success flags are unknown members: the dashboard now rejects them outright
+        # (ENV-T121) instead of ignoring them, so they are asserted separately below. The forged
+        # traffic_policy above is a known member and must still never be trusted or echoed.
+        for forged in ('AAAA_empty', 'curl4_success', 'https_success', 'ipv6_timeout'):
+            with self.subTest(forged=forged), self.assertRaises(status_dashboard.GuardianError):
+                status_dashboard.project(dict(report, **{forged: True}))
         view = status_dashboard.project(report)
         self.assertEqual(view['traffic_policy'], EXPECTED)
         self.assertNotEqual(view['overall'], 'verified')
