@@ -41,10 +41,19 @@ source drift still invalidates applicability.
 
 **Update, 2026-10-21.** The [input-boundary review](evidence/input-boundary-revalidation.md) registers
 ENV-T34 and ENV-T121, which were never historically accepted, as accepted on layer L with their own evidence objects.
-The ledger now records **6 accepted / 212 pending**. The four limited-review cases and the 51 historical evidence
+After that batch the ledger recorded **6 accepted / 212 pending** (superseded by the update below). The four limited-review cases and the 51 historical evidence
 objects above are unchanged, and the figures in the preceding paragraphs describe the state before this update. The
 two new acceptances come from a synthetic-sentinel matrix over listed paths; they establish no native behavior and do
 not restore any of the 47 entry-affected cases.
+
+**Update, 2026-10-21 (workflow enforcement).** The
+[workflow-enforcement review](evidence/workflow-enforcement-revalidation.md) restores ENV-T79, ENV-T81 and ENV-T90,
+the "Workflow enforcement" group below, at their original layers (L, L + C, L + C). The ledger now records
+**9 accepted / 209 pending**, and 44 of the 47 entry-affected cases remain pending. These three keep their
+`historical_evidence` objects unchanged and add a separately dated `evidence` object. The replay hashes equal the
+historical ones, so the review rests on re-reading each clause against current output and guidance rather than on the
+hash. The C part is an author-side reading of the shipped guidance, with no model dialogue and no independent
+reviewer. No native, rule-priority, actual-hit or operating-system isolation claim is made.
 
 All original 218 IDs, scenarios, full requirements and literal verification
 layers remain unchanged. Their original-row SHA-256 remains
@@ -57,7 +66,7 @@ The new dated requirement is separate; it does not rewrite the original rows.
 |---|---|---|
 | Route transition, 12 | T16, T19, T20, T21, T22, T23, T24, T25, T26, T33, T34, T53 | Revalidate selection, withdrawal, route-bound facts and plans, target changes, idempotent confirmations and resume against each whole original case. Distinguish an unanswered local proposal from withdrawal of an actual selected route. Review current route guidance; supplement observed dialogue only where coverage or guidance semantics actually changed. |
 | Entry/environment intake, 7 | T01, T02, T29, T43, T57, T81, T84 | Revalidate entry order, complete-fact reuse and applicable environment questions. Keep subscription-only explanation outside unnecessary environment intake. Preserve separate action/contact authority and original task boundaries. |
-| Workflow enforcement, 3 | ENV-T79, ENV-T81, ENV-T90 | Revalidate full decisions and reports with current entry declarations, no-target-I/O failures, mandatory controls and exact enforcement claims. Pure offline syntax simulation is not a real hit or operating-system isolation. |
+| Workflow enforcement, 3; restored 2026-10-21 | ENV-T79, ENV-T81, ENV-T90 | Revalidate full decisions and reports with current entry declarations, no-target-I/O failures, mandatory controls and exact enforcement claims. Pure offline syntax simulation is not a real hit or operating-system isolation. |
 | Subscription/interview compatibility, 17 | T31, T36, T38, T46, T47, T48, T49, T54, T74, T75, T76, T77, T78, T79, T80, T82, T83 | Review the exact shared-runtime change and replay complete existing normalized traces. Preserve original dialogues. Check refusal/unknown facts, historical separation, pause, urgent triage and subscription-only paths; new dialogue generation is not automatically necessary. |
 | Safe-input compatibility, 2 | T11, T12 | Preserve the four original observed replies and review. Rerun the nine bounded supporting CLI/helper paths on reviewed current sources; additionally verify new entry fields reject sensitive/extra data without echo and without granting authority. |
 | Rule-scope compatibility, 5 | ENV-T38, ENV-T39, ENV-T41, ENV-T42, ENV-T58 | Preserve the original eleven responses, twenty-two helper calls, six complete candidates and separate reviewer controls. Revalidate helper outputs and changed guardian selector/guidance behavior. Unchanged rule semantics do not require blanket dialogue regeneration. |

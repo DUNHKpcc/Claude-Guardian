@@ -60,6 +60,10 @@ CURRENTLY_ACCEPTED = frozenset({'T03', 'T05', 'T09', 'T18'})
 NEWLY_ACCEPTED = frozenset({'ENV-T34', 'ENV-T121'})
 INPUT_BOUNDARY_REVIEW = 'docs/evidence/input-boundary-revalidation.md'
 INPUT_BOUNDARY_REVIEW_SHA256 = 'ef1fe6f802f7e2a1b9350afcc1956846ee84d87574eb7219378448c975fa626e'
+# Historically accepted cases that a later dated review restored; they keep historical_evidence.
+RESTORED_BY_REVIEW = {'ENV-T79': ['L'], 'ENV-T81': ['L', 'C'], 'ENV-T90': ['L', 'C']}
+WORKFLOW_ENFORCEMENT_REVIEW = 'docs/evidence/workflow-enforcement-revalidation.md'
+WORKFLOW_ENFORCEMENT_REVIEW_SHA256 = 'fe8c4d115fadd12e380a850408625586002e7513ccfda62f24b15c2df558a87d'
 PRIOR_LIMITED_REVIEW = 'docs/evidence/entry-order-limited-revalidation.md'
 PRIOR_LIMITED_REVIEW_SHA256 = 'b94395b4d52c7d3a1f54954d3661a66af9e94de0faad435b9fdde49313eacd8d'
 AGENT_TASK_REVIEW = 'docs/evidence/agent-rules-limited-revalidation.md'
@@ -703,7 +707,8 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
         counts, statuses = {}, {}
         for case in ledger['cases']:
             case_id = case['id']
-            accepted = case_id in CURRENTLY_ACCEPTED or case_id in NEWLY_ACCEPTED
+            accepted = (case_id in CURRENTLY_ACCEPTED or case_id in NEWLY_ACCEPTED
+                        or case_id in RESTORED_BY_REVIEW)
             self.assertEqual(case['rebuild_acceptance'],
                              'accepted_revalidated' if accepted else 'pending_revalidation')
             if case_id in NEWLY_ACCEPTED:
@@ -718,6 +723,21 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
                 self.assertEqual(evidence['sha256'], INPUT_BOUNDARY_REVIEW_SHA256)
                 self.assertEqual(evidence['sha256'],
                                  hashlib.sha256((ROOT / INPUT_BOUNDARY_REVIEW).read_bytes()).hexdigest())
+            elif case_id in RESTORED_BY_REVIEW:
+                self.assertEqual(groups[case_id], 'workflow_enforcement')
+                self.assertNotIn('revalidation', case)
+                self.assertIn('historical_evidence', case)
+                self.assertEqual(case['historical_evidence']['path'],
+                                 HISTORICALLY_ACCEPTED[case_id][0])
+                self.assertEqual(case['verification_layer'], HISTORICALLY_ACCEPTED[case_id][1])
+                evidence = case['evidence']
+                self.assertEqual(evidence['path'], WORKFLOW_ENFORCEMENT_REVIEW)
+                self.assertEqual(evidence['layers'], RESTORED_BY_REVIEW[case_id])
+                self.assertEqual(evidence['review_date'], '2026-10-21')
+                self.assertTrue(evidence['boundary'])
+                self.assertEqual(evidence['sha256'], WORKFLOW_ENFORCEMENT_REVIEW_SHA256)
+                self.assertEqual(evidence['sha256'], hashlib.sha256(
+                    (ROOT / WORKFLOW_ENFORCEMENT_REVIEW).read_bytes()).hexdigest())
             elif accepted:
                 self.assertNotIn('revalidation', case)
                 expected_path, original_layer, reviewed_layers = HISTORICALLY_ACCEPTED[case_id]
@@ -752,7 +772,7 @@ class AcceptanceRebuildLedgerTests(unittest.TestCase):
             if 'N' in case['verification_layer']:
                 self.assertIn(case['scheduling'], ('deferred_native', 'conditional_native'))
         self.assertEqual(counts, {'cloud_only': 75, 'deferred_native': 113, 'conditional_native': 30})
-        self.assertEqual(statuses, {'accepted_revalidated': 6, 'pending_revalidation': 212})
+        self.assertEqual(statuses, {'accepted_revalidated': 9, 'pending_revalidation': 209})
 
 
 if __name__ == '__main__':
