@@ -84,6 +84,19 @@ B 档计划结束后汇报：做了什么、原值→新值、验证结果、怎
 
 故障演练在用户本机、用户在控制台前时可按 B 档；目标是远程机器时按 C 档。
 
-## 现状说明
+## 状态机里的可追溯记录（ADR-026）
 
-访谈评估里的 G3（动作授权）仍然永远是 blocked，范围确认单和计划批准单由对话中的用户确认产生，目前没有写进状态机；是否增加由宿主提供的"计划级批准"记录，留作后续决定。
+范围确认单、计划批准单和确认单会写进访谈状态的 `authorization` 段，供宿主和 Agent 查证、复盘。记录只是**追溯**，不执行任何动作；访谈里的回答不会产生记录，G3 仍是 blocked。
+
+| 记录 | 函数 | 规则 |
+| --- | --- | --- |
+| 范围确认单 | `record_scope_confirmation` | 路线必须已明确选择；只能含 A、B 档动作，含 C 档或未知动作直接拒绝；绑定目标、账号、任务和路线 |
+| B 档计划批准 | `record_plan_approval` | 需要有效范围；步骤必须全是 B 档且都在范围内；计划编号不能重复 |
+| 计划结果 | `record_plan_result` | 只记 completed、rolled_back、failed；同一结果重复提交是幂等的 |
+| C 档确认单 | `request_critical_confirmation`、`resolve_critical_confirmation` | 只能对 C 档动作开；用户回复 confirmed、cancelled、modified；沉默不会自行解决 |
+| 一次性使用 | `use_critical_confirmation` | 已确认的 C 档确认只能用一次 |
+| 查询 | `authorization_check`、`authorization_summary` | 只读；评估结果里的 `authorization` 字段给出摘要 |
+
+**来源必须是用户的明确回复**（`user:` 开头），`agent:`、`host:` 或空来源一律拒绝，防止 Agent 自己给自己批准。**失效是永久的：**换路线、撤回路线选择、会话恢复，都会让范围、计划和确认单变成 stale，再改回原路线也不复活，必须重新确认。存档被改过（比如把来源改成 `agent:`、往范围里塞 C 档动作）读取时会被拒绝。
+
+**`authorization_check(action)` 的判定：**A 档在有效范围内即可；B 档要有已批准且未结束的计划列着这项动作；C 档要有已确认且未使用的确认单；未知动作按 C 档；注册、登录、付款、凭据、接触 Claude 这四类**永远返回不允许**（`user_performs_this`），即使用户确认过，也由用户本人完成。这是供 Agent 自查的辅助判断，不是执行授权，宿主不能把它当成通行证。

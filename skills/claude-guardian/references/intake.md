@@ -227,6 +227,8 @@ Categorical facts that make the route-specific guidance deterministic instead of
 
 Q-V07 and Q-V08 (VM) and Q-S08 (VPS) in the tables above follow the same rules. Route-specific questions are asked only after the route is explicitly chosen, never from the default proposal.
 
+Tiered authorization records (scope, tier-B plan approvals, tier-C confirmations) live in an optional `authorization` section of the state, written only through the `record_*` and `*_critical_confirmation` functions with a `user:` source; see [authorization-tiers.md](authorization-tiers.md). Interview answers never create them, and `assessment()` only summarizes them.
+
 `assessment()` turns these answers into `required_references` (ADR-019): the ordered owner materials the answer must attach, computed by `required_references(state)` from the task, billing channel, journey, OS and the facts above. It mirrors the SKILL.md attachment table and is never an action authorization.
 
 ## Selected-device history and explicit cleanup task

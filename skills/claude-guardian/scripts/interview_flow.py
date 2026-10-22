@@ -1,7 +1,9 @@
 """Offline adaptive interview; no network, subprocess, file writes or implicit consent.
 
 Public API: new_state, record_fact, record_facts, set_context, next_question, assessment,
-required_references,
+required_references, record_scope_confirmation, record_plan_approval, record_plan_result,
+request_critical_confirmation, resolve_critical_confirmation, use_critical_confirmation,
+authorization_check, authorization_summary,
 mark_asked, defer_branch, resume_branch, complete_purchase, dumps_state,
 loads_state, validate_state, resume_interview, record_resume_review,
 resume_review_prompt, resume_scope_keys, cleanup_assessment,
@@ -321,9 +323,11 @@ def validate_state(state):
     required = {"schema_version", "task_id", "target_alias", "account_alias", "facts", "context",
                 "asked_question_ids", "deferred_branches", "current_subscription", "payment_intent",
                 "purchase_intent", "persistence_consent"}
-    if set(state) - required - {'resume_review', 'purchase_completion', 'subscription_review'} or required - set(state):
+    if set(state) - required - {'resume_review', 'purchase_completion', 'subscription_review', 'authorization'} or required - set(state):
         raise InterviewError("Unexpected or missing state fields")
     _safe(state)
+    if 'authorization' in state:
+        _validate_authorization(state)
     for name in ("task_id", "target_alias", "account_alias"):
         if not isinstance(state[name], str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", state[name]):
             raise InterviewError("Use short non-identifying aliases")
@@ -1004,6 +1008,8 @@ def _invalidate_changed_route(state, previous, *, refreshed_context=()):
     withdrawn = was_confirmed and context['route_selection_basis'] == 'default_proposal'
     if not changed and not withdrawn:
         return
+    # A scope belongs to one confirmed route; changing or withdrawing it never revives later.
+    _stale_authorization(state, 'route_changed_or_withdrawn')
     _invalidate_device_cleanup(state)
     if not was_confirmed:
         return
@@ -1999,6 +2005,8 @@ def assessment(state):
     references = required_references(state)
     if references:
         result['required_references'] = references
+    if state.get('authorization'):
+        result['authorization'] = authorization_summary(state)
     if review is not None:
         result["resume_review"] = {key: deepcopy(review[key]) for key in
                                    ("event_id", "status", "response", "scope_keys", "changed_keys", "reported_at")}
@@ -2007,6 +2015,347 @@ def assessment(state):
                                       else "resume_review_required" if review["status"] == "pending"
                                       else "resume_review_unresolved")
     return result
+
+
+
+# --- Tiered authorization records (ADR-025/ADR-026) -------------------------------------------
+# Traceability only: these records are written from explicit user replies supplied by the
+# host. They never execute anything, and answering interview questions never creates them.
+ACTION_TIERS = {
+    # A: inside a confirmed scope, no further question
+    'readonly_diagnosis': 'A', 'research': 'A', 'plan_drafting': 'A', 'dry_run': 'A', 'detection_page': 'A',
+    # B: approved once as part of a plan; the Agent can undo it and it cannot cut its own access
+    'backup_export': 'B', 'rollback_fuse': 'B', 'allow_rules': 'B', 'install_client': 'B', 'install_tun': 'B',
+    'guest_ssh': 'B', 'ssh_forward': 'B', 'novnc_local': 'B', 'realm_relay': 'B', 'bbr_temporary': 'B',
+    'fault_drill_local': 'B',
+    # C: the user must confirm at that moment
+    'default_outbound_block': 'C', 'killswitch_enable': 'C', 'inbound_firewall_enable': 'C',
+    'ssh_config_change': 'C', 'bbr_persist': 'C', 'nic_ipv6_disable': 'C', 'fault_drill_remote': 'C',
+    'data_cleanup': 'C', 'org_device_policy': 'C',
+    'account_action': 'C', 'payment': 'C', 'credential_handling': 'C', 'claude_contact': 'C',
+}
+# Done by the user personally; a confirmation never lets the Agent perform them.
+USER_ONLY_ACTIONS = frozenset({'account_action', 'payment', 'credential_handling', 'claude_contact'})
+AUTH_SAFEGUARDS = frozenset({'independent_access', 'second_session', 'snapshot'})
+AUTH_PRESERVED = frozenset({'projects', 'history', 'other_apps', 'lan_devices', 'vpn', 'codex_channel'})
+AUTH_ROLLBACK = frozenset({'automatic_fuse', 'manual_documented', 'none'})
+AUTH_PLAN_STATUS = frozenset({'approved', 'completed', 'rolled_back', 'failed', 'stale'})
+AUTH_DECISIONS = frozenset({'confirmed', 'cancelled', 'modified'})
+AUTH_CONFIRMATION_STATUS = frozenset({'pending', 'confirmed', 'cancelled', 'modified', 'used', 'stale'})
+AUTH_LIMIT = 100
+
+
+def authorization_action_tier(action):
+    """Tier of a known action; anything unknown is C (when unsure, use the higher tier)."""
+    return ACTION_TIERS.get(action, 'C') if isinstance(action, str) else 'C'
+
+
+def _auth_user_source(source):
+    if type(source) is not str or not re.fullmatch(r'user:[A-Za-z0-9_.:-]{1,120}', source):
+        raise InterviewError("Authorization must come from the user's explicit reply (source user:...)")
+    return source
+
+
+def _auth_label(value, what):
+    if type(value) is not str or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', value):
+        raise InterviewError('Use a short non-identifying ' + what)
+    return value
+
+
+def _auth_actions(values, *, tiers):
+    if isinstance(values, (str, bytes)) or not isinstance(values, (list, tuple, set, frozenset)) or not values:
+        raise InterviewError('Actions must be a nonempty list')
+    out = []
+    for action in values:
+        if type(action) is not str or action not in ACTION_TIERS:
+            raise InterviewError('Unknown action; unknown actions are tier C and need a confirmation')
+        if ACTION_TIERS[action] not in tiers:
+            raise InterviewError('Action tier not allowed here: ' + action)
+        if action not in out:
+            out.append(action)
+    if len(out) > 40:
+        raise InterviewError('Too many actions')
+    return sorted(out)
+
+
+def _auth_binding(state):
+    ctx = state['context']
+    return {'target_alias': state['target_alias'], 'account_alias': state['account_alias'],
+            'task_id': state['task_id'], 'route': ctx['route']}
+
+
+def _auth_record(state):
+    return state.setdefault('authorization', {'scopes': [], 'plans': [], 'confirmations': []})
+
+
+def _auth_active_scope(state):
+    """The active scope whose binding still matches the current state, else None."""
+    record = state.get('authorization')
+    if not record:
+        return None
+    for scope in reversed(record['scopes']):
+        if scope['status'] == 'active':
+            return scope if scope['binding'] == _auth_binding(state) and \
+                state['context']['route_selection_basis'] != 'default_proposal' else None
+    return None
+
+
+def _stale_authorization(state, reason):
+    record = state.get('authorization')
+    if not record:
+        return
+    for scope in record['scopes']:
+        if scope['status'] == 'active':
+            scope['status'] = 'stale'
+            scope['stale_reason'] = reason
+    for plan in record['plans']:
+        if plan['status'] == 'approved':
+            plan['status'] = 'stale'
+    for item in record['confirmations']:
+        if item['status'] in {'pending', 'confirmed'}:
+            item['status'] = 'stale'
+
+
+def _validate_authorization(state):
+    record = state['authorization']
+    if (not isinstance(record, dict) or set(record) != {'scopes', 'plans', 'confirmations'}
+            or any(not isinstance(record[k], list) or len(record[k]) > AUTH_LIMIT for k in record)):
+        raise InterviewError('Invalid authorization record')
+    scope_ids = set()
+    active = 0
+    for scope in record['scopes']:
+        keys = {'scope_id', 'status', 'binding', 'allowed_actions', 'safeguards', 'preserved', 'source',
+                'observed_at', 'stale_reason'}
+        if (not isinstance(scope, dict) or set(scope) - keys or keys - {'stale_reason'} - set(scope)
+                or scope['status'] not in {'active', 'stale', 'revoked'}
+                or not isinstance(scope['binding'], dict)
+                or set(scope['binding']) != {'target_alias', 'account_alias', 'task_id', 'route'}
+                or not isinstance(scope['allowed_actions'], list)
+                or any(a not in ACTION_TIERS or ACTION_TIERS[a] == 'C' for a in scope['allowed_actions'])
+                or not isinstance(scope['safeguards'], list) or set(scope['safeguards']) - AUTH_SAFEGUARDS
+                or not isinstance(scope['preserved'], list) or set(scope['preserved']) - AUTH_PRESERVED):
+            raise InterviewError('Invalid authorization scope')
+        _auth_label(scope['scope_id'], 'scope id')
+        _auth_user_source(scope['source'])
+        _validate_date(scope['observed_at'])
+        if scope['scope_id'] in scope_ids:
+            raise InterviewError('Duplicate scope id')
+        scope_ids.add(scope['scope_id'])
+        active += scope['status'] == 'active'
+    if active > 1:
+        raise InterviewError('Only one active scope')
+    plan_ids = set()
+    for plan in record['plans']:
+        keys = {'plan_id', 'scope_id', 'steps', 'status', 'approved_source', 'approved_at',
+                'result_source', 'result_at'}
+        if (not isinstance(plan, dict) or set(plan) != keys or plan['status'] not in AUTH_PLAN_STATUS
+                or plan['scope_id'] not in scope_ids or not isinstance(plan['steps'], list) or not plan['steps']
+                or any(a not in ACTION_TIERS or ACTION_TIERS[a] != 'B' for a in plan['steps'])):
+            raise InterviewError('Invalid plan approval')
+        _auth_label(plan['plan_id'], 'plan id')
+        _auth_user_source(plan['approved_source'])
+        _validate_date(plan['approved_at'])
+        if plan['plan_id'] in plan_ids:
+            raise InterviewError('Duplicate plan id')
+        plan_ids.add(plan['plan_id'])
+    conf_ids = set()
+    for item in record['confirmations']:
+        keys = {'confirmation_id', 'scope_id', 'action', 'reason', 'rollback', 'status', 'requested_at',
+                'resolved_source', 'resolved_at'}
+        if (not isinstance(item, dict) or set(item) != keys or item['status'] not in AUTH_CONFIRMATION_STATUS
+                or item['scope_id'] not in scope_ids or item['action'] not in ACTION_TIERS
+                or ACTION_TIERS[item['action']] != 'C' or item['rollback'] not in AUTH_ROLLBACK
+                or not isinstance(item['reason'], str) or not 1 <= len(item['reason']) <= 200):
+            raise InterviewError('Invalid critical confirmation')
+        _auth_label(item['confirmation_id'], 'confirmation id')
+        _validate_date(item['requested_at'])
+        if item['resolved_source'] is not None:
+            _auth_user_source(item['resolved_source'])
+        if item['confirmation_id'] in conf_ids:
+            raise InterviewError('Duplicate confirmation id')
+        conf_ids.add(item['confirmation_id'])
+
+
+def record_scope_confirmation(state, *, source, allowed_actions, safeguards=(), preserved=(), observed_at=None):
+    """Record the user's explicit scope confirmation (tier A and B only; never C).
+
+    Requires an explicitly chosen route. The scope is bound to this target, account,
+    task and route; a different binding, a resume or a route change retires it.
+    """
+    validate_state(state)
+    _auth_user_source(source)
+    _validate_date(observed_at)
+    if state['context']['route_selection_basis'] == 'default_proposal' or state['context']['route'] == 'compare':
+        raise InterviewError('Confirm a route before confirming a scope')
+    actions = _auth_actions(allowed_actions, tiers={'A', 'B'})
+    for name, values, allowed in (('safeguards', safeguards, AUTH_SAFEGUARDS), ('preserved', preserved, AUTH_PRESERVED)):
+        if isinstance(values, str) or set(values) - allowed:
+            raise InterviewError('Unknown ' + name + ' value')
+    result = deepcopy(state)
+    record = _auth_record(result)
+    if len(record['scopes']) >= AUTH_LIMIT:
+        raise InterviewError('Authorization history is full')
+    for old in record['scopes']:
+        if old['status'] == 'active':
+            old['status'] = 'revoked'
+    _stale_authorization(result, 'scope_replaced')
+    record['scopes'].append({
+        'scope_id': 'scope-%d' % (len(record['scopes']) + 1), 'status': 'active', 'binding': _auth_binding(result),
+        'allowed_actions': actions, 'safeguards': sorted(set(safeguards)), 'preserved': sorted(set(preserved)),
+        'source': source, 'observed_at': observed_at if observed_at is not None else _now()})
+    return validate_state(result)
+
+
+def record_plan_approval(state, *, plan_id, steps, source, observed_at=None):
+    """Record one tier-B plan the user approved as a whole; all steps must be in the active scope."""
+    validate_state(state)
+    _auth_label(plan_id, 'plan id')
+    _auth_user_source(source)
+    _validate_date(observed_at)
+    scope = _auth_active_scope(state)
+    if scope is None:
+        raise InterviewError('A current scope confirmation is required first')
+    actions = _auth_actions(steps, tiers={'B'})
+    if set(actions) - set(scope['allowed_actions']):
+        raise InterviewError('Plan steps must be inside the confirmed scope')
+    result = deepcopy(state)
+    record = _auth_record(result)
+    if any(plan['plan_id'] == plan_id for plan in record['plans']):
+        raise InterviewError('Plan id already used')
+    if len(record['plans']) >= AUTH_LIMIT:
+        raise InterviewError('Authorization history is full')
+    record['plans'].append({'plan_id': plan_id, 'scope_id': scope['scope_id'], 'steps': actions,
+                            'status': 'approved', 'approved_source': source,
+                            'approved_at': observed_at if observed_at is not None else _now(),
+                            'result_source': None, 'result_at': None})
+    return validate_state(result)
+
+
+def record_plan_result(state, plan_id, *, status, source, observed_at=None):
+    """Record how an approved plan ended (completed, rolled_back or failed); retried identically is idempotent."""
+    validate_state(state)
+    if status not in {'completed', 'rolled_back', 'failed'}:
+        raise InterviewError('Invalid plan result')
+    if type(source) is not str or not re.fullmatch(r'(user|agent|host):[A-Za-z0-9_.:-]{1,120}', source):
+        raise InterviewError('Result source needs a user, agent or host label')
+    _validate_date(observed_at)
+    result = deepcopy(state)
+    record = _auth_record(result)
+    plan = next((item for item in record['plans'] if item['plan_id'] == plan_id), None)
+    if plan is None:
+        raise InterviewError('Unknown plan')
+    if plan['status'] == status:
+        return validate_state(result)
+    if plan['status'] != 'approved':
+        raise InterviewError('Only an approved plan can receive a result')
+    plan.update(status=status, result_source=source, result_at=observed_at if observed_at is not None else _now())
+    return validate_state(result)
+
+
+def request_critical_confirmation(state, *, action, reason, rollback, requested_at=None):
+    """Open a tier-C confirmation the user must answer at that moment (the Agent then pauses)."""
+    validate_state(state)
+    if type(action) is not str or action not in ACTION_TIERS or ACTION_TIERS[action] != 'C':
+        raise InterviewError('Only tier C actions need a confirmation')
+    if rollback not in AUTH_ROLLBACK:
+        raise InterviewError('State how the action is undone')
+    _safe(reason)
+    if type(reason) is not str or not 1 <= len(reason) <= 200:
+        raise InterviewError('Give a short reason')
+    _validate_date(requested_at)
+    scope = _auth_active_scope(state)
+    if scope is None:
+        raise InterviewError('A current scope confirmation is required first')
+    result = deepcopy(state)
+    record = _auth_record(result)
+    if len(record['confirmations']) >= AUTH_LIMIT:
+        raise InterviewError('Authorization history is full')
+    record['confirmations'].append({
+        'confirmation_id': 'c-%d' % (len(record['confirmations']) + 1), 'scope_id': scope['scope_id'],
+        'action': action, 'reason': reason, 'rollback': rollback, 'status': 'pending',
+        'requested_at': requested_at if requested_at is not None else _now(),
+        'resolved_source': None, 'resolved_at': None})
+    return validate_state(result)
+
+
+def resolve_critical_confirmation(state, confirmation_id, *, decision, source, observed_at=None):
+    """Record the user's answer to a pending confirmation. Silence never resolves it."""
+    validate_state(state)
+    if decision not in AUTH_DECISIONS:
+        raise InterviewError('Invalid decision')
+    _auth_user_source(source)
+    _validate_date(observed_at)
+    result = deepcopy(state)
+    record = _auth_record(result)
+    item = next((c for c in record['confirmations'] if c['confirmation_id'] == confirmation_id), None)
+    if item is None:
+        raise InterviewError('Unknown confirmation')
+    if item['status'] != 'pending':
+        raise InterviewError('Only a pending confirmation can be answered')
+    item.update(status=decision, resolved_source=source, resolved_at=observed_at if observed_at is not None else _now())
+    return validate_state(result)
+
+
+def use_critical_confirmation(state, action):
+    """Consume one confirmed tier-C confirmation for this action (one-time); fails when none is usable."""
+    check = authorization_check(state, action)
+    if not check['allowed'] or check['tier'] != 'C':
+        raise InterviewError('No usable confirmation: ' + check['reason'])
+    result = deepcopy(state)
+    item = next(c for c in result['authorization']['confirmations'] if c['confirmation_id'] == check['confirmation_id'])
+    item['status'] = 'used'
+    return validate_state(result)
+
+
+def authorization_check(state, action):
+    """Read-only: may the Agent perform this action now? A planning aid, never an execution grant."""
+    validate_state(state)
+    tier = authorization_action_tier(action)
+    out = {'action': action if isinstance(action, str) else None, 'tier': tier, 'allowed': False, 'reason': None}
+    if isinstance(action, str) and action in USER_ONLY_ACTIONS:
+        out['reason'] = 'user_performs_this'
+        return out
+    scope = _auth_active_scope(state)
+    if scope is None:
+        out['reason'] = 'scope_not_active'
+        return out
+    record = state['authorization']
+    if tier == 'A':
+        out.update(allowed=True, reason='inside_confirmed_scope')
+    elif tier == 'B':
+        plan = next((p for p in record['plans'] if p['status'] == 'approved' and p['scope_id'] == scope['scope_id']
+                     and action in p['steps']), None)
+        if plan is None:
+            out['reason'] = 'no_approved_plan'
+        else:
+            out.update(allowed=True, reason='approved_plan', plan_id=plan['plan_id'])
+    else:
+        item = next((c for c in record['confirmations'] if c['status'] == 'confirmed'
+                     and c['scope_id'] == scope['scope_id'] and c['action'] == action), None)
+        if item is None:
+            pending = any(c['status'] == 'pending' and c['action'] == action for c in record['confirmations'])
+            out['reason'] = 'confirmation_pending' if pending else 'confirmation_required'
+        else:
+            out.update(allowed=True, reason='confirmed_by_user', confirmation_id=item['confirmation_id'])
+    return out
+
+
+def authorization_summary(state):
+    """Compact traceable view for assessments; empty dict when no authorization was recorded."""
+    record = state.get('authorization')
+    if not record:
+        return {}
+    latest = record['scopes'][-1] if record['scopes'] else None
+    current = _auth_active_scope(state)
+    counts = {}
+    for plan in record['plans']:
+        counts[plan['status']] = counts.get(plan['status'], 0) + 1
+    return {'scope': 'active' if current else ('stale' if latest and latest['status'] in {'active', 'stale'} else 'none'),
+            'binding_valid': current is not None,
+            'plans': counts,
+            'pending_confirmations': [{'id': c['confirmation_id'], 'action': c['action']}
+                                      for c in record['confirmations'] if c['status'] == 'pending'],
+            'note': 'Records trace user replies; they are not an execution grant. G3 stays blocked here.'}
 
 
 def complete_purchase(state, *, source, observed_at=None, observed=False):
@@ -2241,6 +2590,7 @@ def resume_interview(state, *, resume_id):
     old = result.get('resume_review')
     result['context']['paused'] = False
     result['persistence_consent'] = {key: False for key in result['persistence_consent']}
+    _stale_authorization(result, 'session_resumed')
     if old is not None and old['event_id'] == resume_id:
         if state['context']['paused'] and old['status'] in {'reviewed', 'not_required'}:
             raise InterviewError('A new interruption requires a new resume event label')
@@ -2579,6 +2929,12 @@ for _route_qid, _route_values in ROUTE_EXIT_VALUES.items():
     STATE_SCHEMA['properties']['facts']['properties'][_route_qid] = {
         **FACT_SCHEMA, 'properties': {**FACT_SCHEMA['properties'],
                                      'value': {'enum': [None] + sorted(_route_values)}}}
+
+# Optional, validated in code (_validate_authorization); the schema only fixes the shape.
+STATE_SCHEMA['properties']['authorization'] = {
+    'type': 'object', 'additionalProperties': False, 'required': ['scopes', 'plans', 'confirmations'],
+    'properties': {key: {'type': 'array', 'maxItems': 100, 'items': {'type': 'object'}}
+                   for key in ('scopes', 'plans', 'confirmations')}}
 
 for _episode_ref_key in ('device_incident_resolution_ref', 'cleanup_offer_dismissed_ref'):
     STATE_SCHEMA['properties']['context']['properties'][_episode_ref_key] = {

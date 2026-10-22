@@ -228,6 +228,14 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("## 授权档位", skill)
         self.assertIn("[authorization-tiers.md](references/authorization-tiers.md)（必附）", skill)
 
+    def test_authorization_records_are_documented(self):
+        doc = (REFS / "authorization-tiers.md").read_text(encoding="utf-8")
+        for term in ("状态机里的可追溯记录", "record_scope_confirmation", "record_plan_approval", "use_critical_confirmation",
+                     "user:", "user_performs_this", "永久的", "不复活"):
+            self.assertIn(term, doc)
+        self.assertNotIn("目前没有写进状态机", doc)
+        self.assertIn("authorization", (REFS / "intake.md").read_text(encoding="utf-8"))
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

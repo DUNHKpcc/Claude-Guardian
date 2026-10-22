@@ -192,3 +192,11 @@ C 档清单（所有者确认）：可能锁死自己的改动（默认出站切
 
 落实：AGENTS.md 的权限条改为分档；contact-and-safety 和 agent-remediation 加说明，“具体授权／逐项批准”按档位理解；SKILL.md 新增“授权档位”一节和资料表一行；本机防火墙、线路优化、VM、VPS 文档标注各步档位；路线明确选择后 required_references 附 authorization-tiers。未做：状态机里的 G3 仍恒为 blocked，没有“计划级批准”记录，是否增加留作后续决定。
 
+## ADR-026：状态机里留下分级授权的可追溯记录（2026-10-21 已确认）
+
+所有者要求 B 档批准在状态机里留下可追溯记录。访谈状态新增可选的 authorization 段：scopes（范围确认单）、plans（B 档计划批准）、confirmations（C 档确认单）。对应函数：record_scope_confirmation、record_plan_approval、record_plan_result、request_critical_confirmation、resolve_critical_confirmation、use_critical_confirmation，以及只读的 authorization_check 和 authorization_summary。动作档位目录 ACTION_TIERS 与 authorization-tiers.md 一致，未知动作按 C 档；注册、登录、付款、凭据、接触 Claude 四类永远不允许 Agent 执行，即使用户确认过。
+
+约束：授权类记录的来源必须是 user: 开头的用户明确回复，agent:、host: 或空来源拒绝，防止 Agent 自批准；范围只能含 A、B 档动作，C 档或未知动作拒绝；计划步骤必须全是 B 档且在范围内；范围绑定目标、账号、任务和路线，换路线、撤回路线选择、会话恢复都使范围、计划和确认单永久失效（stale），改回原路线也不复活；一次只有一个有效范围；已确认的 C 档确认只能用一次；存档读取时重新校验，来源被改、范围里被塞入 C 档动作、重复编号、未知字段都拒绝。
+
+不变：记录只是追溯，不执行任何动作；访谈回答不会产生记录；评估结果的 G3 仍恒为 blocked，只多一个 authorization 摘要字段，旧字段不变；authorization_check 是辅助自查，不是执行授权。未做：命令行入口暂不提供写入这些记录的参数，由宿主通过函数调用。
+
