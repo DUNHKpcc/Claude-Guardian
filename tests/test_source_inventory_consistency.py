@@ -62,9 +62,9 @@ class SourceInventoryConsistencyTests(unittest.TestCase):
                        if source['category'] == 'reading'}
         design_ids = {source['id'] for source in self.current['sources']
                       if source['category'] == 'design'}
-        self.assertEqual(reading_ids, {'S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07'})
+        self.assertEqual(reading_ids, {'S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08'})
         self.assertEqual(design_ids, {'D-SPEC', 'D-ENV'})
-        self.assertIn('## 七份阅读来源', self.library)
+        self.assertIn('## 八份阅读来源', self.library)
         self.assertNotIn('六份阅读来源', self.library)
         self.assertNotIn('六个阅读来源', self.library)
         sections = re.findall(r'^### (S\d+)：', self.library, flags=re.MULTILINE)
@@ -75,10 +75,10 @@ class SourceInventoryConsistencyTests(unittest.TestCase):
 
     def test_reading_index_separates_initial_inputs_later_s07_and_missing_sources(self):
         self.assertIn('最初八个输入文件', self.library)
-        self.assertIn('S07 后续补入', self.library)
-        self.assertIn('S08 仍未提供；S09 为外部仓库参考', self.library)
+        self.assertIn('S07、S08 后续补入', self.library)
+        self.assertIn('S09 为外部仓库参考', self.library)
         self.assertNotIn('本阅读库没有宣称打包它们', self.library)
-        self.assertNotIn('S08', self.sources)
+        self.assertIn('S08', self.sources)
         self.assertNotIn('S09', self.sources)
         self.assertIn('派生文字辅助文件，不另计为独立来源', self.library)
 
@@ -105,7 +105,8 @@ class SourceInventoryConsistencyTests(unittest.TestCase):
         linked_paths = {(LIBRARY_PATH.parent / link).resolve() for link in links}
         self.assertEqual(linked_paths, expected_paths | {(SKILL / 'sources/manifest.json').resolve()})
         self.assertEqual([item['path'] for item in companions if item['path'].startswith('sources/S')],
-                         ['sources/S03-extracted-text.md'])
+                         ['sources/S03-extracted-text.md', 'sources/S03-source-text.md',
+                          'sources/S08-extracted-text.md'])
         self.assertNotEqual(self.sources['S06']['original_sha256'],
                             self.sources['S06']['distributed_sha256'])
 

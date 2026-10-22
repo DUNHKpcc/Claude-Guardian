@@ -197,7 +197,7 @@ The following are short prompts/field meanings, not a mandatory sequence. Preser
 | Q-V04 | VM networking and proxy location |
 | Q-V05 | Shared folders, clipboard, tool and credential mounts; no secret values |
 | Q-V06 | Snapshot/backup and restore scope |
-| Q-S01 | VPS workspace or merely proxy exit? |
+| Q-S01 | VPS as a development machine (Claude Code runs on it); a proxy-exit-only VPS belongs to the local route egress choice (egress-ip-options.md) |
 | Q-S02 | Existing/new server, region, OS, and resources |
 | Q-S03 | SSH access and independent rescue channel; no keys/passwords |
 | Q-S04 | Production workloads and unbacked-up data |

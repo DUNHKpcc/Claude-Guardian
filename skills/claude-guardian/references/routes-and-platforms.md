@@ -157,11 +157,15 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ### P1 可行性、现有服务器与成本（本机规划，PC0）
 
-1. 先问 VPS 是工作区还是仅出口；仅出口沿当前工作区路线，不安装远端 Claude。明确远端任务需要的语言/工具、CPU/架构、内存、存储、GUI、本地硬件及数据驻留要求
+1. VPS 路线是开发机（Claude Code 跑在 VPS 上）。只想把 VPS 当代理出口（自建梯）的，属于本机路线选 IP 出口的选项，见 [egress-ip-options.md](egress-ip-options.md)，不在本路线处理。明确远端任务需要的语言/工具、CPU/架构、内存、存储、GUI、本地硬件及数据驻留要求
 2. 已有服务器优先只读接入；记录机器/用户/用途及不能中断的服务。不假定空机，不运行压力测试、DD、RAID、BBR/WARP 或“优化全家桶”
-3. 新服务器只比较符合真实地区与合规条件的方案：计算实例、磁盘、出站流量、备份/快照、税费、续费和取消条件；不固化历史价格/商家排名。用户只要免费工具不等于批准任何 VPS 费用
+3. 新服务器只比较符合真实地区与合规条件的方案：计算实例、磁盘、出站流量、备份/快照、税费、续费和取消条件；选型参考[VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md)，价格以官方当前页面为准。用户只要免费工具不等于批准任何 VPS 费用
 4. 不能迁移本地 GUI/硬件依赖或敏感数据时说明阻碍，保留本机方案；只有用户选新方案才做迁移计划
 5. 购买、开通、操作条款与支付都需相应确认/本人交接；本手册不创建服务器。受限地区不能通过虚假地址/身份或出口标签绕过
+
+### P1a 系统、环境一致、出口与防火墙（VPS，PC0 指引）
+
+选定 VPS 路线后，按 [vps-guidance.md](vps-guidance.md)：服务器系统首选 Ubuntu 24.04、x86_64；核心是环境一致，注册、登录、养号、订阅和 OAuth 都在 VPS 的远程桌面浏览器里完成，不和本机浏览器混用；出口是 VPS 自己的 IP，或在其上套一层家宽出口（见 R02）；防火墙用[vps-guard.sh](../assets/vps-firewall/vps-guard.sh)，套家宽时用 VM 的 killswitch 脚本。详细流程见 [S08](../sources/S08-vps-claude-tutorial.pdf)。只给指引，不代买、不代配置；本机和 VM 路线不触发。
 
 ### P2 SSH、开发用户与救援（本机与服务器分别标注，PC0）
 
@@ -205,4 +209,4 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ## 来源与维护定位
 
-本手册由 [D-SPEC §3–5、§9–10](../sources/design/D-SPEC-v0.1.10.md) 与 [D-ENV §8、§11、§18](../sources/design/D-ENV-v0.3.md) 展开。[S04 路线/FAQ](../sources/S04-claude-guide.md)、[S05 本地防护](../sources/S05-local-protection.md)、[S07 测试目录](../sources/S07-vps-script-catalog.md) 是背景材料，不授予执行权；S08 未提供，不能宣称复现其第 2–11 页具体命令。官方 OS/客户端入口沿用 D-SPEC 附录 A、D-ENV §14 的历史链接，使用前按阶段复核；本次没有实时核验厂商版本、费用或实际设备。
+本手册由 [D-SPEC §3–5、§9–10](../sources/design/D-SPEC-v0.1.10.md) 与 [D-ENV §8、§11、§18](../sources/design/D-ENV-v0.3.md) 展开。[S04 路线/FAQ](../sources/S04-claude-guide.md)、[S05 本地防护](../sources/S05-local-protection.md)、[S07 测试目录](../sources/S07-vps-script-catalog.md) 是背景材料，不授予执行权；[S08 VPS 教程](../sources/S08-vps-claude-tutorial.pdf)的命令由用户在自己的服务器上运行，Agent 不自动执行，详见 [vps-guidance.md](vps-guidance.md)。官方 OS/客户端入口沿用 D-SPEC 附录 A、D-ENV §14 的历史链接，使用前按阶段复核；本次没有实时核验厂商版本、费用或实际设备。

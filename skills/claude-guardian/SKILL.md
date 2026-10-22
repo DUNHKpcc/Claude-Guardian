@@ -23,7 +23,7 @@ description: 为 Claude 订阅准备、账号与客户端异常、代理和运�
 
 选定路线后，仅收集资源是否已有、明确选中哪个非识别别名、代理入口类型、最终出口协议及配置状态；不索取或保存 IP、订阅链接、密码、UUID 或配置全文。HTTP/mixed 本地入口和 SOCKS5 最终出口是不同层；Claude Code 不直接使用 SOCKS 入口。配置已导入不等于已经生效，可经独立授权探测核验。
 
-本机与 VM 做适用的详细检查，VM 宿主和客机分别绑定；VPS 本阶段只做基础非侵入检查，选购指南和部署技能留待后续。选定路线但没有代理资源、不清楚资源或选择直连，仍可在具体目标和原授权下做离线预检，不要求先购买。
+本机与 VM 做适用的详细检查，VM 宿主和客机分别绑定；VPS 路线是开发机，指引见 [vps-guidance.md](references/vps-guidance.md)；本阶段只做基础非侵入检查，不代买、不代部署。选定路线但没有代理资源、不清楚资源或选择直连，仍可在具体目标和原授权下做离线预检，不要求先购买。
 
 调用 `scripts/environment_entry.py` 的 `assess_entry` / `require_entry` 严格校验当前投影，再走原有目标、PC0、权限及逐动作授权门。入口资格不是许可或原生绑定证据，不把保存的报告恢复成许可。CLI 的 `--entry-file` 只读取明确提供的有界本地投影，Windows 此文件适配尚未开放；可信宿主可传已校验的字典。路线／资源改变必须使旧适用性和计划失效，不能复用旧检查结论。既有精确恢复义务仍按原回执、目标、保护和本次批准处理，不被新问卷阻断。
 
@@ -97,6 +97,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | macOS 清理 | [S06 清理教程](sources/S06-macos-cleanup-sanitized.md) |
 | 手机端（注册、选择 Apple/Google 内购、仅手机） | [mobile-guidance.md](references/mobile-guidance.md)、[S03 经验 PDF 第 4 页](sources/S03-claude-experience.pdf)（必附） |
 | VM 路线（客机系统、网卡、出口、防火墙脚本） | [vm-guidance.md](references/vm-guidance.md)、[egress-ip-options.md](references/egress-ip-options.md)（必附） |
+| VPS 路线（开发机：系统、环境一致、远程桌面、防火墙） | [vps-guidance.md](references/vps-guidance.md)、[S08 VPS 教程](sources/S08-vps-claude-tutorial.pdf)（必附）、[R02 家宽中转教程](sources/R02-vps-line-optimization.md)（套家宽出口时） |
 | 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
 | VPS、服务器术语与测试 | [S01 术语](sources/S01-server-glossary.md)、[S07 脚本目录](sources/S07-vps-script-catalog.md) |
 

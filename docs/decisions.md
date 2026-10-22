@@ -110,3 +110,13 @@ ADR-012 再补充（同日）：17 份 PDF 用 Ghostscript 压缩，32MB 降到�
 
 已知限制：刷新定时服务由普通用户调用 sudo，需免密 sudo；只解析最新 profile 的 server 和 port 字段；不承诺免封。
 
+## ADR-016：VPS 路线定位为开发机，补入 S08 与相关资料（2026-10-21 已确认）
+
+所有者明确：VPS 路线主要用作**开发机**；VPS 当中转机（自建梯）是选择本机路线的用户选 IP 出口时的选项，两者不能混为一谈。VPS 路线的核心是**环境一致**：注册、登录、养号、订阅、OAuth 都在 VPS 的远程桌面浏览器里完成，不和本机浏览器混用，参考 S08。服务器系统首选 Ubuntu。防火墙参考 VM 的脚本。
+
+补入所有者放在 Omarchy/粉丝群资源 的资料：S08（VPS Claude 教程，11 页 PDF，原“S08 仍未提供”改为已收录）及其文字版、S03 的 Markdown 源文本、R02《VPS 线路优化与家宽中转教程》。新增 references/vps-guidance.md 和 routes-and-platforms.md 的 P1a 卡；Q-S01 的问法改为“开发机，还是只想当代理出口节点（属于本机路线的出口选择）”；SKILL.md 资料表加一行，必附 S08。
+
+防火墙：新增 assets/vps-firewall/vps-guard.sh，参考 VM 脚本的结构（nftables、原子替换、180 秒保险丝、开机自启），用于 VPS 自己的 IP 就是出口的情况，入站默认丢弃，只放行管理来源的 SSH 和 ping；套家宽出口并在 VPS 上跑 TUN 时直接用 VM 的 killswitch 脚本。规则语法经 nft -c 在隔离命名空间检查，应用与保险丝流程没有在真实服务器上实测。
+
+未收录：《完整教程焚诀.docx》（含作者邀请码、联系方式和注册交易所的步骤）、二群.jpg（QQ 群二维码），待所有者决定。
+

@@ -105,6 +105,25 @@ class GuidanceContracts(unittest.TestCase):
         for term in ("flclash_killswitch", "policy drop", "LAN_NET", "EXPECTED_EXIT_IP", "apply_armed"):
             self.assertIn(term, script)
 
+    def test_vps_route_is_a_dev_machine_with_consistent_environment(self):
+        vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
+        for term in ("开发机", "环境一致", "Ubuntu 24.04", "x86_64", "S08-vps-claude-tutorial.pdf",
+                     "R02-vps-line-optimization.md", "vps-guard.sh", "install-flclash-killswitch.sh", "180 秒保险丝",
+                     "5900 和 6080 绝不直接开放到公网", "不要把本机浏览器和 VPS 混用", "egress-ip-options.md", "account-onboarding.md"):
+            self.assertIn(term, vps)
+        routes = (REFS / "routes-and-platforms.md").read_text(encoding="utf-8")
+        self.assertIn("P1a 系统、环境一致、出口与防火墙", routes)
+        self.assertIn("属于本机路线选 IP 出口的选项", routes)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("[vps-guidance.md](references/vps-guidance.md)", skill)
+        root = ROOT / "skills" / "claude-guardian"
+        for rel in ("sources/S08-vps-claude-tutorial.pdf", "sources/S08-extracted-text.md",
+                    "sources/R02-vps-line-optimization.md", "sources/S03-source-text.md"):
+            self.assertTrue((root / rel).is_file(), rel)
+        guard = (root / "assets" / "vps-firewall" / "vps-guard.sh").read_text(encoding="utf-8")
+        for term in ("vps_guard", "policy drop", "ADMIN_NET", "180", "render"):
+            self.assertIn(term, guard)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):
@@ -125,7 +144,7 @@ class GuidanceContracts(unittest.TestCase):
     def test_routes_preserve_free_tools_and_rescue_constraints(self):
         for term in ("LuLu", "系统内置防火墙", "零新增费用", "独立救援",
                      "额外出口仅当需求确立", "临时组件", "tmux", "WSL",
-                     "不能指向宿主代理", "S08 未提供"):
+                     "不能指向宿主代理", "S08"):
             self.assertIn(term, self.routes)
 
     def test_account_cards_cover_all_channels_and_post_purchase(self):

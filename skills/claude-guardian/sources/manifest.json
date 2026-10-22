@@ -46,6 +46,13 @@
             "仅提取 PDF 文字层；第 4 页手机表格和第 5 页事件表格需阅读 PDF 图片",
             "未经完整人工转录，不作为完整原文替代"
           ]
+        },
+        {
+          "path": "sources/S03-source-text.md",
+          "sha256": "f218f6ca6f6a7fcd7d32df2b2bbf66bf612949f748d324c65da3570217f02e06",
+          "limitations": [
+            "所有者提供的 Markdown 源文本，与 PDF 文字略有出入；第 4、5 页的表格以 PDF 图片为准"
+          ]
         }
       ]
     },
@@ -131,6 +138,32 @@
         "多数为 curl | bash 远程执行，须用户本人先审阅再在自己的 VPS 上运行",
         "测试结果不能推导免封概率或 IP 纯净度门槛",
         "带宽、磁盘、CPU 测试可能产生流量与资源成本"
+      ]
+    },
+    {
+      "id": "S08",
+      "category": "reading",
+      "title": "VPS Claude 教程：极低的封号风险（11 页 PDF）",
+      "original_filename": "VPS Claude教程 极低的封号风险 Q群 1124987353.pdf",
+      "original_sha256": "8b0afec499f0d8c12c6e8594947e0594ac4e9622c35d602ca35e3a8e2cc01013",
+      "path": "sources/S08-vps-claude-tutorial.pdf",
+      "distributed_sha256": "8b0afec499f0d8c12c6e8594947e0594ac4e9622c35d602ca35e3a8e2cc01013",
+      "changes": [],
+      "attribution": "保留所提供 PDF、标题及其中相关链接",
+      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可",
+      "limitations": [
+        "教程中的命令由用户在自己的服务器上运行，不自动执行",
+        "第 3、4、5 页有截图，文字版未包含"
+      ],
+      "companions": [
+        {
+          "path": "sources/S08-extracted-text.md",
+          "sha256": "7baeea33ad27ba6eba59d7e298356ddc44a7e2b8047feaa4d35baa25986a23c1",
+          "limitations": [
+            "仅提取 PDF 文字层；截图需阅读 PDF",
+            "未经完整人工转录，不作为完整原文替代"
+          ]
+        }
       ]
     }
   ],
@@ -258,6 +291,22 @@
           "original_filename": "VPS-推荐报告-ZoroCloud 美国AT&T静态家宽 🌟🌟🌟.pdf",
           "original_sha256": "e6db736802c4cb0d6b5a92440dc52205d5993371374cbf58f6c0dd29c7bf15f4"
         }
+      ]
+    },
+    {
+      "id": "R02",
+      "category": "reading",
+      "title": "VPS 线路优化与家宽中转教程",
+      "original_filename": "VPS 线路优化与家宽中转教程.md",
+      "original_sha256": "5401ecd636699bf2d41e3196c44f52e1a892443c9e409860a497e97890768ce6",
+      "path": "sources/R02-vps-line-optimization.md",
+      "distributed_sha256": "5401ecd636699bf2d41e3196c44f52e1a892443c9e409860a497e97890768ce6",
+      "changes": [],
+      "attribution": "整理日期 2026-10-17，文中保留 Linux.do、NodeSeek、V2EX 等来源链接",
+      "redistribution": "所有者提供；原文是 Obsidian 笔记，其中 [[…]] 内部链接和图片（图源/…png）未随包提供",
+      "limitations": [
+        "原文的 [[…]] 链接指向 R01 报告集中的同名报告，图片未附",
+        "命令由用户在自己的服务器上运行，不自动执行"
       ]
     }
   ]
