@@ -69,6 +69,20 @@ class ExportWiki(unittest.TestCase):
         self.assertIn('[a](../should-stay.md)', out)
         self.assertEqual(len(problems), 1)  # the unresolved link outside the fence is reported
 
+    def test_bold_is_converted_so_cjk_punctuation_cannot_break_it_and_code_is_untouched(self):
+        sample = '先退出应用。**后台不用停**，另见 **说明。**接着\n行内 `**keep**` 与\n```\n**fence**\n```\n'
+        out = w.bold_to_html(sample)
+        self.assertIn('。<strong>后台不用停</strong>，', out)
+        self.assertIn('<strong>说明。</strong>接着', out)
+        self.assertIn('`**keep**`', out)
+        self.assertEqual(w.bold_to_html('**不要整删 `~/.claude`、`x`。**后面\n'), '<strong>不要整删 `~/.claude`、`x`。</strong>后面\n')
+        self.assertIn('```\n**fence**\n```', out)
+        for name, text in self.files.items():
+            for is_code, chunk in w.split_fences(text):
+                if not is_code:
+                    stripped = re.sub(r'`[^`\n]*`', '', chunk)
+                    self.assertNotRegex(stripped, r'\*\*\S', name)
+
     def test_forbidden_content_is_detected(self):
         for bad in ('出口 165.254.188.47', '路径 /Users/someone/x', '用户 dpccskisw', 'Q群 1124987353', '手机 13812345678',
                     'password = hunter2hunter2', 'vless://abc'):

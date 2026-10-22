@@ -301,6 +301,7 @@ python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop
 
 | 从这里开始 | 内容 |
 | --- | --- |
+| [**Wiki**](https://github.com/DUNHKpcc/Claude-Guardian/wiki) | 面向用户的教程（由仓库自动生成，修改请到仓库；见 `tools/export_wiki.py`） |
 | [Skill 入口](skills/claude-guardian/SKILL.md) | 对话顺序、工具入口与按需加载规则 |
 | [本机、VM 与 VPS](skills/claude-guardian/references/routes-and-platforms.md) | 路线选择、目标边界与生命周期 |
 | [账号与支付准备](skills/claude-guardian/references/accounts-and-payments.md) | 订阅阶段、渠道前提与支付交接 |

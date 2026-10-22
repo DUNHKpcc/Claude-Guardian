@@ -102,6 +102,31 @@ def rewrite_links(text, source, problems):
     return ''.join(out)
 
 
+def bold_to_html(text):
+    """CommonMark does not close ``**bold**`` after CJK punctuation when text follows it
+    (``**……。**后面``), so GitHub shows literal asterisks. <strong> renders everywhere.
+    Fenced code is left alone; inline code spans are protected while the markers are
+    matched, so bold that contains code (``**不要整删 `~/.claude`。**``) still converts."""
+    out = []
+    for is_code, chunk in split_fences(text):
+        if is_code:
+            out.append(chunk)
+            continue
+        lines = []
+        for line in chunk.splitlines(keepends=True):
+            spans = []
+
+            def hide(match):
+                spans.append(match.group(0))
+                return '\x00%d\x00' % (len(spans) - 1)
+
+            hidden = re.sub(r'`[^`\n]*`', hide, line)
+            hidden = re.sub(r'\*\*(?=\S)(.+?)(?<=\S)\*\*', r'<strong>\1</strong>', hidden)
+            lines.append(re.sub(r'\x00(\d+)\x00', lambda m: spans[int(m.group(1))], hidden))
+        out.append(''.join(lines))
+    return ''.join(out)
+
+
 def check_forbidden(name, text, problems):
     for pattern in FORBIDDEN:
         for match in re.finditer(pattern, text):
@@ -118,7 +143,7 @@ def render_page(title, source, commit, problems):
     relative = path.relative_to(REPO).as_posix()
     banner = ('%s\n> 本页由仓库 [`%s`](%s/blob/main/%s) 自动生成（提交 `%s`）。**请到仓库修改，不要直接改 wiki**，否则下次同步会被覆盖。\n\n'
               % (MARKER, relative, GITHUB, relative, commit))
-    return banner + body
+    return bold_to_html(banner + body)
 
 
 def render_home(commit):
@@ -135,7 +160,7 @@ def render_home(commit):
     lines += ['## 交流与反馈', '', CHANNEL.rstrip('\n'), '- 问题反馈：[Issues](%s/issues)' % GITHUB, '',
               '不要在频道、群或 Issue 里发真实账号、凭据、订阅链接、节点密码或完整代理配置。', '',
               '页面由仓库 `tools/export_wiki.py` 生成（提交 `%s`）。' % commit, '']
-    return '\n'.join(lines)
+    return bold_to_html('\n'.join(lines))
 
 
 def render_sidebar():
@@ -146,7 +171,7 @@ def render_sidebar():
             if g == group:
                 lines.append('- [%s](%s)' % (title, page_name(title)))
         lines.append('')
-    return '\n'.join(lines)
+    return bold_to_html('\n'.join(lines))
 
 
 def build(commit):
