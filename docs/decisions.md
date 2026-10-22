@@ -101,3 +101,12 @@ ADR-012 再补充（同日）：17 份 PDF 用 Ghostscript 压缩，32MB 降到�
 所有者确认其提供的资料就是本项目的真实依据，要求不再写“社区经验、没有官方依据、未经验证”之类限定，并修改更早的通用说明。已改：source-library.md 开头与 S01、S03、S04 条目，evidence-policy.md 的论断类型、C 系列和 F 系列说明，accounts-and-payments.md 的来源边界，incidents-and-integrations.md 的封号时间线说明，routes-and-platforms.md 的出口标签说明。教育邮箱由“仅限本人合法获发”改为“可通过合法渠道购买，不伪造、不借他人身份”。
 
 仍保留：不承诺免封或免 KYC；不提供伪造身份、轮换账号或绕过额度的流程；PC0、逐动作授权和付款本人完成；价格与准入变化快，购买前核对当前官方页面；来源中的命令不是执行授权。
+
+## ADR-015：VM 路线补全：系统、网卡、出口、防火墙（2026-10-21 已确认）
+
+所有者要求完善 VM 路线：客机系统默认首选 Omarchy，宿主是 Mac 时首选 macOS；创建前网卡选 LAN 独立网卡，不选与宿主机一致的 shared NAT；出口 IP 直接复用 egress-ip-options.md；防火墙参考所有者的 install-flclash-killswitch.sh；之后的注册、订阅、养号与本机路线一致。新增 references/vm-guidance.md 和 routes-and-platforms.md 的 V2a 卡，SKILL.md 资料表加一行。
+
+脚本以脱敏版收入 assets/vm-killswitch/：原脚本含所有者的固定出口 IP、局域网网段和用户名，按仓库规则不入库；改为 LAN_NET 必填、EXPECTED_EXIT_IP 可选、服务用户取当前 sudo 用户，其余逻辑不变。只适用 Linux 客机 + FlClash TUN；macOS 客机无对应脚本，按本机路线 L2 评估 LuLu 或系统防火墙。脚本由用户在客机里自己运行，Agent 只解释和核对，运行前先打快照，应用后 180 秒保险丝内必须 confirm。
+
+已知限制：刷新定时服务由普通用户调用 sudo，需免密 sudo；只解析最新 profile 的 server 和 port 字段；不承诺免封。
+

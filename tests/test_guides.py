@@ -91,6 +91,20 @@ class GuidanceContracts(unittest.TestCase):
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("[mobile-guidance.md](references/mobile-guidance.md)", skill)
 
+    def test_vm_guidance_is_wired_and_script_is_sanitized(self):
+        vm = (REFS / "vm-guidance.md").read_text(encoding="utf-8")
+        for term in ("Omarchy", "macOS", "LAN 独立网卡", "shared NAT", "egress-ip-options.md", "fail-closed",
+                     "install-flclash-killswitch.sh", "180 秒", "LAN_NET", "account-onboarding.md", "mobile-guidance.md"):
+            self.assertIn(term, vm)
+        self.assertIn("vm-guidance.md", (REFS / "routes-and-platforms.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("[vm-guidance.md](references/vm-guidance.md)", skill)
+        script = (ROOT / "skills" / "claude-guardian" / "assets" / "vm-killswitch" / "install-flclash-killswitch.sh").read_text(encoding="utf-8")
+        for personal in ("165.254", "10.72.18", "dpccskisw"):
+            self.assertNotIn(personal, script)
+        for term in ("flclash_killswitch", "policy drop", "LAN_NET", "EXPECTED_EXIT_IP", "apply_armed"):
+            self.assertIn(term, script)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

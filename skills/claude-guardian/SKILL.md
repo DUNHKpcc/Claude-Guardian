@@ -96,6 +96,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | 本地防护、代理、浏览器档案 | [S05 本地防护](sources/S05-local-protection.md) |
 | macOS 清理 | [S06 清理教程](sources/S06-macos-cleanup-sanitized.md) |
 | 手机端（注册、选择 Apple/Google 内购、仅手机） | [mobile-guidance.md](references/mobile-guidance.md)、[S03 经验 PDF 第 4 页](sources/S03-claude-experience.pdf)（必附） |
+| VM 路线（客机系统、网卡、出口、防火墙脚本） | [vm-guidance.md](references/vm-guidance.md)、[egress-ip-options.md](references/egress-ip-options.md)（必附） |
 | 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
 | VPS、服务器术语与测试 | [S01 术语](sources/S01-server-glossary.md)、[S07 脚本目录](sources/S07-vps-script-catalog.md) |
 

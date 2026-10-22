@@ -135,6 +135,10 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 **验收/恢复**：保存客机路径证据和快照/备份范围。网络变更失联时用宿主控制台恢复原模式/规则；快照回退前列出将丢失的后续变更并确认。不能用快照恢复“解除封号”。
 
+### V2a 系统、网卡、出口与防火墙（VM，PC0 指引）
+
+选定 VM 路线后，按 [vm-guidance.md](vm-guidance.md)：客机系统默认首选 Omarchy，宿主是 Mac 时首选 macOS；创建前网卡选 LAN 独立网卡，不选与宿主机一致的 shared NAT；出口 IP 复用[固定出口 IP 的来源](egress-ip-options.md)；Linux 客机防火墙参考[脱敏脚本](../assets/vm-killswitch/install-flclash-killswitch.sh)（fail-closed，180 秒保险丝）。随后的注册、订阅、养号与本机路线一致。只给指引，不代装、不代配置；本机和 VPS 路线不触发。
+
 ### V3 接触、日常与更新（客机为目标，PC1/PC2）
 
 1. 以客机为目标完成共用交接单；客机客户端兼容性独立核验，安装/登录与支付逐项批准
