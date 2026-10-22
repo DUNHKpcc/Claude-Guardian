@@ -210,3 +210,9 @@ Mac 修复链补全为：预检计划（A）→ 批准计划（B）→ 退出应
 
 未做：FlClash、Windows、`merge-policy`、代码签名校验（Clash Verge 的签名状态未核实，避免误拦）、真机验收。进程名是按 2.5.8 常见安装整理的，需要真机核对。测试：`tests/test_native_clash_verge_mac.py` 用合成进程列表和临时文件，覆盖拒绝路径、写入者启动于提交各阶段、真实端到端写入读回和恢复批次。
 
+## ADR-028：整机统一出口（只走 IPv4）的配置与判定（2026-10-22 已确认）
+
+所有者要求整机出口只走 IPv4、不要 IPv6，Windows 的写入引擎先不做，改由 Agent 按提示词操作。落实为两件事。其一是 `references/whole-machine-ipv4.md`：Clash Verge 的 TUN（严格路由）、DNS、核心 `ipv6: false`、规则末尾 `IP-CIDR6,::/0,REJECT` 加兜底代理组；TUN 和 DNS 优先在客户端设置界面改，合并文件放 `ipv6: false` 与规则；按分级授权列步骤（关网卡 IPv6、默认出站阻止、远程故障演练为 C 档）；Mac 与 Windows 的取证命令；Windows 没有带事务的写入引擎，靠备份和读回哈希。其二是只读判定 `egress_verifier.py`：不采集不修改，只读 Agent 写下的证据文件（枚举取值，未观察到写 unknown 或 not_run），判 8 个必要层（tun、core_ipv6、dns、rules、exit_ipv4、ipv6_probe、webrtc、failure_drill），全通过才是 established，任一明确失败是 violated，其余 incomplete；出口地址只比较不回显，取样须来自至少两类进程；防火墙与系统 IPv6 是建议项；持续保护须重启、睡眠唤醒、换网都复验才是 checked。
+
+不变：判定只支持提供的观察，不代表服务资格、IP 纯净或免封；旧的目标范围策略契约和 `traffic_policy` 输出没有改；不新增后台监视。未做：Windows 写入引擎；真机验收；验证器没有接入访谈评估的 `required_references`。
+

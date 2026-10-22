@@ -2,6 +2,7 @@
 
 ## 路线补全、访谈兜底与资料引用（2026-10-21）
 
+- **整机统一出口（2026-10-22，ADR-028）：**新增 `references/whole-machine-ipv4.md`（Clash Verge 的 TUN、DNS、`ipv6: false`、规则兜底配置，按分级授权的步骤，Mac 与 Windows 取证命令）和只读判定 `scripts/egress_verifier.py`：根据 Agent 提供的观察判定 8 个必要层，输出 `established / violated / incomplete`，不回显 IP；持续保护须重启、睡眠唤醒、换网都复验才算有证据。Windows 不做写入引擎，由 Agent 按提示词操作并备份读回。未真机验收
 - **Mac 配置写入适配器（2026-10-22，ADR-027）：**新增 `native_clash_verge_mac.py`，`repair_execution` 的原生门禁对 macOS 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 放行；要求应用及其核心已退出，提交前后复查进程与元数据文件，检测到变化失败并保留恢复批次。其他系统、产品、版本和 `merge-policy` 仍不可用。只有合成与 CI 测试，未真机验收；发行包 104 个成员
 - **部署口径更正（2026-10-22）：**VM 和 VPS 文档原写“不代部署／不代装／不代配置”，与所有者意图不符。改为：用户买好服务器并给出访问方式后，Agent 可通过宿主 shell／SSH 按分级授权执行文档里的命令和脚本来部署；买服务器、付款、注册、登录仍由用户本人完成。Skill 没有内置自动部署程序，脚本未真机实测
 - **VM 路线：**客机系统首选 Omarchy（Mac 宿主首选 macOS），创建前网卡选 LAN 独立网卡而不是 shared NAT；新增搭建顺序和三个脱敏脚本（开客机 SSH、安装 FlClash TUN、fail-closed 防火墙，Agent 可通过宿主 shell 或客机控制台按分级授权运行，启用 fail-closed 防火墙属 C 档），出口复用出口来源和 VPS 推荐报告

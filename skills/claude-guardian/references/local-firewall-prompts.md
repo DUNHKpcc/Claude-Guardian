@@ -4,7 +4,7 @@
 
 - **Windows：**用系统自带的 Windows 防火墙（Windows Defender 防火墙）。
 - **Mac：**依赖第三方软件 LuLu（Objective-See 的免费开源出站防火墙）。
-- 整机统一路径、明确例外、IPv4_ONLY 的要求见[现行整机统一路径](agent-remediation.md#ipv4-only-policy)；DNS、IPv6、WebRTC 的证据解释见[网络与修复建议](network-and-remedies.md)。
+- 整机统一出口只走 IPv4 的配置、取证和判定见[整机统一出口](whole-machine-ipv4.md)；整机统一路径、明确例外、IPv4_ONLY 的要求见[现行整机统一路径](agent-remediation.md#ipv4-only-policy)；DNS、IPv6、WebRTC 的证据解释见[网络与修复建议](network-and-remedies.md)。
 
 ## 通用工作方式（两个系统相同）
 

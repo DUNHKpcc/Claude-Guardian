@@ -16,7 +16,6 @@ writes between two rechecks.
 """
 from contextlib import contextmanager
 import os
-import pwd
 import stat
 import subprocess
 import sys
@@ -39,6 +38,7 @@ def _platform():
 
 
 def _support_directory():
+    import pwd  # POSIX only; this adapter is admitted on Darwin alone.
     return os.path.join(pwd.getpwuid(os.geteuid()).pw_dir, SUPPORT_DIRECTORY)
 
 
