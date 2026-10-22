@@ -74,9 +74,9 @@ $claude-guardian
 
 | 路线 | 适用方向 | 当前检查范围 |
 | --- | --- | --- |
-| **本机** | 在自己的 Mac / Windows 上使用；默认建议，仍需明确接受 | 按目标和可用宿主能力做适用的详细检查 |
-| **VM** | 在虚拟机内建立独立工作环境 | 按适用范围深入检查；宿主和客机分别绑定，不能互相替代结论 |
-| **VPS** | 明确选择远程服务器作为运行环境 | 基础、非侵入检查；选购指南和部署技能留待后续 |
+| **本机** | 在自己的 Mac / Windows 上使用；默认建议，仍需明确接受 | 按目标和可用宿主能力做适用的详细检查；固定出口 IP 的来源（机场、自建梯、家宽拼车）见[出口来源](skills/claude-guardian/references/egress-ip-options.md) |
+| **VM** | 在虚拟机内建立独立工作环境 | 按适用范围深入检查；宿主和客机分别绑定，不能互相替代结论；客机系统首选 Omarchy（Mac 宿主首选 macOS），网卡选 LAN 独立网卡，搭建顺序和防火墙脚本见 [VM 指引](skills/claude-guardian/references/vm-guidance.md) |
+| **VPS** | 明确选择远程服务器作为开发机（Claude Code 跑在 VPS 上） | 基础、非侵入检查；环境一致、远程桌面、防火墙和线路优化的指引见 [VPS 指引](skills/claude-guardian/references/vps-guidance.md)，不代买、不代部署 |
 
 三条路线复用同一套入口与检测核心，差别在目标、范围和深度。原生采集取决于具体宿主支持；当前 `guardian.py check` 只支持本机 macOS / Windows，选择 VM 或 VPS 不会自动开放该命令的原生采集。它们是独立选择，不是升级顺序；已有 VPS、或把 VPS 用作网络出口，都不代表选择在 VPS 上运行。
 
@@ -111,7 +111,7 @@ flowchart TD
 
 - **PC0** 保持接触门禁关闭：不启动客户端、不执行 `claude --version`，不访问或解析 Claude / Anthropic 服务；诊断通过不会自动开启门禁。
 - **G1 → G2 → G3** 分别组织事实收集、方案和逐项授权。选择路线或完成问卷只满足部分入口前提，不能代替检查、修改或联网授权。
-- **PC1 / PC2** 的客户端安装、基础测试、官方登录和支付有各自条件与授权；不是流程图走到末尾就可执行。VPS 采购与部署留待后续范围。
+- **PC1 / PC2** 的客户端安装、基础测试、官方登录和支付有各自条件与授权；不是流程图走到末尾就可执行。VPS 采购与部署由用户本人完成，Skill 只给指引。
 
 ## 能力与边界
 
@@ -210,6 +210,12 @@ python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop
 | [Skill 入口](skills/claude-guardian/SKILL.md) | 对话顺序、工具入口与按需加载规则 |
 | [本机、VM 与 VPS](skills/claude-guardian/references/routes-and-platforms.md) | 路线选择、目标边界与生命周期 |
 | [账号与支付准备](skills/claude-guardian/references/accounts-and-payments.md) | 订阅阶段、渠道前提与支付交接 |
+| [账号注册与使用节奏](skills/claude-guardian/references/account-onboarding.md) | 邮箱、Free→Pro→Max 间隔、额度与教育邮箱 |
+| [手机端防封要点](skills/claude-guardian/references/mobile-guidance.md) | iOS / Android 检查表，Android 拔 SIM 卡 |
+| [固定出口 IP 的来源](skills/claude-guardian/references/egress-ip-options.md) | 机场、自建梯、家宽拼车，推荐与自建梯简版提示 |
+| [VM 指引](skills/claude-guardian/references/vm-guidance.md) | 客机系统、LAN 独立网卡、搭建顺序、fail-closed 防火墙 |
+| [VPS 指引](skills/claude-guardian/references/vps-guidance.md) | 开发机、环境一致、远程桌面、防火墙 |
+| [线路优化](skills/claude-guardian/references/line-optimization.md) | Agent 逐项诊断与优化线路，变更卡与回滚 |
 | [网络与修复建议](skills/claude-guardian/references/network-and-remedies.md) | 代理、DNS、IPv4/IPv6、UDP/WebRTC 的证据解释 |
 | [环境状态面板](docs/environment-dashboard.md) | 使用已有报告生成离线页面，不触发新检查 |
 | [诊断会话](docs/diagnostic-session.md) | 限定采集、取消、保存与未知项 |
@@ -217,7 +223,7 @@ python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop
 | [异常与清理](skills/claude-guardian/references/incidents-and-integrations.md) | 故障、保留范围、申诉和集成边界 |
 | [来源资料库](skills/claude-guardian/references/source-library.md) | 按主题查阅随包原文、章节与来源 |
 
-来源原文可以直接阅读，保留自身署名和许可。收录不代表每条建议均已验证；历史材料和当前执行建议分别使用。
+来源原文可以直接阅读，保留自身署名和许可。所有者提供的资料是本项目的依据，相关回答会附上对应来源；价格和准入变化快，购买前核对当前官方页面。
 
 ## 开发与验证
 

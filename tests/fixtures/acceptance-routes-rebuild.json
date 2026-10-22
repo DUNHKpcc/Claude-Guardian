@@ -46,7 +46,8 @@
       {"question_id": "Q-S05", "value": "project_copy_requires_separate_approval_no_local_hardware_dependency_reported"},
       {"question_id": "Q-S06", "value": "cost_comparison_only_no_purchase_approval"},
       {"question_id": "Q-S07", "value": "remote_ssh_with_backup_and_update_plan"},
-      {"question_id": "Q-S08", "value": "vps_own_ip"}
+      {"question_id": "Q-S08", "value": "vps_own_ip"},
+      {"question_id": "Q-T01", "value": "none"}
     ]
   },
   "server_variants": {

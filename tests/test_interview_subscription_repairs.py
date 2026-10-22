@@ -38,7 +38,7 @@ VALUES = {'Q-C01': 'code', 'Q-C02': 'macos', 'Q-C03': 'none_reported',
           'Q-L02': 'os_and_architecture_compatible_reported', 'Q-L04': 'local_projects_needed',
           'Q-Z01': 'plan_only_no_device_action', 'Q-D02': 'audit_only',
           'Q-X01': 'existing_stable_exit', 'Q-X02': 'own_vps_ip_only', 'Q-M01': 'none',
-          'Q-V07': 'omarchy', 'Q-V08': 'lan_bridged', 'Q-S08': 'vps_own_ip'}
+          'Q-V07': 'omarchy', 'Q-V08': 'lan_bridged', 'Q-S08': 'vps_own_ip', 'Q-T01': 'none'}
 
 
 def answer(state, qid, value, **kwargs):

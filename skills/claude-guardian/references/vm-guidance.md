@@ -20,6 +20,18 @@
 
 直接复用[固定出口 IP 的来源](egress-ip-options.md)：纯净机场、自建梯（可搭配家宽出口）、家宽拼车三种来源，推荐 Max 优先自建，Pro 推荐机场；选 VPS 看 [VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md)。客机里的客户端：Linux 客机（Omarchy）用 FlClash，macOS 客机用 Clash Verge 或 FlClash。出口由客机统一走同一个 IP，不要让客机进程再绕开它。
 
+## 3a. Linux 客机的搭建顺序（Omarchy）
+
+按下面顺序做，每一步都由用户在客机里自己运行，Agent 解释脚本、核对参数、帮读输出；脚本都先读一遍、先打快照：
+
+1. **创建 VM：**网卡选 LAN 独立网卡（第 2 节），记下客机网卡名（`ip link`）和局域网网段。
+2. **开启客机 SSH：**[enable-guest-ssh.sh](../assets/vm-killswitch/enable-guest-ssh.sh)，开启 sshd；ufw 已启用时只放行你设置的 `SSH_SRC`（管理机在局域网里的地址或网段）到 22 端口。原脚本按 shared NAT 写，已改为 LAN 独立网卡的做法。
+3. **安装 FlClash 和 TUN 助手：**[install-flclash-tun.sh](../assets/vm-killswitch/install-flclash-tun.sh)，用 pacman 装依赖，下载固定版本的 FlClash 并核对 SHA256（失败即中止），以 root 装到 `/opt/FlClash`，安装并启用 TUN 特权助手。版本和架构可用 `FLCLASH_VERSION`、`ARCH` 覆盖，默认 0.9.1 和 arm64，升级前到 Release 页面核对。
+4. **导入节点并开启 TUN：**打开 FlClash，导入用户自己的节点配置（来源见第 3 节），开启 TUN，确认出口 IP 是预期的那个（用 [S07 清单](../sources/S07-vps-script-catalog.md)里的检测）。
+5. **再装防火墙：**TUN 通了以后再装第 4 节的 killswitch，顺序反了会把自己锁在外网之外。
+
+macOS 客机没有这三个脚本：客户端按官方方式安装，出口和防火墙走本机路线的做法。
+
 ## 4. 客机防火墙（fail-closed）
 
 参考脚本：[install-flclash-killswitch.sh](../assets/vm-killswitch/install-flclash-killswitch.sh)（脱敏版，适用 Linux 客机 + FlClash TUN，基于 nftables）。

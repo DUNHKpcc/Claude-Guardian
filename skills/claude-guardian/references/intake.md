@@ -222,6 +222,7 @@ Categorical facts that make the route-specific guidance deterministic instead of
 | --- | --- | --- |
 | Q-X01 | Source of the fixed egress IP: airport / self_built / residential_carpool / existing_stable_exit / undecided. Asked after an explicit local or VM route choice. | Selects [egress-ip-options.md](egress-ip-options.md); airport and carpool get no tutorial, self-built gets the short prompt and the R01 VPS reports. Stale when the route changes. |
 | Q-X02 | Self-built relay with a residential exit: with_residential_exit / own_vps_ip_only / undecided. Asked only after Q-X01 = self_built. | With a residential exit, attach R02 ([line-optimization.md](line-optimization.md)). |
+| Q-T01 | Current line problem: none / evening_slow / drops / slow_transfer / desktop_lag / wrong_exit. Asked for an explicit VPS route, or after a self-built choice (Q-X01) on local or VM. | Anything but none attaches [line-optimization.md](line-optimization.md) and R02 (R01 for evening_slow or drops). |
 | Q-M01 | Whether registration, login or in-app purchase happens on a phone: ios / android / both / none. Asked for Apple or Google in-app purchase, or when the OS is mobile only. | Attach [mobile-guidance.md](mobile-guidance.md) and S03 page 4; Android includes the SIM note. |
 
 Q-V07 and Q-V08 (VM) and Q-S08 (VPS) in the tables above follow the same rules. Route-specific questions are asked only after the route is explicitly chosen, never from the default proposal.

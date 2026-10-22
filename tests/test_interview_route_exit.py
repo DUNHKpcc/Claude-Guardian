@@ -9,7 +9,7 @@ SPEC = importlib.util.spec_from_file_location('route_exit_flow', ROOT / 'skills/
 f = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(f)
 
-NEW = ('Q-X01', 'Q-X02', 'Q-M01', 'Q-V07', 'Q-V08', 'Q-S08')
+NEW = ('Q-X01', 'Q-X02', 'Q-M01', 'Q-V07', 'Q-V08', 'Q-S08', 'Q-T01')
 
 
 def base(route='local', basis='explicit_choice', **context):
@@ -41,8 +41,10 @@ class RouteExitQuestionTests(unittest.TestCase):
         self.assertNotIn('Q-X02', ids(s))
         s = answer(s, 'Q-X01', 'airport')
         self.assertNotIn('Q-X02', ids(s))
+        self.assertNotIn('Q-T01', ids(s))
         s = answer(s, 'Q-X01', 'self_built', correction=True)
         self.assertIn('Q-X02', ids(s))
+        self.assertIn('Q-T01', ids(s))
         for other in ('Q-V07', 'Q-V08', 'Q-S08', 'Q-M01'):
             self.assertNotIn(other, ids(s))
 
@@ -57,6 +59,7 @@ class RouteExitQuestionTests(unittest.TestCase):
     def test_vps_route_asks_exit_kind_and_not_the_relay_source(self):
         s = base('vps')
         self.assertIn('Q-S08', ids(s))
+        self.assertIn('Q-T01', ids(s))
         for qid in ('Q-X01', 'Q-X02', 'Q-V07', 'Q-V08'):
             self.assertNotIn(qid, ids(s))
 
@@ -196,3 +199,37 @@ class RequiredReferenceTests(unittest.TestCase):
         a = f.assessment(s)
         self.assertIn('required_references', a)
         self.assertEqual(a['G3']['status'], 'blocked')
+
+
+class LineAndWindowsReferenceTests(unittest.TestCase):
+    def test_line_problem_attaches_line_optimization(self):
+        none = answer(base('vps'), 'Q-T01', 'none')
+        self.assertNotIn('references/line-optimization.md', refs(none))
+        slow = answer(base('vps'), 'Q-T01', 'evening_slow')
+        for path in ('references/line-optimization.md', 'sources/R02-vps-line-optimization.md',
+                     'sources/vps-recommendations/INDEX.md'):
+            self.assertIn(path, refs(slow))
+        lag = answer(base('vps'), 'Q-T01', 'desktop_lag')
+        self.assertIn('references/line-optimization.md', refs(lag))
+
+    def test_line_question_for_self_built_on_local(self):
+        s = answer(base('local'), 'Q-X01', 'self_built')
+        s = answer(s, 'Q-X02', 'with_residential_exit')
+        s = answer(s, 'Q-T01', 'drops')
+        self.assertIn('references/line-optimization.md', refs(s))
+
+    def test_windows_local_attaches_ipv6_hint_with_anchor(self):
+        s = answer(base('local'), 'Q-C02', 'windows')
+        item = [i for i in f.required_references(s) if i['path'] == 'references/agent-remediation.md'][0]
+        self.assertEqual(item['locator'], '#windows-adapter-ipv6-hint')
+        mac = answer(base('local'), 'Q-C02', 'macos')
+        self.assertNotIn('references/agent-remediation.md', refs(mac))
+
+    def test_vm_linux_guest_gets_setup_scripts_in_order(self):
+        paths = refs(answer(base('vm'), 'Q-V07', 'omarchy'))
+        order = [paths.index(p) for p in ('assets/vm-killswitch/enable-guest-ssh.sh',
+                                          'assets/vm-killswitch/install-flclash-tun.sh',
+                                          'assets/vm-killswitch/install-flclash-killswitch.sh')]
+        self.assertEqual(order, sorted(order))
+        mac = refs(answer(base('vm'), 'Q-V07', 'macos'))
+        self.assertNotIn('assets/vm-killswitch/enable-guest-ssh.sh', mac)

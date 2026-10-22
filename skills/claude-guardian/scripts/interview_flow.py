@@ -166,6 +166,7 @@ ROUTE_EXIT_VALUES = {
     'Q-V07': frozenset({'omarchy', 'macos', 'other'}),
     'Q-V08': frozenset({'lan_bridged', 'shared_nat', 'other'}),
     'Q-S08': frozenset({'vps_own_ip', 'residential_chain', 'undecided'}),
+    'Q-T01': frozenset({'none', 'evening_slow', 'drops', 'slow_transfer', 'desktop_lag', 'wrong_exit'}),
 }
 QUESTION_PROMPTS.update({
     'Q-X01': '固定出口 IP 想用哪种来源：纯净机场、自建梯（可搭配家宽出口）、家宽拼车，还是已经有稳定出口？还没想好也可以。',
@@ -174,6 +175,7 @@ QUESTION_PROMPTS.update({
     'Q-V07': '虚拟机的客机系统用 Omarchy、macOS，还是其他？',
     'Q-V08': '虚拟机的网卡是 LAN 独立网卡（桥接），还是与宿主机共用的 shared NAT？',
     'Q-S08': 'VPS 的出口用 VPS 自己的 IP，还是在其上套一层家宽出口？',
+    'Q-T01': '当前连接有没有问题：晚高峰慢、断流、大文件传输慢、远程桌面卡、出口 IP 不对，还是都没有？',
 })
 EXPOSURE_PROMPTS = {
     'Q-H01': '可能泄露的是哪类凭据、涉及哪个服务或客户端？只说类别和对象，不要发送密码、令牌或密钥内容。',
@@ -1694,13 +1696,13 @@ def applicable_questions(state):
                 add(route, "I5", ["Q-L03"])
             add(route, "I5", ["Q-X01"])
             if _value(state, "Q-X01") == "self_built":
-                add(route, "I5", ["Q-X02"])
+                add(route, "I5", ["Q-X02", "Q-T01"])
         elif route == "vm":
             add(route, "I5", _ids("V", 1, 6) + ["Q-V07", "Q-V08", "Q-X01"])
             if _value(state, "Q-X01") == "self_built":
-                add(route, "I5", ["Q-X02"])
+                add(route, "I5", ["Q-X02", "Q-T01"])
         elif route == "vps":
-            add(route, "I5", _ids("S", 1, 7) + ["Q-S08"])
+            add(route, "I5", _ids("S", 1, 7) + ["Q-S08", "Q-T01"])
     if _current_plan_needed(state):
         add("compatibility", "I5", ["Q-C13"])
     add("protection", "I5", ["Q-C12", "Q-Z01", "Q-C10"])
@@ -1816,6 +1818,9 @@ REFERENCE_PATHS = {
     'vps': 'references/vps-guidance.md', 'line': 'references/line-optimization.md',
     'vm_firewall': 'assets/vm-killswitch/install-flclash-killswitch.sh',
     'vps_firewall': 'assets/vps-firewall/vps-guard.sh',
+    'vm_ssh': 'assets/vm-killswitch/enable-guest-ssh.sh',
+    'vm_tun': 'assets/vm-killswitch/install-flclash-tun.sh',
+    'win_ipv6': 'references/agent-remediation.md',
 }
 PAYMENT_REFERENCE_TASKS = {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue", "compare"}
 
@@ -1862,10 +1867,13 @@ def required_references(state):
         add('egress', 'egress')
         if os_value == 'windows':
             add('S05', 'local_protection')
+            add('win_ipv6', 'windows_ipv6', '#windows-adapter-ipv6-hint')
     elif route == 'vm':
         add('vm', 'vm')
         add('egress', 'egress')
         if _value(state, 'Q-V07') != 'macos':
+            add('vm_ssh', 'vm')
+            add('vm_tun', 'vm')
             add('vm_firewall', 'vm')
     elif route == 'vps':
         add('vps', 'vps')
@@ -1885,6 +1893,12 @@ def required_references(state):
         if residential:
             add('R02', 'egress')
             add('line', 'egress')
+    line_issue = _value(state, 'Q-T01')
+    if line_issue not in (None, 'none'):
+        add('line', 'line_optimization')
+        add('R02', 'line_optimization')
+        if line_issue in {'evening_slow', 'drops'}:
+            add('R01', 'line_optimization')
     if c['task'] == 'cleanup' and os_value == 'macos':
         add('S06', 'cleanup')
     return out

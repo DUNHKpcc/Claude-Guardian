@@ -154,3 +154,11 @@ ADR-016 再补充（同日）：所有者决定《完整教程焚诀.docx》和�
 
 不是做的事：不把这些渠道的内容自动入库；入库仍需所有者提供并确认。
 
+## ADR-021：补全 VM 搭建脚本、线路问题和 Windows IPv6 入口（2026-10-21 已确认）
+
+补录所有者主目录里的两个 VM 脚本：install-flclash-tun.sh（装 FlClash 和 TUN 助手，固定版本并核对 SHA256）和 enable-guest-ssh.sh（开客机 SSH）。前者只把版本和架构改成可覆盖参数（FLCLASH_VERSION、ARCH）；后者原按 QEMU shared NAT 写、放行 10.0.2.2，与“LAN 独立网卡”相反，改为必填参数 SSH_SRC。两者无个人信息。vm-guidance 新增“3a Linux 客机的搭建顺序”：建 VM、开 SSH、装 TUN、导入节点并开 TUN、最后装 killswitch。
+
+新增访谈问题 Q-T01（线路症状：无、晚高峰慢、断流、大文件慢、桌面卡、出口不对），在明确的 VPS 路线、或本机和 VM 选了自建梯之后问；非“无”时 required_references 附线路优化和 R02（晚高峰慢、断流再附 R01）。Windows 本机路线的 required_references 附 Windows 网卡 IPv6 提示词（带锚点）；VM Linux 客机附 SSH、TUN、killswitch 三个脚本，按搭建顺序。SKILL.md 资料表同步。同步 README 和 CHANGELOG，删去“VPS 选购和部署留待后续”的旧说法。
+
+未解决：本机 Mac 和 Windows 没有防火墙脚本，macOS 客机同样没有，待与所有者讨论方案；S08 第 3 到 5 页截图未读；R02 图片未入库。
+

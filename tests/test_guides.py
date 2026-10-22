@@ -111,6 +111,15 @@ class GuidanceContracts(unittest.TestCase):
             self.assertNotIn(personal, script)
         for term in ("flclash_killswitch", "policy drop", "LAN_NET", "EXPECTED_EXIT_IP", "apply_armed"):
             self.assertIn(term, script)
+        for name, terms in (("install-flclash-tun.sh", ("sha256sum", "Checksum verification failed", "FLCLASH_VERSION", "ARCH")),
+                            ("enable-guest-ssh.sh", ("SSH_SRC", "sshd -t", "ufw allow in on"))):
+            body = (ROOT / "skills" / "claude-guardian" / "assets" / "vm-killswitch" / name).read_text(encoding="utf-8")
+            for term in terms:
+                self.assertIn(term, body, name)
+            self.assertNotIn("dpccskisw", body, name)
+        vm_doc = (REFS / "vm-guidance.md").read_text(encoding="utf-8")
+        for term in ("enable-guest-ssh.sh", "install-flclash-tun.sh", "3a. Linux 客机的搭建顺序", "再装防火墙"):
+            self.assertIn(term, vm_doc)
 
     def test_vps_route_is_a_dev_machine_with_consistent_environment(self):
         vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
