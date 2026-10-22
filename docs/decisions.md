@@ -234,3 +234,11 @@ Mac 修复链补全为：预检计划（A）→ 批准计划（B）→ 退出应
 
 测试：`tests/test_native_cleanup_mac.py` 更新为分档与受保护路径，`tests/test_native_claude_state_mac.py` 用桩命令覆盖钥匙串、简单模式和时区，`tests/test_windows_cleanup_guide.py` 检查官方路径、保护清单和不含设备标识轮换。
 
+## ADR-031：元数据门禁容忍内核自动添加的 `com.apple.provenance`（2026-10-22 真机验收后）
+
+Mac 真机验收（macOS 15.7.4，记录在 `acceptance-mac-2026-10-22.md`）发现：macOS 15 起内核给任何本地进程新建或写入的文件自动加扩展属性 `com.apple.provenance`，且无法移除（`xattr -d` 返回 0 但立即复原）。Clash Verge 自己维护的 `profiles.yaml`、profile 文件和应用的 `Info.plist` 都带它，Terminal.app 新建的文件也带它。而 `transactions._has_xattrs` 要求零扩展属性，所以修复链的请求文件加载（`UNSAFE_RECEIPT_FILE`）、目标文件读取（`UNSUPPORTED_FILE_METADATA`）和 C5 清理链的 scope 与 entry 加载（`UNSUPPORTED_METADATA`、`INVALID_ENTRY_FILE`）在该系统上必然 fail-closed，真机验收无法越过。所有这些门禁都经过 `tx._has_xattrs`，只改这一处。
+
+取舍与所有者确认：该属性由内核添加、不含用户内容、不携带写入者或来源语义，豁免不削弱 uid、mode、nlink、链接等其他检查；其余任何扩展属性仍拒绝。实现保持原有“不分配不可信大小、不读取属性值”的约束：先用空缓冲取所需大小，只有大小恰好等于单个名称 `com.apple.provenance\0`（21 字节）时才用固定 21 字节的缓冲读取名称，名称完全一致才容忍；其他大小、第二次调用失败或返回值不符都拒绝或报 `XATTR_CHECK_FAILED`。回归测试覆盖：仅 provenance 通过；同长度的 `com.apple.quarantine`、差一字节的名称、更大或更小的列表仍拒绝，且不读名称；第二次调用异常时失败关闭；`plan()` 对只带 provenance 的文件通过、对其他属性仍报 `UNSUPPORTED_FILE_METADATA`。
+
+已知后果：C5 的根目录里如果有带其他属性的文件（例如下载文件上的 `com.apple.quarantine`、`com.apple.macl`），计划仍会以 `UNSUPPORTED_METADATA` 拒绝，需要缩小根范围。验收记录里的文档勘误（`-I` 只适用于 `cleanup_cli.py`，`native_cleanup_mac.py` 的 `--host-scope`、`--entry-file`，digest 在 stdout JSON）已写入清理 CLI 用法。
+

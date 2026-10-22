@@ -181,15 +181,23 @@ def _support():
         _fail('PLATFORM_UNSUPPORTED')
 
 
+# macOS 15 and later let the kernel add this attribute to every file a local process
+# creates or writes, and it cannot be removed. It carries no user content and no writer
+# semantics, so it alone is not treated as extra metadata; any other name still is.
+_KERNEL_PROVENANCE = b'com.apple.provenance\0'
+
+
 def _has_xattrs(fd):
     """Inspect the already-open file, with no pathname fallback or value reads.
 
     Darwin ABI verified against Apple's xnu/bsd/sys/xattr.h and flistxattr(2):
     https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/xattr.h
     https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/flistxattr.2.html
-    A NULL buffer requests only the required size; no untrusted-size allocation,
-    retries, names or attribute values. XATTR_SHOWCOMPRESSION includes compression
-    metadata normally hidden from the list. Any failure blocks the transaction.
+    A NULL buffer requests only the required size; no untrusted-size allocation and
+    no attribute values. XATTR_SHOWCOMPRESSION includes compression metadata normally
+    hidden from the list. Only when the required size is exactly that of the single
+    name ``com.apple.provenance`` is the list read, into a fixed buffer of that size,
+    and only that one name is tolerated. Any failure blocks the transaction.
     Listing observes attributes accessible to the current execution identity.
     """
     if type(fd) is not int or not 0 <= fd <= 2**31 - 1:
@@ -202,11 +210,17 @@ def _has_xattrs(fd):
             query.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
             query.restype = ctypes.c_ssize_t
             size = query(fd, None, 0, 0x0020)  # XATTR_SHOWCOMPRESSION
+            if type(size) is not int or not 0 <= size <= 2**(ctypes.sizeof(ctypes.c_ssize_t) * 8 - 1) - 1:
+                _fail('XATTR_CHECK_FAILED')
+            if size != len(_KERNEL_PROVENANCE):
+                return size > 0
+            buffer = ctypes.create_string_buffer(len(_KERNEL_PROVENANCE))
+            second = query(fd, buffer, len(_KERNEL_PROVENANCE), 0x0020)
+            if second != len(_KERNEL_PROVENANCE):
+                _fail('XATTR_CHECK_FAILED')
+            return buffer.raw != _KERNEL_PROVENANCE
         except (OSError, AttributeError, TypeError, ValueError):
             _fail('XATTR_CHECK_FAILED')
-        if type(size) is not int or not 0 <= size <= 2**(ctypes.sizeof(ctypes.c_ssize_t) * 8 - 1) - 1:
-            _fail('XATTR_CHECK_FAILED')
-        return size > 0
     try:
         # CPython's supported fd form on Linux; never convert fd back to a path.
         return bool(os.listxattr(fd))

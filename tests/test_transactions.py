@@ -374,6 +374,57 @@ class Transactions(unittest.TestCase):
         self.assertEqual(self.file.read_bytes(), before)
         self.assertEqual(list(self.backups.iterdir()), [])
 
+    def _darwin_listing(self, first, names=None, second=None):
+        def query(fd, buffer, size, options):
+            if buffer is None:
+                return first
+            if names is not None:
+                t.ctypes.memmove(buffer, names, len(names))
+            return len(names) if second is None else second
+        return Mock(flistxattr=Mock(side_effect=query))
+
+    def test_darwin_kernel_provenance_alone_is_tolerated_everything_else_is_not(self):
+        provenance = b'com.apple.provenance\0'
+        quarantine = b'com.apple.quarantine\0'  # same length as the tolerated name
+        self.assertEqual(len(provenance), len(quarantine))
+        cases = ((provenance, False), (quarantine, True), (b'com.apple.provenanc\x01\0', True),
+                 (b'com.apple.provenance\x01', True))
+        for names, expected in cases:
+            with self.subTest(names=names), patch.object(t.sys, 'platform', 'darwin'), \
+                    patch.object(t.ctypes, 'CDLL', return_value=self._darwin_listing(len(names), names)):
+                self.assertEqual(t._has_xattrs(12), expected)
+        for first in (len(provenance) + 1, len(provenance) - 1, 2 * len(provenance), 4096):
+            with self.subTest(size=first), patch.object(t.sys, 'platform', 'darwin'), \
+                    patch.object(t.ctypes, 'CDLL', return_value=self._darwin_listing(first, provenance)) as loader:
+                self.assertTrue(t._has_xattrs(12))
+                self.assertEqual(loader.return_value.flistxattr.call_count, 1)  # no names read for other sizes
+
+    def test_darwin_provenance_listing_reads_only_a_fixed_small_buffer_and_fails_closed(self):
+        library = self._darwin_listing(21, b'com.apple.provenance\0')
+        with patch.object(t.sys, 'platform', 'darwin'), patch.object(t.ctypes, 'CDLL', return_value=library):
+            self.assertFalse(t._has_xattrs(12))
+        first, second = library.flistxattr.call_args_list
+        self.assertEqual(first.args, (12, None, 0, 0x0020))
+        self.assertEqual((second.args[0], second.args[2], second.args[3]), (12, 21, 0x0020))
+        for bad_second in (-1, 20, 22, 2**70):
+            with self.subTest(second=bad_second), patch.object(t.sys, 'platform', 'darwin'), \
+                    patch.object(t.ctypes, 'CDLL', return_value=self._darwin_listing(21, b'com.apple.provenance\0', bad_second)):
+                with self.assertRaisesRegex(t.TransactionError, '^XATTR_CHECK_FAILED$'):
+                    t._has_xattrs(12)
+
+    def test_provenance_tolerance_does_not_open_other_metadata_gates(self):
+        # A file whose only attribute is the kernel provenance still passes plan();
+        # the same listing plus anything else is refused with the usual code.
+        before = self.file.read_bytes()
+        with patch.object(t.sys, 'platform', 'darwin'), \
+                patch.object(t.ctypes, 'CDLL', return_value=self._darwin_listing(21, b'com.apple.provenance\0')):
+            self.assertEqual(t.plan(str(self.file), b'replacement', 'synthetic-device')['target_ref'], 'synthetic-device')
+        with patch.object(t.sys, 'platform', 'darwin'), \
+                patch.object(t.ctypes, 'CDLL', return_value=self._darwin_listing(60, b'x' * 60)):
+            with self.assertRaisesRegex(t.TransactionError, '^UNSUPPORTED_FILE_METADATA$'):
+                t.plan(str(self.file), b'replacement', 'synthetic-device')
+        self.assertEqual(self.file.read_bytes(), before)
+
     def test_duplicate_apply_fails_closed(self):
         self.apply()
         with self.assertRaisesRegex(t.TransactionError, 'STALE_FILE'):
