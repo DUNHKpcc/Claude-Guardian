@@ -1,6 +1,6 @@
 # 手机端防封要点（iOS / Android）
 
-内容来自 [S03 经验 PDF 第 4 页](../sources/S03-claude-experience.pdf)（Anthropic claude code 防封策略 Q 群 1124987353 的手机端表格，原文为图片），再加上 Android 要拔掉 SIM 卡。不承诺免封。
+内容来自 [S03 经验 PDF 第 4 页](../sources/S03-claude-experience.pdf)（Anthropic claude code 防封策略 PDF 的手机端表格，原文为图片），再加上 Android 要拔掉 SIM 卡。不承诺免封。
 
 ## 什么时候用
 
