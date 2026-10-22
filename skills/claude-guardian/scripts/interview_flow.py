@@ -1830,6 +1830,11 @@ REFERENCE_PATHS = {
     'local_fw': 'references/local-firewall-prompts.md',
     'mac_dns': 'references/macos-dns-case-lessons.md',
     'auth': 'references/authorization-tiers.md',
+    'whole_ipv4': 'references/whole-machine-ipv4.md',
+    'incidents': 'references/incidents-and-integrations.md',
+    'identity_review': 'references/accounts-and-payments.md',
+    'cleanup_cli': 'references/cleanup-cli-usage.md',
+    'win_cleanup': 'references/windows-cleanup.md',
 }
 PAYMENT_REFERENCE_TASKS = {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue", "compare"}
 
@@ -1850,6 +1855,8 @@ def required_references(state):
             # Keep the first topic but never drop a page another topic needs.
             if locator and 'locator' not in existing:
                 existing['locator'] = locator
+            elif locator and locator not in existing['locator'].split(', '):
+                existing['locator'] += ', ' + locator
             return
         item = {'path': REFERENCE_PATHS[key], 'topic': topic}
         if locator:
@@ -1876,6 +1883,7 @@ def required_references(state):
         add('auth', 'authorization')
     if route == 'local':
         add('egress', 'egress')
+        add('whole_ipv4', 'whole_machine_egress')
         if os_value == 'windows':
             add('local_fw', 'local_firewall', '#windows')
             add('S05', 'local_protection')
@@ -1914,8 +1922,21 @@ def required_references(state):
         add('R02', 'line_optimization')
         if line_issue in {'evening_slow', 'drops'}:
             add('R01', 'line_optimization')
-    if c['task'] == 'cleanup' and os_value == 'macos':
-        add('S06', 'cleanup')
+    restriction = _value(state, 'Q-D01') in {'current_restriction_on_target', 'past_restriction_on_target'}
+    if c['incident'] in {'suspension', 'identity_review'} or restriction:
+        # Short-term ban timeline (S03 p.5) and identity-verification triage.
+        add('onboarding', 'ban_timeline', '#a0b')
+        add('S03', 'ban_timeline', 'p.5')
+        add('S04', 'ban_timeline')
+        add('incidents', 'incident_triage')
+        if c['incident'] == 'identity_review':
+            add('identity_review', 'identity_verification', '#a3-真实身份核验异常会话与凭据保护')
+    if c['task'] == 'cleanup':
+        if os_value in {'macos', None, 'unknown'}:
+            add('S06', 'cleanup')
+            add('cleanup_cli', 'cleanup')
+        if os_value in {'windows', None, 'unknown'}:
+            add('win_cleanup', 'cleanup')
     return out
 
 

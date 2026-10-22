@@ -248,3 +248,11 @@ Mac 真机验收（macOS 15.7.4，记录在 `acceptance-mac-2026-10-22.md`）发
 
 两个限制如实记录：idcflare.com 有 Cloudflare 验证，本次无法读取站点内容，所以只按所有者的说法登记用途，没有自己描述站点。2026-10-22 所有者确认两个地址：IDC Flare 为 https://idcflare.com/，VPSHub 为 https://vpshub.org/zh/。Issue 里的 Q 群号属于联系方式，不写进仓库，文档只引用 PDF 的文件名由来。
 
+## ADR-033：资料必须能被 Agent 翻到，加守门测试（2026-10-22 已确认）
+
+所有者问“KYC 在哪里提了、短期封号参考放哪了”，暴露出一类问题：A0b（S03 第 5 页的短期封号时间线）和 KYC 指引存在，但只在 `account-onboarding.md` 里，`SKILL.md` 的资料表和访谈的 `required_references` 都没有路由到它，Agent 不一定翻得到。所有者要求：项目所有资料必须能被 Agent 翻到，并复查不要再出现。
+
+做法：其一，逐个复查文件：没有从 `SKILL.md` 出发翻不到的文档，但有 11 个脚本（访谈状态机 `interview_flow.py` 等库）没有任何说明提到，新增 `references/scripts-index.md` 列出每个脚本和资产的类型、用途和说明；`SKILL.md` 补直接链接 `cleanup-cli-usage.md`、S03/S08 文字版、`manifest.json`、设计规格。其二，主题路由：资料表新增“账号被封或被限、问多久被封的、KYC 触发或身份核验”必附行；访谈 `required_references` 新增三类：事故为 suspension 或 identity_review、或 Q-D01 有当前或过去限制时附 A0b、S03 第 5 页、S04、M12，身份核验再附 A3；本机路线附整机 IPv4 出口；清理任务按系统附 S06 与 cleanup-cli-usage（macOS）和 windows-cleanup（Windows），系统未知时两类都附。同一文件需要多个页码时合并（`p.4, p.5`）而不是丢掉。其三，守门测试 `tests/test_skill_discoverability.py`：每个随包文件沿着提及链从 `SKILL.md` 能到达（只有说明文字算路由，代码互相导入不算）；每个 references 和 sources 顶层文件在 `SKILL.md` 里直接点名；脚本索引与 `scripts/`、`assets/` 一一对应；`SKILL.md` 和 references 里的相对链接及锚点都能解析；资料表里的承诺主题（封号与 KYC、清理、整机出口、线路、VPS、VM、手机、出口来源、IDC Flare、VPSHub）都有行。
+
+不变：必附资料是下限，不是执行授权；A0b 仍然只是排查方向，不断言原因，不承诺免封或免 KYC。限制：测试检查的是“能到达”，不能判断路由得是否恰当；仓库里不随包的 `docs/` 不在 Agent 的加载范围内，不检查。
+

@@ -121,10 +121,6 @@ class RouteExitQuestionTests(unittest.TestCase):
         self.assertEqual(s['facts']['Q-X01']['state'], 'stale')
 
 
-if __name__ == '__main__':
-    unittest.main()
-
-
 def refs(s):
     return [item['path'] for item in f.required_references(s)]
 
@@ -164,7 +160,7 @@ class RequiredReferenceTests(unittest.TestCase):
     def test_airport_gets_no_vps_material(self):
         s = answer(base('local'), 'Q-X01', 'airport')
         self.assertEqual(refs(s), ['sources/S02-ai-payments.md', 'references/authorization-tiers.md',
-                                   'references/egress-ip-options.md'])
+                                   'references/egress-ip-options.md', 'references/whole-machine-ipv4.md'])
 
     def test_vm_linux_guest_gets_firewall_script_macos_does_not(self):
         linux = answer(base('vm'), 'Q-V07', 'omarchy')
@@ -265,3 +261,52 @@ class AuthorizationTierReferenceTests(unittest.TestCase):
     def test_tiers_are_not_a_state_machine_authorization(self):
         a = f.assessment(answer(base('vps'), 'Q-S08', 'vps_own_ip'))
         self.assertEqual(a['G3']['status'], 'blocked')
+
+
+class DiscoverabilityReferenceTests(unittest.TestCase):
+    """Materials that exist but were never routed to the Agent (the A0b/KYC gap) must be attached."""
+
+    def locator(self, s, path):
+        return [item for item in f.required_references(s) if item['path'] == path][0].get('locator')
+
+    def test_suspension_and_past_restriction_attach_ban_timeline_and_triage(self):
+        for s in (f.set_context(base('local'), incident='suspension'),
+                  answer(base('local'), 'Q-D01', 'past_restriction_on_target')):
+            paths = refs(s)
+            for path in ('references/account-onboarding.md', 'sources/S03-claude-experience.pdf',
+                         'sources/S04-claude-guide.md', 'references/incidents-and-integrations.md'):
+                self.assertIn(path, paths)
+            self.assertEqual(self.locator(s, 'references/account-onboarding.md'), '#a0b')
+            self.assertEqual(self.locator(s, 'sources/S03-claude-experience.pdf'), 'p.5')
+            topics = {item['path']: item['topic'] for item in f.required_references(s)}
+            self.assertEqual(topics['references/incidents-and-integrations.md'], 'incident_triage')
+            self.assertNotIn('references/accounts-and-payments.md', paths)
+
+    def test_identity_review_adds_kyc_triage_and_pages_accumulate_on_one_entry(self):
+        s = f.set_context(base('local'), incident='identity_review')
+        self.assertEqual(self.locator(s, 'references/accounts-and-payments.md'), '#a3-真实身份核验异常会话与凭据保护')
+        mixed = f.set_context(base('local', billing_channel='apple'), incident='suspension')
+        self.assertEqual(self.locator(mixed, 'sources/S03-claude-experience.pdf'), 'p.4, p.5')
+        self.assertEqual(refs(mixed).count('sources/S03-claude-experience.pdf'), 1)
+
+    def test_no_incident_means_no_ban_material(self):
+        self.assertNotIn('references/incidents-and-integrations.md', refs(base('local')))
+
+    def test_local_route_attaches_whole_machine_egress_guide(self):
+        self.assertIn('references/whole-machine-ipv4.md', refs(base('local')))
+        self.assertNotIn('references/whole-machine-ipv4.md', refs(base('vps')))
+
+    def test_cleanup_attaches_platform_cleanup_guides(self):
+        mac = answer(f.set_context(base('local'), task='cleanup'), 'Q-C02', 'macos')
+        win = answer(f.set_context(base('local'), task='cleanup'), 'Q-C02', 'windows')
+        unknown = f.set_context(base('local'), task='cleanup')
+        self.assertTrue({'sources/S06-macos-cleanup-sanitized.md', 'references/cleanup-cli-usage.md'} <= set(refs(mac)))
+        self.assertNotIn('references/windows-cleanup.md', refs(mac))
+        self.assertIn('references/windows-cleanup.md', refs(win))
+        self.assertNotIn('references/cleanup-cli-usage.md', refs(win))
+        self.assertTrue({'references/windows-cleanup.md', 'references/cleanup-cli-usage.md'} <= set(refs(unknown)))
+
+
+if __name__ == '__main__':
+    unittest.main()
+

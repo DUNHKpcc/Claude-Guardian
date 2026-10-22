@@ -92,14 +92,15 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | 回答主题 | 必附资料 |
 | --- | --- |
 | 支付、订阅渠道、礼品卡、虚拟卡、API 充值 | **第一项：[AI 所有支付方式汇总（核验版）](sources/S02-ai-payments.md)**，核心参考，Agent 可据此向用户推荐支付方式（规则见 accounts-and-payments.md 的 B1） |
-| 账号阶段、IP、设备、注册与养号节奏 | [S03 经验 PDF](sources/S03-claude-experience.pdf)、[S04 指南](sources/S04-claude-guide.md)、[account-onboarding.md](references/account-onboarding.md) |
+| 账号阶段、IP、设备、注册与养号节奏 | [S03 经验 PDF](sources/S03-claude-experience.pdf)（文字版 [S03-extracted-text.md](sources/S03-extracted-text.md)、[S03-source-text.md](sources/S03-source-text.md)；第 4、5 页是图片表格）、[S04 指南](sources/S04-claude-guide.md)、[account-onboarding.md](references/account-onboarding.md) |
 | 本地防护、代理、浏览器档案、WebRTC 检查 | [S05 本地防护](sources/S05-local-protection.md)；WebRTC 可用包内的[本地探测页](assets/webrtc-probe.html)（由 `scripts/serve_webrtc.py` 在本机回环临时提供，用户点击确认后才发起 STUN） |
-| macOS 清理 | [S06 清理教程](sources/S06-macos-cleanup-sanitized.md) |
+| macOS 清理 | [S06 清理教程](sources/S06-macos-cleanup-sanitized.md)、[cleanup-cli-usage.md](references/cleanup-cli-usage.md)（执行用 `native_cleanup_mac.py`，必附） |
 | 在用户的机器上做改动时的授权方式（路线选定后；A、B、C 档） | [authorization-tiers.md](references/authorization-tiers.md)（必附） |
 | 手机端（注册、选择 Apple/Google 内购、仅手机） | [mobile-guidance.md](references/mobile-guidance.md)、[S03 经验 PDF 第 4 页](sources/S03-claude-experience.pdf)（必附） |
 | VM 路线（客机系统、网卡、出口、防火墙脚本） | [vm-guidance.md](references/vm-guidance.md)、[egress-ip-options.md](references/egress-ip-options.md)（必附）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（出口选自建梯、要选 VPS 时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（检查出口 IP 时）、[VM 搭建脚本](assets/vm-killswitch/enable-guest-ssh.sh)（开客机 SSH）、[FlClash TUN 安装](assets/vm-killswitch/install-flclash-tun.sh)、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（Linux 客机，按这个顺序） |
 | 本机路线：Clash（TUN）与防火墙（Windows 系统防火墙、Mac 用第三方 LuLu），提示词引导、无脚本 | [local-firewall-prompts.md](references/local-firewall-prompts.md)、[macOS DNS 经验](references/macos-dns-case-lessons.md)（Mac）、[S05 本地防护](sources/S05-local-protection.md) |
 | Windows 本机：网卡 IPv6 旁路、出口泄漏 | [agent-remediation.md 的 Windows 网卡 IPv6 提示词](references/agent-remediation.md#windows-adapter-ipv6-hint)（只提示，用户同意后才由用户或经批准执行，不自动改网卡） |
+| **账号被封或被限、问“多久被封的”、KYC 触发或身份核验**（任一出现就附，不必等用户问） | **[account-onboarding.md 的 A0b 短期封号时间线](references/account-onboarding.md#a0b短期封号时间线出问题时先对照排查方向)**（五个时间段对应的排查方向，来自 [S03 第 5 页](sources/S03-claude-experience.pdf)，必附）、[accounts-and-payments.md 的 A3 身份核验](references/accounts-and-payments.md#a3-真实身份核验异常会话与凭据保护)、[S04 §2.3 KYC 触发](sources/S04-claude-guide.md)、[事故分诊 M12](references/incidents-and-integrations.md)；排查方向不是因果判定，不断言原因，不承诺免封或免 KYC |
 | Windows 清理 Claude 本机数据（官方路径、分档、备份、隔离、还原；无内置宿主） | [windows-cleanup.md](references/windows-cleanup.md)（必附）、官方 [.claude 目录说明](https://code.claude.com/docs/en/claude-directory) |
 | 整机统一出口：只走 IPv4、不走 IPv6（TUN、DNS、规则兜底、泄漏与故障演练；判定用 `scripts/egress_verifier.py`） | [whole-machine-ipv4.md](references/whole-machine-ipv4.md)（必附）、[agent-remediation.md 整机统一路径](references/agent-remediation.md#ipv4-only-policy) |
 | 线路优化（晚高峰慢、断流、卡顿、出口不对、中转、BBR；VPS 路线和自建梯节点；访谈 Q-T01） | [line-optimization.md](references/line-optimization.md)、[R02 线路优化与家宽中转教程](sources/R02-vps-line-optimization.md)（必附）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（要换线路或选机时） |
@@ -145,6 +146,8 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 - [accounts-and-payments.md](references/accounts-and-payments.md)：M02/M03；准入、目标套餐、Apple/Google/银行卡前提及支付交接
 - [incidents-and-integrations.md](references/incidents-and-integrations.md)：M07/M10–M13；异常、清理保留、申诉、SDK/MCP 与认证边界
 - [evidence-policy.md](references/evidence-policy.md)：M14；稳定来源 ID、历史证据限制和发布规则
+- [scripts-index.md](references/scripts-index.md)：`scripts/` 和 `assets/` 里每个脚本的用途、入口还是库、对应说明；找不到该用哪个脚本时先看这里（访谈状态机 `interview_flow.py`、各 `native_*_mac.py`、`egress_verifier.py` 都列在里面）
+- [source-library.md](references/source-library.md)：全部来源资料的清单、哈希和使用限制；`sources/manifest.json` 是它的机器可读版，设计规格 [D-SPEC](sources/design/D-SPEC-v0.1.10.md) 和 [D-ENV](sources/design/D-ENV-v0.3.md) 在 `sources/design/`；S08 文字版见 [S08-extracted-text.md](sources/S08-extracted-text.md)
 
 参考资料采用中英双语结构，英文技术细则供执行者阅读，不直接把整份参考文件作为中文用户的操作答复。
 

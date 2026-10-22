@@ -2,6 +2,7 @@
 
 ## 路线补全、访谈兜底与资料引用（2026-10-21）
 
+- **资料可发现性复查（2026-10-22，ADR-033）：**起因是 A0b 短期封号时间线和 KYC 指引只躺在 `account-onboarding.md` 里，Agent 不一定翻得到。修复：`SKILL.md` 资料表新增“账号被封或被限、KYC 触发或身份核验”必附行（A0b、S03 第 5 页、A3、S04 §2.3、M12）；访谈 `required_references` 新增封号与身份核验、整机出口、macOS 与 Windows 清理的必附资料，且同一文件的多个页码会合并；新增 `references/scripts-index.md`（每个脚本和资产的用途与入口）；`SKILL.md` 补直接指向 S03/S08 文字版、manifest、设计规格、cleanup-cli-usage。新增 `tests/test_skill_discoverability.py`：任何 references、sources、assets、scripts 文件从 `SKILL.md` 出发翻不到、脚本索引与 `scripts/` 不一致、相对链接或锚点失效，测试都失败。发行包 110 个成员
 - **Issue #12（2026-10-22，ADR-032）：**补充资料来源新增 IDC Flare 和 VPSHub，按 S03 第 5 页写明家宽、家宽拼车、VPS 的查找渠道和所有者列的帖子；skill 可直接当帖子与论坛搜索工具；短期封号时间线（S03 第 5 页图片表）写进 `account-onboarding.md` A0b
 - **Mac 真机验收修复（2026-10-22，ADR-031）：**macOS 15 内核自动给文件加不可移除的 `com.apple.provenance`，使修复链和 C5 清理链在真机上必然被元数据门禁拒绝；`transactions._has_xattrs` 现在只容忍这一个属性（其他仍拒绝，不读取属性值，固定 21 字节缓冲），所有门禁共用该函数。清理 CLI 用法补上验收中发现的勘误
 - **参考 claude-cleanup 收紧 C5、补 Windows（2026-10-22，ADR-030）：**`~/.claude` 整个目录不能当根，对话记录、历史、设置、skills、插件、凭据始终受保护；根分“可再生缓存/日志”和“桌面端持久数据”两档；补桌面端路径；由 Claude Code 或 Claude 应用启动时拒绝；新增 `native_claude_state_mac.py`（钥匙串退出登录、`CLAUDE_CODE_SIMPLE`、用户指定时区，均终端确认）；新增 `references/windows-cleanup.md`（官方路径，PowerShell 分步，无内置宿主）。**不采用**第三方的 userID/machineID 轮换。发行包 109 个成员，未真机验收
