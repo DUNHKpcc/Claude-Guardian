@@ -31,6 +31,10 @@ VPS 路线的目的是让**注册、登录、养号、订阅、OAuth、日常使
 
 不管哪种，登录后都要在远程桌面浏览器里确认出口 IP 是预期的那个（WebRTC 不泄漏真实 IP 可用包内的[本地探测页](../assets/webrtc-probe.html)），再继续注册和订阅。
 
+## 线路优化
+
+连接慢、晚高峰断流、画面卡、出口不对，或想加中转、调 BBR 时，按 [line-optimization.md](line-optimization.md)：Agent 先只读诊断，再一次只提一项改动，用户批准后执行并验证，可回滚。依据 [R02](../sources/R02-vps-line-optimization.md)，回答时必附。
+
 ## 创建与连接
 
 1. **SSH 密钥：**创建服务器时添加自己的 SSH 公钥，或下载服务商生成的密钥；本机私钥不离开本机。

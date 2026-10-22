@@ -134,6 +134,20 @@ class GuidanceContracts(unittest.TestCase):
         for term in ("vps_guard", "policy drop", "ADMIN_NET", "180", "render"):
             self.assertIn(term, guard)
 
+    def test_line_optimization_is_agent_assisted_and_wired(self):
+        doc = (REFS / "line-optimization.md").read_text(encoding="utf-8")
+        for term in ("R02-vps-line-optimization.md", "先选好线路，再考虑中转，最后按需要调整 TCP", "每次只改变一个因素",
+                     "变更卡", "回滚", "云控制台的独立救援入口", "ssh -N -D 127.0.0.1:1080", "socks5h://127.0.0.1:1080",
+                     "realm -c config.toml", "net.ipv4.tcp_congestion_control", "把原拥塞算法记下来", "90-vps-bbr.conf",
+                     "不能把普通线路变成 CN2 GIA", "Agent 不做的事", "不默认运行优化"):
+            self.assertIn(term, doc)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        row = [l for l in skill.splitlines() if l.startswith("| 线路优化")][0]
+        for link in ("line-optimization.md", "R02-vps-line-optimization.md", "vps-recommendations/INDEX.md"):
+            self.assertIn(link, row)
+        for name in ("vps-guidance.md", "egress-ip-options.md", "routes-and-platforms.md"):
+            self.assertIn("line-optimization.md", (REFS / name).read_text(encoding="utf-8"), name)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

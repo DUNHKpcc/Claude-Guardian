@@ -158,7 +158,7 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 ### P1 可行性、现有服务器与成本（本机规划，PC0）
 
 1. VPS 路线是开发机（Claude Code 跑在 VPS 上）。只想把 VPS 当代理出口（自建梯）的，属于本机路线选 IP 出口的选项，见 [egress-ip-options.md](egress-ip-options.md)，不在本路线处理。明确远端任务需要的语言/工具、CPU/架构、内存、存储、GUI、本地硬件及数据驻留要求
-2. 已有服务器优先只读接入；记录机器/用户/用途及不能中断的服务。不假定空机，不运行压力测试、DD、RAID、BBR/WARP 或“优化全家桶”
+2. 已有服务器优先只读接入；记录机器/用户/用途及不能中断的服务。不假定空机，不默认运行压力测试、DD、RAID、BBR/WARP 或“优化全家桶”；线路优化按 [line-optimization.md](line-optimization.md)，每项改动经用户逐项批准、先记原值、可回滚
 3. 新服务器只比较符合真实地区与合规条件的方案：计算实例、磁盘、出站流量、备份/快照、税费、续费和取消条件；选型参考[VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md)，价格以官方当前页面为准。用户只要免费工具不等于批准任何 VPS 费用
 4. 不能迁移本地 GUI/硬件依赖或敏感数据时说明阻碍，保留本机方案；只有用户选新方案才做迁移计划
 5. 购买、开通、操作条款与支付都需相应确认/本人交接；本手册不创建服务器。受限地区不能通过虚假地址/身份或出口标签绕过
