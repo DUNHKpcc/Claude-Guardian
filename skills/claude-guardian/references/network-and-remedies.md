@@ -74,6 +74,8 @@ Mihomo 的 `fingerprint` 是证书指纹字段，`fingerprint: chrome` 属于字
 | Unexpected target DNS route | Separate bootstrap, ordinary, split/internal, and proxy-node resolution; repair only the responsible layer and preserve internal domains |
 | Browser DoH conflicts with intended DNS | Compare effective browser policy and core responsibilities; propose narrow applicable changes rather than disabling all secure DNS |
 | Fake-IP answer with working HTTPS | Explain the mapping and retain configuration unless additional evidence shows a fault |
+| Fake-IP enabled and entries in `fake-ip-filter` | Those names are resolved for real; check which resolver answers (system, ISP, or proxy-core remote DNS) and keep only needed entries. A real answer from a non-proxy resolver is a DNS leak finding; Fake-IP itself is not |
+| Fake-IP enabled and a program uses its own DoH/DoT or literal IP | Fake-IP only covers lookups that go through the proxy-core resolver; verify these programs separately (TUN route, rules, IPv6) and do not count Fake-IP as covering them |
 | Claude IPv4-only scope or enforcement evidence missing | Plan selected-scope IPv4-only even without an observed bypass; keep support unknown/unsupported and compliance not_established, preserve outer/control traffic and obtain exact approval before changes |
 | IPv6 bypass observed | Locate the actual target leg and repair its scoped IPv4-only enforcement under the current product policy; preserve IPv6-dependent outer proxy transport and unrelated traffic |
 | IPv4 works, IPv6 times out | Record unavailable/unknown IPv6; do not report a working kill switch or globally disable IPv6 |

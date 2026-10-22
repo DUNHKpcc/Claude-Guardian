@@ -24,6 +24,14 @@ class GuidanceContracts(unittest.TestCase):
         for path in scripts.glob("*.py"):
             self.assertNotIn("Disable-NetAdapterBinding", path.read_text(encoding="utf-8"), path.name)
 
+    def test_fake_ip_leak_boundaries_and_cache_flush_are_documented(self):
+        net = (REFS / "network-and-remedies.md").read_text(encoding="utf-8")
+        rem = (REFS / "agent-remediation.md").read_text(encoding="utf-8")
+        for term in ("fake-ip-filter", "own DoH/DoT", "Fake-IP itself is not"):
+            self.assertIn(term, net)
+        for term in ("ipconfig /flushdns", "dscacheutil -flushcache", "mDNSResponder", "Fake-IP 本身不算泄漏"):
+            self.assertIn(term, rem)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):
