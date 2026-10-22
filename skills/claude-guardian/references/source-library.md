@@ -84,7 +84,7 @@
 
 ## 补充资料集合：R01 VPS 推荐报告集（业务／性价比／高端家宽）
 
-[打开索引](../sources/vps-recommendations/INDEX.md)。所有者提供的 17 份 VPS 推荐报告，分业务、性价比、高端家宽三类，用于“本机路线固定出口 IP”之后选自建梯的 VPS（见 [egress-ip-options.md](egress-ip-options.md)）。价格、配置和测试是历史记录，星级是报告作者的推荐指数；千宿网络、NodeMach 两份含商家推广或邀请链接，不作推荐或排序依据。
+[打开索引](../sources/vps-recommendations/INDEX.md)。所有者提供的 17 份 VPS 推荐报告，分业务、性价比、高端家宽三类，用于“本机路线固定出口 IP”之后选自建梯的 VPS（见 [egress-ip-options.md](egress-ip-options.md)）。涉及自建梯选 VPS、VPS 推荐或家宽出口时，回答末尾必须附本集合的索引和被引用的具体报告链接（ADR-011 同口径）。价格、配置和测试是历史记录，星级是报告作者的推荐指数；千宿网络、NodeMach 两份含商家推广或邀请链接，不作推荐或排序依据。
 
 ## 版本、来源与分发记录
 

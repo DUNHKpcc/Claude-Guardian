@@ -89,3 +89,6 @@ The owner requested asking whether the selected local device previously used a b
 代价与限制：增加约 32MB 包体积；报告为历史记录且两份含商家推广或邀请链接，不作排序理由；不承诺免封或 IP 稳定纯净；不新增访谈问题编号，仍以文档指引为主。
 
 ADR-012 补充（同日）：机场与家宽拼车不提供教程和渠道，由用户自行搜索；自建梯只给简版提示词：3x-ui + CN2 GIA 等优化线路 VPS + 可选家宽出口；客户端 iOS 小火箭、Android FlClash、桌面 Clash Verge 或 FlClash。R01 登记在 manifest 的 collections，不计入七份阅读来源，打包脚本同时校验 sources 与 collections。
+
+ADR-012 再补充（同日）：17 份 PDF 用 Ghostscript 压缩，32MB 降到约 15MB，页面与链接保留，文字层提取个别字符可能缺失，哈希与原始哈希均登记在 manifest；移除“社区观点并不一致”段落（不再写自建社区案例分歧）；VPS 推荐报告与其他资料同口径，相关回答必须附索引和被引用的具体报告链接。
+

@@ -59,9 +59,10 @@ class GuidanceContracts(unittest.TestCase):
 
     def test_local_route_egress_ip_options_and_vps_reports_are_wired(self):
         egress = (REFS / "egress-ip-options.md").read_text(encoding="utf-8")
-        for term in ("纯净机场 IP", "自建梯", "家宽拼车", "Max", "Pro", "所有者推荐", "社区观点并不一致", "不代买",
+        for term in ("纯净机场 IP", "自建梯", "家宽拼车", "Max", "Pro", "所有者推荐", "不代买",
                      "请用户自己上网搜索", "3x-ui", "CN2 GIA", "小火箭", "FlClash", "Clash Verge"):
             self.assertIn(term, egress)
+        self.assertNotIn("社区观点并不一致", egress)
         routes = (REFS / "routes-and-platforms.md").read_text(encoding="utf-8")
         self.assertIn("L2a 固定出口 IP 的来源", routes)
         self.assertIn("选 VM 或 VPS 路线时不触发", routes)
@@ -71,6 +72,9 @@ class GuidanceContracts(unittest.TestCase):
         self.assertEqual(len(pdfs), 17)
         for pdf in pdfs:
             self.assertIn(pdf.name, index)
+        skill_text = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("sources/vps-recommendations/INDEX.md", skill_text)
+        self.assertIn("必附", skill_text)
         for heading in ("## 业务", "## 性价比", "## 高端家宽"):
             self.assertIn(heading, index)
 
