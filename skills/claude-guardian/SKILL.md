@@ -95,6 +95,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | 账号阶段、IP、设备、注册与养号节奏 | [S03 经验 PDF](sources/S03-claude-experience.pdf)、[S04 指南](sources/S04-claude-guide.md)、[account-onboarding.md](references/account-onboarding.md) |
 | 本地防护、代理、浏览器档案、WebRTC 检查 | [S05 本地防护](sources/S05-local-protection.md)；WebRTC 可用包内的[本地探测页](assets/webrtc-probe.html)（由 `scripts/serve_webrtc.py` 在本机回环临时提供，用户点击确认后才发起 STUN） |
 | macOS 清理 | [S06 清理教程](sources/S06-macos-cleanup-sanitized.md) |
+| 在用户的机器上做改动时的授权方式（路线选定后；A、B、C 档） | [authorization-tiers.md](references/authorization-tiers.md)（必附） |
 | 手机端（注册、选择 Apple/Google 内购、仅手机） | [mobile-guidance.md](references/mobile-guidance.md)、[S03 经验 PDF 第 4 页](sources/S03-claude-experience.pdf)（必附） |
 | VM 路线（客机系统、网卡、出口、防火墙脚本） | [vm-guidance.md](references/vm-guidance.md)、[egress-ip-options.md](references/egress-ip-options.md)（必附）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（出口选自建梯、要选 VPS 时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（检查出口 IP 时）、[VM 搭建脚本](assets/vm-killswitch/enable-guest-ssh.sh)（开客机 SSH）、[FlClash TUN 安装](assets/vm-killswitch/install-flclash-tun.sh)、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（Linux 客机，按这个顺序） |
 | 本机路线：Clash（TUN）与防火墙（Windows 系统防火墙、Mac 用第三方 LuLu），提示词引导、无脚本 | [local-firewall-prompts.md](references/local-firewall-prompts.md)、[macOS DNS 经验](references/macos-dns-case-lessons.md)（Mac）、[S05 本地防护](sources/S05-local-protection.md) |
@@ -140,6 +141,10 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 - [evidence-policy.md](references/evidence-policy.md)：M14；稳定来源 ID、历史证据限制和发布规则
 
 参考资料采用中英双语结构，英文技术细则供执行者阅读，不直接把整份参考文件作为中文用户的操作答复。
+
+## 授权档位
+
+所有者确认：用户不需要每一步都在现场，只在重要的点在场。授权按风险分三档，见 [authorization-tiers.md](references/authorization-tiers.md)：**A** 范围内自行做（只读诊断、查资料、出方案、预演），范围确认后不再问；**B** 整个计划批准一次（可自行撤销、不切断访问、不涉及账号钱和凭据的改动），Agent 可在计划范围内按环境调整参数；**C** 必须当场确认（可能锁死自己、账号和钱、凭据、删除和不可逆、组织管理的设备、接触 Claude）。到 C 档 Agent 暂停并写确认单，用户可稍后回复，沉默不是授权。本文和各 reference 里的“逐项授权／具体授权”按此档位理解；硬规则（PC0、付款本人、不收集凭据、宿主策略优先）不变。
 
 ## 始终保护
 

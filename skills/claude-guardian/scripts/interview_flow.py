@@ -1823,6 +1823,7 @@ REFERENCE_PATHS = {
     'win_ipv6': 'references/agent-remediation.md',
     'local_fw': 'references/local-firewall-prompts.md',
     'mac_dns': 'references/macos-dns-case-lessons.md',
+    'auth': 'references/authorization-tiers.md',
 }
 PAYMENT_REFERENCE_TASKS = {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue", "compare"}
 
@@ -1865,6 +1866,8 @@ def required_references(state):
     route = c['route'] if confirmed else None
     egress = _value(state, 'Q-X01')
     residential = _value(state, 'Q-X02') == 'with_residential_exit'
+    if route in {'local', 'vm', 'vps'}:
+        add('auth', 'authorization')
     if route == 'local':
         add('egress', 'egress')
         if os_value == 'windows':

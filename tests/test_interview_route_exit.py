@@ -163,7 +163,8 @@ class RequiredReferenceTests(unittest.TestCase):
 
     def test_airport_gets_no_vps_material(self):
         s = answer(base('local'), 'Q-X01', 'airport')
-        self.assertEqual(refs(s), ['sources/S02-ai-payments.md', 'references/egress-ip-options.md'])
+        self.assertEqual(refs(s), ['sources/S02-ai-payments.md', 'references/authorization-tiers.md',
+                                   'references/egress-ip-options.md'])
 
     def test_vm_linux_guest_gets_firewall_script_macos_does_not(self):
         linux = answer(base('vm'), 'Q-V07', 'omarchy')
@@ -253,3 +254,14 @@ class LocalFirewallReferenceTests(unittest.TestCase):
     def test_vm_and_vps_do_not_get_local_firewall_prompts(self):
         self.assertNotIn('references/local-firewall-prompts.md', refs(answer(base('vm'), 'Q-C02', 'macos')))
         self.assertNotIn('references/local-firewall-prompts.md', refs(answer(base('vps'), 'Q-C02', 'windows')))
+
+
+class AuthorizationTierReferenceTests(unittest.TestCase):
+    def test_explicit_route_attaches_authorization_tiers(self):
+        for route in ('local', 'vm', 'vps'):
+            self.assertIn('references/authorization-tiers.md', refs(base(route)), route)
+        self.assertNotIn('references/authorization-tiers.md', refs(base('local', basis='default_proposal')))
+
+    def test_tiers_are_not_a_state_machine_authorization(self):
+        a = f.assessment(answer(base('vps'), 'Q-S08', 'vps_own_ip'))
+        self.assertEqual(a['G3']['status'], 'blocked')

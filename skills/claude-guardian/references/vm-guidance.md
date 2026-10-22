@@ -22,7 +22,7 @@
 
 ## 3a. Linux 客机的搭建顺序（Omarchy）
 
-按下面顺序做，每一步都由用户在客机里自己运行，Agent 解释脚本、核对参数、帮读输出；脚本都先读一遍、先打快照：
+按下面顺序做；脚本由用户在客机里运行，或经[计划批准](authorization-tiers.md)后由 Agent 在获准的会话里运行，Agent 都先解释脚本、核对参数、帮读输出；先打快照。**第 2、3、4 步是 B 档**，可合成一张计划批准一次；**第 5 步装 killswitch 是 C 档**（默认出站丢弃，可能锁死），到这一步暂停，用户当场确认并在保险丝时限内 `confirm`：
 
 1. **创建 VM：**网卡选 LAN 独立网卡（第 2 节），记下客机网卡名（`ip link`）和局域网网段。
 2. **开启客机 SSH：**[enable-guest-ssh.sh](../assets/vm-killswitch/enable-guest-ssh.sh)，开启 sshd；ufw 已启用时只放行你设置的 `SSH_SRC`（管理机在局域网里的地址或网段）到 22 端口。原脚本按 shared NAT 写，已改为 LAN 独立网卡的做法。

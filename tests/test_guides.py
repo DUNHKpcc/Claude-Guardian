@@ -212,6 +212,22 @@ class GuidanceContracts(unittest.TestCase):
                 continue
             self.assertNotIn("](validation.md)", path.read_text(encoding="utf-8"), path.name)
 
+    def test_authorization_tiers_are_defined_and_wired(self):
+        doc = (REFS / "authorization-tiers.md").read_text(encoding="utf-8")
+        for term in ("范围确认单", "A 范围内自行做", "B 整个计划批准一次", "C 必须当场确认", "判定方法", "计划批准单", "确认单",
+                     "用户**不需要全程在场**", "不变的硬规则", "沉默、超时、默认选项都不算确认", "持久化改内核参数",
+                     "默认出站切成阻止", "注册、登录、KYC、OAuth、付款、订阅、凭据"):
+            self.assertIn(term, doc)
+        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn("authorization-tiers.md", agents)
+        self.assertNotIn("取得本次授权；不能靠代码中的布尔值替代真实确认", agents)
+        for name in ("contact-and-safety.md", "agent-remediation.md", "local-firewall-prompts.md",
+                     "line-optimization.md", "vm-guidance.md", "vps-guidance.md"):
+            self.assertIn("authorization-tiers.md", (REFS / name).read_text(encoding="utf-8"), name)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## 授权档位", skill)
+        self.assertIn("[authorization-tiers.md](references/authorization-tiers.md)（必附）", skill)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

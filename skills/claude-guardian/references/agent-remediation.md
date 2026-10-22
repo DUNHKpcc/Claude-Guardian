@@ -1,5 +1,7 @@
 # Agent 编排检测与修复
 
+> 授权粒度按 [authorization-tiers.md](authorization-tiers.md)：本文里的“具体授权／逐项批准”，在 B 档指批准整个计划一次，在 C 档指当场确认；硬规则不变。
+
 依据 D-SPEC v0.1.10 §1、§7 与 D-ENV v0.3 §3、§5.6、§20；历史“只写 Spec”不阻止实现。实际权限与逐项验收继续有效。
 
 具体支持2.5.8独占rules扩展的单个DOMAIN变更时，见 [应用编辑任务与内容核验](agent-rules-task.md)。它复用原候选与归属校验，供Agent执行实际获准的应用动作；不调用内置生产写入器。

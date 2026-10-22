@@ -77,6 +77,7 @@ S08 的结论是：像示例里这样的机房 IP 算好的，直接用没问题
 
 - **VPS 自己的 IP 是出口：**用 [vps-guard.sh](../assets/vps-firewall/vps-guard.sh)，参考 VM 的脚本结构：nftables，入站默认丢弃，只放行回环、已建立连接、来自管理来源（`ADMIN_NET`）的 SSH 和 ping、云 DHCP、IPv6 邻居发现；出站不限制。应用后有 **180 秒保险丝**，没有 `confirm` 就自动回滚。
 - **套家宽、VPS 上也跑 FlClash TUN：**直接用 [VM 的 install-flclash-killswitch.sh](../assets/vm-killswitch/install-flclash-killswitch.sh)，把 `LAN_NET` 设成你的管理来源网段，`NIC` 设成 VPS 的网卡，出站只走 TUN 或节点真实 IP 和端口，fail-closed。
+- 授权档位（见[分级授权](authorization-tiers.md)）：`render` 预演是 A 档；**启用防火墙是 C 档**（入站丢弃，可能锁死 SSH），用户当场确认，并在 180 秒保险丝内在另一个会话 `confirm`。
 - 用法与前置：`ADMIN_NET` 必填（固定公网 IP 加 /32，或 Tailscale 网段 100.64.0.0/10）；先 `render` 看规则；**运行前在云控制台确认有独立救援入口，先打快照，在另一个 SSH 会话里确认**，不要只靠一个会话。云厂商安全组和系统防火墙是两层，分别核对。
 - 脚本的规则语法经 `nft -c` 在隔离环境检查过，应用和保险丝流程没有在真实服务器上实测，首次使用按上面的顺序小心进行。
 
