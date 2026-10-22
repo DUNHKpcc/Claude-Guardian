@@ -256,3 +256,11 @@ Mac 真机验收（macOS 15.7.4，记录在 `acceptance-mac-2026-10-22.md`）发
 
 不变：必附资料是下限，不是执行授权；A0b 仍然只是排查方向，不断言原因，不承诺免封或免 KYC。限制：测试检查的是“能到达”，不能判断路由得是否恰当；仓库里不随包的 `docs/` 不在 Agent 的加载范围内，不检查。
 
+## ADR-034：章节级可发现性与自动附资料补全（2026-10-22 已确认）
+
+ADR-033 之后实测：文件层可达 100%，但章节层很低（232 个 H2/H3 小节里只有 10 个被锚点指到），访谈能自动附上的文档 23/35，核心参考 `routes-and-platforms.md` 和 `network-and-remedies.md` 不在其中。所有者要求继续收紧。
+
+做法：其一，新增 `references/section-index.md`，由 `tools/gen_section_index.py` 生成（围栏代码块里的 `#` 不算标题，重复标题加 `-N` 后缀，规则同 GitHub），列出每份 reference 的每个二、三级小节和锚点链接；`SKILL.md` 的“按需加载”指向它，说明定位到文件后到这里找小节。其二，访谈 `required_references` 新增 `routes-and-platforms.md`（路线选定后附，定位符指向对应路线的操作卡：本机、VM、VPS）和 `network-and-remedies.md`（任务为 network 或 environment 时附）。其三，守门测试补三条：提交的索引必须与生成结果一致；每份 reference 的每个小节都有索引链接；访谈能发出的每个 `#锚点` 定位符都能在目标文件里解析。第三条立刻查出一个真实缺陷：ADR-033 给 A0b 用的定位符 `#a0b` 在文件里并不存在（真实锚点是长标题），已在标题前加显式 `<a id="a0b"></a>`。
+
+仍不是自动附的文档（刻意）：`intake.md`、`contact-and-safety.md`、`evidence-policy.md`、`source-library.md`、`scripts-index.md`、`agent-rules-task.md`、`S01` 术语表，以及 S03/S08 的文字版副本。它们是通用参考或来源副本，不对应某个访谈事实；Agent 仍从 `SKILL.md` 一跳可达。限制：索引保证小节“能被找到”，不保证 Agent 在合适的时候去找；主题到小节的判断仍靠资料表和必附资料。
+

@@ -48,6 +48,7 @@
 python -m unittest discover -s tests -v
 python -m compileall -q skills/claude-guardian/scripts
 python tools/package_skill.py --output /tmp/guardian-review.zip
+python tools/gen_section_index.py   # 改了 references 的标题后重新生成章节索引
 ```
 
 跨平台使用相应临时目录。测试本地文件修改只能在专用临时目录，不能对真实配置做破坏性回归。打包使用显式清单、来源哈希与路径检查；原文保留其既有 Markdown 空格/换行，不为格式检查擅自更改来源哈希。

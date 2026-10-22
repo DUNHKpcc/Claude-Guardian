@@ -7,10 +7,13 @@ following mentions from SKILL.md, when the script index drifts from scripts/, an
 relative Markdown link or its #anchor does not resolve.
 """
 from pathlib import Path
+import importlib.util
 import re
+import sys
 import unittest
 
-ROOT = Path(__file__).resolve().parents[1] / 'skills/claude-guardian'
+REPO = Path(__file__).resolve().parents[1]
+ROOT = REPO / 'skills/claude-guardian'
 SKIP_DIRS = {'__pycache__'}
 SKIP_NAMES = {'.DS_Store'}
 TEXT_SUFFIXES = {'.md', '.py', '.json', '.html', '.sh'}
@@ -109,6 +112,57 @@ class SkillDiscoverability(unittest.TestCase):
             self.assertIn(must, row(term))
         for term in ('IDC Flare', 'VPSHub'):
             self.assertTrue(any(term in line for line in rows), term)
+
+
+def load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class SectionLevelDiscoverability(unittest.TestCase):
+    """The file is reachable; this makes every section of it reachable too."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.generator = load('gen_section_index', REPO / 'tools/gen_section_index.py')
+
+    def test_committed_section_index_is_up_to_date(self):
+        self.assertEqual((ROOT / 'references/section-index.md').read_text(encoding='utf-8'), self.generator.render(),
+                         'run: python tools/gen_section_index.py')
+
+    def test_every_h2_h3_section_of_every_reference_is_linked_from_the_index(self):
+        index = (ROOT / 'references/section-index.md').read_text(encoding='utf-8')
+        missing = []
+        for path in sorted((ROOT / 'references').glob('*.md')):
+            if path.name == 'section-index.md':
+                continue
+            for level, text, anchor in self.generator.headings(path):
+                if level > 1 and '(%s#%s)' % (path.name, anchor) not in index:
+                    missing.append('%s#%s' % (path.name, anchor))
+        self.assertEqual(missing, [])
+
+    def test_index_covers_a_meaningful_number_of_sections_and_the_skill_points_to_it(self):
+        index = (ROOT / 'references/section-index.md').read_text(encoding='utf-8')
+        self.assertGreaterEqual(len(re.findall(r'^\s*- \[', index, re.M)), 200)
+        self.assertIn('references/section-index.md', (ROOT / 'SKILL.md').read_text(encoding='utf-8'))
+
+    def test_every_anchor_locator_the_interview_can_emit_resolves(self):
+        scripts = str(ROOT / 'scripts')
+        sys.path.insert(0, scripts)
+        try:
+            flow = load('interview_flow_for_locators', ROOT / 'scripts/interview_flow.py')
+        finally:
+            sys.path.remove(scripts)
+        source = (ROOT / 'scripts/interview_flow.py').read_text(encoding='utf-8')
+        locators = re.findall(r"add\('(\w+)', '\w+', '(#[^']+)'\)", source)
+        locators += [(key, anchor) for key, anchor in
+                     (('routes', a) for a in re.findall(r"'(#r-[^']+)'", source))]
+        self.assertGreaterEqual(len(locators), 8)
+        for key, anchor in locators:
+            target = ROOT / flow.REFERENCE_PATHS[key]
+            self.assertIn(anchor[1:], anchors(target), '%s %s' % (key, anchor))
 
 
 if __name__ == '__main__':

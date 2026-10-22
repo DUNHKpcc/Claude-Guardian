@@ -146,6 +146,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 - [accounts-and-payments.md](references/accounts-and-payments.md)：M02/M03；准入、目标套餐、Apple/Google/银行卡前提及支付交接
 - [incidents-and-integrations.md](references/incidents-and-integrations.md)：M07/M10–M13；异常、清理保留、申诉、SDK/MCP 与认证边界
 - [evidence-policy.md](references/evidence-policy.md)：M14；稳定来源 ID、历史证据限制和发布规则
+- [section-index.md](references/section-index.md)：`references/` 每个文件的每个二、三级小节和锚点链接（由 `tools/gen_section_index.py` 生成）；定位到文件后，在这里找具体小节，不要通读整份文件，也不要漏掉没有被资料表点到的小节
 - [scripts-index.md](references/scripts-index.md)：`scripts/` 和 `assets/` 里每个脚本的用途、入口还是库、对应说明；找不到该用哪个脚本时先看这里（访谈状态机 `interview_flow.py`、各 `native_*_mac.py`、`egress_verifier.py` 都列在里面）
 - [source-library.md](references/source-library.md)：全部来源资料的清单、哈希和使用限制；`sources/manifest.json` 是它的机器可读版，设计规格 [D-SPEC](sources/design/D-SPEC-v0.1.10.md) 和 [D-ENV](sources/design/D-ENV-v0.3.md) 在 `sources/design/`；S08 文字版见 [S08-extracted-text.md](sources/S08-extracted-text.md)
 

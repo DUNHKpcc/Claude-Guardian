@@ -160,7 +160,8 @@ class RequiredReferenceTests(unittest.TestCase):
     def test_airport_gets_no_vps_material(self):
         s = answer(base('local'), 'Q-X01', 'airport')
         self.assertEqual(refs(s), ['sources/S02-ai-payments.md', 'references/authorization-tiers.md',
-                                   'references/egress-ip-options.md', 'references/whole-machine-ipv4.md'])
+                                   'references/routes-and-platforms.md', 'references/egress-ip-options.md',
+                                   'references/whole-machine-ipv4.md'])
 
     def test_vm_linux_guest_gets_firewall_script_macos_does_not(self):
         linux = answer(base('vm'), 'Q-V07', 'omarchy')

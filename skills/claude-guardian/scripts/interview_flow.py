@@ -1835,6 +1835,8 @@ REFERENCE_PATHS = {
     'identity_review': 'references/accounts-and-payments.md',
     'cleanup_cli': 'references/cleanup-cli-usage.md',
     'win_cleanup': 'references/windows-cleanup.md',
+    'routes': 'references/routes-and-platforms.md',
+    'network': 'references/network-and-remedies.md',
 }
 PAYMENT_REFERENCE_TASKS = {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue", "compare"}
 
@@ -1881,6 +1883,10 @@ def required_references(state):
     residential = _value(state, 'Q-X02') == 'with_residential_exit'
     if route in {'local', 'vm', 'vps'}:
         add('auth', 'authorization')
+        add('routes', 'route', {'local': '#r-local-独立操作卡', 'vm': '#r-vm-独立操作卡m08',
+                                'vps': '#r-vps-独立操作卡m09'}[route])
+    if c['task'] in {'network', 'environment'}:
+        add('network', 'network_diagnosis')
     if route == 'local':
         add('egress', 'egress')
         add('whole_ipv4', 'whole_machine_egress')
