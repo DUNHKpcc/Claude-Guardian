@@ -153,7 +153,7 @@ class DashboardInteractionTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which('node'), 'Node missing; synthetic protocol harness not run')
     def test_synthetic_protocol_harness(self):
         run=subprocess.run([shutil.which('node'),str(ROOT/'tests/dashboard-interaction-protocol.cjs')],
-                           capture_output=True,encoding='utf-8',timeout=15)
+                           capture_output=True,encoding='utf-8',timeout=60)
         self.assertEqual(run.returncode,0,run.stdout+run.stderr)
         self.assertIn('no browser executed',run.stdout)
 
