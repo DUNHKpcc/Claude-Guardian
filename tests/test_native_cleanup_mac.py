@@ -49,20 +49,27 @@ class NativeCleanupMac(unittest.TestCase):
         self.home = str(Path(self.tmp.name).resolve())
         os.chmod(self.home, 0o700)
         self.processes = ['/usr/sbin/cfprefsd']
+        self.ancestors = ['/bin/zsh', '/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal']
         patches = [patch.object(native, '_platform', return_value='darwin'),
                    patch.object(native, '_home', side_effect=lambda: self.home),
-                   patch.object(native, '_list_processes', side_effect=lambda: list(self.processes))]
+                   patch.object(native, '_list_processes', side_effect=lambda: list(self.processes)),
+                   patch.object(native, '_ancestor_commands', side_effect=lambda: list(self.ancestors))]
         for item in patches:
             item.start()
             self.addCleanup(item.stop)
-        self.cli_root = self.home + '/.claude'
+        self.cli_root = self.home + '/.claude/cache'
+        self.dot_claude = self.home + '/.claude'
         self.desktop = self.home + '/Library/Application Support/Claude'
-        for path, files in ((self.cli_root, {'history.jsonl': b'h', 'settings.json': b'{}', 'sub/notes.txt': b'n'}),
+        for path, files in ((self.cli_root, {'changelog.md': b'h', 'sub/notes.txt': b'n'}),
                             (self.desktop, {'config.json': b'{}', 'Local Storage/x': b'x'})):
             for rel, data in files.items():
                 full = Path(path) / rel
                 full.parent.mkdir(parents=True, exist_ok=True)
                 full.write_bytes(data)
+        for name, data in (('history.jsonl', b'prompts'), ('settings.json', b'{}'), ('projects/p/s.jsonl', b'transcript')):
+            full = Path(self.dot_claude, name)
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_bytes(data)
         self.quarantine = self.home + '/.claude-guardian/quarantine'
         os.makedirs(self.quarantine, mode=0o700)
         self.projects = self.home + '/projects'
@@ -97,19 +104,40 @@ class NativeCleanupMac(unittest.TestCase):
         return host.verify(scope['target_ref'], host.scope_digest,
                            {k: scope[k] for k in ('backup_ref', 'host_context_ref')})
 
-    def test_only_fixed_claude_locations_are_classified(self):
+    def test_only_fixed_claude_locations_are_classified_and_tiered(self):
         h = self.home
-        self.assertEqual(native.classify(h + '/.claude', h), 'cli_app_data')
-        self.assertEqual(native.classify(h + '/Library/Logs/Claude', h), 'desktop_app_data')
-        self.assertEqual(native.classify(h + '/Library/Caches/com.anthropic.claudefordesktop.ShipIt', h), 'desktop_app_data')
-        self.assertEqual(native.classify(h + '/Library/Preferences/ByHost/com.anthropic.claudefordesktop.AB-12.plist', h),
-                         'desktop_app_data')
-        for path in (h, h + '/Documents', h + '/.claude/projects', h + '/Library/Application Support',
-                     h + '/Library/Application Support/Claude/sub', h + '/.local/share/claude',
-                     h + '/.local/bin/claude', '/Applications/Claude.app', h + '/Library/Caches/other',
-                     h + '/Library/Preferences/ByHost/com.apple.x.plist', h + '/.claude.json'):
+        cases = {h + '/.claude/cache': ('cli_app_data', 'regenerable'),
+                 h + '/.claude/telemetry': ('cli_app_data', 'regenerable'),
+                 h + '/.claude/stats-cache.json': ('cli_app_data', 'regenerable'),
+                 h + '/.claude/shell-snapshots': ('cli_app_data', 'regenerable'),
+                 h + '/.claude/statsig': ('cli_app_data', 'regenerable'),
+                 h + '/Library/Caches/claude-cli-nodejs': ('cli_app_data', 'regenerable'),
+                 h + '/Library/Logs/Claude': ('desktop_app_data', 'regenerable'),
+                 h + '/Library/Logs/DiagnosticReports/Claude-2026.ips': ('desktop_app_data', 'regenerable'),
+                 h + '/Library/Application Support/CrashReporter/Claude_x.plist': ('desktop_app_data', 'regenerable'),
+                 h + '/Library/Caches/com.anthropic.claudefordesktop.ShipIt': ('desktop_app_data', 'regenerable'),
+                 h + '/Library/Application Support/Claude': ('desktop_app_data', 'persistent'),
+                 h + '/Library/Application Support/com.anthropic.claudefordesktop': ('desktop_app_data', 'persistent'),
+                 h + '/Library/WebKit/com.anthropic.claudefordesktop': ('desktop_app_data', 'persistent'),
+                 h + '/Library/Saved Application State/com.anthropic.claudefordesktop.savedState': ('desktop_app_data', 'persistent'),
+                 h + '/Library/Preferences/ByHost/com.anthropic.claudefordesktop.AB-12.plist': ('desktop_app_data', 'persistent')}
+        for path, (kind, level) in cases.items():
+            with self.subTest(path=path):
+                self.assertEqual((native.classify(path, h), native.tier(path, h)), (kind, level))
+        for path in (h, h + '/Documents', h + '/.claude', h + '/.claude/projects', h + '/.claude/projects/p',
+                     h + '/.claude/history.jsonl', h + '/.claude/settings.json', h + '/.claude/skills/x',
+                     h + '/.claude/.credentials.json', h + '/.claude/backups', h + '/.claude/cache/sub',
+                     h + '/Library/Application Support', h + '/Library/Application Support/Claude/sub',
+                     h + '/.local/share/claude', h + '/.local/bin/claude', '/Applications/Claude.app',
+                     h + '/Library/Caches/other', h + '/Library/Preferences/ByHost/com.apple.x.plist',
+                     h + '/.claude.json'):
             with self.subTest(path=path):
                 self.assertIsNone(native.classify(path, h))
+        for path in (h + '/.claude', h + '/.claude/projects', h + '/.claude/projects/p/s.jsonl',
+                     h + '/.claude/history.jsonl', h + '/.claude/.credentials.json', h + '/.claude/skills/x'):
+            with self.subTest(protected=path):
+                self.assertTrue(native.is_protected(path, h))
+        self.assertFalse(native.is_protected(h + '/.claude/cache', h))
 
     def test_verify_refuses_each_unverified_condition(self):
         host = self.verified_host()
@@ -141,7 +169,15 @@ class NativeCleanupMac(unittest.TestCase):
         scope = copy.deepcopy(self.scope)
         scope['roots'][0]['data_kind'] = 'desktop_app_data'
         self.assertEqual(self.verify(self.host(scope), scope), 'unknown_ownership')
-        Path(self.cli_root, '.credentials.json').write_text('secret-token')
+        for protected in (self.dot_claude, self.home + '/.claude/projects', self.home + '/.claude/history.jsonl'):
+            with self.subTest(protected=protected):
+                scope = copy.deepcopy(self.scope)
+                scope['roots'][0] = {'root_ref': 'cli', 'path': protected, 'data_kind': 'cli_app_data'}
+                self.assertEqual(self.verify(self.host(scope), scope), 'shared_scope')
+                with self.assertRaises(core.CleanupError) as caught:
+                    self.host(scope).create_backup()
+                self.assertEqual(caught.exception.code, 'SHARED_SCOPE')
+        Path(self.desktop, '.credentials.json').write_text('secret-token')
         host = self.host()
         host.create_backup()
         self.assertEqual(self.verify(host), 'credential_scope')
@@ -150,18 +186,18 @@ class NativeCleanupMac(unittest.TestCase):
         host = self.host()
         self.assertEqual(self.verify(host), 'backup_unverified')
         result = host.create_backup()
-        self.assertEqual((result['status'], result['roots'], result['files']), ('backup_created', 2, 5))
+        self.assertEqual((result['status'], result['roots'], result['files']), ('backup_created', 2, 4))
         self.assertEqual(self.verify(self.host()), core.HOST_OK)
         for rel in ('.claude/history.jsonl',):
-            mode = oct(os.stat(self.backup_dir + '/data/root-0000/history.jsonl').st_mode & 0o777)
+            mode = oct(os.stat(self.backup_dir + '/data/root-0000/changelog.md').st_mode & 0o777)
             self.assertEqual(mode, '0o600')
         self.assertEqual(oct(os.stat(self.backup_dir).st_mode & 0o777), '0o700')
-        Path(self.backup_dir + '/data/root-0000/history.jsonl').write_bytes(b'X')
+        Path(self.backup_dir + '/data/root-0000/changelog.md').write_bytes(b'X')
         self.assertEqual(self.verify(self.host()), 'backup_unverified')
 
     def test_live_change_after_backup_invalidates_verification(self):
         host = self.verified_host()
-        Path(self.cli_root, 'history.jsonl').write_bytes(b'changed-later')
+        Path(self.cli_root, 'changelog.md').write_bytes(b'changed-later')
         self.assertEqual(self.verify(host), 'backup_unverified')
 
     def test_backup_refuses_when_claude_runs_unprotected_or_existing(self):
@@ -202,6 +238,8 @@ class NativeCleanupMac(unittest.TestCase):
         host = self.host(console=(terminal, terminal))
         self.assertTrue(host.approve('quarantine', digest, 'mac-a', {}))
         self.assertIn('.claude', terminal.out.getvalue())
+        self.assertIn('可再生缓存/日志', terminal.out.getvalue())
+        self.assertIn('始终受保护', terminal.out.getvalue())
         self.assertFalse(host.approve('restore_cleanup', digest, 'mac-a', {}) is True and len(terminal.prompts) == 1)
         self.assertTrue(host.approve('quarantine', digest, 'mac-a', {}))  # same operation and digest: one consent
         self.assertEqual(sum('操作: quarantine' in p for p in terminal.prompts), 1)
@@ -238,6 +276,8 @@ class NativeCleanupMac(unittest.TestCase):
         self.assertFalse(os.path.exists(self.cli_root))
         self.assertFalse(os.path.exists(self.desktop))
         self.assertEqual(Path(self.projects, 'code.py').read_text(), 'keep')
+        for name in ('history.jsonl', 'settings.json', 'projects/p/s.jsonl'):
+            self.assertTrue(Path(self.dot_claude, name).exists(), name)
         self.assertEqual(self.verify(host), core.HOST_OK)  # roots verified at the quarantine location
         code, result = self.run_cli(['reconcile', '--plan-file', str(plan_file), '--expected-plan-digest', digest,
                                      '--receipt-output', str(receipt_file)], host)
@@ -245,7 +285,8 @@ class NativeCleanupMac(unittest.TestCase):
         code, result = self.run_cli(['restore', '--receipt-file', str(receipt_file),
                                      '--expected-receipt-digest', result['document_digest']], host)
         self.assertEqual(code, 0, result)
-        self.assertEqual(Path(self.cli_root, 'history.jsonl').read_bytes(), b'h')
+        self.assertEqual(Path(self.cli_root, 'changelog.md').read_bytes(), b'h')
+        self.assertEqual(Path(self.dot_claude, 'history.jsonl').read_bytes(), b'prompts')
         self.assertEqual(Path(self.desktop, 'Local Storage/x').read_bytes(), b'x')
         self.assertTrue(os.path.isdir(self.backup_dir + '/data/root-0000'))
 
@@ -272,7 +313,7 @@ class NativeCleanupMac(unittest.TestCase):
             with patch('sys.stdout', new_callable=io.StringIO) as out:
                 self.assertEqual(native.main([command]), 0)
             self.assertNotIn(self.home, out.getvalue())
-        self.assertEqual(json.loads(out.getvalue())['not_in_scope'][0], '~/.claude.json (credential_scope)')
+        self.assertEqual(json.loads(out.getvalue())['not_in_scope'][:2], ['~/.claude (whole directory)', '~/.claude.json (credential_scope)'])
         with patch.object(native, '_platform', return_value='linux'), patch('sys.stderr', new_callable=io.StringIO) as err:
             self.assertEqual(native.main(['context']), 2)
         self.assertEqual(json.loads(err.getvalue())['code'], 'UNSUPPORTED_PLATFORM')
@@ -310,6 +351,24 @@ class NativeCleanupMac(unittest.TestCase):
             self.assertEqual(native.main(argv[:-2] + ['--entry-file', str(Path(self.home) / 'missing.json')],
                                          console=console), 2)
         self.assertEqual(json.loads(err.getvalue())['code'], 'INVALID_ENTRY_FILE')
+
+    def test_refuses_to_run_under_claude_code_or_the_claude_app(self):
+        for ancestors in (['/bin/zsh', '/Users/x/.local/share/claude/versions/2/claude'],
+                          ['/bin/zsh', '/Applications/Claude.app/Contents/MacOS/Claude'], ['/bin/zsh', 'claude-code']):
+            with self.subTest(ancestors=ancestors):
+                self.ancestors[:] = ancestors
+                self.assertTrue(native.running_under_claude())
+                with patch('sys.stderr', new_callable=io.StringIO) as err:
+                    self.assertEqual(native.main(['backup', '--scope', str(self.scope_file)],
+                                                 console=(self.terminal, self.terminal)), 2)
+                self.assertEqual(json.loads(err.getvalue())['code'], 'RUNNING_UNDER_CLAUDE')
+                self.assertFalse(os.path.exists(self.backup_dir))
+        self.ancestors[:] = ['/bin/zsh', '/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal']
+        self.assertFalse(native.running_under_claude())
+        with patch.object(native, '_ancestor_commands', side_effect=OSError('no ps')):
+            self.assertTrue(native.running_under_claude())  # unknown ancestry fails closed
+        with patch('sys.stdout', new_callable=io.StringIO):
+            self.assertEqual(native.main(['context']), 0)  # read-only helpers still work
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 
 ## 路线补全、访谈兜底与资料引用（2026-10-21）
 
+- **参考 claude-cleanup 收紧 C5、补 Windows（2026-10-22，ADR-030）：**`~/.claude` 整个目录不能当根，对话记录、历史、设置、skills、插件、凭据始终受保护；根分“可再生缓存/日志”和“桌面端持久数据”两档；补桌面端路径；由 Claude Code 或 Claude 应用启动时拒绝；新增 `native_claude_state_mac.py`（钥匙串退出登录、`CLAUDE_CODE_SIMPLE`、用户指定时区，均终端确认）；新增 `references/windows-cleanup.md`（官方路径，PowerShell 分步，无内置宿主）。**不采用**第三方的 userID/machineID 轮换。发行包 109 个成员，未真机验收
 - **C5 清理宿主（2026-10-22，ADR-029）：**新增 macOS 内置宿主 `native_cleanup_mac.py`，实现 `verify`（固定清单、Claude 已退出、内容校验的备份）、`approve`（用户在真实终端输入 `CONFIRM <操作> <摘要前8位>`）、`exclusive`（进入和退出时检测 Claude 进程）、`cancelled`；命令 `context`、`allowed`、`backup`、`plan`、`quarantine`、`reconcile`、`restore`。拒绝 `~/.claude.json` 和含 `.credentials.json` 的目录，永久删除、钥匙串、浏览器数据不在范围内。只有合成与 CI 测试，未真机验收；发行包 107 个成员
 - **整机统一出口（2026-10-22，ADR-028）：**新增 `references/whole-machine-ipv4.md`（Clash Verge 的 TUN、DNS、`ipv6: false`、规则兜底配置，按分级授权的步骤，Mac 与 Windows 取证命令）和只读判定 `scripts/egress_verifier.py`：根据 Agent 提供的观察判定 8 个必要层，输出 `established / violated / incomplete`，不回显 IP；持续保护须重启、睡眠唤醒、换网都复验才算有证据。Windows 不做写入引擎，由 Agent 按提示词操作并备份读回。未真机验收
 - **Mac 配置写入适配器（2026-10-22，ADR-027）：**新增 `native_clash_verge_mac.py`，`repair_execution` 的原生门禁对 macOS 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 放行；要求应用及其核心已退出，提交前后复查进程与元数据文件，检测到变化失败并保留恢复批次。其他系统、产品、版本和 `merge-policy` 仍不可用。只有合成与 CI 测试，未真机验收；发行包 104 个成员

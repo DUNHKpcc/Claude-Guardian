@@ -224,3 +224,13 @@ Mac 修复链补全为：预检计划（A）→ 批准计划（B）→ 退出应
 
 `cleanup_cli.py` 本身不变：普通运行仍无宿主；包装命令收下 `--host-scope` 和 `--entry-file`（私有 0600 的路线声明，不授予任何权限）。拒绝原因（`host_refusal`）打印到 stderr，因为分发器会把所有非通过结果折叠成 `HOST_SCOPE_UNVERIFIED`。未做：Windows、凭据和浏览器数据清理、卸载、永久清除、真机验收（备份会含登录状态等敏感文件，文档提示用户自己保管和删除）。测试：`tests/test_native_cleanup_mac.py` 用一次性主目录、合成进程列表和脚本化终端，覆盖清单、拒绝路径、备份校验、同意短语、排除区间，以及真实核心的备份、计划、隔离、对账、恢复往返。
 
+## ADR-030：参考第三方 claude-cleanup 收紧 C5，补 Windows 官方路径（2026-10-22 已确认）
+
+所有者让参考 suyuan2022/suyuan-skill 的 claude-cleanup（MIT，仅 macOS），并要求冲突部分也参考，Windows 参考官方文档。采用：其一，`~/.claude` 不再能整个当根，对话记录、历史、设置、skills、插件、命令、agents、hooks、凭据等一律保护（第三方的绝对保护清单并上官方“需要保留的状态文件”），根只能是可再生缓存/日志（官方“删除没有用户可见损失”的行加第三方缓存清单）或桌面端持久数据；其二，桌面端路径补 `com.anthropic.claudefordesktop` 的 Application Support、Saved Application State、WebKit 和 DiagnosticReports、CrashReporter；其三，由 Claude Code 或 Claude 应用启动时拒绝运行（沿父进程链，只看可执行文件名，不读参数，无法确定时按拒绝）；其四，钥匙串退出登录、`CLAUDE_CODE_SIMPLE`（官方环境变量，等同 `--bare`，不读取 OAuth 和钥匙串凭据，故订阅登录不可用，确认页明说）、用户指定的系统时区做成独立命令，各自终端确认，均为 C 档。时区由用户指定，不写死任何地区，原时区打印出来便于还原。
+
+**不采用：**轮换 `userID`/`machineID` 并清账号缓存字段。它的作用是更换平台用来关联设备的标识，属于规避设备关联，与本项目“不轮换设备身份、不伪造地区或身份”的规则冲突，所有者要求参考时我如实说明不做。S06 里关于这两个字段的说明（不能据此宣称防封，普通退出登录不必伪造）保持不变。第三方的“继承遥测状态”采用为约束：修改 `settings.json` 后核对遥测键与修改前一致。移入废纸篓也不采用，保持私有隔离目录加对账回执。
+
+**Windows：**新增 `references/windows-cleanup.md`，路径只用官方文档写明的：`%USERPROFILE%\.claude`、`.claude.json`、`.credentials.json`、`.local\bin\claude.exe`、`.local\share\claude`、VS Code 扩展 `globalStorage`、`%APPDATA%\Anthropic`、桌面端 `%APPDATA%\Claude\claude_desktop_config.json` 与 `logs`（MCP 文档）。桌面端其余数据路径官方没写，文档要求先只读列出再给用户看，不凭记忆。流程：只读审计（A）、哈希校验备份（B）、隔离与还原（C，对话中明确确认，没有终端短语）、凭据与退出登录单独确认；`claude purge` 要运行 Claude，由用户自己决定并先过 PC1。没有内置宿主，命令未在真实 Windows 上跑过。
+
+测试：`tests/test_native_cleanup_mac.py` 更新为分档与受保护路径，`tests/test_native_claude_state_mac.py` 用桩命令覆盖钥匙串、简单模式和时区，`tests/test_windows_cleanup_guide.py` 检查官方路径、保护清单和不含设备标识轮换。
+

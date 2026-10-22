@@ -217,7 +217,7 @@ Agent 只在证据支持时选对应代码；每条原始证据及时间留在�
 | ENV-05 WebRTC旁路、策略未生效 | 精确版本/Profile/origin与有效策略核对、环境适配的单项调整 | agent_investigation | 无浏览器策略写入器；实际候选与媒体复测 |
 | ENV-06 已有规则policy错误/需prepend | repair_cli.py preflight，之后获准私有diff/plan | candidate_only | merge-policy与rules-prepend范围不同；生产execute仍阻塞 |
 | ENV-07 程序忽略代理 | 精确启动入口/支持方式，Agent最小配置 | agent_investigation | 无启动器写入器；PC0不运行Claude |
-| ENV-08 时钟/时区/语言目标 | 记录原值、确认单项目标、Agent通过系统支持的接口修改 | agent_investigation | 无设置写入器；不按出口地区改时区 |
+| ENV-08 时钟/时区/语言目标 | 记录原值、确认单项目标、Agent通过系统支持的接口修改 | agent_investigation | 无通用设置写入器；Agent 不替用户按出口地区决定时区；用户明确指定目标时区时，macOS 可用 `native_claude_state_mac.py timezone <IANA名>`（C 档，终端确认，sudo 密码只在原生隐藏提示输入） |
 | ENV-09 清理请求 | 通用请求先确认目标与保护范围；独立选择 C5 后转限定宿主接口 | agent_investigation | 选择器不执行；cleanup_cli/cleanup_transactions 支持限定 POSIX 隔离与恢复，原生归属适配未提供；事故不等于清理授权 |
 | ENV-10 故障阻断未验证 | 列保护范围、独立恢复与平台演练方案 | agent_investigation | 无系统故障注入/防火墙写入器 |
 | 通用缺依赖、无权限、错误输入/版本 | 定位该项依赖/许可/格式/适配，修正后重跑原检查 | agent_investigation/clarify | 不安装依赖或放松门禁来制造通过 |

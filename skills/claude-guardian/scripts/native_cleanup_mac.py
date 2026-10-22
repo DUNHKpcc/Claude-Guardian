@@ -4,9 +4,13 @@
 is that host for macOS only. It supplies the four obligations the dispatcher needs:
 
 * ``verify``: the device/user context matches; every root is on a fixed list of
-  Claude-owned locations (taken from the owner's macOS cleanup guide); no Claude
-  process is running; and a content-verified backup made by this module matches the
-  root, wherever the root currently is (active location or the quarantine batch).
+  Claude-owned locations (the owner's macOS cleanup guide, the official Claude Code
+  data documentation and a reviewed third-party cleanup list) split into
+  ``regenerable`` caches/logs and ``persistent`` Desktop data; nothing under the
+  protected part of ``~/.claude`` (transcripts, history, settings, skills, plugins,
+  credentials ...) may be a root or inside one; no Claude process is running; and a
+  content-verified backup made by this module matches the root, wherever the root
+  currently is (active location or the quarantine batch).
 * ``approve``: consent is typed by the user in a real terminal, bound to the
   operation and the review digest. No flag, saved JSON, callback or model output can
   supply it, and there is no non-interactive mode.
@@ -17,7 +21,8 @@ is that host for macOS only. It supplies the four obligations the dispatcher nee
 It never deletes anything permanently, never touches credentials in the keychain or
 browser data, and never uninstalls applications. Roots that contain a credential file
 (``.credentials.json``) or the global CLI config (``~/.claude.json``) are refused as
-``credential_scope``; handle those separately. Process detection is by executable
+``credential_scope``; handle those separately. The host also refuses to run when it
+was started from Claude Code or the Claude app (``RUNNING_UNDER_CLAUDE``). Process detection is by executable
 name, so a Node-launched Claude Code session is not seen: the confirmation text asks
 the user to quit every Claude and Claude Code session first.
 """
@@ -71,35 +76,106 @@ def context_ref():
     return 'mac-' + hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
+# Under ~/.claude: caches and refetched files (official "nothing user-facing" rows plus
+# the reviewed third-party cache list). Everything else there is protected.
+CLI_REGENERABLE = ('cache', 'stats-cache.json', 'telemetry', 'usage-data', 'usage.jsonl',
+                   'usage.with-fix.jsonl', 'remote-settings.json', 'policy-limits.json',
+                   'policy-limits.json.stamp.json', 'shell-snapshots', 'statsig', 'logs', 'image-cache')
+CLI_PROTECTED = frozenset({
+    '.credentials.json', 'CLAUDE.md', 'agent-memory', 'agents', 'backups', 'commands', 'daemon',
+    'debug', 'file-history', 'history.jsonl', 'hooks', 'jobs', 'keybindings.json', 'mcp-servers',
+    'output-styles', 'plans', 'plugins', 'projects', 'rules', 'scripts', 'session-env', 'sessions',
+    'settings.json', 'settings.local.json', 'skills', 'tasks', 'themes', 'todos', 'uploads',
+    'workflows'})
+LIBRARY_REGENERABLE = ('Library/Caches/claude-cli-nodejs', 'Library/Logs/Claude')
+LIBRARY_DESKTOP = ('Library/Application Support/Claude', 'Library/Application Support/Claude-3p',
+                   'Library/Application Support/claude-code-desktop',
+                   'Library/Application Support/com.anthropic.claudefordesktop',
+                   'Library/HTTPStorages/com.anthropic.claudefordesktop',
+                   'Library/Preferences/com.anthropic.claudefordesktop.plist',
+                   'Library/Saved Application State/com.anthropic.claudefordesktop.savedState',
+                   'Library/WebKit/com.anthropic.claudefordesktop')
+
+
+def is_protected(path, home):
+    """The whole ~/.claude, or anything at or under a protected entry of it."""
+    claude = home + '/.claude'
+    if path == claude:
+        return True
+    if not path.startswith(claude + '/'):
+        return False
+    return path[len(claude) + 1:].split('/')[0] in CLI_PROTECTED
+
+
+def tier(path, home):
+    """'regenerable' (caches/logs), 'persistent' (Desktop data, sign-in state) or None."""
+    if is_protected(path, home):
+        return None
+    claude = home + '/.claude/'
+    if path.startswith(claude) and path[len(claude):] in CLI_REGENERABLE:
+        return 'regenerable'
+    if path in [home + '/' + item for item in LIBRARY_REGENERABLE]:
+        return 'regenerable'
+    parent, name = os.path.split(path)
+    library = home + '/Library'
+    if ((parent == library + '/Caches' and name.startswith('com.anthropic.claudefordesktop'))
+            or (parent == library + '/Logs/DiagnosticReports' and name.startswith('Claude'))
+            or (parent == library + '/Application Support/CrashReporter' and name.startswith('Claude'))):
+        return 'regenerable'
+    if path in [home + '/' + item for item in LIBRARY_DESKTOP]:
+        return 'persistent'
+    if (parent == library + '/Preferences/ByHost' and name.startswith('com.anthropic.claudefordesktop')
+            and name.endswith('.plist')):
+        return 'persistent'
+    return None
+
+
 def classify(path, home):
     """data_kind of a fixed Claude-owned location, or None when it is not on the list."""
-    library = home + '/Library'
-    exact = {home + '/.claude': 'cli_app_data',
-             library + '/Application Support/Claude': 'desktop_app_data',
-             library + '/Application Support/Claude-3p': 'desktop_app_data',
-             library + '/Application Support/claude-code-desktop': 'desktop_app_data',
-             library + '/HTTPStorages/com.anthropic.claudefordesktop': 'desktop_app_data',
-             library + '/Preferences/com.anthropic.claudefordesktop.plist': 'desktop_app_data',
-             library + '/Logs/Claude': 'desktop_app_data'}
-    if path in exact:
-        return exact[path]
-    parent, name = os.path.split(path)
-    if parent == library + '/Caches' and name.startswith('com.anthropic.claudefordesktop'):
-        return 'desktop_app_data'
-    if (parent == library + '/Preferences/ByHost'
-            and re.fullmatch(r'com\.anthropic\.claudefordesktop\.[A-Za-z0-9.-]+\.plist', name)):
-        return 'desktop_app_data'
-    return None
+    if tier(path, home) is None:
+        return None
+    return 'cli_app_data' if (path.startswith(home + '/.claude/') or path.endswith('claude-cli-nodejs')) \
+        else 'desktop_app_data'
 
 
 def allowed_locations(home):
     """Human-readable list for proposing a scope; patterns are shown, never expanded."""
-    return ['~/.claude', '~/Library/Application Support/Claude', '~/Library/Application Support/Claude-3p',
-            '~/Library/Application Support/claude-code-desktop',
-            '~/Library/HTTPStorages/com.anthropic.claudefordesktop',
-            '~/Library/Preferences/com.anthropic.claudefordesktop.plist',
-            '~/Library/Preferences/ByHost/com.anthropic.claudefordesktop.<id>.plist',
-            '~/Library/Caches/com.anthropic.claudefordesktop*', '~/Library/Logs/Claude']
+    return {'regenerable': ['~/.claude/' + item for item in CLI_REGENERABLE]
+            + ['~/' + item for item in LIBRARY_REGENERABLE]
+            + ['~/Library/Caches/com.anthropic.claudefordesktop*', '~/Library/Logs/DiagnosticReports/Claude*',
+               '~/Library/Application Support/CrashReporter/Claude*'],
+            'persistent': ['~/' + item for item in LIBRARY_DESKTOP]
+            + ['~/Library/Preferences/ByHost/com.anthropic.claudefordesktop*.plist'],
+            'protected_in_dot_claude': sorted(CLI_PROTECTED)}
+
+
+def _ancestor_commands():
+    """Executable paths of this process's ancestors (comm only, never arguments)."""
+    import subprocess
+    found, pid = [], os.getppid()
+    for _ in range(16):
+        try:
+            done = subprocess.run(['/bin/ps', '-p', str(pid), '-o', 'ppid=,comm='], capture_output=True, text=True,
+                                  timeout=5, check=False, shell=False, env={'PATH': '/usr/bin:/bin', 'LC_ALL': 'C'})
+        except (OSError, subprocess.SubprocessError, UnicodeError):
+            raise RuntimeError('process ancestry unavailable') from None
+        parts = done.stdout.strip().split(None, 1)
+        if done.returncode != 0 or len(parts) < 2 or not parts[0].isdigit():
+            break
+        found.append(parts[1].strip())
+        if int(parts[0]) <= 1 or int(parts[0]) == pid:
+            break
+        pid = int(parts[0])
+    return found
+
+
+def running_under_claude():
+    """True when an ancestor is Claude Code or the Claude app; unknown ancestry counts as yes."""
+    try:
+        commands = _ancestor_commands()
+    except Exception:
+        return True
+    return any(c.startswith(CLAUDE_BUNDLES) or os.path.basename(c) in ('claude', 'claude-code') for c in commands)
 
 
 def _signature(path):
@@ -143,6 +219,39 @@ def _hash_tree(path, rows):
     return hashes
 
 
+def claude_running():
+    """True while a Claude app/CLI process is visible; no process list means not proven inactive."""
+    try:
+        commands = _list_processes()
+    except Exception:
+        return True
+    return any(c.startswith(CLAUDE_BUNDLES) or os.path.basename(c) in CLAUDE_COMMANDS for c in commands)
+
+
+def terminal_consent(operation, digest, lines, console=None):
+    """Consent typed in a real terminal: CONFIRM <operation> <first 8 hex of digest>.
+
+    stdin and stdout must both be TTYs; anything else, including an empty or different
+    answer, is a refusal. There is no flag, file or non-interactive path.
+    """
+    stdin, stdout = console if console else (sys.stdin, sys.stdout)
+    try:
+        interactive = stdin.isatty() and stdout.isatty()
+    except Exception:
+        interactive = False
+    if not interactive:
+        return False
+    expected = 'CONFIRM %s %s' % (operation, digest[:8])
+    try:
+        stdout.write('\n== Claude-Guardian 确认 ==\n' + '\n'.join(lines)
+                     + '\n要继续，请输入: %s\n其他任何输入都取消: ' % expected)
+        stdout.flush()
+        answer = stdin.readline().strip()
+    except (OSError, EOFError, KeyboardInterrupt):
+        return False
+    return PHRASE.fullmatch(answer) is not None and answer == expected
+
+
 class MacCleanupHost:
     def __init__(self, scope, *, console=None):
         self.scope = cleanup_cli._scope(scope)
@@ -159,11 +268,7 @@ class MacCleanupHost:
         return '%s/%s/%s' % (_home(), BACKUP_PARENT, self.scope['backup_ref'])
 
     def _claude_running(self):
-        try:
-            commands = _list_processes()
-        except Exception:
-            return True  # No process list means no proof of inactivity: fail closed.
-        return any(c.startswith(CLAUDE_BUNDLES) or os.path.basename(c) in CLAUDE_COMMANDS for c in commands)
+        return claude_running()
 
     def _locate(self, index, root):
         """Active path if present, otherwise the quarantined root of the single batch."""
@@ -236,6 +341,8 @@ class MacCleanupHost:
         for root in scope['roots']:
             if root['path'] == home + '/.claude.json':
                 return 'credential_scope'
+            if is_protected(root['path'], home):
+                return 'shared_scope'
             if classify(root['path'], home) != root['data_kind']:
                 return 'unknown_ownership'
         if self._claude_running():
@@ -263,29 +370,17 @@ class MacCleanupHost:
         key = (operation, digest)
         if key in self._consent:
             return True
-        stdin, stdout = self.console if self.console else (sys.stdin, sys.stdout)
-        try:
-            interactive = stdin.isatty() and stdout.isatty()
-        except Exception:
-            interactive = False
-        if not interactive:
-            return False
         scope = self.scope
-        lines = ['', '== Claude-Guardian C5 清理确认 ==', '操作: %s' % operation,
-                 '目标: %s' % target, '要处理的目录:']
-        lines += ['  - %s (%s)' % (r['path'], r['data_kind']) for r in scope['roots']]
+        home = _home()
+        labels = {'regenerable': '可再生缓存/日志', 'persistent': '桌面端持久数据（含登录状态）', None: '未知'}
+        lines = ['操作: %s' % operation, '目标: %s' % target, '要处理的目录:']
+        lines += ['  - %s [%s]' % (r['path'], labels[tier(r['path'], home)]) for r in scope['roots']]
         lines += ['受保护路径:'] + ['  - %s' % p for p in scope['protected_paths']]
         lines += ['隔离目录: %s' % scope['quarantine_directory'], '备份: %s' % self.backup_directory(),
                   '后果: %s' % CONSEQUENCE.get(operation, '只读或保存私有记录，不移动数据'),
-                  '请先退出所有 Claude 桌面端和 Claude Code 会话。永久删除、钥匙串、浏览器数据都不在此范围。',
-                  '要继续，请输入: CONFIRM %s %s' % (operation, digest[:8]), '其他任何输入都取消: ']
-        try:
-            stdout.write('\n'.join(lines))
-            stdout.flush()
-            answer = stdin.readline().strip()
-        except (OSError, EOFError, KeyboardInterrupt):
-            return False
-        if PHRASE.fullmatch(answer) and answer == 'CONFIRM %s %s' % (operation, digest[:8]):
+                  '~/.claude 里的对话记录、历史、设置、skills、插件、凭据等始终受保护，不会被处理。',
+                  '请先退出所有 Claude 桌面端和 Claude Code 会话。永久删除、钥匙串、浏览器数据都不在此范围。']
+        if terminal_consent(operation, digest, lines, self.console):
             self._consent.add(key)
             return True
         return False
@@ -313,6 +408,8 @@ class MacCleanupHost:
         if scope['host_context_ref'] != context_ref():
             raise core.CleanupError('HOST_BINDING_MISMATCH')
         home = _home()
+        if any(is_protected(r['path'], home) for r in scope['roots']):
+            raise core.CleanupError('SHARED_SCOPE')
         if any(classify(r['path'], home) != r['data_kind'] for r in scope['roots']):
             raise core.CleanupError('OWNERSHIP_UNVERIFIED')
         if self._claude_running():
@@ -373,9 +470,13 @@ def main(argv=None, *, console=None):
         return 0
     if argv[:1] == ['allowed']:
         print(json.dumps({'allowed': allowed_locations(_home()), 'not_in_scope': [
-            '~/.claude.json (credential_scope)', '~/.local/bin/claude', '~/.local/share/claude',
-            '/Applications/Claude.app', 'keychain', 'browser site data']}))
+            '~/.claude (whole directory)', '~/.claude.json (credential_scope)', '~/.local/bin/claude',
+            '~/.local/share/claude', '/Applications/Claude.app', 'keychain (see native_claude_state_mac.py)',
+            'browser site data']}))
         return 0
+    if running_under_claude():
+        print(json.dumps({'status': 'blocked', 'code': 'RUNNING_UNDER_CLAUDE'}), file=sys.stderr)
+        return 2
     command = argv[0] if argv else ''
     if command not in ('backup', 'plan', 'quarantine', 'reconcile', 'restore'):
         print(json.dumps({'status': 'blocked', 'code': 'INVALID_ARGUMENTS'}), file=sys.stderr)
