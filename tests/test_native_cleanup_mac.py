@@ -370,6 +370,60 @@ class NativeCleanupMac(unittest.TestCase):
         with patch('sys.stdout', new_callable=io.StringIO):
             self.assertEqual(native.main(['context']), 0)  # read-only helpers still work
 
+    def test_a_whole_cleanup_cycle_asks_only_four_times_and_read_only_steps_never_ask(self):
+        # backup, plan (covers reading the scope and saving the plan), quarantine, restore.
+        host = self.host()
+        digest = 'ab' * 32
+        for operation in ('read_reconcile', 'save_receipt'):
+            terminal = Terminal(tty=False)  # would refuse if it were asked
+            self.assertTrue(self.host(console=(terminal, terminal)).approve(operation, digest, 'mac-a', {}))
+            self.assertEqual(terminal.prompts, [])
+        self.terminal.prompts.clear()
+        self.assertTrue(host.approve('read_hash_scope', digest, 'mac-a', {}))
+        self.assertTrue(host.approve('save_plan', 'cd' * 32, 'mac-a', {}))  # same group, same host scope
+        self.assertEqual(len(self.terminal.prompts), 1)
+        self.assertIn('操作: plan', self.terminal.prompts[0])
+        self.assertTrue(host.approve('quarantine', digest, 'mac-a', {}))
+        self.assertTrue(host.approve('restore_cleanup', digest, 'mac-a', {}))
+        self.assertEqual(len(self.terminal.prompts), 3)
+        # Moving data and the plan consent are never shared with each other.
+        refusing = Terminal(reply='no')
+        other = self.host(console=(refusing, refusing))
+        self.assertFalse(other.approve('quarantine', digest, 'mac-a', {}))
+        self.assertFalse(other.approve('restore_cleanup', digest, 'mac-a', {}))
+        self.assertFalse(other.approve('create_backup', digest, 'mac-a', {}))
+        self.assertFalse(other.approve('save_plan', digest, 'mac-a', {}))
+
+    def test_full_roundtrip_prompts_four_times(self):
+        host = self.host()
+        plan_file = Path(self.home) / 'plan.json'
+        receipt_file = Path(self.home) / 'receipt.json'
+        host.create_backup()
+        code, result = self.run_cli(['plan', '--scope', str(self.scope_file), '--plan-output', str(plan_file)], host)
+        digest = result['document_digest']
+        self.run_cli(['quarantine', '--plan-file', str(plan_file), '--expected-plan-digest', digest], host)
+        code, result = self.run_cli(['reconcile', '--plan-file', str(plan_file), '--expected-plan-digest', digest,
+                                     '--receipt-output', str(receipt_file)], host)
+        self.assertEqual(code, 0, result)
+        self.run_cli(['restore', '--receipt-file', str(receipt_file), '--expected-receipt-digest', result['document_digest']], host)
+        asked = [p for p in self.terminal.prompts if '== Claude-Guardian 确认 ==' in p]
+        self.assertEqual([re.search(r'操作: (\w+)', p).group(1) for p in asked],
+                         ['create_backup', 'plan', 'quarantine', 'restore_cleanup'])
+
+    def test_blocked_output_carries_a_plain_language_hint(self):
+        for ancestors, argv, code in ((['claude'], ['backup', '--scope', str(self.scope_file)], 'RUNNING_UNDER_CLAUDE'),
+                                      ([], ['quarantine', '--plan-file', 'x'], 'SCOPE_REQUIRED'),
+                                      ([], ['purge'], 'INVALID_ARGUMENTS')):
+            self.ancestors[:] = ancestors
+            with patch('sys.stderr', new_callable=io.StringIO) as err:
+                self.assertEqual(native.main(argv, console=(self.terminal, self.terminal)), 2)
+            document = json.loads(err.getvalue())
+            self.assertEqual(document['code'], code)
+            self.assertTrue(document['hint'])
+        for reason in ('shared_scope', 'credential_scope', 'unknown_ownership', 'backup_unverified', 'root_missing',
+                       'context_mismatch', 'active_host'):
+            self.assertIn(reason, native.HINTS)
+
 
 if __name__ == '__main__':
     unittest.main()

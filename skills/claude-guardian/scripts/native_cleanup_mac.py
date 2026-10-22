@@ -13,7 +13,11 @@ is that host for macOS only. It supplies the four obligations the dispatcher nee
   currently is (active location or the quarantine batch).
 * ``approve``: consent is typed by the user in a real terminal, bound to the
   operation and the review digest. No flag, saved JSON, callback or model output can
-  supply it, and there is no non-interactive mode.
+  supply it, and there is no non-interactive mode. To keep it from nagging, only the
+  steps that copy sensitive data or move data ask: ``create_backup``, one ``plan``
+  prompt (it covers reading the scope and saving the plan), ``quarantine`` and
+  ``restore_cleanup``. Reconciling and saving the private receipt only read what the
+  user already approved and write a private record, so they do not ask again.
 * ``exclusive``: Claude must not be running when the section is entered or left.
   macOS has no mandatory lock, so this detects and fails; it cannot prevent a start.
 * ``cancelled``.
@@ -49,8 +53,13 @@ CLAUDE_BUNDLES = ('/Applications/Claude.app/',)
 PHRASE = re.compile(r'CONFIRM [a-z_]{3,24} [0-9a-f]{8}\Z')
 OPERATIONS = ('read_hash_scope', 'save_plan', 'quarantine', 'read_reconcile', 'save_receipt',
               'restore_cleanup', 'create_backup')
+# One typed phrase per group; the prompt always shows the host's own verified scope.
+CONSENT_GROUP = {'read_hash_scope': 'plan', 'save_plan': 'plan', 'quarantine': 'quarantine',
+                 'restore_cleanup': 'restore_cleanup', 'create_backup': 'create_backup'}
+NO_PROMPT = frozenset({'read_reconcile', 'save_receipt'})  # read-only / private record
 CONSEQUENCE = {
     'create_backup': '复制所选目录到私有备份目录（含登录状态等敏感文件，目录权限 0700），并写入内容哈希清单',
+    'plan': '读取所选目录做哈希、生成并保存计划（只读，不移动数据）',
     'quarantine': '把所选目录从原位置移到私有隔离目录；移走后相关 Claude 应用会像全新安装一样启动，登录状态会丢失；备份和隔离数据保留，可恢复',
     'restore_cleanup': '把隔离目录里的数据移回原位置',
 }
@@ -367,20 +376,23 @@ class MacCleanupHost:
     def approve(self, operation, digest, target, private_review):
         if operation not in OPERATIONS or type(digest) is not str or not re.fullmatch(r'[0-9a-f]{64}', digest):
             return False
-        key = (operation, digest)
+        if operation in NO_PROMPT:
+            return True  # Reads what was already approved and saves a private record.
+        group = CONSENT_GROUP[operation]
+        key = (group, target)
         if key in self._consent:
             return True
         scope = self.scope
         home = _home()
         labels = {'regenerable': '可再生缓存/日志', 'persistent': '桌面端持久数据（含登录状态）', None: '未知'}
-        lines = ['操作: %s' % operation, '目标: %s' % target, '要处理的目录:']
+        lines = ['操作: %s' % group, '目标: %s' % target, '要处理的目录:']
         lines += ['  - %s [%s]' % (r['path'], labels[tier(r['path'], home)]) for r in scope['roots']]
         lines += ['受保护路径:'] + ['  - %s' % p for p in scope['protected_paths']]
         lines += ['隔离目录: %s' % scope['quarantine_directory'], '备份: %s' % self.backup_directory(),
-                  '后果: %s' % CONSEQUENCE.get(operation, '只读或保存私有记录，不移动数据'),
+                  '后果: %s' % CONSEQUENCE.get(group, '只读或保存私有记录，不移动数据'),
                   '~/.claude 里的对话记录、历史、设置、skills、插件、凭据等始终受保护，不会被处理。',
                   '请先退出所有 Claude 桌面端和 Claude Code 会话。永久删除、钥匙串、浏览器数据都不在此范围。']
-        if terminal_consent(operation, digest, lines, self.console):
+        if terminal_consent(group, digest, lines, self.console):
             self._consent.add(key)
             return True
         return False
@@ -460,10 +472,36 @@ class MacCleanupHost:
             os.chmod(path, 0o600)
 
 
+HINTS = {
+    'RUNNING_UNDER_CLAUDE': '请在普通终端（不是 Claude Code 或 Claude 桌面端里）运行这条命令。',
+    'ACTIVE_HOST': '请先退出所有 Claude 桌面端和 Claude Code 会话，再重试。',
+    'AUTHORIZATION_REQUIRED': '需要你在真实终端里输入确认页上显示的 CONFIRM 短语；没有终端，或输入不一致，都不会继续。',
+    'UNSUPPORTED_PLATFORM': '这个脚本只支持 macOS。Windows 请看 references/windows-cleanup.md。',
+    'SCOPE_REQUIRED': '请用 --scope（plan、backup）或 --host-scope（其余命令）给出范围文件。',
+    'INVALID_ENTRY_FILE': '--entry-file 需要是权限 0600 的私有 JSON 文件。',
+    'INVALID_ARGUMENTS': '命令只支持 context、allowed、backup、plan、quarantine、reconcile、restore。',
+    'shared_scope': '这个路径属于受保护范围（对话记录、历史、设置、skills、插件、凭据），请改选缓存、日志或桌面端数据；allowed 命令会列出可选项。',
+    'credential_scope': '这个范围含登录凭据，不能作为清理根；退出登录请用 native_claude_state_mac.py keychain。',
+    'unknown_ownership': '这个路径不在固定清单里；allowed 命令会列出可选项。',
+    'backup_unverified': '备份不存在、内容不一致或目录在备份之后变过：请先重新运行 backup。',
+    'root_missing': '找不到这个根目录（原位置和隔离批次里都没有）。',
+    'context_mismatch': 'scope 里的 host_context_ref 与这台机器不符：用 context 命令重新取一个。',
+    'active_host': '请先退出所有 Claude 桌面端和 Claude Code 会话，再重试。',
+}
+
+
+def _blocked(code, **extra):
+    document = {'status': 'blocked', 'code': code}
+    document.update(extra)
+    if code in HINTS:
+        document['hint'] = HINTS[code]
+    print(json.dumps(document), file=sys.stderr)
+
+
 def main(argv=None, *, console=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if _platform() != 'darwin':
-        print(json.dumps({'status': 'blocked', 'code': 'UNSUPPORTED_PLATFORM'}), file=sys.stderr)
+        _blocked('UNSUPPORTED_PLATFORM')
         return 2
     if argv[:1] == ['context']:
         print(json.dumps({'host_context_ref': context_ref()}))
@@ -475,11 +513,11 @@ def main(argv=None, *, console=None):
             'browser site data']}))
         return 0
     if running_under_claude():
-        print(json.dumps({'status': 'blocked', 'code': 'RUNNING_UNDER_CLAUDE'}), file=sys.stderr)
+        _blocked('RUNNING_UNDER_CLAUDE')
         return 2
     command = argv[0] if argv else ''
     if command not in ('backup', 'plan', 'quarantine', 'reconcile', 'restore'):
-        print(json.dumps({'status': 'blocked', 'code': 'INVALID_ARGUMENTS'}), file=sys.stderr)
+        _blocked('INVALID_ARGUMENTS')
         return 2
     rest, scope_path, entry = argv[1:], None, None
     if '--entry-file' in rest:
@@ -489,7 +527,7 @@ def main(argv=None, *, console=None):
         try:
             entry = cleanup_cli._load(entry_path) if entry_path else None
         except (core.CleanupError, cleanup_cli.CLIError, OSError, ValueError):
-            print(json.dumps({'status': 'blocked', 'code': 'INVALID_ENTRY_FILE'}), file=sys.stderr)
+            _blocked('INVALID_ENTRY_FILE')
             return 2
     if '--host-scope' in rest:
         position = rest.index('--host-scope')
@@ -499,7 +537,7 @@ def main(argv=None, *, console=None):
         position = rest.index('--scope')
         scope_path = rest[position + 1] if position + 1 < len(rest) else None
     if scope_path is None:
-        print(json.dumps({'status': 'blocked', 'code': 'SCOPE_REQUIRED'}), file=sys.stderr)
+        _blocked('SCOPE_REQUIRED')
         return 2
     try:
         host = MacCleanupHost(cleanup_cli._load(scope_path, cleanup_cli.SCOPE_LIMIT), console=console)
@@ -508,10 +546,13 @@ def main(argv=None, *, console=None):
             return 0
         code = cleanup_cli.main([command] + rest, host=host, entry_request=entry)
         if code != 0 and host.last_refusal:
-            print(json.dumps({'host_refusal': host.last_refusal}), file=sys.stderr)
+            document = {'host_refusal': host.last_refusal}
+            if host.last_refusal in HINTS:
+                document['hint'] = HINTS[host.last_refusal]
+            print(json.dumps(document), file=sys.stderr)
         return code
     except (core.CleanupError, cleanup_cli.CLIError) as exc:
-        print(json.dumps({'status': 'blocked', 'code': getattr(exc, 'code', None) or str(exc)}), file=sys.stderr)
+        _blocked(getattr(exc, 'code', None) or str(exc))
         return 2
 
 

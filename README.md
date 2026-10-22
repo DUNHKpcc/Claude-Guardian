@@ -217,7 +217,7 @@ flowchart TD
 | **修复计划与候选** | 生成限定范围的计划或私有差异，说明保护项与恢复条件 | 生成候选不代表已写入、应用生效或实际网络恢复 |
 | **受限探测与恢复接口** | 供可信宿主按各自契约、精确范围和逐次授权调用 | 源码中有接口不代表默认 CLI 会调用，也不开放完整自动修复 |
 
-清理的核心（计划、隔离到私有目录、对账、恢复）已实现。macOS 有内置宿主 `native_cleanup_mac.py`：只处理可再生缓存/日志和桌面端持久数据，`~/.claude` 里的对话记录、历史、设置、skills、插件、凭据始终受保护，要求 Claude 已退出且不由 Claude Code 启动，先做内容校验的私有备份，同意必须由你在真实终端里输入确认短语（任何标志、文件或 Agent 都不能代替），永久删除、钥匙串、浏览器数据不在范围内；它在真机上已验证拒绝路径（Claude 运行时、由 Claude Code 启动、没有终端确认短语），放行全流程还没跑完（见 ADR-035）。`native_claude_state_mac.py` 另有钥匙串退出登录、`CLAUDE_CODE_SIMPLE` 和用户指定时区三个独立命令（同样终端确认，不含设备标识轮换）。Windows 没有宿主，按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)。其他平台普通运行 `cleanup_cli.py capabilities` 返回 `host_adapter_available=false`、`default_mutations=blocked_without_host`、`native_acceptance=not_run`，永久删除不受支持。POSIX 隔离/恢复夹具通过不代表用户设备清理已验收；详见[清理接口说明](docs/cleanup-cli-usage.md)。
+清理的核心（计划、隔离到私有目录、对账、恢复）已实现。macOS 有内置宿主 `native_cleanup_mac.py`：只处理可再生缓存/日志和桌面端持久数据，`~/.claude` 里的对话记录、历史、设置、skills、插件、凭据始终受保护，要求 Claude 已退出且不由 Claude Code 启动，先做内容校验的私有备份，同意必须由你在真实终端里输入确认短语（任何标志、文件或 Agent 都不能代替；一整轮只问四次：备份、计划、隔离、还原），永久删除、钥匙串、浏览器数据不在范围内；它在真机上已验证拒绝路径（Claude 运行时、由 Claude Code 启动、没有终端确认短语），放行全流程还没跑完（见 ADR-035）。`native_claude_state_mac.py` 另有钥匙串退出登录、`CLAUDE_CODE_SIMPLE` 和用户指定时区三个独立命令（同样终端确认，不含设备标识轮换）。Windows 没有宿主，按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)。其他平台普通运行 `cleanup_cli.py capabilities` 返回 `host_adapter_available=false`、`default_mutations=blocked_without_host`、`native_acceptance=not_run`，永久删除不受支持。POSIX 隔离/恢复夹具通过不代表用户设备清理已验收；详见[清理接口说明](docs/cleanup-cli-usage.md)。
 
 默认 CLI 不自动联网、付款、清理或修改配置。网络探测必须另行确认端点与范围；受限 POSIX 事务和恢复接口有独立前提，不能把测试文件中的成功当成用户设备上的成功。
 

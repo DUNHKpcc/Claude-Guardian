@@ -111,6 +111,7 @@ class SkillDiscoverability(unittest.TestCase):
                            ('手机端', 'mobile-guidance.md'), ('本机路线固定出口', 'egress-ip-options.md')):
             self.assertIn(must, row(term))
         self.assertIn('## 每台机器环境不同', skill)
+        self.assertIn('## 少打扰用户', skill)
         for term in ('IDC Flare', 'VPSHub'):
             self.assertTrue(any(term in line for line in rows), term)
 

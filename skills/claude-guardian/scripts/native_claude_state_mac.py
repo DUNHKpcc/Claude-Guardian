@@ -198,7 +198,10 @@ def main(argv=None, *, console=None):
         else:
             raise StateError('INVALID_ARGUMENTS')
     except StateError as exc:
-        print(json.dumps({'status': 'blocked', 'code': exc.code}), file=sys.stderr)
+        document = {'status': 'blocked', 'code': exc.code}
+        if exc.code in base.HINTS:
+            document['hint'] = base.HINTS[exc.code]
+        print(json.dumps(document), file=sys.stderr)
         return 2
     except (OSError, subprocess.SubprocessError):
         print(json.dumps({'status': 'blocked', 'code': 'IO_FAILURE'}), file=sys.stderr)
