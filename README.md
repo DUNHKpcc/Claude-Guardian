@@ -347,6 +347,13 @@ CI 在 Linux、macOS、Windows 上执行 2000 多个单测、回归与确定性�
 
 图表由 Star History 提供；加载受第三方服务可用性影响。
 
+## 频道交流分享
+
+- Telegram 频道：[https://t.me/+q4D4_Qf_FIs5NDk1](https://t.me/+q4D4_Qf_FIs5NDk1)
+- QQ：1048450370
+
+交流经验、分享用法可以来频道；问题反馈和改进建议请用下面的 Issues，方便留档。在频道或群里也不要发真实账号、凭据、订阅链接、节点密码或完整代理配置。
+
 ## 反馈与许可
 
 欢迎通过 [Issues](https://github.com/DUNHKpcc/Claude-Guardian/issues) 反馈问题，或提交文档、合成样例和回归测试。反馈时说明系统、版本、复现步骤及预期结果；不要上传真实账号、凭据、订阅链接、完整代理配置或个人报告。
