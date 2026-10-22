@@ -2,28 +2,121 @@
 
 # Claude-Guardian
 
-**在 Codex 中准备 Claude 使用环境，检查问题，整理下一步。**
+**让 Agent 带着真实经验，陪你把 Claude 的使用环境准备好、查清楚、配稳。**
+
+订阅前准备 · 账号注册与使用节奏 · 固定出口 IP · 本机 / VM / VPS 三条路线 · 防火墙与线路优化 · 分级授权
 
 <p>
   <img alt="Codex Skill" src="https://img.shields.io/badge/Codex-Skill-111111?style=flat-square" />
-  <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&amp;logo=python&amp;logoColor=white" />
-  <img alt="CI platforms: macOS, Windows, Linux" src="https://img.shields.io/badge/CI-macOS%20%7C%20Windows%20%7C%20Linux-brightgreen?style=flat-square" />
+  <img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-8A2BE2?style=flat-square" />
   <img alt="License: GPL-3.0-only" src="https://img.shields.io/badge/license-GPL--3.0--only-blue?style=flat-square" />
+  <a href="https://github.com/DUNHKpcc/Claude-Guardian/actions/workflows/tests.yml"><img alt="CI" src="https://github.com/DUNHKpcc/Claude-Guardian/actions/workflows/tests.yml/badge.svg" /></a>
 </p>
 
-0.2.0 工作流基础 · CI 平台标签表示测试环境，完整真机修复仍待验收
+<p>
+  <b>平台</b>
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white" />
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white" />
+  <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white" />
+  <img alt="Omarchy / Arch Linux" src="https://img.shields.io/badge/Omarchy%20%2F%20Arch-1793D1?style=flat-square&logo=archlinux&logoColor=white" />
+</p>
 
-[快速开始](#快速开始) · [选择运行路线](#选择运行路线) · [能力与边界](#能力与边界) · [文档导航](#文档导航)
+<p>
+  <b>运行时</b>
+  <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
+  <img alt="Bash" src="https://img.shields.io/badge/Bash-4EAA25?style=flat-square&logo=gnubash&logoColor=white" />
+  <img alt="PowerShell" src="https://img.shields.io/badge/PowerShell-5391FE?style=flat-square&logo=powershell&logoColor=white" />
+  <img alt="Mermaid" src="https://img.shields.io/badge/Mermaid-FF3670?style=flat-square&logo=mermaid&logoColor=white" />
+  <img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white" />
+</p>
 
-[GPL-3.0-only](LICENSE) · [更新记录](CHANGELOG.md) · [反馈问题](https://github.com/DUNHKpcc/Claude-Guardian/issues)
+<p>
+  <b>网络与代理</b>
+  <img alt="Clash Verge Rev" src="https://img.shields.io/badge/Clash%20Verge%20Rev-6C5CE7?style=flat-square" />
+  <img alt="Mihomo" src="https://img.shields.io/badge/Mihomo-0F766E?style=flat-square" />
+  <img alt="FlClash" src="https://img.shields.io/badge/FlClash-0284C7?style=flat-square" />
+  <img alt="3x-ui" src="https://img.shields.io/badge/3x--ui-F59E0B?style=flat-square" />
+  <img alt="nftables" src="https://img.shields.io/badge/nftables-DC2626?style=flat-square&logo=linux&logoColor=white" />
+  <img alt="Windows Firewall" src="https://img.shields.io/badge/Windows%20Firewall-0078D4?style=flat-square" />
+  <img alt="LuLu" src="https://img.shields.io/badge/LuLu-475569?style=flat-square" />
+  <img alt="TUN" src="https://img.shields.io/badge/TUN-fail--closed-16A34A?style=flat-square" />
+  <img alt="IPv4 only" src="https://img.shields.io/badge/IPv4__ONLY-policy-16A34A?style=flat-square" />
+</p>
+
+<p>
+  <b>开发环境</b>
+  <img alt="VS Code Remote-SSH" src="https://img.shields.io/badge/VS%20Code-Remote--SSH-007ACC?style=flat-square&logo=visualstudiocode&logoColor=white" />
+  <img alt="tmux" src="https://img.shields.io/badge/tmux-1BB91F?style=flat-square&logo=tmux&logoColor=white" />
+  <img alt="Xvfb + noVNC" src="https://img.shields.io/badge/Xvfb%20%2B%20noVNC-remote%20browser-6B7280?style=flat-square" />
+  <img alt="Realm relay" src="https://img.shields.io/badge/Realm-relay-0EA5E9?style=flat-square" />
+  <img alt="BBR" src="https://img.shields.io/badge/TCP-BBR-F97316?style=flat-square" />
+</p>
+
+[它能干什么](#它能干什么) · [怎么工作](#怎么工作) · [分级授权](#分级授权你不需要每一步都在场) · [快速开始](#快速开始) · [选择运行路线](#选择运行路线) · [文档导航](#文档导航)
+
+[GPL-3.0-only](LICENSE) · [更新记录](CHANGELOG.md) · [决策记录](docs/decisions.md) · [反馈问题](https://github.com/DUNHKpcc/Claude-Guardian/issues)
 
 </div>
 
 ---
 
-Claude-Guardian 把订阅准备、账号与客户端异常、代理和运行环境问题拆成分阶段的对话。先复用你已经提供的信息，再补必要事实；在明确授权的目标上检查，说明证据、未知项和修复建议。
+Claude-Guardian 是一个给 Agent 用的 Skill。它不是一键修复程序，而是把作者和社区的真实经验、一批经过整理的资料和少量脚本交给 Agent，让 Agent 能**根据你的需求和环境**，一步步陪你把订阅、账号、网络出口和运行环境准备好。每个人的系统、网络、预算和目标都不一样，所以它不给固定答案，而是先了解你，再给适合你的做法，并把风险高的步骤留给你拍板。
 
-**目前可用：访谈、限定只读诊断、离线分析、状态面板和修复计划。完整自动修复尚未验收。** 项目不承诺免封，检查通过也不代表平台认可你的网络环境。
+> **项目不承诺免封。** 检查通过、出口干净，都不代表平台认可你的网络环境；价格和准入变化快，购买前请核对官方页面。
+
+## 它能干什么
+
+| | 能力 | 具体做什么 |
+| --- | --- | --- |
+| 🧭 | **选路线** | 帮你在本机、虚拟机（VM）、远程服务器（VPS）之间选，说清每条路线的范围、代价和适合谁 |
+| 🌐 | **固定出口 IP** | 介绍纯净机场、自建梯（可搭配家宽出口）、家宽拼车三种来源及优缺点；自建梯给 `3x-ui` + 优化线路 VPS 的简版提示；选 VPS 时附 17 份推荐报告 |
+| 📝 | **注册与养号节奏** | 邮箱注册、Gmail / Outlook / Proton、Free → Pro → Max 的间隔、额度使用、教育邮箱；手机端（iOS / Android）防封检查表 |
+| 💳 | **订阅与支付** | 按你的地区、设备、预算，从《AI 所有支付方式汇总》里挑候选并说明风险；付款始终由你本人完成 |
+| 🖥️ | **VM 路线** | 客机系统（Omarchy / macOS）、LAN 独立网卡、搭建顺序，以及 `FlClash TUN` + `nftables` 的 fail-closed 防火墙脚本 |
+| ☁️ | **VPS 路线** | 把 VPS 当开发机：Ubuntu 24.04、环境一致、`Xvfb + noVNC` 远程桌面、VS Code Remote-SSH、`tmux`、入站防火墙脚本 |
+| 💻 | **本机路线** | Clash Verge / FlClash 的 TUN 与 DNS 引导，Windows 系统防火墙、Mac 的 LuLu，用提示词一步步带你配 |
+| 📈 | **线路优化** | Agent 逐项诊断并优化线路：SSH 动态转发、Realm 中转、BBR，每项都有原值记录和回滚 |
+| 🩺 | **故障分流** | `403` / `429` / `529`、账单冲突、疑似凭据泄露：先暂停重试、整理证据，再给下一步 |
+| 🧹 | **清理规划** | 规划旧设备 Claude 残留的清理，保护源码、Git 历史和 Codex；默认只规划，不代你删除 |
+| 📚 | **资料随答附带** | 每个回答附上对应来源链接；资料之外需要补充时，可到 Linux.do、NodeSeek、V2EX、Reddit、X 查找并标明来源和日期 |
+
+## 它不是什么
+
+- **不是一键修复。** 内置的生产配置写入适配器尚未开放，修改需要你批准，由你或 Agent 在你批准的范围内执行。
+- **不替你付款、注册、登录、做 KYC 或 OAuth 授权。** 这些永远由你本人完成。
+- **不收集凭据。** 不需要你提交 IP、订阅链接、密码、UUID 或完整配置。
+- **不接触 Claude / Anthropic。** 接触前阶段（PC0）不启动客户端、不登录、不访问其服务。
+- **没有在真实机器上验收。** 脚本和命令的语法与规则已测试，应用到真机的完整验收还在后面（见[开发与验证](#开发与验证)）。
+
+## 怎么工作
+
+```mermaid
+flowchart LR
+    U["你：需求和环境"] --> A["Agent<br/>理解、判断、解释"]
+    S["Skill<br/>经验 · 资料 · 规则"] --> A
+    A --> Q["访谈状态机<br/>问什么 · 附什么资料 · 授权记录"]
+    A --> R["资料库<br/>S01–S08 · R01 · R02"]
+    A --> X["脚本与提示词<br/>由你或经批准后运行"]
+    Q --> A
+    X --> V["验证与回滚"]
+```
+
+- **Agent 主导：** 理解你的需求，选择资料，解释结果，决定下一步。同一个 Skill 对不同的人给出不同的做法。
+- **状态机兜底：** 上百个访谈问题按条件调度，只在你明确选了路线后才问路线相关的问题；评估结果会列出这次**必须附上的资料**；授权记录可追溯。
+- **脚本做有限的事：** VM 搭建、防火墙等脚本由你运行或经批准后运行，不由 Agent 临时改写。
+- **硬规则不由 Agent 决定：** 接触门禁、付款本人、不收集凭据、宿主策略优先。
+
+## 分级授权：你不需要每一步都在场
+
+只有真正重要的点才需要你。改动按风险分三档，详见[分级授权](skills/claude-guardian/references/authorization-tiers.md)：
+
+| 档位 | 你要做什么 | 包含什么 |
+| --- | --- | --- |
+| 🟢 **A 范围内自行做** | 路线和目标确定后，确认一次范围 | 只读诊断、查资料、出方案、预演 |
+| 🟡 **B 整个计划批准一次** | 批准一张计划，Agent 连续执行，失败自动撤销 | 装客户端、加允许规则、前台转发、临时切 BBR、装 TUN |
+| 🔴 **C 必须当场确认** | 到这一步 Agent 暂停，你什么时候看到什么时候回复 | 切默认出站为阻止、启用防火墙、改 SSH、持久化改内核、清理数据、账号与钱、凭据、组织设备、接触 Claude |
+
+范围确认、计划批准和确认单都会记录在访谈状态里，来源必须是你的明确回复；换路线或会话恢复后自动失效，Agent 无法替你批准。
 
 ## 快速开始
 
@@ -66,7 +159,7 @@ $claude-guardian
 
 ### 3. 确认路线，再开始检查
 
-**明确本轮任务 → 显式选择本机 / VM / VPS → 声明必要网络资源与配置状态 → 授权具体检查 → 执行检查 → 计划与逐项操作授权**
+**明确本轮任务 → 显式选择本机 / VM / VPS → 声明必要网络资源与配置状态 → 授权具体检查 → 执行检查 → 计划与分级授权**
 
 路线选择只确定检查对象和深度，不等于允许联网、修改配置或保存资料。只想了解订阅或比较方案，可以停留在解释阶段。
 
@@ -74,9 +167,9 @@ $claude-guardian
 
 | 路线 | 适用方向 | 当前检查范围 |
 | --- | --- | --- |
-| **本机** | 在自己的 Mac / Windows 上使用；默认建议，仍需明确接受 | 按目标和可用宿主能力做适用的详细检查；固定出口 IP 的来源（机场、自建梯、家宽拼车）见[出口来源](skills/claude-guardian/references/egress-ip-options.md) |
-| **VM** | 在虚拟机内建立独立工作环境 | 按适用范围深入检查；宿主和客机分别绑定，不能互相替代结论；客机系统首选 Omarchy（Mac 宿主首选 macOS），网卡选 LAN 独立网卡，搭建顺序和防火墙脚本见 [VM 指引](skills/claude-guardian/references/vm-guidance.md) |
-| **VPS** | 明确选择远程服务器作为开发机（Claude Code 跑在 VPS 上） | 基础、非侵入检查；环境一致、远程桌面、防火墙和线路优化的指引见 [VPS 指引](skills/claude-guardian/references/vps-guidance.md)，不代买、不代部署 |
+| **本机** `Clash Verge` `FlClash` `LuLu` `Windows Firewall` | 在自己的 Mac / Windows 上使用；默认建议，仍需明确接受 | 按目标和可用宿主能力做适用的详细检查；固定出口 IP 的来源（机场、自建梯、家宽拼车）见[出口来源](skills/claude-guardian/references/egress-ip-options.md) |
+| **VM** `Omarchy` `macOS` `FlClash TUN` `nftables` | 在虚拟机内建立独立工作环境 | 按适用范围深入检查；宿主和客机分别绑定，不能互相替代结论；客机系统首选 Omarchy（Mac 宿主首选 macOS），网卡选 LAN 独立网卡，搭建顺序和防火墙脚本见 [VM 指引](skills/claude-guardian/references/vm-guidance.md) |
+| **VPS** `Ubuntu 24.04` `Xvfb + noVNC` `Remote-SSH` `tmux` | 明确选择远程服务器作为开发机（Claude Code 跑在 VPS 上） | 基础、非侵入检查；环境一致、远程桌面、防火墙和线路优化的指引见 [VPS 指引](skills/claude-guardian/references/vps-guidance.md)，不代买、不代部署 |
 
 三条路线复用同一套入口与检测核心，差别在目标、范围和深度。原生采集取决于具体宿主支持；当前 `guardian.py check` 只支持本机 macOS / Windows，选择 VM 或 VPS 不会自动开放该命令的原生采集。它们是独立选择，不是升级顺序；已有 VPS、或把 VPS 用作网络出口，都不代表选择在 VPS 上运行。
 
@@ -104,13 +197,13 @@ flowchart TD
     C --> D["绑定目标并取得具体检查授权"]
     D --> E["按路线范围检查；VPS 仅基础非侵入"]
     E --> F["G2 计划：证据、未知项、差异与恢复条件"]
-    F --> G["G3 逐项授权；按能力执行与复测"]
+    F --> G["G3 授权按档位（A 范围内 / B 计划批准 / C 当场确认）；按能力执行与复测"]
     G --> H["另行满足 PC1 安装/基础测试、PC2 登录/支付前提与授权"]
     B --> I["路线未知或撤回：停止检查，相关旧计划失效"]
 ```
 
 - **PC0** 保持接触门禁关闭：不启动客户端、不执行 `claude --version`，不访问或解析 Claude / Anthropic 服务；诊断通过不会自动开启门禁。
-- **G1 → G2 → G3** 分别组织事实收集、方案和逐项授权。选择路线或完成问卷只满足部分入口前提，不能代替检查、修改或联网授权。
+- **G1 → G2 → G3** 分别组织事实收集、方案和按档位的授权（A 范围内自行做、B 计划批准一次、C 当场确认）。选择路线或完成问卷只满足部分入口前提，不能代替检查、修改或联网授权。
 - **PC1 / PC2** 的客户端安装、基础测试、官方登录和支付有各自条件与授权；不是流程图走到末尾就可执行。VPS 采购与部署由用户本人完成，Skill 只给指引。
 
 ## 能力与边界
@@ -236,7 +329,7 @@ python3 tools/package_skill.py --help
 
 打包时使用 `--output` 指定你自己的临时目录中的新 ZIP 路径。测试与发行检查使用合成数据，不应指向真实代理配置或用户资料。
 
-CI 在 Linux、macOS、Windows 上执行单测、回归与确定性打包检查，并另有面板预览检查。原生 smoke 与受控夹具只证明各自覆盖的范围，不能替代真实桌面、Clash、浏览器、写入或故障恢复验收。
+CI 在 Linux、macOS、Windows 上执行 2000 多个单测、回归与确定性打包检查，并另有面板预览检查。原生 smoke 与受控夹具只证明各自覆盖的范围，不能替代真实桌面、Clash、浏览器、写入或故障恢复验收。
 
 **验收台账与证据已于 2026-10-21 移出仓库**（见 [ADR-010](docs/decisions.md)）。原 218 项验收要求仍写在 `skills/claude-guardian/sources/design/` 的设计规格中，可在 git 历史里找回台账；当前进展以 [CHANGELOG](CHANGELOG.md) 和 [决策记录](docs/decisions.md) 为准，不用单测数量代表产品完成度。
 
