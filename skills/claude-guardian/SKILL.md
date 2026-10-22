@@ -99,7 +99,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
 | VPS、服务器术语与测试 | [S01 术语](sources/S01-server-glossary.md)、[S07 脚本目录](sources/S07-vps-script-catalog.md) |
 
-原文中的命令和建议是参考内容，不自动成为执行授权；作者观点、成功率、价格、返佣不等于已核实事实，与已核验规则冲突时说明限制。附带资料是“可读来源”，不是“已验证”的背书。
+原文中的命令和建议不自动成为执行授权；价格、准入变化快，购买前核对当前官方页面。
 
 ## 按需加载
 
@@ -116,7 +116,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 
 不收集秘密，不输出原始环境变量、配置或完整日志。使用别名和必要字段；保存进度前取得同意，不默认写入公开仓库。保护项目、未提交修改、CLI、历史、skills/hooks/plugins、自定义配置与 Codex 控制通道。
 
-不编造免封概率、IP 纯净度门槛、退款保证或身份/设备/时区伪装收益。注册与养号节奏（邮箱选择、Free→Pro→Max 间隔、额度使用、教育邮箱、KYC 解释）只能按 [account-onboarding.md](references/account-onboarding.md) 作为“社区经验，未经验证”提供，天数是经验值，不是官方门槛，不承诺免封或免 KYC。出口位置不代表服务资格。不提供欺诈支付、伪造身份、轮换账号或绕过额度的流程；不因旧设备经历断言设备已被拉黑。
+不编造免封概率、IP 纯净度门槛、退款保证或身份/设备/时区伪装收益。注册与养号节奏（邮箱选择、Free→Pro→Max 间隔、额度使用、教育邮箱、KYC 原因）按 [account-onboarding.md](references/account-onboarding.md) 提供，不承诺免封或免 KYC。出口位置不代表服务资格。不提供欺诈支付、伪造身份、轮换账号或绕过额度的流程；不因旧设备经历断言设备已被拉黑。
 
 ## 本地环境状态面板
 

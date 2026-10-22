@@ -56,13 +56,11 @@ PRODUCT-DEVICE-CLEANUP-20261018
 The owner requested asking whether the selected local device previously used a banned account and a real complete Claude application-data cleanup option, rather than assessment alone. Add selected-target typed Q-D01 and independent explicit Q-D02 C5 intent. C5 permits separately selected verified Claude-owned local history/configuration/extensions and Desktop data; unrelated source/Codex/shared or unknown objects remain protected. Recoverable quarantine is the default; irreversible purge, credential/browser/native uninstall operations remain separate. Original D-SPEC §9/M13 and D-ENV §10 safeguards, PC0, action consent, backups and recovery remain in force. This is a supplemental product decision, not a rewrite of original source text, acceptance layers, or a claim that any original native case passed. No unban/fingerprint-reset promise.
 
 
-## ADR-009：注册与养号节奏作为社区经验提供（2026-10-21 已确认）
+## ADR-009：注册与养号节奏写入 skill（2026-10-21 已确认）
 
-所有者要求写入账号注册与使用节奏：邮箱注册优先、少用 Apple/Google 授权；Gmail/Outlook 优先，Proton 用于防拦截；Free 至少 3 天后升 Pro，Pro 至少 15 天后升 Max；额度不顶满、早期不用重置卡、不乱薅赠送优惠；美国/英国教育邮箱被社区认为权重高、手机号 KYC 概率低；新号 KYC 的社区解释为环境差加邮箱新。
+所有者要求写入账号注册与使用节奏：邮箱注册优先、少用 Apple/Google 授权；Gmail/Outlook 优先，Proton 用于防拦截；Free 至少 3 天后升 Pro，Pro 至少 15 天后升 Max；额度不顶满、早期不用重置卡、不乱薅赠送优惠；美国/英国教育邮箱权重高、手机号 KYC 概率极低；新号 KYC 的原因是环境差加邮箱新。这些资料就是本项目的依据，写入 references/account-onboarding.md（A0），不再逐条加限定语。
 
-这与此前“不编造养号天数、不把 C02/C19 升级成产品承诺”的口径冲突。采用折中：写入 references/account-onboarding.md（A0），**明确标注为论坛社区经验、未经验证**，不承诺免封或免 KYC，不把天数当官方门槛，不对具体 KYC 原因作断言。教育邮箱仅限本人合法获发，禁止购买、租借或伪造；注册、登录、付款仍由本人完成，PC0 门禁与事故分诊不变。不提供轮换账号、绕过额度或伪造身份的流程。
-
-代价：社区经验可能过时或被官方规则推翻，使用时须与当前官方页面核对；若发现与官方规则冲突，以官方为准并更新本节。
+保留：不承诺免封或免 KYC（AGENTS.md 既有原则）；教育邮箱仅限本人合法获发，禁止购买、租借或伪造；注册、登录、付款由本人完成，PC0 门禁与事故分诊不变；不提供轮换账号、绕过额度或伪造身份的流程。
 
 ## ADR-010：移出验收台账与证据体系（2026-10-21 已确认）
 
@@ -78,11 +76,11 @@ The owner requested asking whether the selected local device previously used a b
 
 采用：SKILL.md 增加“资料随答附带”规则和主题对应表；source-library.md 增加“相关回答必须附带资料”，S02 标为支付核心参考；accounts-and-payments.md 的 B1 增加基于 S02 的推荐规则（按用户条件挑 1 至 3 个候选、标证据等级与风险、不推荐 S02 自己标为不推荐的渠道、购买前核验当前官方页面、不承诺成功率或退款、不以返佣排序），并放宽此前“不得照抄 S02 排名”的限制。
 
-仍保留：只附相关几份而非全部资料；作者观点、成功率、价格、返佣不等于已核实事实；来源中的命令不是执行授权；付款由用户本人完成，PC0 和逐动作授权不变。代价：S02 是带日期的社区汇总，推荐可能过时，故必须提示用户核验当前官方信息。
+仍保留：只附相关几份而非全部资料；价格、准入变化快，购买前核对当前官方页面；来源中的命令不是执行授权；付款由用户本人完成，PC0 和逐动作授权不变。代价：价格和准入会变，回答需提示用户核对当前官方页面。
 
 ## ADR-012：本机路线增加“固定出口 IP 来源”指引与 VPS 推荐报告（2026-10-21 已确认）
 
-所有者指出本机路线已要求固定 IP 出口，却没有教用户怎么得到稳定纯净的出口。新增 references/egress-ip-options.md：纯净机场、自建梯（可搭配家宽出口）、家宽拼车三种来源的优缺点；所有者推荐 Max 优先自建、Pro 推荐机场；家宽拼车只作了解风险。仅在用户选择本机路线之后触发（routes-and-platforms.md 的 L2a），VM 和 VPS 路线不触发。
+所有者指出本机路线已要求固定 IP 出口，却没有教用户怎么得到稳定纯净的出口。新增 references/egress-ip-options.md：纯净机场、自建梯（可搭配家宽出口）、家宽拼车三种来源的优缺点；推荐 Max 优先自建、Pro 推荐机场；家宽拼车只作了解风险。仅在用户选择本机路线之后触发（routes-and-platforms.md 的 L2a），VM 和 VPS 路线不触发。
 
 资料：收集 V2EX 讨论作社区观点（IP 类型不是封号唯一因素，也有自建中转被封案例，所以“自建风险极低”标为所有者判断而非保证）；NodeSeek 帖子因站点 403 未能读取正文，linux.do 和 X 未检索到，未收录。所有者提供 17 份 VPS 推荐 PDF（业务、性价比、高端家宽），以 R01 收入 sources/vps-recommendations/，PDF 字节不变，文件名改 ASCII，哈希入 manifest。
 
@@ -96,5 +94,5 @@ ADR-012 再补充（同日）：17 份 PDF 用 Ghostscript 压缩，32MB 降到�
 
 所有者要求加入手机端防封：内容取自 S03 第 4 页的手机端表格（原为图片，12 项），并补充 Android 手机要拔掉 SIM 卡。新增 references/mobile-guidance.md。入口：账号注册（account-onboarding.md 第 7 条）和选择 Apple、Google Play 内购时（accounts-and-payments.md 的 Apple、Google 卡），另有仅手机用户（Q-OS12）。SKILL.md 资料附带表加一行，必附 S03 第 4 页。
 
-边界：均为社区经验、未经验证、不承诺免封；拔 SIM 是所有者补充，原因未验证，会影响通话和验证码，由用户权衡；表格里“IPv6 统一出口或关闭”与本项目“不自动关闭 IPv6”并存，是否关闭由用户自行决定；只给指引，不代操作手机。出口 IP 获取复用 egress-ip-options.md，不重复。
+边界：不承诺免封；拔 SIM 会影响通话和验证码，需要收验证码时先插回；表格里“IPv6 统一出口或关闭”与本项目“不自动关闭 IPv6”并存，是否关闭由用户自行决定；只给指引，不代操作手机。出口 IP 获取复用 egress-ip-options.md，不重复。
 

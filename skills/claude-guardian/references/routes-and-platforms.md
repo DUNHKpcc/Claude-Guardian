@@ -100,7 +100,7 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ### L2a 固定出口 IP 的来源（本机，PC0 指引）
 
-用户已选本机、要固定一个出口 IP、但还没有稳定出口时，按 [egress-ip-options.md](egress-ip-options.md) 介绍纯净机场、自建梯（可搭配家宽出口）和家宽拼车三种来源及所有者推荐（Max 优先自建，Pro 推荐机场），并附社区分歧。机场和家宽拼车不给教程，让用户自己搜索；自建梯只给简版提示词（3x-ui、CN2 GIA 等优化线路 VPS、可选家宽出口、iOS 小火箭、Android FlClash、桌面 Clash Verge 或 FlClash），VPS 选择见[VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md)。不代买、不代配置；选 VM 或 VPS 路线时不触发。
+用户已选本机、要固定一个出口 IP、但还没有稳定出口时，按 [egress-ip-options.md](egress-ip-options.md) 介绍纯净机场、自建梯（可搭配家宽出口）和家宽拼车三种来源及推荐（Max 优先自建，Pro 推荐机场）。机场和家宽拼车不给教程，让用户自己搜索；自建梯只给简版提示词（3x-ui、CN2 GIA 等优化线路 VPS、可选家宽出口、iOS 小火箭、Android FlClash、桌面 Clash Verge 或 FlClash），VPS 选择见[VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md)。不代买、不代配置；选 VM 或 VPS 路线时不触发。
 
 ### L3 安装、使用与更新（本机，PC1/PC2）
 

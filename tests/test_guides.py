@@ -34,11 +34,12 @@ class GuidanceContracts(unittest.TestCase):
 
     def test_account_warmup_guidance_is_labelled_community_experience(self):
         section = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
-        for term in ("社区经验", "未经本项目验证", "邮箱注册", "Proton", "至少使用 3 天", "至少使用 15 天",
-                     "重置卡", "教育邮箱", "不购买、租借或伪造", "不是官方门槛", "不能据此断言"):
+        for term in ("邮箱注册", "Proton", "至少使用 3 天", "至少使用 15 天",
+                     "重置卡", "教育邮箱", "不购买、租借或伪造", "新号遇到 KYC", "不承诺免封"):
             self.assertIn(term, section)
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("社区经验，未经验证", skill)
+        self.assertIn("references/account-onboarding.md", skill)
+        self.assertNotIn("社区经验，未经验证", skill)
         self.assertNotIn("保证不封", section)
 
     def test_owner_sources_are_attached_and_s02_is_first_payment_reference(self):
@@ -48,7 +49,7 @@ class GuidanceContracts(unittest.TestCase):
                      "S05-local-protection.md", "S06-macos-cleanup-sanitized.md", "S01-server-glossary.md"):
             self.assertIn(term, section)
         acc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
-        for term in ("支付任务的核心参考", "../sources/S02-ai-payments.md", "证据等级", "不推荐", "当前官方页面核验"):
+        for term in ("支付任务的核心参考", "../sources/S02-ai-payments.md", "证据等级", "不推荐", "当前官方页面核对"):
             self.assertIn(term, acc)
         lib = (REFS / "source-library.md").read_text(encoding="utf-8")
         self.assertIn("第一项必须是 S02", lib)
@@ -59,7 +60,7 @@ class GuidanceContracts(unittest.TestCase):
 
     def test_local_route_egress_ip_options_and_vps_reports_are_wired(self):
         egress = (REFS / "egress-ip-options.md").read_text(encoding="utf-8")
-        for term in ("纯净机场 IP", "自建梯", "家宽拼车", "Max", "Pro", "所有者推荐", "不代买",
+        for term in ("纯净机场 IP", "自建梯", "家宽拼车", "Max", "Pro", "## 推荐", "不代买",
                      "请用户自己上网搜索", "3x-ui", "CN2 GIA", "小火箭", "FlClash", "Clash Verge"):
             self.assertIn(term, egress)
         self.assertNotIn("社区观点并不一致", egress)
@@ -81,7 +82,7 @@ class GuidanceContracts(unittest.TestCase):
     def test_mobile_guidance_is_wired_to_registration_and_in_app_purchase(self):
         mobile = (REFS / "mobile-guidance.md").read_text(encoding="utf-8")
         for term in ("网络出口", "IPv6", "DNS", "WebRTC", "系统时区", "定位权限", "Billing Address",
-                     "拔掉 SIM 卡", "社区经验", "S03-claude-experience.pdf", "不承诺免封"):
+                     "拔掉 SIM 卡", "S03-claude-experience.pdf", "不承诺免封"):
             self.assertIn(term, mobile)
         self.assertIn("mobile-guidance.md", (REFS / "account-onboarding.md").read_text(encoding="utf-8"))
         acc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
