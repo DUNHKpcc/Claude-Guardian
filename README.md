@@ -340,7 +340,7 @@ CI 在 Linux、macOS、Windows 上执行 2000 多个单测、回归与确定性�
 - [关键决策](docs/decisions.md)：设计取舍和确认条件
 - [来源清单](docs/source-manifest.json)：设计输入版本与哈希
 
-下一步仍包括真实 Mac / Windows 环境验证、精确修改与生效复测、冲突安全恢复，以及完整清理验收。当前可用的诊断和计划不会替代这些工作。
+**真机验证由使用者来做（2026-10-22 起）。**作者只在一台 Mac（macOS 15.7.4，Clash Verge Rev 2.5.8）上做过样本验证，结果见 [ADR-039](docs/decisions.md)；VM、VPS、Windows、手机以及其他系统和应用版本，作者没有验证，也不再逐项验收。你在自己的环境里用了哪一项、结果如何，欢迎用 [真机使用反馈](https://github.com/DUNHKpcc/Claude-Guardian/issues/new?template=device-report.yml) 告诉我们（成功、被门禁拦住、和文档不一致都有用），也可以到频道交流。每个人的环境不一样，Agent 会先核对你的实际环境再按差异调整，失败就回滚并如实报告；门禁一律 fail-closed。
 
 ## Star History
 

@@ -1,0 +1,60 @@
+name: 真机使用反馈
+description: 在你自己的电脑、VM 或 VPS 上用了某个脚本或教程，告诉我们结果（成功、失败、和文档不一致都欢迎）
+title: "[真机] "
+labels: ["device-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        作者只在一台 Mac 上做过样本验证，其余环境由使用者在自己的机器上验证，这个表单用来收集结果。
+        **不要填**：真实账号、凭据、订阅链接、节点密码、完整代理配置、真实出口 IP、个人路径。IP 写成 `<出口IP>`，路径写成 `~/...`。
+  - type: dropdown
+    id: area
+    attributes:
+      label: 你用的是哪一项
+      options:
+        - Mac：Clash Verge 规则写入 / 回滚
+        - Mac：C5 清理（备份、隔离、还原）
+        - Mac：钥匙串 / 最小提示词模式 / 时区
+        - Mac：整机出口（TUN、DNS、IPv4-only）
+        - Windows：清理（PowerShell 步骤）
+        - Windows：防火墙 / 网卡 IPv6
+        - VM 路线（FlClash TUN、killswitch、客机 SSH）
+        - VPS 路线（vps-guard、开发环境、线路优化）
+        - 手机端
+        - 其他
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 系统、应用版本、Agent 宿主
+      description: 例如 macOS 15.7.4 / Clash Verge Rev 2.5.8 / Codex
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: 结果
+      options:
+        - 按文档走通了
+        - 走通了，但需要调整（见下面说明）
+        - 被门禁拦住（fail-closed）
+        - 出错了
+        - 文档和实际不一致
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: 具体情况
+      description: 做了哪一步、实际看到什么（固定错误码和提示原文即可）、和文档哪里不同、你或你的 Agent 是怎么调整的。
+    validations:
+      required: true
+  - type: checkboxes
+    id: safe
+    attributes:
+      label: 确认
+      options:
+        - label: 我没有在这里贴账号、凭据、订阅链接、真实 IP 或个人路径
+          required: true

@@ -157,7 +157,8 @@ def render_home(commit):
             if g == group:
                 lines.append('- [%s](%s)' % (title, page_name(title)))
         lines.append('')
-    lines += ['## 交流与反馈', '', CHANNEL.rstrip('\n'), '- 问题反馈：[Issues](%s/issues)' % GITHUB, '',
+    lines += ['## 交流与反馈', '', CHANNEL.rstrip('\n'), '- 问题反馈：[Issues](%s/issues)' % GITHUB,
+              '- 你在自己环境里用过某一项？[真机使用反馈](%s/issues/new?template=device-report.yml)（作者只在一台 Mac 上验证过，其余由使用者验证，成功或失败都有用）' % GITHUB, '',
               '不要在频道、群或 Issue 里发真实账号、凭据、订阅链接、节点密码或完整代理配置。', '',
               '页面由仓库 `tools/export_wiki.py` 生成（提交 `%s`）。' % commit, '']
     return bold_to_html('\n'.join(lines))
