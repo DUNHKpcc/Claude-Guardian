@@ -128,7 +128,7 @@
       "original_filename": "NodeSeek_常用VPS脚本_可直接执行版(1).md",
       "original_sha256": "ba1c1f4b4a7c6f9737436c9b488bcb6d34f69c8e9687fdfcbb75b66eeb3767a3",
       "path": "sources/S07-vps-script-catalog.md",
-      "distributed_sha256": "a98bc947e6375273f94aaee2b5034b842d04d6d7a8a1a109d9a97b491a354d75",
+      "distributed_sha256": "ffbc46c8835389ee68fcc476570a7bac87ee498a80f9d0437e77034bd0a49663",
       "changes": [
         "2026-10-21 所有者将原目录精简为 IP 质量与网络测试清单，删除其余命令（重装系统、改网络、改防火墙等）"
       ],
@@ -136,7 +136,7 @@
       "redistribution": "用户在允许公开来源资料后新增的原设计 S07 参考，不延伸到下载或再分发上游脚本",
       "limitations": [
         "第三方脚本和网站，未经本项目审计，未执行其中任何命令",
-        "多数为 curl | bash 远程执行，须用户本人先审阅再在自己的 VPS 上运行",
+        "多数为 curl | bash 远程执行，须先审阅再在用户的 VPS 上运行",
         "测试结果不能推导免封概率或 IP 纯净度门槛",
         "带宽、磁盘、CPU 测试可能产生流量与资源成本"
       ]
@@ -153,7 +153,7 @@
       "attribution": "保留所提供 PDF、标题及其中相关链接",
       "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可",
       "limitations": [
-        "教程中的命令由用户在自己的服务器上运行，不自动执行",
+        "教程中的命令由用户或 Agent 在用户授权的 SSH 会话里运行",
         "第 3、4、5 页的截图已在文字版文末转述，细节以 PDF 为准"
       ],
       "companions": [
@@ -308,7 +308,7 @@
       "attribution": "整理日期 2026-10-17，文中保留 Linux.do、NodeSeek、V2EX 等来源链接",
       "redistribution": "所有者提供；两张链路图随包提供（R02-images/）",
       "limitations": [
-        "命令由用户在自己的服务器上运行，不自动执行"
+        "命令由用户或 Agent 在用户授权的 SSH 会话里运行"
       ],
       "companions": [
         {

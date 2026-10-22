@@ -2,7 +2,7 @@
 
 适用：用户已经选择 **VPS 路线**（见 [R-VPS](routes-and-platforms.md)）。VPS 路线是**开发机**：Claude Code 跑在 VPS 上，本机只用 VS Code Remote-SSH 连过去。VPS 当代理中转（自建梯）不属于本路线，那是**本机路线选 IP 出口**时的选项，见[固定出口 IP 的来源](egress-ip-options.md)，不要混为一谈。
 
-只给方案和指引，不代买、不代装、不代配置、不代付款；每一步由用户在自己的服务器上运行，需要 Agent 协助的动作逐项取得具体批准。详细命令见 [S08：VPS Claude 教程（11 页）](../sources/S08-vps-claude-tutorial.pdf)，回答 VPS 路线问题时必附。
+用户买好服务器并给出 SSH 登录方式后，**Agent 可以部署**（由宿主 Agent 通过 shell／SSH 执行本文的命令和脚本；Skill 没有内置自动部署程序，脚本还没在真实服务器上实测）：装系统包、建用户、配 SSH 密钥登录、装 Xvfb + noVNC + Chrome、tmux、swap、`vps-guard`、BBR 和线路优化等，按[分级授权](authorization-tiers.md)执行（B 档整个计划批准一次，锁死风险项当场确认）。买服务器、付款、注册、登录 Claude 和 OAuth 由用户本人完成。详细命令见 [S08：VPS Claude 教程（11 页）](../sources/S08-vps-claude-tutorial.pdf)，回答 VPS 路线问题时必附。
 
 ## 核心：环境一致
 
@@ -26,7 +26,7 @@ VPS 路线的目的是让**注册、登录、养号、订阅、OAuth、日常使
 
 ## 怎么读 IP 检测报告（S08 第 3 页）
 
-创建服务器后运行 `bash <(curl -sL IP.Check.Place)`（由用户自己运行，见 [S07 清单](../sources/S07-vps-script-catalog.md)）。Agent 帮用户按报告的六部分看：
+创建服务器后运行 `bash <(curl -sL IP.Check.Place)`（Agent 在授权的 SSH 会话里运行，或用户自己运行，见 [S07 清单](../sources/S07-vps-script-catalog.md)）。Agent 按报告的六部分帮用户看：
 
 1. **基础信息：**时区和 IP 类型（原生 IP 还是广播 IP）。
 2. **IP 类型属性：**多个数据库给出的使用类型和公司类型。机房 IP 显示“机房”是正常的。
@@ -87,4 +87,4 @@ S08 的结论是：像示例里这样的机房 IP 算好的，直接用没问题
 
 ## 边界
 
-不承诺免封。命令都由用户在自己的服务器上运行，Agent 不自动执行；快照不能恢复解封。
+不承诺免封。Agent 在授权的 SSH 会话里部署，每项记原值、给回滚；启用 `vps-guard`、改 SSH 等锁死风险项按 C 档当场确认，操作前先打快照并确认有独立救援入口。快照不能恢复解封。

@@ -73,13 +73,13 @@
 
 ### S07：VPS IP 质量与网络测试清单（精简版）
 
-[阅读清单](../sources/S07-vps-script-catalog.md)。2026-10-21 由所有者精简为 IP 质量、网络质量、流媒体解锁、性能测试的脚本和在线网站，原目录中的重装系统、改网络、改防火墙等命令不再收录。这些是第三方脚本，多数为 `curl | bash` 远程执行：由用户本人先审阅、再在自己的 VPS 上运行，Agent 不自动执行，需要协助时逐条取得具体授权并说明目标、地址和流量成本。结果只描述当时该 IP 的观测，不能推导免封概率或 IP 纯净度门槛。
+[阅读清单](../sources/S07-vps-script-catalog.md)。2026-10-21 由所有者精简为 IP 质量、网络质量、流媒体解锁、性能测试的脚本和在线网站，原目录中的重装系统、改网络、改防火墙等命令不再收录。这些是第三方脚本，多数为 `curl | bash` 远程执行：先审阅脚本内容，再在用户的 VPS 上运行：用户自己运行，或 Agent 在授权的 SSH 会话里运行（说明目标、地址和流量成本）。结果只描述当时该 IP 的观测，不能推导免封概率或 IP 纯净度门槛。
 
 ### S08：VPS Claude 教程（极低的封号风险）
 
 [打开原始 11 页 PDF](../sources/S08-vps-claude-tutorial.pdf) · [搜索文字层辅助版](../sources/S08-extracted-text.md)
 
-VPS 路线（开发机）的主要依据：购买 VPS → SSH → 开发环境 → VS Code Remote-SSH → 临时远程浏览器 → 订阅 → OAuth → tmux → 日常流程。流程整理在 [vps-guidance.md](vps-guidance.md)，回答 VPS 路线问题时必附本 PDF。第 3、4、5 页有截图，文字版未包含，需阅读 PDF。教程里的命令由用户在自己的服务器上运行，Agent 不自动执行。
+VPS 路线（开发机）的主要依据：购买 VPS → SSH → 开发环境 → VS Code Remote-SSH → 临时远程浏览器 → 订阅 → OAuth → tmux → 日常流程。流程整理在 [vps-guidance.md](vps-guidance.md)，回答 VPS 路线问题时必附本 PDF。第 3、4、5 页有截图，文字版未包含，需阅读 PDF。教程里的命令，Agent 可在用户授权的 SSH 会话里按分级授权执行。
 
 ## 设计规范：产品与工程背景
 

@@ -137,7 +137,7 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ### V2a 系统、网卡、出口与防火墙（VM，PC0 指引）
 
-选定 VM 路线后，按 [vm-guidance.md](vm-guidance.md)：客机系统默认首选 Omarchy，宿主是 Mac 时首选 macOS；创建前网卡选 LAN 独立网卡，不选与宿主机一致的 shared NAT；出口 IP 复用[固定出口 IP 的来源](egress-ip-options.md)；Linux 客机防火墙参考[脱敏脚本](../assets/vm-killswitch/install-flclash-killswitch.sh)（fail-closed，180 秒保险丝）。随后的注册、订阅、养号与本机路线一致。只给指引，不代装、不代配置；本机和 VPS 路线不触发。
+选定 VM 路线后，按 [vm-guidance.md](vm-guidance.md)：客机系统默认首选 Omarchy，宿主是 Mac 时首选 macOS；创建前网卡选 LAN 独立网卡，不选与宿主机一致的 shared NAT；出口 IP 复用[固定出口 IP 的来源](egress-ip-options.md)；Linux 客机防火墙参考[脱敏脚本](../assets/vm-killswitch/install-flclash-killswitch.sh)（fail-closed，180 秒保险丝）。随后的注册、订阅、养号与本机路线一致。Agent 可按分级授权部署（装客机、配网卡、TUN、killswitch）；买、付款、登录由用户本人完成；本机和 VPS 路线不触发。
 
 ### V3 接触、日常与更新（客机为目标，PC1/PC2）
 
@@ -165,7 +165,7 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ### P1a 系统、环境一致、出口与防火墙（VPS，PC0 指引）
 
-选定 VPS 路线后，按 [vps-guidance.md](vps-guidance.md)：服务器系统首选 Ubuntu 24.04、x86_64；核心是环境一致，注册、登录、养号、订阅和 OAuth 都在 VPS 的远程桌面浏览器里完成，不和本机浏览器混用；出口是 VPS 自己的 IP，或在其上套一层家宽出口（见 R02）；防火墙用[vps-guard.sh](../assets/vps-firewall/vps-guard.sh)，套家宽时用 VM 的 killswitch 脚本。详细流程见 [S08](../sources/S08-vps-claude-tutorial.pdf)。只给指引，不代买、不代配置；本机和 VM 路线不触发。
+选定 VPS 路线后，按 [vps-guidance.md](vps-guidance.md)：服务器系统首选 Ubuntu 24.04、x86_64；核心是环境一致，注册、登录、养号、订阅和 OAuth 都在 VPS 的远程桌面浏览器里完成，不和本机浏览器混用；出口是 VPS 自己的 IP，或在其上套一层家宽出口（见 R02）；防火墙用[vps-guard.sh](../assets/vps-firewall/vps-guard.sh)，套家宽时用 VM 的 killswitch 脚本。详细流程见 [S08](../sources/S08-vps-claude-tutorial.pdf)。用户买好服务器并给出 SSH 后，Agent 可按分级授权部署；买服务器和付款由用户本人完成；本机和 VM 路线不触发。
 
 ### P2 SSH、开发用户与救援（本机与服务器分别标注，PC0）
 
@@ -209,4 +209,4 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ## 来源与维护定位
 
-本手册由 [D-SPEC §3–5、§9–10](../sources/design/D-SPEC-v0.1.10.md) 与 [D-ENV §8、§11、§18](../sources/design/D-ENV-v0.3.md) 展开。[S04 路线/FAQ](../sources/S04-claude-guide.md)、[S05 本地防护](../sources/S05-local-protection.md)、[S07 测试目录](../sources/S07-vps-script-catalog.md) 是背景材料，不授予执行权；[S08 VPS 教程](../sources/S08-vps-claude-tutorial.pdf)的命令由用户在自己的服务器上运行，Agent 不自动执行，详见 [vps-guidance.md](vps-guidance.md)。官方 OS/客户端入口沿用 D-SPEC 附录 A、D-ENV §14 的历史链接，使用前按阶段复核；本次没有实时核验厂商版本、费用或实际设备。
+本手册由 [D-SPEC §3–5、§9–10](../sources/design/D-SPEC-v0.1.10.md) 与 [D-ENV §8、§11、§18](../sources/design/D-ENV-v0.3.md) 展开。[S04 路线/FAQ](../sources/S04-claude-guide.md)、[S05 本地防护](../sources/S05-local-protection.md)、[S07 测试目录](../sources/S07-vps-script-catalog.md) 是背景材料，不授予执行权；[S08 VPS 教程](../sources/S08-vps-claude-tutorial.pdf)的命令，Agent 可在用户授权的 SSH 会话里按分级授权执行，详见 [vps-guidance.md](vps-guidance.md)。官方 OS/客户端入口沿用 D-SPEC 附录 A、D-ENV §14 的历史链接，使用前按阶段复核；本次没有实时核验厂商版本、费用或实际设备。

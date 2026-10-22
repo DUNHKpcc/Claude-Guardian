@@ -1,6 +1,6 @@
 # VM 路线：客机系统、网卡、出口与防火墙
 
-适用：用户已经选择 **VM 路线**（见 [R-VM](routes-and-platforms.md)）。选本机或 VPS 路线时不触发。只给方案和指引，不代装系统、不代配置、不代付款；实际操作前逐项展示改动、先打快照，取得具体批准。
+适用：用户已经选择 **VM 路线**（见 [R-VM](routes-and-platforms.md)）。选本机或 VPS 路线时不触发。Agent 可以部署（由宿主 Agent 通过 shell 或客机控制台执行本文的命令和脚本；Skill 没有内置自动部署程序，脚本还没在真实客机上实测）：创建 VM、装客机系统、配网卡、装 FlClash TUN、启用 killswitch、开客机 SSH 等，按[分级授权](authorization-tiers.md)执行；操作前展示改动、先打快照。安装镜像的账号、付款、注册和登录由用户本人完成。
 
 ## 1. 客机系统怎么选
 
@@ -51,7 +51,7 @@ macOS 客机不需要这三个脚本，全部用提示词，做法和本机路�
 - 必须设置 `LAN_NET`（客机局域网网段，如 `192.168.1.0/24`）；可选 `SSH_PORT`、`EXPECTED_EXIT_IP`（固定出口 IP，用于 test 比对）。
 - 已安装 nftables；刷新服务由普通用户调用 sudo，需要该用户有免密 sudo，否则定时刷新会失败。
 
-**用法（由用户在客机里自己运行，在虚拟机控制台操作，不要只靠 SSH）：**
+**用法（Agent 在客机里运行，需要用户给出客机访问方式；启用 killswitch 属于 C 档，当场确认。务必有虚拟机控制台这个独立入口，不要只靠 SSH）：**
 
 ```
 sudo LAN_NET=<局域网网段> bash install-flclash-killswitch.sh install
