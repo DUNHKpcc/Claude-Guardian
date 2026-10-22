@@ -122,8 +122,8 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | V2EX | https://www.v2ex.com | 技术讨论、封号与支付经验、工具选型 |
 | Reddit | https://www.reddit.com（如 r/ClaudeAI） | 英文社区的 Claude 使用、账号、限额与新功能讨论 |
 | X | https://x.com | 作者和社区的最新动态、教程原帖、工具发布 |
-| IDC Flare | https://idcflare.com | VPS 渠道、家宽拼车（所有者指定；该站有 Cloudflare 验证，Agent 自动抓取可能被拦，被拦时如实说读不到，请用户在浏览器里打开，不绕过） |
-| VPSHub | 按名称搜索（所有者列出，未提供地址） | VPS 商家与线路讨论 |
+| IDC Flare | https://idcflare.com/ | VPS 渠道、家宽拼车（所有者指定；该站有 Cloudflare 验证，Agent 自动抓取可能被拦，被拦时如实说读不到，请用户在浏览器里打开，不绕过） |
+| VPSHub | https://vpshub.org/zh/ | VPS 商家与线路信息（所有者指定；站点内容本次未读取） |
 
 所有者在 S03 第 5 页指的路：找 VPS 搜 IDC Flare、NodeSeek、Linux.do 的 VPS 分区、VPSHub；**家宽去 Linux.do（L 站）的 VPS 分区找，家宽拼车去 IDC Flare 找**。所有者列出的帖子：[最新退款教程](https://linux.do/t/topic/2971757)、[NodeSeek 教程](https://www.nodeseek.com/post-968032-1)、[Linux.do 家宽总结篇](https://linux.do/t/topic/585764)、[GitHub issue 63](https://github.com/alchaincyf/zhangxuefeng-skill/issues/63)；其中 NodeSeek 那篇原作者的做法（改时区、清理等）是应审查的用户经验，不照单执行。
 

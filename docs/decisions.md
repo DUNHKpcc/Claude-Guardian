@@ -246,5 +246,5 @@ Mac 真机验收（macOS 15.7.4，记录在 `acceptance-mac-2026-10-22.md`）发
 
 所有者在 Issue #12（文档来源）提了三件事。其一，VPS 新增渠道 IDC Flare：加入“Agent 补充资料来源”，并按 S03 第 5 页写明所有者指的路：找 VPS 搜 IDC Flare、NodeSeek、Linux.do 的 VPS 分区、VPSHub；家宽去 Linux.do（L 站）的 VPS 分区找，家宽拼车去 IDC Flare 找；所有者列的四条帖子链接也收进去（NodeSeek 那篇原作者的做法是应审查的用户经验，不照单执行，沿用 D-SPEC F02）。其二，skill 可直接当帖子和论坛搜索工具：用户明确要求去论坛搜某商家、线路或问题时不必先有资料缺口，Agent 直接检索，规则不变（所有者资料优先、标来源和日期、命令不是授权、不收集账号信息、不访问 Claude 页面、推广只当线索），SKILL.md 的 description 同步写明。其三，短期封号原因：Issue 指向 S03 的最后一张图（PDF 第 5 页），该表此前没转述，现在写进 `account-onboarding.md` 的 A0b：五个时间段对应的排查方向，明确不是因果判定。
 
-两个限制如实记录：idcflare.com 有 Cloudflare 验证，本次无法读取站点内容，所以只按所有者的说法登记用途，没有自己描述站点；VPSHub 所有者只给了名称，没有地址，不猜。Issue 里的 Q 群号属于联系方式，不写进仓库，文档只引用 PDF 的文件名由来。
+两个限制如实记录：idcflare.com 有 Cloudflare 验证，本次无法读取站点内容，所以只按所有者的说法登记用途，没有自己描述站点。2026-10-22 所有者确认两个地址：IDC Flare 为 https://idcflare.com/，VPSHub 为 https://vpshub.org/zh/。Issue 里的 Q 群号属于联系方式，不写进仓库，文档只引用 PDF 的文件名由来。
 

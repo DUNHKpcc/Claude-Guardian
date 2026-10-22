@@ -10,7 +10,7 @@ EGRESS = (ROOT / 'references/egress-ip-options.md').read_text(encoding='utf-8')
 
 class Issue12Sources(unittest.TestCase):
     def test_channels_owner_pointers_and_direct_search_are_documented(self):
-        for term in ('IDC Flare', 'https://idcflare.com', 'VPSHub', '家宽拼车去 IDC Flare 找',
+        for term in ('IDC Flare', 'https://idcflare.com/', 'https://vpshub.org/zh/', 'VPSHub', '家宽拼车去 IDC Flare 找',
                      '家宽去 Linux.do（L 站）的 VPS 分区找', 'https://linux.do/t/topic/2971757',
                      'https://www.nodeseek.com/post-968032-1', 'https://linux.do/t/topic/585764',
                      '直接当帖子和论坛的搜索工具', 'site:nodeseek.com', 'Cloudflare 验证', '不绕过'):
