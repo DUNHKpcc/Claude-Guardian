@@ -64,11 +64,11 @@ class NativeClashVergeMac(unittest.TestCase):
             with native.session(document) as recheck:
                 recheck()
 
-    def test_running_application_core_or_service_blocks_before_and_during_session(self):
+    def test_running_gui_application_blocks_before_and_during_session(self):
         document, _ = self.retained()
         for command in ('/Applications/Clash Verge.app/Contents/MacOS/clash-verge',
                         '/Applications/Clash Verge.app/Contents/MacOS/anything',
-                        '/usr/local/bin/verge-mihomo', '/Library/PrivilegedHelperTools/clash-verge-service'):
+                        '/Applications/Clash Verge.app/Contents/Frameworks/Helper'):
             with self.subTest(command=command):
                 with self.admitted(processes=[command]):
                     with self.assertRaisesRegex(native.tx.TransactionError, '^CLASH_VERGE_RUNNING$'):
@@ -81,6 +81,16 @@ class NativeClashVergeMac(unittest.TestCase):
                 running.append('/Applications/Clash Verge.app/Contents/MacOS/clash-verge')
                 with self.assertRaisesRegex(native.tx.TransactionError, '^CLASH_VERGE_RUNNING$'):
                     recheck()
+
+    def test_core_and_service_helper_do_not_block_because_they_do_not_write_the_profile_files(self):
+        # Real-device run: quitting the GUI leaves the KeepAlive root service and the core running;
+        # blocking on them forced `sudo launchctl bootout` and dropped the TUN for no benefit.
+        document, _ = self.retained()
+        survivors = ['/Library/Application Support/clash-verge-service/cores/verge-mihomo',
+                     '/Library/PrivilegedHelperTools/clash-verge-service', '/usr/local/bin/verge-mihomo-alpha']
+        with self.admitted(processes=survivors):
+            with native.session(document) as recheck:
+                recheck()
 
     def test_process_list_failure_fails_closed(self):
         document, _ = self.retained()
@@ -135,6 +145,13 @@ class NativeClashVergeMac(unittest.TestCase):
         self.assertEqual(result['effective_routing'], 'not_run')
         self.assertNotEqual(self.target.read_bytes(), RAW)
         self.assertTrue(list(self.backups.iterdir()))
+
+    def test_execute_writes_while_only_core_and_service_survive(self):
+        args = self.retain()
+        with self.admitted(processes=['/Library/Application Support/clash-verge-service/cores/verge-mihomo',
+                                      '/Library/PrivilegedHelperTools/clash-verge-service']):
+            result = e.execute(**args)
+        self.assertEqual(result['status'], 'written_but_not_verified')
 
     def test_execute_refuses_and_keeps_file_while_application_runs(self):
         args = self.retain()

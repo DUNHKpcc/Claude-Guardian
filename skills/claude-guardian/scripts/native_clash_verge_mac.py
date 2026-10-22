@@ -7,8 +7,8 @@ Clash Verge Rev locations of the effective user. Anything else is reported as
 ``NATIVE_REPAIR_ADAPTER_UNAVAILABLE`` without touching a file.
 
 Writer exclusion on macOS is detect-and-fail, not prevention: there is no
-mandatory file lock, so the adapter requires that the application and its core
-are not running and rechecks that, plus the identity of the metadata files, at
+mandatory file lock, so the adapter requires that the application (the only writer of the
+profile files) is not running and rechecks that, plus the identity of the metadata files, at
 every call of the recheck callable (before commit and after readback). A running
 writer or a changed file fails the session; the transaction engine then keeps
 its own backup and recovery batch. This cannot stop a process that starts and
@@ -25,9 +25,12 @@ import transactions as tx
 APP_BUNDLE = '/Applications/Clash Verge.app/'
 APP_INFO = APP_BUNDLE + 'Contents/Info.plist'
 SUPPORT_DIRECTORY = 'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev'
-# Executable names of the application, its sidecar core and its service helper.
-PROCESS_NAMES = frozenset({'clash-verge', 'verge-mihomo', 'verge-mihomo-alpha',
-                           'clash-verge-service'})
+# Only the GUI application writes profiles.yaml and the profile/extension files. The sidecar
+# core (verge-mihomo) and the root service helper (clash-verge-service, a KeepAlive
+# LaunchDaemon that survives quitting the app) do not, so they do not block a write; the
+# real-device run showed that blocking on them forces `sudo launchctl bootout` and drops
+# the TUN for no benefit. Quit the app (Cmd-Q); the new rules load when it is reopened.
+PROCESS_NAMES = frozenset({'clash-verge'})
 PS = '/bin/ps'
 PS_TIMEOUT = 5
 _UNAVAILABLE = 'NATIVE_REPAIR_ADAPTER_UNAVAILABLE'

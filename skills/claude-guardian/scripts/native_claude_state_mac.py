@@ -25,6 +25,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 
 import native_cleanup_mac as base
 
@@ -57,6 +58,16 @@ def _current_zone():
     except OSError:
         return None
     return target.split('/zoneinfo/', 1)[1] if '/zoneinfo/' in target else None
+
+
+def _wait_for_zone(zone, tries=10, delay=0.5):
+    """systemsetup updates /etc/localtime asynchronously; poll briefly before calling it a failure."""
+    for attempt in range(tries):
+        if _current_zone() == zone:
+            return True
+        if attempt + 1 < tries:
+            time.sleep(delay)
+    return False
 
 
 def _guard(console=None):
@@ -176,7 +187,7 @@ def timezone(zone, *, console=None):
     _consent('timezone', '%s>%s' % (before, zone), lines, console)
     if _run(['/usr/bin/sudo', SYSTEMSETUP, '-settimezone', zone], interactive=True) != 0:
         raise StateError('TIMEZONE_CHANGE_FAILED')
-    if _current_zone() != zone:
+    if not _wait_for_zone(zone):
         raise StateError('TIMEZONE_VERIFY_FAILED')
     return {'status': 'updated', 'previous': before, 'current': zone}
 

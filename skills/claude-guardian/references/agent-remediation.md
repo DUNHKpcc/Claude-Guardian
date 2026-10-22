@@ -453,9 +453,9 @@ restore --receipt-file <receipt> --expected-receipt-digest <document_digest>
 
 1. **预检与计划（A 档）：** `repair_cli.py plan` 读取请求、目标和元数据，给出差异、备份位置和恢复办法。
 2. **你批准计划（B 档，批准一次）：** 计划里写明会退出和重启 Clash Verge。
-3. **退出 Clash Verge（B 档）：** 先退出应用，再确认主程序和核心 `verge-mihomo` 都不在进程列表里。适配器自己也会检查，应用还在运行就返回 `CLASH_VERGE_RUNNING`，不写入。
+3. **退出 Clash Verge（B 档）：** 用 ⌘Q 退出应用，确认 `clash-verge` 不在进程列表里。适配器自己也会检查，应用还在运行就返回 `CLASH_VERGE_RUNNING`，不写入。**后台的核心 `verge-mihomo` 和 root 服务 `clash-verge-service` 不用停**：只有应用会写 profile 文件，服务还是 KeepAlive 会立刻被拉起，停它还会断 TUN。
 4. **执行写入：** `repair_cli.py execute` 在适配器会话内备份、原子替换、读回；会话在提交前、授权时、替换前和读回后各复查一次进程和元数据文件（`profiles.yaml`、应用 `Info.plist`、基础 profile）。任何变化返回错误并带恢复批次编号，目标文件要么没动要么可按回执回滚。
 5. **重启 Clash Verge（B 档）：** 重新打开应用，让它载入新规则。写入成功只表示文件读回一致，不表示应用已载入。
 6. **验证出口与规则命中：** 用现有探测验证出口 IP、DNS 和 WebRTC；失败就用回执回滚，再重启应用。
 
-限制：macOS 没有强制文件锁，适配器只能发现并失败，不能阻止别的进程在两次复查之间写入。进程名（`clash-verge`、`verge-mihomo`、`verge-mihomo-alpha`、`clash-verge-service`）和应用路径已在一台真实 Mac 上核对一致（`verge-mihomo` 位于 `/Library/Application Support/clash-verge-service/cores/`，按 basename 匹配；`verge-mihomo-alpha` 本机未出现）。适配器的拒绝路径已真机验证，真实写入与回滚尚未实测。
+限制：macOS 没有强制文件锁，适配器只能发现并失败，不能阻止别的进程在两次复查之间写入。只有应用 `clash-verge`（及应用包路径下的进程）算写入者，已在一台真实 Mac 上核对；核心和服务不算（真机上退出应用后它们仍在运行，旧版本把它们也算进去，逼用户 `sudo launchctl bootout`，已取消）。适配器的拒绝路径已真机验证，真实写入与回滚尚未实测。

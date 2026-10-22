@@ -300,3 +300,13 @@ ADR-033 之后实测：文件层可达 100%，但章节层很低（232 个 H2/H3
 
 发布方式：GitHub 在网页上创建第一页之前，wiki 仓库不存在（`git ls-remote` 返回 not found），所以第一次需要所有者在 Wiki 标签点一次“Create the first page”并保存；之后把导出结果推到 wiki 仓库。未做：用 GitHub Action 在每次 main 更新后自动同步（要给 workflow 写 wiki 的权限，先不加，由所有者决定）；17 份 VPS 报告和 S04、S05、S07 等阅读材料不放 wiki，页面里指向仓库。
 
+## ADR-039：Mac 真机验收收官，按真机发现修正（2026-10-22）
+
+证据与日志按所有者要求留在 Omarchy（`Claude-Guardian-验收-20261022/`，含最终版验收记录、截图、日志、一键脚本、判定报告），不进仓库，因为含用户名、本机路径、真实 profile 文件名和摘要；仓库只记结论。设备 MacBookPro18,1，macOS 15.7.4，Clash Verge Rev 2.5.8，一台机器。
+
+**真机通过：**4.2b 全项：版本、归属、进程名；`plan` 三次独立运行摘要一致；应用运行时 `execute` 返回 `CLASH_VERGE_RUNNING` 且哈希不变；真实写入返回 `written_but_not_verified` 和 `byte_readback: pass`，重启后规则在场，`recovery_cli rollback` 返回 `restored`，哈希回到基线。4.4：判定器五条路径，TUN 开启下的 GUI 取证（出口一致、DNS 与 WebRTC 无泄漏），自动取证判定 `established`（8 层全 pass，`persistence: checked`）。4.6：系统时区真实切换并恢复，钥匙串服务名一致，`simple` 确认页完整。4.5：全部拒绝路径；放行全流程所有者暂缓。第 6 项：界面设置覆盖合并文件同名字段，与文档一致。**未验：**4.5 放行全流程、LuLu 与停核心的 fail-closed 演练、重启与睡眠唤醒与换网的复验、`simple` 真实开关、真实钥匙串删除、VM、VPS、Windows、手机。
+
+**由真机发现而改的：**其一，写入者排除过严：旧实现把核心 `verge-mihomo` 和 root 服务 `clash-verge-service` 也当写入者，而退出应用（⌘Q）后服务因 KeepAlive 仍在运行，写入恒被拒，只能 `sudo launchctl bootout`（还会断 TUN 与代理）。实际只有应用写 `profiles.yaml` 和 profile 文件，核心和服务不写，所以只认应用（`clash-verge` 和应用包路径下的进程）。这是一次放宽，依据是真机行为和谁真正写这些文件；如果以后发现核心或服务也会写，回滚此改动即可。其二，F4：`systemsetup -settimezone` 返回后 `/etc/localtime` 异步更新，立即读会误报 `TIMEZONE_VERIFY_FAILED`；改为每 0.5 秒读一次、最多 10 次，仍不符才报失败，没有固定长等待。其三，`ACTIVE_HOST` 提示补残留后台进程（例如 Claude 的 `chrome-native-host`）的排查办法。其四，文档：整机出口一节补“IPv6 探测返回 IPv4 字符串（被代理接管）记 unreachable，不要当 IPv6 样本”（F5 的误判来自这里）、界面设置只有对应开关启用时才覆盖合并文件、严格路由默认可能关着（关着时 fail-closed 靠 LuLu 或系统防火墙，建议开启）。
+
+**判断：**F5（TUN 下 IPv6 泄漏）已被所有者的验收撤回为误判，没有改判定器：判定器拒绝把 IPv4 字符串标成 IPv6 样本是正确行为。F3 与 F1 是宿主沙箱的环境限制，不改仓库。此验收只代表这一台 Mac，其他环境由 Agent 按实际核对（ADR-036）。
+

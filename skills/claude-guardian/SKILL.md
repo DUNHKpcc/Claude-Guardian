@@ -51,7 +51,7 @@ description: 为 Claude 订阅准备、账号与客户端异常、代理和运�
 
 已确认交互是Agent展示具体改动、目标、影响、备份及恢复路径，用户在对话确认后，由可信宿主核对该次授权并调用固定内部脚本；不要求第二次终端确认码。宿主将确切`retained_plan_digest`、目标与备份范围绑定到本次操作；摘要只是完整性检查，不是授权。不能用JSON布尔值、任意回调、临时shell改写或终端模拟绕过权限。
 
-`scripts/repair_execution.py`保留计划有效期、请求摘要、原文件身份和内容、候选一致性复核、事务备份及读回链路；生产原生适配门禁只开放一个固定范围：macOS 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 扩展（`native_clash_verge_mac.py`，要求应用及其核心已退出，写入前后复查，检测到变化即失败；macOS 无强制文件锁，这是发现并失败，不是阻止）。其他系统、产品、版本和 `merge-policy` 仍返回`NATIVE_REPAIR_ADAPTER_UNAVAILABLE`，不得宣称实际修复完成。该适配器在真实 Mac 上已验证进程名、版本与归属、计划、应用运行时拒绝写入；真实写入与回滚尚未实测；写入后的应用重载和实际路由仍是单独步骤。Linux临时夹具中替换适配器的测试不开放用户Mac/Windows能力。恢复仍遵循独立`recovery_cli.py`契约，不自动覆盖后续改动。
+`scripts/repair_execution.py`保留计划有效期、请求摘要、原文件身份和内容、候选一致性复核、事务备份及读回链路；生产原生适配门禁只开放一个固定范围：macOS 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 扩展（`native_clash_verge_mac.py`，要求 Clash Verge 应用已退出（后台的核心和服务可继续运行），写入前后复查，检测到变化即失败；macOS 无强制文件锁，这是发现并失败，不是阻止）。其他系统、产品、版本和 `merge-policy` 仍返回`NATIVE_REPAIR_ADAPTER_UNAVAILABLE`，不得宣称实际修复完成。该适配器在一台真实 Mac（macOS 15.7.4）上已验证：版本与归属、计划可复现、应用运行时拒绝写入、真实写入、重启后规则在场、`recovery_cli` 回滚回到基线哈希；那台 Mac 的 profile 有 script 与 merge 链，规则是否被后面的链改写要重启后探测，写入成功不等于生效；别的环境以实际核对为准。Linux临时夹具中替换适配器的测试不开放用户Mac/Windows能力。恢复仍遵循独立`recovery_cli.py`契约，不自动覆盖后续改动。
 
 `scripts/clash_verge_258.py`只校验调用方提供的2.5.8应用plist、配置索引和扩展字节之间的声明一致性：current→活动profile→显式option.merge或option.rules→唯一同类型扩展及basename。拒绝跨profile共享扩展、全局默认UID及路径/文件别名歧义。该库不读取真实文件，不证明实际安装/运行归属；输出始终为supplied_metadata_only。merge的rules数组替换基础数组，不能将rules扩展的prepend/append/delete混当此格式；脚本/后续链、内核版本、真实写入者排除和验收仍阻塞，不能以该结果开启execute。
 

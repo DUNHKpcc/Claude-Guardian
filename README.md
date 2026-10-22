@@ -83,7 +83,7 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它不是一键修复程序，
 
 ## 它不是什么
 
-- **不是一键修复。** 内置的配置写入适配器目前只覆盖 Mac 上 Clash Verge Rev 2.5.8 的 rules 扩展（需先退出应用；真机上已验证拒绝路径和计划，真实写入还没跑，见 ADR-035）；其他修改需要你批准，由你或 Agent 在你批准的范围内执行。
+- **不是一键修复。** 内置的配置写入适配器目前只覆盖 Mac 上 Clash Verge Rev 2.5.8 的 rules 扩展（需先退出应用；在一台 Mac 上已验证拒绝路径、计划、真实写入和回滚，见 ADR-039）；其他修改需要你批准，由你或 Agent 在你批准的范围内执行。
 - **不替你付款、注册、登录、做 KYC 或 OAuth 授权。** 这些永远由你本人完成。
 - **不收集凭据。** 不需要你提交 IP、订阅链接、密码、UUID 或完整配置。
 - **不接触 Claude / Anthropic。** 接触前阶段（PC0）不启动客户端、不登录、不访问其服务。
@@ -221,7 +221,7 @@ flowchart TD
 
 默认 CLI 不自动联网、付款、清理或修改配置。网络探测必须另行确认端点与范围；受限 POSIX 事务和恢复接口有独立前提，不能把测试文件中的成功当成用户设备上的成功。
 
-内置配置写入适配器只开放 Mac 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 扩展（`native_clash_verge_mac.py`）：要求应用及其核心已退出，写入前后复查进程与元数据文件，检测到变化即失败并保留恢复批次；macOS 无强制文件锁，这只能发现不能阻止。其他系统、产品、版本和 `merge-policy` 的 `repair_cli.py execute` 仍受原生适配门禁阻塞。此适配器在真机上已验证：进程名、版本与归属、计划可复现、应用运行时拒绝写入且文件不变；真实写入与回滚还没跑（见 ADR-035）。Agent 也可在独立的具体授权下，通过应用受支持的编辑与保存流程处理限定改动。现有辅助接口可为 Clash Verge Rev 2.5.8 的专属空 rules 扩展准备单条规则候选，并比较宿主实际供给的读回内容；它不操作应用，也不证明保存、载入、生效或恢复已完成。不能用临时脚本、保存的布尔值或回调绕过权限或原生接口门禁。详见 [Agent 修复流程](skills/claude-guardian/references/agent-remediation.md)和[单条 rules 扩展任务](skills/claude-guardian/references/agent-rules-task.md)。
+内置配置写入适配器只开放 Mac 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 扩展（`native_clash_verge_mac.py`）：要求 Clash Verge 应用已退出（⌘Q 即可，后台的核心和服务可以继续运行），写入前后复查进程与元数据文件，检测到变化即失败并保留恢复批次；macOS 无强制文件锁，这只能发现不能阻止。其他系统、产品、版本和 `merge-policy` 的 `repair_cli.py execute` 仍受原生适配门禁阻塞。此适配器在一台 Mac 上已验证：版本与归属、计划可复现、应用运行时拒绝写入且文件不变、真实写入、重启后规则在场、回滚回到基线哈希（见 ADR-039）；那台 Mac 的 profile 有 script 与 merge 链，规则是否被后链改写要重启后探测。Agent 也可在独立的具体授权下，通过应用受支持的编辑与保存流程处理限定改动。现有辅助接口可为 Clash Verge Rev 2.5.8 的专属空 rules 扩展准备单条规则候选，并比较宿主实际供给的读回内容；它不操作应用，也不证明保存、载入、生效或恢复已完成。不能用临时脚本、保存的布尔值或回调绕过权限或原生接口门禁。详见 [Agent 修复流程](skills/claude-guardian/references/agent-remediation.md)和[单条 rules 扩展任务](skills/claude-guardian/references/agent-rules-task.md)。
 
 ### 开始前要知道
 

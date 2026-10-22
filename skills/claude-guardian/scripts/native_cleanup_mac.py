@@ -474,7 +474,7 @@ class MacCleanupHost:
 
 HINTS = {
     'RUNNING_UNDER_CLAUDE': '请在普通终端（不是 Claude Code 或 Claude 桌面端里）运行这条命令。',
-    'ACTIVE_HOST': '请先退出所有 Claude 桌面端和 Claude Code 会话，再重试。',
+    'ACTIVE_HOST': '请先退出所有 Claude 桌面端和 Claude Code 会话，再重试；退出后仍提示，多半是残留的后台进程（例如 chrome-native-host），用 ps -axo pid,comm | grep -i claude 查看，确认后结束它。',
     'AUTHORIZATION_REQUIRED': '需要你在真实终端里输入确认页上显示的 CONFIRM 短语；没有终端，或输入不一致，都不会继续。',
     'UNSUPPORTED_PLATFORM': '这个脚本只支持 macOS。Windows 请看 references/windows-cleanup.md。',
     'SCOPE_REQUIRED': '请用 --scope（plan、backup）或 --host-scope（其余命令）给出范围文件。',
@@ -486,7 +486,7 @@ HINTS = {
     'backup_unverified': '备份不存在、内容不一致或目录在备份之后变过：请先重新运行 backup。',
     'root_missing': '找不到这个根目录（原位置和隔离批次里都没有）。',
     'context_mismatch': 'scope 里的 host_context_ref 与这台机器不符：用 context 命令重新取一个。',
-    'active_host': '请先退出所有 Claude 桌面端和 Claude Code 会话，再重试。',
+    'active_host': '请先退出所有 Claude 桌面端和 Claude Code 会话，再重试；退出后仍提示，多半是残留的后台进程（例如 chrome-native-host），用 ps -axo pid,comm | grep -i claude 查看，确认后结束它。',
 }
 
 

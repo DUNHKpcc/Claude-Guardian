@@ -154,6 +154,18 @@ class NativeClaudeState(unittest.TestCase):
         self.assertIn('sudo systemsetup -settimezone Asia/Tokyo', self.terminal.out.getvalue())
         self.assertEqual(state.timezone('Asia/Taipei', console=self.console), {'status': 'unchanged'})
 
+    def test_timezone_verification_waits_for_the_asynchronous_localtime_update(self):
+        # Real-device finding F4: /etc/localtime changes a moment after systemsetup returns.
+        reads = {'n': 0}
+        def lagging():
+            reads['n'] += 1
+            return 'Asia/Taipei' if reads['n'] >= 4 else 'Asia/Tokyo'
+        self.zone = 'Asia/Tokyo'
+        with patch.object(state, '_current_zone', side_effect=lagging), patch.object(state.time, 'sleep') as sleep:
+            result = state.timezone('Asia/Taipei', console=self.console)
+        self.assertEqual(result['status'], 'updated')
+        self.assertEqual(sleep.call_count, 2)  # polled, not a fixed long wait
+
     def test_timezone_refusal_failure_and_failed_verification(self):
         refusing = Terminal(reply='no')
         with self.assertRaises(state.StateError) as caught:
@@ -166,7 +178,8 @@ class NativeClaudeState(unittest.TestCase):
             state.timezone('Asia/Taipei', console=self.console)
         self.assertEqual(caught.exception.code, 'TIMEZONE_CHANGE_FAILED')
         self.exit_codes.clear()
-        with patch.object(state, '_current_zone', return_value='Asia/Tokyo'), self.assertRaises(state.StateError) as caught:
+        with patch.object(state, '_current_zone', return_value='Asia/Tokyo'), patch.object(state.time, 'sleep'), \
+                self.assertRaises(state.StateError) as caught:
             state.timezone('Asia/Taipei', console=self.console)
         self.assertEqual(caught.exception.code, 'TIMEZONE_VERIFY_FAILED')
 

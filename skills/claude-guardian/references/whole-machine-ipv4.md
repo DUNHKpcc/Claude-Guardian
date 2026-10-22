@@ -26,6 +26,8 @@ rules:
   - MATCH,<代理组名>
 ```
 
+**注意：**客户端设置界面只有在对应开关启用时才覆盖合并文件里的同名字段（真机核实：TUN 总开关来自 `enable_tun_mode`，DNS 覆写来自 `enable_dns_settings`，两者启用时界面里的 `tun:`、`dns:` 段与最终运行配置一致）；改完以运行时配置读回为准。**严格路由默认可能是关的**：关着时停掉代理核心，流量会回落直连，fail-closed 就要靠 LuLu 或系统防火墙拦直连，建议在界面里开启严格路由作为第二道防线。
+
 客户端设置里对应：TUN 模式开启，严格路由（strict-route）开启；DNS 开启、IPv6 关闭、增强模式 fake-ip；`dns-hijack` 接管 53 端口。Fake-IP 的边界和回滚后清 DNS 缓存见 [macOS DNS 经验](macos-dns-case-lessons.md) 和 [agent-remediation 第 10 条](agent-remediation.md#post-repair-stability)。
 
 规则里**不要保留** `GEOIP,CN,DIRECT` 之类的直连规则，除非用户明确要这个例外；例外要逐条列出（目的范围、协议、原因），判定里 `direct_exceptions` 填 `listed`，没列清楚的填 `unlisted`，会判失败。
@@ -59,6 +61,8 @@ rules:
 | DNS 泄漏 | 检测页（dnsleaktest.com）；看有没有本地运营商解析 | 同左 |
 | 系统 IPv6 状态 | `networksetup -getinfo "<服务名>"` | `Get-NetIPInterface -AddressFamily IPv6` |
 | 故障演练 | 退出 Clash Verge 或停核心，`curl` 和浏览器应全部失败；再启动应恢复 | 同左 |
+
+**IPv6 探测的两种结果要分清：**`curl -6` 失败，或者**返回的其实是 IPv4 字符串**（TUN 下 IPv6 连接被代理核心接管、从代理的 IPv4 出口出去），都记 `ipv6_probe: unreachable`，不要把这个 IPv4 字符串当成 IPv6 样本填进 `samples`（判定器会因此拒绝）；只有返回真正的 IPv6 地址，才是 `reachable` 并填 `family: ipv6` 样本，判 `violated`。
 
 AAAA 为空、`curl -4` 成功、一次 HTTPS 成功都不能单独证明整机通过；故障演练里不能让本来就断网的状态冒充"没有直连"。
 
