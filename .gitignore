@@ -6,3 +6,4 @@ local-reports/
 private-inputs/
 *.log
 .DS_Store
+.claude/settings.local.json

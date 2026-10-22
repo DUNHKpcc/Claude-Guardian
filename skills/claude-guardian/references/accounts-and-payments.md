@@ -103,7 +103,7 @@ Every payment answer ends with the references block, S02 first (see B1, ADR-011)
 | 资金与付款 | 现有余额能否用、是否仍需其他付款方式 | 余额不等于购买必成 |
 | 管理与退出 | 谁处理取消/退款、截止/限制、恢复购买入口 | 不承诺退款或即时取消生效 |
 | 维护 | 续费资金、地区变更影响、异常支持入口 | 不创建自动充值/提醒，除非另外授权 |
-| 证据 | 当前官方页面/日期 + 本人界面确认；社区单独标注 | 缺证据不标 ready |
+| 证据 | 当前官方页面/日期 + 本人界面确认 | 缺证据不标 ready |
 
 **S02 是支付任务的核心参考（2026-10-21 所有者要求，ADR-011）。** 凡支付回答，末尾必须附 [AI 所有支付方式汇总（核验版）](../sources/S02-ai-payments.md)（列在参考资料第一项，并指出所用章节，如“快速结论”“Apple 礼品卡”“证据来源”），Agent 可以据此向用户推荐支付方式。推荐时：
 
@@ -124,7 +124,7 @@ Every payment answer ends with the references block, S02 first (see B1, ADR-011)
 4. 卡片地区与账户 storefront 不匹配即停，不让用户“先兑试试”或改主账户地区救卡；O14 给官方问题分类
 5. PC1 获准后核验官方 App、所需套餐、当前设备入口和当前准入。PC2 获准登录后本人确认目标 Claude 账号；缺任一项不得建议买卡
 6. 查看实际含税总额、账期、余额覆盖及是否要求额外付款方式；O13 的一般规则不能保证每笔订阅免绑卡。若差额/税费未知则暂停
-7. 如确实需要购卡：核验卖家、卡种/地区/面额、总价/币种、交付、退换限制和付款方式；取得具体购买批准。本人购卡/输入兑换码；不把折价或社区“100%”当可靠性证据
+7. 如确实需要购卡：核验卖家、卡种/地区/面额、总价/币种、交付、退换限制和付款方式；取得具体购买批准。本人购卡/输入兑换码；不把折价当可靠性证据
 8. 兑换后仅核对本人账户余额变化；失败按 O14 的未激活/无效/已兑/地区错误等实际提示交 Apple 或原卖家，不连续换账号兑换
 9. 订阅结算前使用 B5 付款交接；本人确认付款后记录渠道、脱敏订单引用、计划与续费时间。余额扣除但权益缺失按 B7 对账，不买第二份
 10. 续费：说明同渠道管理和资金检查。只有用户实际要改区才展开 O15 的剩余余额、订阅、待处理订单/家庭共享等限制；不要把改区当初次订阅必做项
@@ -195,6 +195,6 @@ Every payment answer ends with the references block, S02 first (see B1, ADR-011)
 - O12 [Apple 兑换](https://support.apple.com/en-us/118242)、O13 [Apple 余额用途](https://support.apple.com/en-us/118245)、O14 [兑换错误](https://support.apple.com/en-us/108285)、O15 [Apple 账户国家或地区](https://support.apple.com/en-my/118283)
 - O16 [iOS 购买入口说明](https://support.claude.com/en/articles/9266495-how-do-i-sign-up-for-claude-pro-on-the-claude-app-for-ios)、O17 [Android 购买入口说明](https://support.claude.com/en/articles/9612892-how-do-i-sign-up-for-claude-pro-on-claude-for-android)
 - [D-SPEC M02/M03、§6.8–6.9、附录 D.5–D.7](../sources/design/D-SPEC-v0.1.10.md)、[D-ENV §18.5–18.10](../sources/design/D-ENV-v0.3.md) 是阶段与问项依据
-- [S02 原作者支付整理](../sources/S02-ai-payments.md)、[S03 PDF 第 2 页](../sources/S03-claude-experience.pdf)、[S04 FAQ](../sources/S04-claude-guide.md) 保留原署名和观点；商家排名、历史卡费/存款门槛、成功率、社区经验与返佣宣传均不能替代当次官方资格/订单证据
+- [S02 原作者支付整理](../sources/S02-ai-payments.md)、[S03 PDF 第 2 页](../sources/S03-claude-experience.pdf)、[S04 FAQ](../sources/S04-claude-guide.md) 保留原署名；价格、卡费、准入变化快，购买前核对当前官方页面和当次订单
 
 本次没有实时核验上述政策、价格、账户或订单；执行前必须在获准阶段补齐相关证据。

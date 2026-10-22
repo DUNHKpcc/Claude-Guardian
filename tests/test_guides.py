@@ -35,7 +35,7 @@ class GuidanceContracts(unittest.TestCase):
     def test_account_warmup_guidance_is_labelled_community_experience(self):
         section = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
         for term in ("邮箱注册", "Proton", "至少使用 3 天", "至少使用 15 天",
-                     "重置卡", "教育邮箱", "不购买、租借或伪造", "新号遇到 KYC", "不承诺免封"):
+                     "重置卡", "教育邮箱", "合法渠道购买", "不伪造教育邮箱", "新号遇到 KYC", "不承诺免封"):
             self.assertIn(term, section)
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("references/account-onboarding.md", skill)
@@ -176,8 +176,8 @@ class GuidanceContracts(unittest.TestCase):
             self.assertIn("历史", body)
             self.assertIn("官方", body)
             self.assertRegex(body, "本次.*(没有|未).*?(核验|访问|请求)")
-        self.assertIn("社区经验", self.accounts)
-        self.assertIn("来源观点", self.incidents)
+        self.assertIn("S02", self.accounts)
+        self.assertIn("所有者提供的资料", self.incidents)
 
     def test_guides_are_not_remote_execution_scripts(self):
         # A prose runbook must not embed unchecked fetch-and-execute commands.
