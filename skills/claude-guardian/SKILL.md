@@ -1,6 +1,6 @@
 ---
 name: claude-guardian
-description: 为 Claude 订阅准备、账号与客户端异常、代理和运行环境问题提供分阶段访谈、有限只读检查和离线修复计划。覆盖 macOS/Windows 本机及可选 VM/VPS 路线、清理规划；不承诺免封；默认CLI不自动联网或修改系统，可选宿主库须逐项授权并满足可信目标/运行时前提。
+description: 为 Claude 订阅准备、账号与客户端异常、代理和运行环境问题提供分阶段访谈、有限只读检查和离线修复计划。覆盖 macOS/Windows 本机及可选 VM/VPS 路线、清理规划；不承诺免封；也可直接用作 VPS、家宽、线路和封号经验的帖子与论坛搜索工具；默认CLI不自动联网或修改系统，可选宿主库须逐项授权并满足可信目标/运行时前提。
 ---
 
 # Claude Guardian
@@ -113,7 +113,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 
 ## Agent 补充资料来源
 
-所有者的资料（上表和 `required_references`）是必附的下限，也是本项目的依据。需要补充、核对或查最新做法时（例如线路、机场、家宽、支付渠道、封号讨论、某个工具的新版本），Agent 可以到下面这些渠道查找：
+所有者的资料（上表和 `required_references`）是必附的下限，也是本项目的依据。需要补充、核对或查最新做法时（例如线路、机场、家宽、支付渠道、封号讨论、某个工具的新版本），Agent 可以到下面这些渠道查找。**本 skill 也可以直接当帖子和论坛的搜索工具用：**用户明确要求“去某论坛搜一下某商家、某线路、某问题”时，不必先有资料缺口，Agent 直接按下面的渠道和规则检索，用 `site:` 限定站点（如 `site:nodeseek.com 商家名`），汇报带链接和发帖日期的结果（2026-10-22，Issue #12）：
 
 | 渠道 | 地址 | 适合找什么 |
 | --- | --- | --- |
@@ -122,6 +122,10 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | V2EX | https://www.v2ex.com | 技术讨论、封号与支付经验、工具选型 |
 | Reddit | https://www.reddit.com（如 r/ClaudeAI） | 英文社区的 Claude 使用、账号、限额与新功能讨论 |
 | X | https://x.com | 作者和社区的最新动态、教程原帖、工具发布 |
+| IDC Flare | https://idcflare.com | VPS 渠道、家宽拼车（所有者指定；该站有 Cloudflare 验证，Agent 自动抓取可能被拦，被拦时如实说读不到，请用户在浏览器里打开，不绕过） |
+| VPSHub | 按名称搜索（所有者列出，未提供地址） | VPS 商家与线路讨论 |
+
+所有者在 S03 第 5 页指的路：找 VPS 搜 IDC Flare、NodeSeek、Linux.do 的 VPS 分区、VPSHub；**家宽去 Linux.do（L 站）的 VPS 分区找，家宽拼车去 IDC Flare 找**。所有者列出的帖子：[最新退款教程](https://linux.do/t/topic/2971757)、[NodeSeek 教程](https://www.nodeseek.com/post-968032-1)、[Linux.do 家宽总结篇](https://linux.do/t/topic/585764)、[GitHub issue 63](https://github.com/alchaincyf/zhangxuefeng-skill/issues/63)；其中 NodeSeek 那篇原作者的做法（改时区、清理等）是应审查的用户经验，不照单执行。
 
 使用规则：
 

@@ -6,7 +6,7 @@
 
 ## Agent 补充资料来源
 
-所有者资料之外需要补充时，Agent 可到 Linux.do、NodeSeek、V2EX、Reddit、X 查找，规则（所有者资料优先、标明来源和日期、命令不是授权、不收集账号信息）见 [SKILL.md 的“Agent 补充资料来源”](../SKILL.md)。
+所有者资料之外需要补充时，Agent 可到 Linux.do、NodeSeek、IDC Flare、VPSHub、V2EX、Reddit、X 查找（也可按用户要求直接当帖子和论坛的搜索工具），规则（所有者资料优先、标明来源和日期、命令不是授权、不收集账号信息）见 [SKILL.md 的“Agent 补充资料来源”](../SKILL.md)。
 
 ## 对话中的使用方式
 

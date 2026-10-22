@@ -2,6 +2,7 @@
 
 ## 路线补全、访谈兜底与资料引用（2026-10-21）
 
+- **Issue #12（2026-10-22，ADR-032）：**补充资料来源新增 IDC Flare 和 VPSHub，按 S03 第 5 页写明家宽、家宽拼车、VPS 的查找渠道和所有者列的帖子；skill 可直接当帖子与论坛搜索工具；短期封号时间线（S03 第 5 页图片表）写进 `account-onboarding.md` A0b
 - **Mac 真机验收修复（2026-10-22，ADR-031）：**macOS 15 内核自动给文件加不可移除的 `com.apple.provenance`，使修复链和 C5 清理链在真机上必然被元数据门禁拒绝；`transactions._has_xattrs` 现在只容忍这一个属性（其他仍拒绝，不读取属性值，固定 21 字节缓冲），所有门禁共用该函数。清理 CLI 用法补上验收中发现的勘误
 - **参考 claude-cleanup 收紧 C5、补 Windows（2026-10-22，ADR-030）：**`~/.claude` 整个目录不能当根，对话记录、历史、设置、skills、插件、凭据始终受保护；根分“可再生缓存/日志”和“桌面端持久数据”两档；补桌面端路径；由 Claude Code 或 Claude 应用启动时拒绝；新增 `native_claude_state_mac.py`（钥匙串退出登录、`CLAUDE_CODE_SIMPLE`、用户指定时区，均终端确认）；新增 `references/windows-cleanup.md`（官方路径，PowerShell 分步，无内置宿主）。**不采用**第三方的 userID/machineID 轮换。发行包 109 个成员，未真机验收
 - **C5 清理宿主（2026-10-22，ADR-029）：**新增 macOS 内置宿主 `native_cleanup_mac.py`，实现 `verify`（固定清单、Claude 已退出、内容校验的备份）、`approve`（用户在真实终端输入 `CONFIRM <操作> <摘要前8位>`）、`exclusive`（进入和退出时检测 Claude 进程）、`cancelled`；命令 `context`、`allowed`、`backup`、`plan`、`quarantine`、`reconcile`、`restore`。拒绝 `~/.claude.json` 和含 `.credentials.json` 的目录，永久删除、钥匙串、浏览器数据不在范围内。只有合成与 CI 测试，未真机验收；发行包 107 个成员
