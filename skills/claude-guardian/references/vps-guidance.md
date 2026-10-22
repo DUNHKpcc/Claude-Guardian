@@ -24,6 +24,19 @@ VPS 路线的目的是让**注册、登录、养号、订阅、OAuth、日常使
 
 选型参考所有者的 [VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md)（业务、性价比、高端家宽三类），回答时点名具体报告并附链接。创建后用 `bash <(curl -sL IP.Check.Place)` 检查 IP（见 [S07 清单](../sources/S07-vps-script-catalog.md)）；如果随机到的 IP 不好，能找客服换就换。好的机房 IP 不用担心，最后都可以套静态 ISP 出口。
 
+## 怎么读 IP 检测报告（S08 第 3 页）
+
+创建服务器后运行 `bash <(curl -sL IP.Check.Place)`（由用户自己运行，见 [S07 清单](../sources/S07-vps-script-catalog.md)）。Agent 帮用户按报告的六部分看：
+
+1. **基础信息：**时区和 IP 类型（原生 IP 还是广播 IP）。
+2. **IP 类型属性：**多个数据库给出的使用类型和公司类型。机房 IP 显示“机房”是正常的。
+3. **风险评分：**IP2Location、Scamalytics、ipapi、AbuseIPDB 等的风险等级，低风险为好。
+4. **风险因子：**代理、Tor、VPN、滥用、机器人是否为“否”；服务器为“是”对机房 IP 是正常的。
+5. **流媒体及 AI 服务解锁：**各服务的地区和状态，ChatGPT、Reddit 等是否解锁。
+6. **邮局连通性及黑名单：**25 端口被阻止很常见；看 IP 黑名单数据库里“已标记”和“黑名单”的数量。
+
+S08 的结论是：像示例里这样的机房 IP 算好的，直接用没问题，想套家宽出口也可以；如果随机到的 IP 不好，能找客服换就换。这只描述当时这个 IP 的检测结果，不推导免封概率。
+
 ## 出口：两种情况
 
 1. **VPS 自己的 IP 就是出口。**最简单，浏览器、Claude Code 都从 VPS 出去。

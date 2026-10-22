@@ -154,14 +154,14 @@
       "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可",
       "limitations": [
         "教程中的命令由用户在自己的服务器上运行，不自动执行",
-        "第 3、4、5 页有截图，文字版未包含"
+        "第 3、4、5 页的截图已在文字版文末转述，细节以 PDF 为准"
       ],
       "companions": [
         {
           "path": "sources/S08-extracted-text.md",
-          "sha256": "7baeea33ad27ba6eba59d7e298356ddc44a7e2b8047feaa4d35baa25986a23c1",
+          "sha256": "c806fd5e26da8721f97ad2cc0bc11cdecf1114d12d9ca3c80453fafb0c09c505",
           "limitations": [
-            "仅提取 PDF 文字层；截图需阅读 PDF",
+            "提取 PDF 文字层，并在文末转述第 3 到 5 页的截图",
             "未经完整人工转录，不作为完整原文替代"
           ]
         }

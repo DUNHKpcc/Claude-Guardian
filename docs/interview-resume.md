@@ -32,7 +32,7 @@ Repeating the same response, changed-key set and source for one event returns th
 The review considers stored reusable `reported/observed/inferred/stale/conflict` facts only:
 
 - Common environment: C02, C04, C06, C09 (region/travel, no detailed address), OS02–OS12, N01–N06, Z04 (backup/rescue)
-- Only the selected route: L01–L04, V01–V06, or S01–S07; no route branch is presumed from an unaccepted local proposal
+- Only the selected route: L01–L04, V01–V08, or S01–S08 (plus X, M, T questions after an explicit choice); no route branch is presumed from an unaccepted local proposal
 - J01/J02 only for current purchase/billing tasks
 - Derived C13, when already retained, reviews the account-bound current plan for a concrete client-feature dependency, including dormant conditions; its prompt does not start purchase or payment questions
 - Choice C05, target plan C08, explanation depth C10, preservation C12/Z02, permissions Z01/Z03/Z05 and incident history H are not environment-change invalidation targets

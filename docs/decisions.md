@@ -170,3 +170,9 @@ ADR-016 再补充（同日）：所有者决定《完整教程焚诀.docx》和�
 
 边界：命令基于 PowerShell 和 netsh 的通用用法，没有在真实机器上实测，文档要求首次使用前先用只读命令或 -WhatIf 核对参数和别名；组织管理的设备不改防火墙；不自动安装 LuLu、不替用户点系统授权；LuLu 的覆盖范围不假定，必须故障演练；不承诺免封。
 
+## ADR-023：补全 S08 截图、macOS 客机与过时文档收紧（2026-10-21 已确认）
+
+S08 第 3 到 5 页的截图已读：第 3 页是 IP.Check.Place 检测报告示例，第 4、5 页是 LazyVim 和 VS Code Remote-SSH 的界面截图。转述写进 S08 文字版文末（manifest 哈希同步），并在 vps-guidance 新增“怎么读 IP 检测报告”，按六部分说明看什么，结论只描述当时该 IP，不推导免封概率。R02 缺少两张图（图源/VPS-线路优化-单端中转.png、图源/VPS-线路优化-双端隧道.png），由所有者补。
+
+macOS 客机不加脚本，全部用提示词：开“远程登录”（图形界面，用户自己点）、Clash Verge 按本机路线 Mac 提示词、防火墙用 LuLu，不自己写 PF 规则。收紧过时文档：README、implementation-tracker、agent-remediation、docs/source-manifest.json、incidents-and-integrations 里指向已移出的台账和证据目录、或仍写“七份阅读来源、S01–S07”的地方；validation.md 是按日期记录的历史，不改写。真机验收统一放到最后解决。
+

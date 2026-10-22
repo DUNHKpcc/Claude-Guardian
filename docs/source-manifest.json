@@ -2,7 +2,7 @@
   "baseline_date": "2026-10-15",
   "inventory_scope": "historical-input-snapshot",
   "current_inventory_manifest": "../skills/claude-guardian/sources/manifest.json",
-  "scope_note": "本文件只保留最初八个输入文件的原始名称、哈希和角色，不是当前发行清单。当前七份阅读来源（S01–S07）、两份设计快照（D-SPEC、D-ENV）及 S03 的一份派生文字辅助文件，以 current_inventory_manifest 为准；S07 后续补入，不回填为最初输入，辅助文件不另计为独立来源。",
+  "scope_note": "本文件只保留最初八个输入文件的原始名称、哈希和角色，不是当前发行清单。当前八份阅读来源（S01–S08）、两份设计快照（D-SPEC、D-ENV）及 S03 的一份派生文字辅助文件，以 current_inventory_manifest 为准；S07、S08 后续补入，不回填为最初输入，辅助文件不另计为独立来源。",
   "distribution_note": "baseline_redistribution 保留初始登记时的历史状态，不代表当前分发状态。资料提供者之后明确确认允许公开分发所提供资料，当前逐项分发记录、脱敏修改和署名见 current_inventory_manifest；此确认不等于独立核验全部第三方权利，不将第三方引用、图片、代码或关联网页统一重新许可为项目许可证。",
   "files": [
     {

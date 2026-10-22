@@ -341,7 +341,7 @@ private_output = converted.private_material()["output_bytes"]
 
 默认完整输入及输出各≤1 MiB、≤256条谓词、≤16个客户端别名、5秒原始预算（最多60秒），保留取消回调；JSON另限48层/20,000结构token，YAML复用既有安全有界解析器。超限、取消、超时、缺解析器或任何错误都不返回部分输出。时间/取消是合作式检查，不保证中断正在运行的解析器。精确文本与JSON不依赖PyYAML；provider YAML缺失时固定`PARSER_UNAVAILABLE`，不自动安装。
 
-这提供原ENV-T40的有限L逻辑证据。独立临时文件写回/恢复测试即使通过，也不代表用户设备、引擎加载、GUI持久化、实际路由或完整R通过。完整L+R仍待逐条件审阅。详细API、版本来源和反例见仓库`docs/evidence/rebuild-rule-format-conversion.md`。
+这提供原ENV-T40的有限L逻辑证据。独立临时文件写回/恢复测试即使通过，也不代表用户设备、引擎加载、GUI持久化、实际路由或完整R通过。完整L+R仍待逐条件审阅。详细API、版本来源和反例见 git 历史中的 `docs/evidence/rebuild-rule-format-conversion.md`（该目录已移出仓库，见 ADR-010）。
 
 ## ENV-06：受限主规则动作与顺序转换
 
@@ -377,7 +377,7 @@ public_summary = result.preview()
 private_output = result.private_material()["output_bytes"]
 ```
 
-公开摘要不带来源字节、域名、策略标签或元数据；私有结果保持来源、输出、顺序与映射证据。上限与取消遵循接口常量/参数；解析缺依赖不自行安装。此接口没有读写、探测、引擎调用或执行授权。把输出写入哪份配置仍须独立校验完整上下文、精确差异、许可、恢复、读回与实际效果；原 ENV-T40 的完整 L+R 验收仍待逐条件核对。详见仓库 `docs/evidence/rebuild-policy-conversion.md`。
+公开摘要不带来源字节、域名、策略标签或元数据；私有结果保持来源、输出、顺序与映射证据。上限与取消遵循接口常量/参数；解析缺依赖不自行安装。此接口没有读写、探测、引擎调用或执行授权。把输出写入哪份配置仍须独立校验完整上下文、精确差异、许可、恢复、读回与实际效果；原 ENV-T40 的完整 L+R 验收仍待逐条件核对。详见 git 历史中的 `docs/evidence/rebuild-policy-conversion.md`（该目录已移出仓库，见 ADR-010）。
 
 <a id="prepared-recovery"></a>
 ## 已替换但回执未完成：精确文件恢复

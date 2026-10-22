@@ -550,6 +550,6 @@ ENV-02/06、ENG/VAL：统一内部CLI提供精确preflight/plan/private diff及�
 
 T24 中断续接的原 L+C 条件已补齐并独立复核：同任务保留 VM/VPS 选择，显式中断先核实环境变化，变化仅失效对应旧事实，不重置本机默认值。普通读档与当前回复不被当成新的中断。
 
-当前共 5 行 accepted_revalidated：T09、T19、T20、T21、T24；其余 213 行仍为 pending_revalidation。完整原行及其哈希保持不变。当前证据见 [ledger](acceptance-rebuild-ledger.json) 与 [路线证据](evidence/rebuild-route-cases.md)。
+当前共 5 行 accepted_revalidated：T09、T19、T20、T21、T24；其余 213 行仍为 pending_revalidation。完整原行及其哈希保持不变。台账与证据已于 2026-10-21 移出仓库（见 ADR-010），可从 git 历史找回。
 
 L 为确定性归一化输入回放，C 为活动指导逐句语义审阅。宿主必须真实区分中断、当前回复与历史导入；不声称已验证任意模型、UI、真实设备部署或操作许可。原生延期及其余验收边界不变。

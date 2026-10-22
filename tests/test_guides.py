@@ -180,6 +180,22 @@ class GuidanceContracts(unittest.TestCase):
         for path in scripts.glob("*.py"):
             self.assertNotIn("Set-NetFirewallProfile", path.read_text(encoding="utf-8"), path.name)
 
+    def test_s08_screenshots_ip_report_and_macos_guest_are_covered(self):
+        root = ROOT / "skills" / "claude-guardian"
+        text = (root / "sources" / "S08-extracted-text.md").read_text(encoding="utf-8")
+        for term in ("## 截图说明", "IP.Check.Place", "LazyVim", "Remote - SSH", "黑名单"):
+            self.assertIn(term, text)
+        vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
+        for term in ("## 怎么读 IP 检测报告", "风险评分", "风险因子", "邮局连通性及黑名单", "不推导免封概率"):
+            self.assertIn(term, vps)
+        vm = (REFS / "vm-guidance.md").read_text(encoding="utf-8")
+        for term in ("### macOS 客机", "远程登录", "local-firewall-prompts.md#mac", "不自己写 PF 规则"):
+            self.assertIn(term, vm)
+        for path in (ROOT / "README.md", ROOT / "docs" / "implementation-tracker.md"):
+            body = path.read_text(encoding="utf-8")
+            self.assertNotIn("acceptance-rebuild-ledger.json)", body, path.name)
+            self.assertNotIn("docs/evidence/rebuild-inventory-export-boundaries.md", body, path.name)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

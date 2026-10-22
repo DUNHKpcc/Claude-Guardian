@@ -1,6 +1,6 @@
 # S08 PDF 可搜索文字层（不完整辅助版）
 
-来源：[原始 11 页 PDF](S08-vps-claude-tutorial.pdf)。此文件仅提取文字层，方便定位；第 3、4、5 页各有一张截图（如 IP 检测示例），未包含在文字提取中，请打开原 PDF 阅读。版面、换行及部分符号可能与原稿不同；以原 PDF 为准。
+来源：[原始 11 页 PDF](S08-vps-claude-tutorial.pdf)。此文件仅提取文字层，方便定位；第 3、4、5 页各有一张截图，文字提取没有包含；截图内容已在文末“截图说明”里转述，细节以原 PDF 为准。版面、换行及部分符号可能与原稿不同；以原 PDF 为准。
 
 ## PDF 第 1 页
 
@@ -336,3 +336,8 @@ tmux new -A -s claude
   Vultr IPv4：https://docs.vultr.com/support/products/compute/how-do-i-get-a-vultr-compute-
   instance-dedicated-ip-address
 
+## 截图说明（转述，细节以原 PDF 为准）
+
+- **第 3 页：IP.Check.Place 检测报告示例。**教程用它说明“怎么看一个 VPS 的 IP 好不好”，并写道：例如图里的机房 IP，算好的；如果直接用该 IP 没问题，想套家宽出口也可以。报告分六部分：基础信息（时区、IP 类型，图中为原生 IP）；IP 类型属性（IPinfo、ipregistry、ipapi、IP2Location、AbuseIPDB 的使用类型和公司类型，图中均为“机房”）；风险评分（IP2Location、Scamalytics、ipapi 为低风险，AbuseIPDB 得分 0）；风险因子（代理、Tor、VPN、滥用、机器人为否，服务器为是）；流媒体及 AI 服务解锁（TikTok、Disney+、Netflix、Youtube、AmazonPV、Reddit、ChatGPT 的状态和地区，图中地区为美国）；邮局连通性及黑名单检测（本地 25 端口出站被阻止、远端 25 端口不可达；IP 黑名单数据库有效 423 个，正常 397，已标记 24，黑名单 2）。
+- **第 4 页：**LazyVim（Neovim 发行版）的启动界面截图，配合“终端开发可下载 nvim、mosh、tmux”的说明。
+- **第 5 页：**VS Code 的 Remote - SSH 扩展页面截图，配合“本地安装 VS Code 和 Remote - SSH 扩展”的说明。
