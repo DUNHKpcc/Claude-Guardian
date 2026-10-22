@@ -2,6 +2,7 @@
 
 ## 路线补全、访谈兜底与资料引用（2026-10-21）
 
+- **验证口径更正（2026-10-22，ADR-041）：**README、SKILL.md、Issue 表单和 wiki 首页的说法改为所有者的口径：作者在 Mac、Windows、VM、VPS 上都验证过，但每个人的环境不一样，需要按实际调整；不再写“作者没有验证”。仓库内的具体验收结论仍只有 Mac（ADR-039）
 - **真机验收交给使用者（2026-10-22，ADR-040）：**作者不再逐项做真机验收，只保留一台 Mac 上的样本结果（ADR-039）；新增 Issue 表单“真机使用反馈”（`.github/ISSUE_TEMPLATE/device-report.yml`），收集使用者在自己环境里的结果；README 写明这一点。门禁、诚实标注和 Agent 按环境调整的规则不变
 - **Wiki 已发布（2026-10-22）：**12 篇教程加首页和侧边栏已推送到 GitHub Wiki（https://github.com/DUNHKpcc/Claude-Guardian/wiki），导出时把 `**加粗**` 转成 `<strong>`，避免 GitHub 在中文标点后不识别加粗而显示星号；README 文档导航加了入口
 - **Mac 真机验收收官与修正（2026-10-22，ADR-039）：**所有者完成 Mac 线验收：4.2b 真实写入、重启后规则在场、`recovery_cli` 回滚回基线哈希全闭环；4.4 判定 `established`（8 层全 pass）；时区真实切换与恢复通过。据此修正：写入者排除只认 Clash Verge 应用本身（后台的核心和 root 服务不算，原先逼用户 `sudo launchctl bootout` 还会断 TUN）；时区验证对 `/etc/localtime` 的异步更新做有限轮询（原先误报 `TIMEZONE_VERIFY_FAILED`）；`ACTIVE_HOST` 提示补上残留后台进程的排查办法；整机出口文档补三点真机发现（IPv6 探测返回 IPv4 字符串的记法、界面设置何时覆盖合并文件、严格路由默认可能关着）
