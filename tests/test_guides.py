@@ -148,6 +148,16 @@ class GuidanceContracts(unittest.TestCase):
         for name in ("vps-guidance.md", "egress-ip-options.md", "routes-and-platforms.md"):
             self.assertIn("line-optimization.md", (REFS / name).read_text(encoding="utf-8"), name)
 
+    def test_agent_supplementary_sources_have_rules(self):
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        section = skill.split("## Agent 补充资料来源", 1)[1].split("\n## ", 1)[0]
+        for channel in ("linux.do", "nodeseek.com", "v2ex.com", "reddit.com", "x.com"):
+            self.assertIn(channel, section)
+        for term in ("所有者资料优先", "标明来源", "命令不是授权", "不收集账号信息", "不接触 Claude", "required_references"):
+            self.assertIn(term, section)
+        lib = (REFS / "source-library.md").read_text(encoding="utf-8")
+        self.assertIn("Agent 补充资料来源", lib)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):
