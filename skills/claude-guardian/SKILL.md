@@ -102,6 +102,8 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
 | VPS、服务器术语与测试 | [S01 术语](sources/S01-server-glossary.md)、[S07 脚本目录](sources/S07-vps-script-catalog.md) |
 
+访谈评估（`scripts/interview_cli.py` 或 `interview_flow.assessment`）会按已回答的事实输出 `required_references`：本次必附的资料路径、主题和页码，按顺序附在回答末尾（支付时 S02 在第一位）。它是必附资料的下限，Agent 仍可按上表补充相关资料；清单不是执行授权。
+
 原文中的命令和建议不自动成为执行授权；价格、准入变化快，购买前核对当前官方页面。
 
 ## 按需加载

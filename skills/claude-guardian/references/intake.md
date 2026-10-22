@@ -226,6 +226,8 @@ Categorical facts that make the route-specific guidance deterministic instead of
 
 Q-V07 and Q-V08 (VM) and Q-S08 (VPS) in the tables above follow the same rules. Route-specific questions are asked only after the route is explicitly chosen, never from the default proposal.
 
+`assessment()` turns these answers into `required_references` (ADR-019): the ordered owner materials the answer must attach, computed by `required_references(state)` from the task, billing channel, journey, OS and the facts above. It mirrors the SKILL.md attachment table and is never an action authorization.
+
 ## Selected-device history and explicit cleanup task
 
 | ID | Meaning and trigger | Binding and effect |

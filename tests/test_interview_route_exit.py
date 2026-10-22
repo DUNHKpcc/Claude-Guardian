@@ -120,3 +120,79 @@ class RouteExitQuestionTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def refs(s):
+    return [item['path'] for item in f.required_references(s)]
+
+
+class RequiredReferenceTests(unittest.TestCase):
+    def test_every_reference_path_ships_in_the_skill(self):
+        root = ROOT / 'skills/claude-guardian'
+        for key, path in f.REFERENCE_PATHS.items():
+            self.assertTrue((root / path).is_file(), key)
+
+    def test_payment_leads_with_s02(self):
+        s = base('local', basis='default_proposal', billing_channel='web')
+        self.assertEqual(refs(s)[0], 'sources/S02-ai-payments.md')
+        self.assertEqual(f.assessment(s)['required_references'][0]['topic'], 'payment')
+
+    def test_registration_and_mobile(self):
+        s = answer(base('local', basis='default_proposal', billing_channel='apple'), 'Q-J01', 'first_subscription')
+        paths = refs(s)
+        for path in ('references/account-onboarding.md', 'sources/S03-claude-experience.pdf',
+                     'sources/S04-claude-guide.md', 'references/mobile-guidance.md'):
+            self.assertIn(path, paths)
+        self.assertEqual(paths[0], 'sources/S02-ai-payments.md')
+        self.assertEqual(paths.count('sources/S03-claude-experience.pdf'), 1)
+        s03 = [item for item in f.required_references(s) if item['path'] == 'sources/S03-claude-experience.pdf'][0]
+        self.assertEqual(s03.get('locator'), 'p.4')
+
+    def test_local_self_built_with_residential_exit(self):
+        s = answer(base('local'), 'Q-X01', 'self_built')
+        s = answer(s, 'Q-X02', 'with_residential_exit')
+        paths = refs(s)
+        for path in ('references/egress-ip-options.md', 'sources/vps-recommendations/INDEX.md',
+                     'sources/S07-vps-script-catalog.md', 'sources/R02-vps-line-optimization.md',
+                     'references/line-optimization.md'):
+            self.assertIn(path, paths)
+        self.assertNotIn('references/vps-guidance.md', paths)
+
+    def test_airport_gets_no_vps_material(self):
+        s = answer(base('local'), 'Q-X01', 'airport')
+        self.assertEqual(refs(s), ['sources/S02-ai-payments.md', 'references/egress-ip-options.md'])
+
+    def test_vm_linux_guest_gets_firewall_script_macos_does_not(self):
+        linux = answer(base('vm'), 'Q-V07', 'omarchy')
+        self.assertIn('assets/vm-killswitch/install-flclash-killswitch.sh', refs(linux))
+        self.assertIn('references/vm-guidance.md', refs(linux))
+        mac = answer(base('vm'), 'Q-V07', 'macos')
+        self.assertNotIn('assets/vm-killswitch/install-flclash-killswitch.sh', refs(mac))
+
+    def test_vps_exit_kind_selects_firewall_and_relay_material(self):
+        own = answer(base('vps'), 'Q-S08', 'vps_own_ip')
+        for path in ('references/vps-guidance.md', 'sources/S08-vps-claude-tutorial.pdf',
+                     'sources/vps-recommendations/INDEX.md', 'sources/S07-vps-script-catalog.md',
+                     'assets/vps-firewall/vps-guard.sh'):
+            self.assertIn(path, refs(own))
+        self.assertNotIn('sources/R02-vps-line-optimization.md', refs(own))
+        chain = answer(base('vps'), 'Q-S08', 'residential_chain')
+        for path in ('sources/R02-vps-line-optimization.md', 'references/line-optimization.md',
+                     'assets/vm-killswitch/install-flclash-killswitch.sh'):
+            self.assertIn(path, refs(chain))
+        self.assertNotIn('assets/vps-firewall/vps-guard.sh', refs(chain))
+
+    def test_unconfirmed_route_attaches_no_route_material(self):
+        s = base('vps', basis='default_proposal')
+        self.assertNotIn('references/vps-guidance.md', refs(s))
+
+    def test_macos_cleanup_attaches_s06(self):
+        s = answer(base('local', basis='default_proposal', task='cleanup'), 'Q-C02', 'macos')
+        self.assertIn('sources/S06-macos-cleanup-sanitized.md', refs(s))
+        self.assertNotIn('references/account-onboarding.md', refs(s))
+
+    def test_references_are_not_authorization(self):
+        s = answer(base('vps'), 'Q-S08', 'vps_own_ip')
+        a = f.assessment(s)
+        self.assertIn('required_references', a)
+        self.assertEqual(a['G3']['status'], 'blocked')

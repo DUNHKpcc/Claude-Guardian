@@ -140,3 +140,11 @@ ADR-016 再补充（同日）：所有者决定《完整教程焚诀.docx》和�
 
 对现有测试的影响：问题总数 98 增至 104；依赖“答完所有相关问题”的测试夹具补上新问题的合法取值，断言未放松；新增 tests/test_interview_route_exit.py 覆盖调度、取值校验、读写往返、schema 和路线切换。评估输出的结构未改。未做的事：没有让这些答案自动改变评估结论或授权任何动作，仍由 Agent 据此选择并附带对应资料。
 
+## ADR-019：评估结果输出应附资料清单（2026-10-21 已确认）
+
+资料随答附带（ADR-011）此前只是 SKILL.md 中由 Agent 自行对照执行的规则；ADR-018 的问题只决定“问什么”。所有者要求附上对应资料也由状态机兜底。新增 interview_flow.required_references(state) 和评估结果里的条件字段 required_references：按任务、计费渠道、订阅阶段、系统和 Q-X01、Q-X02、Q-M01、Q-V07、Q-S08 等事实，输出有序的资料路径、主题和页码。
+
+规则与 SKILL.md 资料表一致：支付相关时 S02 排第一；首次或重新订阅、未注册附 account-onboarding、S03、S04；Apple 或 Google 内购、手机端或仅手机附 mobile-guidance 和 S03 第 4 页；本机路线附 egress-ip-options（Windows 加 S05）；VM 路线附 vm-guidance、egress-ip-options，非 macOS 客机附 VM 防火墙脚本；VPS 路线附 vps-guidance、S08、R01、S07，出口是自己的 IP 加 vps-guard，套家宽加 R02、line-optimization 和 VM killswitch；本机或 VM 选自建梯附 R01、S07，再搭家宽出口加 R02 和 line-optimization；macOS 清理附 S06。未明确选路线时不附路线资料。
+
+清单是必附资料的下限，不是执行授权（G3 仍为 blocked）。评估结果原有字段不变，新字段只在清单非空时出现。测试覆盖每条规则，并校验所有路径都在技能包内。
+

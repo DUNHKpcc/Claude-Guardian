@@ -1,6 +1,7 @@
 """Offline adaptive interview; no network, subprocess, file writes or implicit consent.
 
 Public API: new_state, record_fact, record_facts, set_context, next_question, assessment,
+required_references,
 mark_asked, defer_branch, resume_branch, complete_purchase, dumps_state,
 loads_state, validate_state, resume_interview, record_resume_review,
 resume_review_prompt, resume_scope_keys, cleanup_assessment,
@@ -1802,6 +1803,93 @@ def resume_branch(state, branch):
     return result
 
 
+# Owner materials an answer must attach (ADR-011, ADR-019). Paths are relative to
+# the skill root and mirror the SKILL.md attachment table; S02 always leads payments.
+REFERENCE_PATHS = {
+    'S02': 'sources/S02-ai-payments.md', 'S03': 'sources/S03-claude-experience.pdf',
+    'S04': 'sources/S04-claude-guide.md', 'S05': 'sources/S05-local-protection.md',
+    'S06': 'sources/S06-macos-cleanup-sanitized.md', 'S07': 'sources/S07-vps-script-catalog.md',
+    'S08': 'sources/S08-vps-claude-tutorial.pdf', 'R01': 'sources/vps-recommendations/INDEX.md',
+    'R02': 'sources/R02-vps-line-optimization.md',
+    'onboarding': 'references/account-onboarding.md', 'mobile': 'references/mobile-guidance.md',
+    'egress': 'references/egress-ip-options.md', 'vm': 'references/vm-guidance.md',
+    'vps': 'references/vps-guidance.md', 'line': 'references/line-optimization.md',
+    'vm_firewall': 'assets/vm-killswitch/install-flclash-killswitch.sh',
+    'vps_firewall': 'assets/vps-firewall/vps-guard.sh',
+}
+PAYMENT_REFERENCE_TASKS = {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue", "compare"}
+
+
+def required_references(state):
+    """Ordered owner materials the answer must attach for the current facts.
+
+    A planning aid for the host, never an action authorization or evidence that
+    any listed step was performed.
+    """
+    validate_state(state)
+    c = state['context']
+    out = []
+
+    def add(key, topic, locator=None):
+        existing = next((item for item in out if item['path'] == REFERENCE_PATHS[key]), None)
+        if existing is not None:
+            # Keep the first topic but never drop a page another topic needs.
+            if locator and 'locator' not in existing:
+                existing['locator'] = locator
+            return
+        item = {'path': REFERENCE_PATHS[key], 'topic': topic}
+        if locator:
+            item['locator'] = locator
+        out.append(item)
+
+    os_value = _value(state, 'Q-C02')
+    mobile = _value(state, 'Q-M01')
+    if c['task'] in PAYMENT_REFERENCE_TASKS or c['billing_channel'] != 'unselected':
+        add('S02', 'payment')
+    if c['task'] != 'cleanup' and (journey(state) in {'first_subscription', 'returning_subscription'}
+                                   or _value(state, 'Q-C04') == 'unregistered'):
+        for key in ('onboarding', 'S03', 'S04'):
+            add(key, 'registration')
+    if (mobile in {'ios', 'android', 'both'} or c['billing_channel'] in {'apple', 'google'}
+            or os_value == 'mobile_only'):
+        add('mobile', 'mobile')
+        add('S03', 'mobile', 'p.4')
+    confirmed = c['route_selection_basis'] != 'default_proposal'
+    route = c['route'] if confirmed else None
+    egress = _value(state, 'Q-X01')
+    residential = _value(state, 'Q-X02') == 'with_residential_exit'
+    if route == 'local':
+        add('egress', 'egress')
+        if os_value == 'windows':
+            add('S05', 'local_protection')
+    elif route == 'vm':
+        add('vm', 'vm')
+        add('egress', 'egress')
+        if _value(state, 'Q-V07') != 'macos':
+            add('vm_firewall', 'vm')
+    elif route == 'vps':
+        add('vps', 'vps')
+        add('S08', 'vps')
+        add('R01', 'vps')
+        add('S07', 'vps')
+        exit_kind = _value(state, 'Q-S08')
+        if exit_kind == 'vps_own_ip':
+            add('vps_firewall', 'vps')
+        elif exit_kind == 'residential_chain':
+            add('R02', 'vps')
+            add('line', 'vps')
+            add('vm_firewall', 'vps')
+    if route in {'local', 'vm'} and egress == 'self_built':
+        add('R01', 'egress')
+        add('S07', 'egress')
+        if residential:
+            add('R02', 'egress')
+            add('line', 'egress')
+    if c['task'] == 'cleanup' and os_value == 'macos':
+        add('S06', 'cleanup')
+    return out
+
+
 def assessment(state):
     """Separate coverage, planning readiness and action authorization explicitly."""
     validate_state(state)
@@ -1885,6 +1973,9 @@ def assessment(state):
         result['emergency_deferred_branches'] = list(dict.fromkeys(
             item['branch'] for item in applicable_questions(routine)
             if item['branch'] != 'incident' and item['id'] in pending))
+    references = required_references(state)
+    if references:
+        result['required_references'] = references
     if review is not None:
         result["resume_review"] = {key: deepcopy(review[key]) for key in
                                    ("event_id", "status", "response", "scope_keys", "changed_keys", "reported_at")}
