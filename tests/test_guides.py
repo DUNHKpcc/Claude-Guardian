@@ -14,6 +14,16 @@ class GuidanceContracts(unittest.TestCase):
         cls.accounts = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
         cls.incidents = (REFS / "incidents-and-integrations.md").read_text(encoding="utf-8")
 
+    def test_windows_adapter_ipv6_hint_is_prompt_only(self):
+        text = (REFS / "agent-remediation.md").read_text(encoding="utf-8")
+        section = text.split('<a id="windows-adapter-ipv6-hint"></a>', 1)[1].split('<a id="selected-rule-scope"></a>', 1)[0]
+        for term in ("ncpa.cpl", "Disable-NetAdapterBinding", "Enable-NetAdapterBinding",
+                     "ms_tcpip6", "原值→新值", "外层传输不依赖 IPv6", "不提供、也不新增自动修改网卡的脚本"):
+            self.assertIn(term, section)
+        scripts = ROOT / "skills" / "claude-guardian" / "scripts"
+        for path in scripts.glob("*.py"):
+            self.assertNotIn("Disable-NetAdapterBinding", path.read_text(encoding="utf-8"), path.name)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):
