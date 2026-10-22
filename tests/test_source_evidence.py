@@ -27,7 +27,7 @@ class SourceEvidenceTests(unittest.TestCase):
                 ('input-A', first.read_bytes()), ('input-B', renamed.read_bytes())])
         self.assertEqual(result, {
             'groups': [{
-                'sha256': 'ba1c1f4b4a7c6f9737436c9b488bcb6d34f69c8e9687fdfcbb75b66eeb3767a3',
+                'sha256': 'a98bc947e6375273f94aaee2b5034b842d04d6d7a8a1a109d9a97b491a354d75',
                 'source_ids': ['input-A', 'input-B']}],
             'independent_sources': 'not_established'})
 

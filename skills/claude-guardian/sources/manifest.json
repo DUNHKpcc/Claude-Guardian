@@ -116,19 +116,21 @@
     {
       "id": "S07",
       "category": "reading",
-      "title": "NodeSeek 常用 VPS 脚本目录（仅供参考）",
+      "title": "VPS IP 质量与网络测试清单（精简版）",
       "original_filename": "NodeSeek_常用VPS脚本_可直接执行版(1).md",
       "original_sha256": "ba1c1f4b4a7c6f9737436c9b488bcb6d34f69c8e9687fdfcbb75b66eeb3767a3",
       "path": "sources/S07-vps-script-catalog.md",
-      "distributed_sha256": "ba1c1f4b4a7c6f9737436c9b488bcb6d34f69c8e9687fdfcbb75b66eeb3767a3",
-      "changes": [],
-      "attribution": "https://www.nodeseek.com/post-183694-1；保留原文",
+      "distributed_sha256": "a98bc947e6375273f94aaee2b5034b842d04d6d7a8a1a109d9a97b491a354d75",
+      "changes": [
+        "2026-10-21 所有者将原目录精简为 IP 质量与网络测试清单，删除其余命令（重装系统、改网络、改防火墙等）"
+      ],
+      "attribution": "原帖 https://www.nodeseek.com/post-183694-1；本版为所有者精简清单",
       "redistribution": "用户在允许公开来源资料后新增的原设计 S07 参考，不延伸到下载或再分发上游脚本",
       "limitations": [
-        "命令目录并非检测算法源码，未执行其中任何命令",
-        "包含禁用 TLS 校验、HTTP、可变分支远程执行、安装及破坏性磁盘/网络操作；不是默认执行清单",
-        "带宽/硬盘/CPU 测试可能产生流量与资源成本，须独立预算和授权",
-        "历史可达性标记不代表安全审计或当前有效"
+        "第三方脚本和网站，未经本项目审计，未执行其中任何命令",
+        "多数为 curl | bash 远程执行，须用户本人先审阅再在自己的 VPS 上运行",
+        "测试结果不能推导免封概率或 IP 纯净度门槛",
+        "带宽、磁盘、CPU 测试可能产生流量与资源成本"
       ]
     }
   ]
