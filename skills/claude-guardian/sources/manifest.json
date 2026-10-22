@@ -301,13 +301,26 @@
       "original_filename": "VPS 线路优化与家宽中转教程.md",
       "original_sha256": "5401ecd636699bf2d41e3196c44f52e1a892443c9e409860a497e97890768ce6",
       "path": "sources/R02-vps-line-optimization.md",
-      "distributed_sha256": "5401ecd636699bf2d41e3196c44f52e1a892443c9e409860a497e97890768ce6",
-      "changes": [],
+      "distributed_sha256": "c339fd4c511c5c2a007eb6f912211feb0a199dacaeb36ca840f80c87d14edcfb",
+      "changes": [
+        "2026-10-21 将 Obsidian 的 ![[图源/…png]] 图片链接改为相对路径图片，将 [[…]] 内部链接改为指向 R01 报告 PDF 的相对链接；其余文字不变"
+      ],
       "attribution": "整理日期 2026-10-17，文中保留 Linux.do、NodeSeek、V2EX 等来源链接",
-      "redistribution": "所有者提供；原文是 Obsidian 笔记，其中 [[…]] 内部链接和图片（图源/…png）未随包提供",
+      "redistribution": "所有者提供；两张链路图随包提供（R02-images/）",
       "limitations": [
-        "原文的 [[…]] 链接指向 R01 报告集中的同名报告，图片未附",
         "命令由用户在自己的服务器上运行，不自动执行"
+      ],
+      "companions": [
+        {
+          "path": "sources/R02-images/single-relay.png",
+          "sha256": "1d0ba47a9b0410a7daa84df69371bfd03808ac184d5054978cd26da48ac17d39",
+          "original_filename": "VPS-线路优化-单端中转.png"
+        },
+        {
+          "path": "sources/R02-images/dual-tunnel.png",
+          "sha256": "f4fd0f37a96768205339f5c2de6a4229fad5593708a830eaebdcdd848701e0cc",
+          "original_filename": "VPS-线路优化-双端隧道.png"
+        }
       ]
     }
   ]

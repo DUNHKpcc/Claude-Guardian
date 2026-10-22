@@ -204,4 +204,4 @@ Windows output-path regression is additionally covered by four tests in
 pass. They cover original-deadline enforcement, transient adapter failure latching,
 historical evidence invalidation, unchanged healthy two-query projection, cancelled
 no-save and explicitly requested blocked-report saves. Baseline-failure and full
-batch results are in `validation.md`; no real host or DNS acceptance is implied.
+batch results are in git 历史中的 `docs/validation.md`（已移出，见 ADR-024）; no real host or DNS acceptance is implied.

@@ -176,3 +176,9 @@ S08 第 3 到 5 页的截图已读：第 3 页是 IP.Check.Place 检测报告示
 
 macOS 客机不加脚本，全部用提示词：开“远程登录”（图形界面，用户自己点）、Clash Verge 按本机路线 Mac 提示词、防火墙用 LuLu，不自己写 PF 规则。收紧过时文档：README、implementation-tracker、agent-remediation、docs/source-manifest.json、incidents-and-integrations 里指向已移出的台账和证据目录、或仍写“七份阅读来源、S01–S07”的地方；validation.md 是按日期记录的历史，不改写。真机验收统一放到最后解决。
 
+## ADR-024：R02 图片入库，移出 docs/validation.md（2026-10-21 已确认）
+
+R02 缺的两张链路图在所有者的粉丝群资源目录里找到，入库为 sources/R02-images/single-relay.png 和 dual-tunnel.png（manifest 里作为 R02 的伴随文件登记，保留原文件名和哈希）。R02 文档里的 Obsidian 图片链接和 [[…]] 内部链接改为相对路径，链接指向 R01 报告 PDF；realm 配置里的 [[endpoints]] 是 TOML 表头，保持不变。line-optimization 引用这两张图。
+
+移出 docs/validation.md：它是 1600 多行按日期记录的验证日志，大部分属于已移出的验收体系，ADR-010 曾保留它。所有者决定清理掉；README 的“当前进展”改为以 CHANGELOG 和决策记录为准，其余文档里指向它的地方改为“git 历史中的 docs/validation.md（已移出）”。可从 git 历史找回。真机验收结果以后记在 CHANGELOG 和决策记录里。
+

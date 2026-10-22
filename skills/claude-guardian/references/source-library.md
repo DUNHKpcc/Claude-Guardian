@@ -98,7 +98,7 @@ VPS 路线（开发机）的主要依据：购买 VPS → SSH → 开发环境 �
 
 ## 补充资料集合：R02 VPS 线路优化与家宽中转教程
 
-[打开教程](../sources/R02-vps-line-optimization.md)。优化线路 VPS 加家宽出口的搭配：A 是优化线路机，B 是家宽出口机；浏览器放在哪台机器就在哪台配出站代理；包含 SSH 动态转发、Xvfb 与 noVNC、Realm 端口中转和 BBR 的最小做法。VPS 路线（套家宽出口时）按此教程，见 [vps-guidance.md](vps-guidance.md)。原文是 Obsidian 笔记，其中 [[…]] 内部链接对应 R01 报告集中的同名报告，图片未随包提供。
+[打开教程](../sources/R02-vps-line-optimization.md)。优化线路 VPS 加家宽出口的搭配：A 是优化线路机，B 是家宽出口机；浏览器放在哪台机器就在哪台配出站代理；包含 SSH 动态转发、Xvfb 与 noVNC、Realm 端口中转和 BBR 的最小做法。VPS 路线（套家宽出口时）按此教程，见 [vps-guidance.md](vps-guidance.md)。原文是 Obsidian 笔记，其中的图片和 [[…]] 内部链接已改为相对路径：两张链路图在 `sources/R02-images/`，报告链接指向 R01 报告集中的同名 PDF。
 
 ## 版本、来源与分发记录
 

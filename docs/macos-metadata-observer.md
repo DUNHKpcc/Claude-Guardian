@@ -84,6 +84,6 @@ New-module native macOS execution is pending. Synthetic/offline tests and
 installed `--help` checks do not validate the Darwin ABI on a device or establish
 preservation. Earlier Mac copy/probe evidence concerns a different tool and
 cannot validate this module. No real-device operation is authorized by this
-guide. Current integration results belong in [validation](validation.md);
+guide. Current integration results belong in git 历史中的 git 历史中的 `docs/validation.md`（已移出，见 ADR-024）（已移出，见 ADR-024）;
 broader unresolved native requirements remain in
 [macOS adaptation](macos-native-adaptation.md).

@@ -10,7 +10,7 @@
 
 这不是要求先解决所有 Windows 文件类型。ADS、EFS、压缩/稀疏文件、云占位符、链接、未知扩展属性等可先拒绝。相反，源文件已有 ACL/SACL 不能因难处理而静默丢弃。
 
-现有基线 `be2e626a3626bfb853babf2b407fd67be146ec82` 的 [CI 38711511300](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38711511300) 和 [验证记录](validation.md) 已记录四项 Windows 原生临时夹具通过：只读计划、ADS/硬链接拒绝、junction 祖先拒绝、注入元数据失败后的句柄清理。最后一项**不是实际 ACL 拒绝测试**。这些证据不覆盖写入、私有备份、崩溃恢复或用户配置。
+现有基线 `be2e626a3626bfb853babf2b407fd67be146ec82` 的 [CI 38711511300](https://github.com/DUNHKpcc/Claude-Guardian/actions/runs/38711511300) 和 验证记录（已移出，见 ADR-024） 已记录四项 Windows 原生临时夹具通过：只读计划、ADS/硬链接拒绝、junction 祖先拒绝、注入元数据失败后的句柄清理。最后一项**不是实际 ACL 拒绝测试**。这些证据不覆盖写入、私有备份、崩溃恢复或用户配置。
 
 下述原生事务机制仍属于待实现设计；本次只新增 §12 的离线预检和流格式解析。既有 `windows-read-only-file-plan/1` 仍不能用于提交；不能通过修改 `apply_status` 或增加一个布尔开关升级为可执行计划。
 

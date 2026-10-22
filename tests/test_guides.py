@@ -196,6 +196,22 @@ class GuidanceContracts(unittest.TestCase):
             self.assertNotIn("acceptance-rebuild-ledger.json)", body, path.name)
             self.assertNotIn("docs/evidence/rebuild-inventory-export-boundaries.md", body, path.name)
 
+    def test_r02_images_resolve_and_validation_log_is_gone(self):
+        root = ROOT / "skills" / "claude-guardian" / "sources"
+        r02 = (root / "R02-vps-line-optimization.md").read_text(encoding="utf-8")
+        self.assertNotIn("![[", r02)
+        for rel in ("R02-images/single-relay.png", "R02-images/dual-tunnel.png"):
+            self.assertIn(rel, r02)
+            self.assertTrue((root / rel).is_file(), rel)
+        import re
+        for target in re.findall(r"\]\((vps-recommendations/[^)]+)\)", r02):
+            self.assertTrue((root / target).is_file(), target)
+        self.assertFalse((ROOT / "docs" / "validation.md").exists())
+        for path in [ROOT / "README.md"] + sorted((ROOT / "docs").glob("*.md")):
+            if path.name == "decisions.md":
+                continue
+            self.assertNotIn("](validation.md)", path.read_text(encoding="utf-8"), path.name)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

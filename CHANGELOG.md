@@ -9,7 +9,7 @@
 - **线路优化：**新增 Agent 辅助的逐项流程（只读诊断、变更卡、批准后执行并验证、可回滚），依据 R02
 - **访谈状态机：**新增 7 个分类问题（Q-X01、Q-X02、Q-M01、Q-V07、Q-V08、Q-S08、Q-T01），只在路线被明确选择后才问；评估结果新增条件字段 `required_references`，按已答事实列出必附资料，不是授权
 - **资料：**新增 S08（VPS Claude 教程）、R01（17 份 VPS 推荐报告，压缩后约 15MB）、R02（线路优化与家宽中转教程）、S03 的 Markdown 源文本；S07 精简为 IP 质量测试清单；资料随答附带规则和 Agent 补充资料来源（Linux.do、NodeSeek、V2EX、Reddit、X）
-- **移除：**验收台账与证据体系（台账 JSON、`docs/evidence`、30 个验收测试及相关文档），内容仍在 git 历史；常设推送授权写入 `AGENTS.md`
+- **移除：**`docs/validation.md`（1600 多行的按日期验证记录，内容仍在 git 历史）；验收台账与证据体系（台账 JSON、`docs/evidence`、30 个验收测试及相关文档），内容仍在 git 历史；常设推送授权写入 `AGENTS.md`
 - **限制：**所有新脚本和命令均未在真实机器上验收；决策记录见 `docs/decisions.md` ADR-009 至 ADR-021
 
 ## WebRTC 样本的本地 IPv4 比对

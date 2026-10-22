@@ -134,7 +134,7 @@ and this document; it creates no user configuration changes to undo.
 reconstruction, domain-label bounds, known earlier coverage, later/noncovering
 rules, unknown rule types remaining unverified, and rejection after an earlier
 in-memory edit without modifying any input. The full batch evidence and remaining
-native/CI limits are recorded in `validation.md`.
+native/CI limits are recorded in git 历史中的 `docs/validation.md`（已移出，见 ADR-024）.
 
 2026-10-18 idempotent-replanning increment: 28 compiler tests pass. See
 [evidence and original-requirement limits](evidence/rebuild-idempotent-replanning.md).

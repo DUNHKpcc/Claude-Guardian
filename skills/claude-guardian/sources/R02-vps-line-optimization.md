@@ -35,9 +35,9 @@
 
 候选机器可结合现有文档选择：
 
-- 线路与业务：[[VPS-推荐报告-DMIT 产品线与美西线路 🌟🌟🌟🌟]]。
-- 性价比线路：[[VPS-推荐报告-VMISS 美西三网优化 🌟🌟🌟🌟]]、[[VPS-推荐报告-VMRACK L3 三网优化 🌟🌟🌟]]、[[VPS-推荐报告-搬瓦工 MINIBOX与MegaBOX 🌟🌟🌟🌟]]。
-- 家宽出口：[[VPS-推荐报告-NodeMach(VIRCS) 🌟🌟🌟🌟🌟]]、[[VPS-推荐报告-AaITR 美日家宽与静态线路复测 🌟🌟🌟🌟]]。
+- 线路与业务：[VPS-推荐报告-DMIT 产品线与美西线路 🌟🌟🌟🌟](vps-recommendations/biz-dmit.pdf)。
+- 性价比线路：[VPS-推荐报告-VMISS 美西三网优化 🌟🌟🌟🌟](vps-recommendations/value-vmiss.pdf)、[VPS-推荐报告-VMRACK L3 三网优化 🌟🌟🌟](vps-recommendations/value-vmrack.pdf)、[VPS-推荐报告-搬瓦工 MINIBOX与MegaBOX 🌟🌟🌟🌟](vps-recommendations/value-bandwagon.pdf)。
+- 家宽出口：[VPS-推荐报告-NodeMach(VIRCS) 🌟🌟🌟🌟🌟](vps-recommendations/home-nodemach.pdf)、[VPS-推荐报告-AaITR 美日家宽与静态线路复测 🌟🌟🌟🌟](vps-recommendations/home-aaitr.pdf)。
 
 这些是候选资料，不代表不同套餐和日期的线路都相同。
 
@@ -65,7 +65,7 @@
 
 [Linux.do 的 Realm 教程](https://linux.do/t/topic/920558)用 SSH 演示了单端中转，下面的链路图可用于理解方案 B；图中端口和机器名称是教程示例。
 
-![[图源/VPS-线路优化-单端中转.png]]
+![单端中转：客户端加密，中转机用 realm 透明转发，出口机解密](R02-images/single-relay.png)
 
 **把连接桌面的入口转发了，不等于把浏览器的出口改了。** [NodeSeek 的 Realm 功能说明](https://www.nodeseek.com/post-391214-1)也区分了端口转发与链式代理。先确定程序运行在哪台机器，再决定在哪里配置出站。
 
@@ -155,7 +155,7 @@ ssh -p 2222 B_USER@A_IP
 
 已有加密业务可以按其协议转发；普通端口转发本身不提供额外加密。需要双端隧道、流量统计等功能时，可进一步阅读 [NodeSeek 的脚本教程](https://www.nodeseek.com/post-391214-1)，双端链路的形态如下：
 
-![[图源/VPS-线路优化-双端隧道.png]]
+![双端隧道：中转机和出口机之间多套一层加密](R02-images/dual-tunnel.png)
 
 此图用于理解双端封装；不是前面 SSH 方案必须增加的一层。中转收益取决于两段连接，不能保证加入 A 就一定更快。
 

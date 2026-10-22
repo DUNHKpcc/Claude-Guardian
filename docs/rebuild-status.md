@@ -74,7 +74,7 @@ case has independently reviewed, pinned evidence. Earlier numbered sections
 below describe historical checkpoints. Scheduling remains 75 cloud-only / 113
 native-deferred / 30 conditional-native, not completion counts. Native/device
 work remains deferred. The latest validated aggregate and publication receipts are listed in
-[validation](validation.md). The thirteenth input-boundary and fourteenth bounded
+git 历史中的 git 历史中的 `docs/validation.md`（已移出，见 ADR-024）（已移出，见 ADR-024）. The thirteenth input-boundary and fourteenth bounded
 policy-conversion changes did not add complete-case acceptances. The fifteenth
 batch adds a sanitized case reference, not runtime network capability. The sixteenth
 adds a separately dated Claude-scoped IPv4-only policy and private candidate-plan
