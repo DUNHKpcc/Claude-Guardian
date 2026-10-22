@@ -37,7 +37,7 @@ FIRST = {'Q-J01': 'first_subscription', 'Q-C02': 'macos', 'Q-C01': 'web',
          'Q-C04': 'registered_login_reported', 'Q-C05': 'local', 'Q-C06': 'email',
          'Q-C09': 'fixture-region', 'Q-N01': 'fixture-proxy', 'Q-N02': 'fixture-local-browser',
          'Q-N03': 'fixture-no-switching', 'Q-N04': 'fixture-selected-device', 'Q-N06': 'fixture-personal-device',
-         'Q-P07': 'fixture-renewal-explanation', 'Q-W01': 'fixture-card-category',
+         'Q-P07': 'fixture-renewal-explanation', 'Q-X01': 'existing_stable_exit', 'Q-W01': 'fixture-card-category',
          'Q-W02': 'fixture-truthful-billing', 'Q-W03': 'fixture-recurring-report',
          'Q-W04': 'fixture-total-report', 'Q-L01': 'fixture-browser-metadata',
          'Q-L04': 'fixture-no-local-dependency', 'Q-C12': 'fixture-preserve-all',
@@ -444,8 +444,8 @@ class UpgradeConflictFlowTests(unittest.TestCase):
 
     def test_negative_apple_and_expired_refund_are_not_contradictions(self):
         apple = f.set_context(first(), billing_channel='apple')
-        for qid in ['Q-A01', 'Q-A02', 'Q-A03', 'Q-A04', 'Q-A05', 'Q-A10']:
-            apple = fact(apple, qid, 'no_usable_sign_in_or_verification' if qid == 'Q-A02' else 'fixture-report')
+        for qid in ['Q-A01', 'Q-A02', 'Q-A03', 'Q-A04', 'Q-A05', 'Q-A10', 'Q-M01']:
+            apple = fact(apple, qid, 'no_usable_sign_in_or_verification' if qid == 'Q-A02' else ('none' if qid == 'Q-M01' else 'fixture-report'))
         self.assertEqual(f.assessment(apple)['G2']['status'], 'pass')
         self.assertFalse(apple['context']['subscription_conflict'])
         self.assertEqual(apple['facts']['Q-A02']['state'], 'reported')

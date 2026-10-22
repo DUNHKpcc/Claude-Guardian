@@ -12,6 +12,11 @@ f = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(f)
 
 
+def route_value(qid, default):
+    """Valid categorical value for route/exit/mobile questions, else the test's generic answer."""
+    return sorted(f.ROUTE_EXIT_VALUES[qid])[0] if qid in f.ROUTE_EXIT_VALUES else default
+
+
 def state(journey="first_subscription", **context):
     s = f.new_state("device-a", "account-a")
     s = f.record_fact(s, "Q-J01", journey, source="user:1")
@@ -183,13 +188,14 @@ class InterviewTests(unittest.TestCase):
                 self.assertEqual(json.dumps(original, sort_keys=True), before)
 
     def test_complete_registry(self):
-        self.assertEqual(len(f.QUESTION_PROMPTS), 98)
+        self.assertEqual(len(f.QUESTION_PROMPTS), 104)
         original_ranges = {'J': 2, 'C': 12, 'OS': 12, 'H': 8, 'N': 6, 'P': 7,
                            'A': 10, 'G': 5, 'W': 4, 'I': 4, 'E': 2, 'L': 5,
                            'V': 6, 'S': 7, 'Z': 5, 'D': 2}
         original = {f"Q-{prefix}{i:02d}" for prefix, end in original_ranges.items()
                     for i in range(1, end + 1)}
-        self.assertEqual(set(f.QUESTION_PROMPTS), original | {'Q-C13'})
+        # ADR-018 adds six categorical route, egress and mobile questions.
+        self.assertEqual(set(f.QUESTION_PROMPTS), original | {'Q-C13', 'Q-X01', 'Q-X02', 'Q-M01', 'Q-V07', 'Q-V08', 'Q-S08'})
         self.assertIn("Q-C07", f.QUESTION_PROMPTS)
         self.assertNotIn("Q-C07", ids(state()))
         with self.assertRaises(f.InterviewError):
@@ -605,7 +611,7 @@ class InterviewTests(unittest.TestCase):
             question = f.next_question(s)
             if question is None:
                 break
-            value = {"Q-C02": "macos", "Q-C04": "unregistered", "Q-D01": "other_device_only"}.get(question["id"], "sanitized answer")
+            value = {"Q-C02": "macos", "Q-C04": "unregistered", "Q-D01": "other_device_only"}.get(question["id"], route_value(question["id"], "sanitized answer"))
             s = f.record_fact(s, question["id"], value, source="user:answer")
         self.assertEqual(f.assessment(s)["G2"]["status"], "pass")
         s = f.invalidate_facts(s, ["Q-H01"], reason="Historical object needs reconfirmation")
@@ -785,7 +791,7 @@ class InterviewTests(unittest.TestCase):
         self.assertTrue({"Q-A01", "Q-A02", "Q-A03", "Q-A07", "Q-A08", "Q-A09"}.issubset(ids(s)))
         for item in f.applicable_questions(s):
             if item["id"] not in f.POSTCONTACT:
-                value = {"Q-J01": "first_subscription", "Q-C04": "unregistered"}.get(item["id"], "done")
+                value = {"Q-J01": "first_subscription", "Q-C04": "unregistered"}.get(item["id"], route_value(item["id"], "done"))
                 s = f.record_fact(s, item["id"], value, source="user")
         self.assertIsNone(f.next_question(s))
         self.assertIn("requires_contact_gate", [x["reason"] for x in f.assessment(s)["G1"]["unresolved_fields"]])
@@ -935,7 +941,7 @@ class InterviewTests(unittest.TestCase):
             q = f.next_question(s)
             if q is None:
                 break
-            s = f.record_fact(s, q["id"], answers.get(q["id"], "sanitized answer"), source="user")
+            s = f.record_fact(s, q["id"], answers.get(q["id"], route_value(q["id"], "sanitized answer")), source="user")
         a = f.assessment(s)
         self.assertEqual(a["G1"]["status"], "complete")
         self.assertEqual(a["G2"]["status"], "pass")

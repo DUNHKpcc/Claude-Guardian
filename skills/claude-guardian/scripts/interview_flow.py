@@ -156,6 +156,24 @@ QUESTION_PROMPTS.update({
     'Q-D02': '对 {target_alias} 的 Claude 本地数据，这次要只看清单、规划完整重置、暂不清理，还是其他范围？完整重置可另选已核实属于 Claude 的历史、配置与扩展；实际操作前另行确认保护清单、备份和影响。',
 })
 QUESTION_PROMPTS[RETIRED] = "Retired; never collect account ownership"
+# Route, egress-source and mobile facts (ADR-018). Values are categorical; an unknown
+# or declined answer is a fact state, never a value.
+ROUTE_EXIT_VALUES = {
+    'Q-X01': frozenset({'airport', 'self_built', 'residential_carpool', 'existing_stable_exit', 'undecided'}),
+    'Q-X02': frozenset({'with_residential_exit', 'own_vps_ip_only', 'undecided'}),
+    'Q-M01': frozenset({'ios', 'android', 'both', 'none'}),
+    'Q-V07': frozenset({'omarchy', 'macos', 'other'}),
+    'Q-V08': frozenset({'lan_bridged', 'shared_nat', 'other'}),
+    'Q-S08': frozenset({'vps_own_ip', 'residential_chain', 'undecided'}),
+}
+QUESTION_PROMPTS.update({
+    'Q-X01': '固定出口 IP 想用哪种来源：纯净机场、自建梯（可搭配家宽出口）、家宽拼车，还是已经有稳定出口？还没想好也可以。',
+    'Q-X02': '自建梯要不要搭配家宽出口，还是先只用 VPS 自己的 IP？',
+    'Q-M01': '注册、登录或内购会在手机上做吗？是 iPhone/iPad、Android、两种都有，还是都没有？',
+    'Q-V07': '虚拟机的客机系统用 Omarchy、macOS，还是其他？',
+    'Q-V08': '虚拟机的网卡是 LAN 独立网卡（桥接），还是与宿主机共用的 shared NAT？',
+    'Q-S08': 'VPS 的出口用 VPS 自己的 IP，还是在其上套一层家宽出口？',
+})
 EXPOSURE_PROMPTS = {
     'Q-H01': '可能泄露的是哪类凭据、涉及哪个服务或客户端？只说类别和对象，不要发送密码、令牌或密钥内容。',
     'Q-H03': '有什么迹象提示凭据可能泄露？只提供脱敏后的提示或现象，不要贴原始秘密或完整日志。',
@@ -384,6 +402,11 @@ def validate_state(state):
                 raise InterviewError('Invalid device cleanup category')
         if qid in DEVICE_CLEANUP_VALUES and fact['state'] in RESOLVED and fact['value'] is None:
             raise InterviewError('Device cleanup category required')
+        if qid in ROUTE_EXIT_VALUES and fact['value'] is not None:
+            if type(fact['value']) is not str or fact['value'] not in ROUTE_EXIT_VALUES[qid]:
+                raise InterviewError('Invalid route or exit category')
+        if qid in ROUTE_EXIT_VALUES and fact['state'] in {'reported', 'observed'} and fact['value'] is None:
+            raise InterviewError('Route or exit category required')
         if qid in {"Q-J01", "Q-J02"} and fact["state"] in RESOLVED and (not isinstance(fact["value"], str) or fact["value"] not in JOURNEYS):
             raise InterviewError("Invalid subscription journey")
     choice = state['facts'].get('Q-C05')
@@ -488,6 +511,8 @@ def _record_fact(state, question_id, value=None, *, state_name="reported", sourc
     _normalize_current_order_plan(result)
     if qid in {"Q-J01", "Q-J02", "Q-C02", "Q-C03", "Q-C04", "Q-C05", "Q-C08", "Q-C13", "Q-C11", "Q-P06"} and value is not None and not isinstance(value, str):
         raise InterviewError("This routing fact requires a categorical string")
+    if qid in ROUTE_EXIT_VALUES and value is not None and (type(value) is not str or value not in ROUTE_EXIT_VALUES[qid]):
+        raise InterviewError("Invalid route or exit category")
     old = result["facts"].get(qid, {})
     count = old.get("clarification_count", 0) + int(clarification)
     if count > 1:
@@ -980,7 +1005,7 @@ def _invalidate_changed_route(state, previous, *, refreshed_context=()):
     if not was_confirmed:
         return
     prefix = {'local': 'Q-L', 'vm': 'Q-V', 'vps': 'Q-S'}.get(previous['route'])
-    dependent = {'Q-N02', 'Q-N05', 'Q-Z01', 'Q-Z03', 'Q-Z04'}
+    dependent = {'Q-N02', 'Q-N05', 'Q-Z01', 'Q-Z03', 'Q-Z04', 'Q-X01', 'Q-X02'}
     dependent.update(qid for qid in state['facts'] if prefix and qid.startswith(prefix))
     for qid in dependent:
         fact = state['facts'].get(qid)
@@ -1611,6 +1636,8 @@ def applicable_questions(state):
             add("os", "I2", ["Q-OS09", "Q-OS11"])
     elif os in {"linux", "mobile_only", "other"}:
         add("os", "I2", ["Q-OS12"])
+        if os == "mobile_only":
+            add("os", "I2", ["Q-M01"])
     if purchase:
         add("core", "I2", ["Q-C08"])
     add("core", "I3", ["Q-C03", "Q-C04"])
@@ -1640,14 +1667,14 @@ def applicable_questions(state):
             add("payment", "I4", ["Q-P05"])
         add("payment", "I4", ["Q-P07"])
         if channel == "apple":
-            add("payment", "I4", _ids("A", 1, 5))
+            add("payment", "I4", _ids("A", 1, 5) + ["Q-M01"])
             if c["gift_card"]:
                 add("payment", "I4", ["Q-A07", "Q-A08"])
             if c["buying_gift_card"]:
                 add("payment", "I4", ["Q-A09"])
             add("payment", "I4", ["Q-A10"])
         elif channel == "google":
-            add("payment", "I4", _ids("G", 1, 5))
+            add("payment", "I4", _ids("G", 1, 5) + ["Q-M01"])
         elif channel == "web":
             add("payment", "I4", _ids("W", 1, 4))
         if channel == "api" or c["task"] == "api":
@@ -1664,10 +1691,15 @@ def applicable_questions(state):
                 add(route, "I5", ["Q-L02"])
             if c["integration_used"]:
                 add(route, "I5", ["Q-L03"])
+            add(route, "I5", ["Q-X01"])
+            if _value(state, "Q-X01") == "self_built":
+                add(route, "I5", ["Q-X02"])
         elif route == "vm":
-            add(route, "I5", _ids("V", 1, 6))
+            add(route, "I5", _ids("V", 1, 6) + ["Q-V07", "Q-V08", "Q-X01"])
+            if _value(state, "Q-X01") == "self_built":
+                add(route, "I5", ["Q-X02"])
         elif route == "vps":
-            add(route, "I5", _ids("S", 1, 7))
+            add(route, "I5", _ids("S", 1, 7) + ["Q-S08"])
     if _current_plan_needed(state):
         add("compatibility", "I5", ["Q-C13"])
     add("protection", "I5", ["Q-C12", "Q-Z01", "Q-C10"])
@@ -2428,6 +2460,11 @@ for _device_qid, _device_values in DEVICE_CLEANUP_VALUES.items():
     STATE_SCHEMA['properties']['facts']['properties'][_device_qid] = {
         **FACT_SCHEMA, 'properties': {**FACT_SCHEMA['properties'],
                                      'value': {'enum': [None] + sorted(_device_values)}}}
+
+for _route_qid, _route_values in ROUTE_EXIT_VALUES.items():
+    STATE_SCHEMA['properties']['facts']['properties'][_route_qid] = {
+        **FACT_SCHEMA, 'properties': {**FACT_SCHEMA['properties'],
+                                     'value': {'enum': [None] + sorted(_route_values)}}}
 
 for _episode_ref_key in ('device_incident_resolution_ref', 'cleanup_offer_dismissed_ref'):
     STATE_SCHEMA['properties']['context']['properties'][_episode_ref_key] = {

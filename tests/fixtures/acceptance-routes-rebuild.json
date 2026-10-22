@@ -33,7 +33,10 @@
       {"question_id": "Q-V03", "value": {"memory_budget_gib": 8, "disk_budget_gib": 64, "preserve": "host_projects"}},
       {"question_id": "Q-V04", "value": {"mode": "nat_planned", "proxy_location": "host", "guest_reachability": "not_tested"}},
       {"question_id": "Q-V05", "value": {"shared_directories": "none_initially", "clipboard": "disabled_planned", "credential_mounts": "none"}},
-      {"question_id": "Q-V06", "value": {"backup": "private_project_backup_planned", "snapshot": "not_created", "restore": "not_tested"}}
+      {"question_id": "Q-V06", "value": {"backup": "private_project_backup_planned", "snapshot": "not_created", "restore": "not_tested"}},
+      {"question_id": "Q-V07", "value": "omarchy"},
+      {"question_id": "Q-V08", "value": "lan_bridged"},
+      {"question_id": "Q-X01", "value": "existing_stable_exit"}
     ],
     "vps": [
       {"question_id": "Q-S01", "value": "workspace_not_exit_only"},
@@ -42,7 +45,8 @@
       {"question_id": "Q-S04", "value": "preserve_existing_service_and_projects"},
       {"question_id": "Q-S05", "value": "project_copy_requires_separate_approval_no_local_hardware_dependency_reported"},
       {"question_id": "Q-S06", "value": "cost_comparison_only_no_purchase_approval"},
-      {"question_id": "Q-S07", "value": "remote_ssh_with_backup_and_update_plan"}
+      {"question_id": "Q-S07", "value": "remote_ssh_with_backup_and_update_plan"},
+      {"question_id": "Q-S08", "value": "vps_own_ip"}
     ]
   },
   "server_variants": {

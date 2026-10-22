@@ -197,6 +197,8 @@ The following are short prompts/field meanings, not a mandatory sequence. Preser
 | Q-V04 | VM networking and proxy location |
 | Q-V05 | Shared folders, clipboard, tool and credential mounts; no secret values |
 | Q-V06 | Snapshot/backup and restore scope |
+| Q-V07 | VM guest OS: omarchy / macos / other (default Omarchy; macOS guest on a Mac host); see [vm-guidance.md](vm-guidance.md) |
+| Q-V08 | VM NIC mode: lan_bridged / shared_nat / other; the LAN independent NIC is preferred over host-shared NAT, chosen before the VM is created |
 | Q-S01 | VPS as a development machine (Claude Code runs on it); a proxy-exit-only VPS belongs to the local route egress choice (egress-ip-options.md) |
 | Q-S02 | Existing/new server, region, OS, and resources |
 | Q-S03 | SSH access and independent rescue channel; no keys/passwords |
@@ -204,12 +206,25 @@ The following are short prompts/field meanings, not a mandatory sequence. Preser
 | Q-S05 | Remote-data acceptability and local dependencies |
 | Q-S06 | Server, traffic, and maintenance budget if needed |
 | Q-S07 | Terminal/Remote-SSH/remote-browser workflow and maintenance |
+| Q-S08 | VPS exit: vps_own_ip / residential_chain / undecided; selects the firewall script and whether R02 applies, see [vps-guidance.md](vps-guidance.md) |
 | Q-Z01 | Explanation/plan versus authorized target read scope |
 | Q-Z02 | Detailed preservation scope; reuse Q-C12 |
 | Q-Z03 | Specific proposed changes and administrator requirements |
 | Q-Z04 | Backup/rollback/rescue prerequisites |
 | Q-Z05 | Permission for private sanitized persistence/export |
 
+
+## Route, egress source and mobile (ADR-018)
+
+Categorical facts that make the route-specific guidance deterministic instead of leaving it to the host alone. Values are listed in `interview_flow.ROUTE_EXIT_VALUES`; an unknown or declined answer is a fact state, not a value. An answer is never an action authorization.
+
+| ID | Meaning and trigger | Binding and effect |
+| --- | --- | --- |
+| Q-X01 | Source of the fixed egress IP: airport / self_built / residential_carpool / existing_stable_exit / undecided. Asked after an explicit local or VM route choice. | Selects [egress-ip-options.md](egress-ip-options.md); airport and carpool get no tutorial, self-built gets the short prompt and the R01 VPS reports. Stale when the route changes. |
+| Q-X02 | Self-built relay with a residential exit: with_residential_exit / own_vps_ip_only / undecided. Asked only after Q-X01 = self_built. | With a residential exit, attach R02 ([line-optimization.md](line-optimization.md)). |
+| Q-M01 | Whether registration, login or in-app purchase happens on a phone: ios / android / both / none. Asked for Apple or Google in-app purchase, or when the OS is mobile only. | Attach [mobile-guidance.md](mobile-guidance.md) and S03 page 4; Android includes the SIM note. |
+
+Q-V07 and Q-V08 (VM) and Q-S08 (VPS) in the tables above follow the same rules. Route-specific questions are asked only after the route is explicitly chosen, never from the default proposal.
 
 ## Selected-device history and explicit cleanup task
 
