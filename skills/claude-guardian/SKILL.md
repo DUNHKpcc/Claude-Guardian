@@ -93,11 +93,11 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | --- | --- |
 | 支付、订阅渠道、礼品卡、虚拟卡、API 充值 | **第一项：[AI 所有支付方式汇总（核验版）](sources/S02-ai-payments.md)**，核心参考，Agent 可据此向用户推荐支付方式（规则见 accounts-and-payments.md 的 B1） |
 | 账号阶段、IP、设备、注册与养号节奏 | [S03 经验 PDF](sources/S03-claude-experience.pdf)、[S04 指南](sources/S04-claude-guide.md)、[account-onboarding.md](references/account-onboarding.md) |
-| 本地防护、代理、浏览器档案 | [S05 本地防护](sources/S05-local-protection.md) |
+| 本地防护、代理、浏览器档案、WebRTC 检查 | [S05 本地防护](sources/S05-local-protection.md)；WebRTC 可用包内的[本地探测页](assets/webrtc-probe.html)（由 `scripts/serve_webrtc.py` 在本机回环临时提供，用户点击确认后才发起 STUN） |
 | macOS 清理 | [S06 清理教程](sources/S06-macos-cleanup-sanitized.md) |
 | 手机端（注册、选择 Apple/Google 内购、仅手机） | [mobile-guidance.md](references/mobile-guidance.md)、[S03 经验 PDF 第 4 页](sources/S03-claude-experience.pdf)（必附） |
-| VM 路线（客机系统、网卡、出口、防火墙脚本） | [vm-guidance.md](references/vm-guidance.md)、[egress-ip-options.md](references/egress-ip-options.md)（必附） |
-| VPS 路线（开发机：系统、环境一致、远程桌面、防火墙） | [vps-guidance.md](references/vps-guidance.md)、[S08 VPS 教程](sources/S08-vps-claude-tutorial.pdf)（必附）、[R02 家宽中转教程](sources/R02-vps-line-optimization.md)（套家宽出口时）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（选服务器时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（创建后检查 IP 时） |
+| VM 路线（客机系统、网卡、出口、防火墙脚本） | [vm-guidance.md](references/vm-guidance.md)、[egress-ip-options.md](references/egress-ip-options.md)（必附）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（出口选自建梯、要选 VPS 时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（检查出口 IP 时）、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（Linux 客机） |
+| VPS 路线（开发机：系统、环境一致、远程桌面、防火墙） | [vps-guidance.md](references/vps-guidance.md)、[S08 VPS 教程](sources/S08-vps-claude-tutorial.pdf)（必附）、[R02 家宽中转教程](sources/R02-vps-line-optimization.md)（套家宽出口时）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（选服务器时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（创建后检查 IP 时）、[VPS 防火墙脚本](assets/vps-firewall/vps-guard.sh)（出口是 VPS 自己的 IP 时）、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（套家宽、VPS 上跑 TUN 时） |
 | 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
 | VPS、服务器术语与测试 | [S01 术语](sources/S01-server-glossary.md)、[S07 脚本目录](sources/S07-vps-script-catalog.md) |
 

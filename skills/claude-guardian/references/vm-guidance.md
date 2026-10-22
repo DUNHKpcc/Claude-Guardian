@@ -43,7 +43,7 @@ bash install-flclash-killswitch.sh refresh      # 节点 IP 变了手动刷新�
 bash install-flclash-killswitch.sh uninstall    # 卸载并删除规则
 ```
 
-**保险丝与验收：**应用规则后有 180 秒保险丝，没有执行 `confirm` 就自动回滚，避免锁死。装好后手动验收：出口 IP 是固定出口；浏览器打开 browserleaks.com/webrtc 和 dnsleaktest.com，确认没有真实 IP 和真实 DNS；`pkill FlClashCore` 后确认 curl 和 DNS 全部失败，重启 FlClash 后恢复。
+**保险丝与验收：**应用规则后有 180 秒保险丝，没有执行 `confirm` 就自动回滚，避免锁死。装好后手动验收：出口 IP 是固定出口；浏览器打开 browserleaks.com/webrtc 和 dnsleaktest.com（WebRTC 也可用包内的[本地探测页](../assets/webrtc-probe.html)），确认没有真实 IP 和真实 DNS；`pkill FlClashCore` 后确认 curl 和 DNS 全部失败，重启 FlClash 后恢复。
 
 **macOS 客机：**没有对应脚本。按[本机路线 L2](routes-and-platforms.md) 的做法评估 LuLu 或系统防火墙，同样要求 TUN 掉线时不直连。
 

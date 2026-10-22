@@ -99,6 +99,13 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("vm-guidance.md", (REFS / "routes-and-platforms.md").read_text(encoding="utf-8"))
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("[vm-guidance.md](references/vm-guidance.md)", skill)
+        vm_row = [l for l in skill.splitlines() if l.startswith("| VM 路线")][0]
+        for link in ("vps-recommendations/INDEX.md", "S07-vps-script-catalog.md", "install-flclash-killswitch.sh"):
+            self.assertIn(link, vm_row)
+        vps_row = [l for l in skill.splitlines() if l.startswith("| VPS 路线（开发机")][0]
+        for link in ("vps-guard.sh", "install-flclash-killswitch.sh"):
+            self.assertIn(link, vps_row)
+        self.assertIn("assets/webrtc-probe.html", skill)
         script = (ROOT / "skills" / "claude-guardian" / "assets" / "vm-killswitch" / "install-flclash-killswitch.sh").read_text(encoding="utf-8")
         for personal in ("165.254", "10.72.18", "dpccskisw"):
             self.assertNotIn(personal, script)
