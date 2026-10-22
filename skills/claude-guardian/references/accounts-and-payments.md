@@ -48,7 +48,7 @@ Only actual enterprise settlement needs justify organization prerequisites. Do n
 
 ## Handoff and stopping conditions
 
-Use G2 for conditional channel comparison. Unsupported or unknown country/device/store/app/plan conditions block purchase advice that assumes feasibility. Explain the smallest next check. G3 and PC2 are separate; a route choice, plan acceptance, or passed environmental check is not payment permission. This preview does not pay, redeem cards, submit appeals, change account settings, or register accounts. Give precise user-led official steps only once their current applicability and permitted contact are established. Avoid refund promises and record post-purchase state to prevent duplicate buying.
+Every payment answer ends with the references block, S02 first (see B1, ADR-011). Use G2 for conditional channel comparison. Unsupported or unknown country/device/store/app/plan conditions block purchase advice that assumes feasibility. Explain the smallest next check. G3 and PC2 are separate; a route choice, plan acceptance, or passed environmental check is not payment permission. This preview does not pay, redeem cards, submit appeals, change account settings, or register accounts. Give precise user-led official steps only once their current applicability and permitted contact are established. Avoid refund promises and record post-purchase state to prevent duplicate buying.
 
 ## 操作总则与证据状态
 
@@ -105,7 +105,14 @@ Use G2 for conditional channel comparison. Unsupported or unknown country/device
 | 维护 | 续费资金、地区变更影响、异常支持入口 | 不创建自动充值/提醒，除非另外授权 |
 | 证据 | 当前官方页面/日期 + 本人界面确认；社区单独标注 | 缺证据不标 ready |
 
-已有付款工具优先核验是否适用；不为了订阅引导开户、办卡、投资或创建 LLC。用户要求零新增工具费用时只给已有渠道/免费检查，Claude 本身订阅成本仍须明确，不能隐去。
+**S02 是支付任务的核心参考（2026-10-21 所有者要求，ADR-011）。** 凡支付回答，末尾必须附 [AI 所有支付方式汇总（核验版）](../sources/S02-ai-payments.md)（列在参考资料第一项，并指出所用章节，如“快速结论”“Apple 礼品卡”“证据来源”），Agent 可以据此向用户推荐支付方式。推荐时：
+
+1. 先按用户的地区、设备、已有付款工具和预算，从 S02 里挑 1 至 3 个适合的候选，说明为什么适合，并引用 S02 的“快速结论”和门槛说明。
+2. 每个候选标出 S02 的证据等级（A 官方、B 实测、C 推广）和已知风险（拒付案例、KYC 或身份验证触发、地区受限、渠道来源不明）。S02 自己标为“不推荐”的渠道（如闲鱼、淘宝低价卡商）不推荐。
+3. 明确 S02 是带日期的社区汇总，价格、准入、地区政策变化快，实际购买前须到当前官方页面核验；不承诺成功率、退款或免封，不使用返佣或推广内容作排序理由。
+4. 已有付款工具优先核验是否适用；用户要求零新增工具费用时，只在已有渠道里推荐。
+
+不为了订阅引导开户、办卡、投资或创建 LLC。用户要求零新增工具费用时只给已有渠道/免费检查，Claude 本身订阅成本仍须明确，不能隐去。
 
 ### B2 Apple 分步卡（Q-A01–Q-A10）
 
@@ -140,7 +147,7 @@ Use G2 for conditional channel comparison. Unsupported or unknown country/device
 
 **API Q-I01–Q-I04**：仅明确 API 需求加载。确认官方 API/第三方聚合/云平台的实际计费主体、项目、用途（个人或为他人提供服务）、调用权限和预算。核验当前产品认证规则及数据政策；订阅 OAuth 不自动授权 gateway。购买额度/自动充值/创建 API key 分别授权，支付和秘密输入本人完成。计划列单次请求成本来源、重试放大、月度预算、告警与硬上限是否真的可配置；未创建的控制只写 planned，第三方余额不是官方订阅。
 
-**组织 Q-E01–Q-E02**：实际组织结算才核对席位、管理员权限、允许数据及合同/发票目标。企业开户、KYB、税务与公司注册不作为普通人的捷径；涉及金融/法律协议及敏感材料由本人/合格专业人士处理。不得照抄 S02 的 Mercury/Airwallex/Slash/Relay/Velo 等历史排名为当前推荐；这些是按需核验条目，非要求用户开通的清单。
+**组织 Q-E01–Q-E02**：实际组织结算才核对席位、管理员权限、允许数据及合同/发票目标。企业开户、KYB、税务与公司注册不作为普通人的捷径；涉及金融/法律协议及敏感材料由本人/合格专业人士处理。S02 的 Mercury/Airwallex/Slash/Relay/Velo 等高门槛条目可作为参考提供，但普通个人用户不作默认推荐；须说明门槛和 KYB、税务、法律责任，是否办理由用户自行判断，也非要求用户开通的清单。
 
 ### B5 付款前统一交接（G3 与 PC2 不互相替代）
 

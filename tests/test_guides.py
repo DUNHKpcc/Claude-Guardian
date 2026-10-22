@@ -41,6 +41,22 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("社区经验，未经验证", skill)
         self.assertNotIn("保证不封", section)
 
+    def test_owner_sources_are_attached_and_s02_is_first_payment_reference(self):
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        section = skill.split("资料随答附带", 1)[1]
+        for term in ("sources/S02-ai-payments.md", "第一项", "S03-claude-experience.pdf",
+                     "S05-local-protection.md", "S06-macos-cleanup-sanitized.md", "S01-server-glossary.md"):
+            self.assertIn(term, section)
+        acc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
+        for term in ("支付任务的核心参考", "../sources/S02-ai-payments.md", "证据等级", "不推荐", "当前官方页面核验"):
+            self.assertIn(term, acc)
+        lib = (REFS / "source-library.md").read_text(encoding="utf-8")
+        self.assertIn("第一项必须是 S02", lib)
+        for link in ("S01-server-glossary.md", "S02-ai-payments.md", "S04-claude-guide.md",
+                     "S05-local-protection.md", "S06-macos-cleanup-sanitized.md", "S07-vps-script-catalog.md",
+                     "S03-claude-experience.pdf"):
+            self.assertTrue((ROOT / "skills" / "claude-guardian" / "sources" / link).exists(), link)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):
