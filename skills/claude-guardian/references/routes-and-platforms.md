@@ -92,8 +92,8 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 1. 写清现行整机默认或用户明确选择的窄范围／分流例外，按[Agent 路径要求](agent-remediation.md#ipv4-only-policy)核对。指定 Profile 的 HTTPS 走既有代理只是局部观察示例，不是整机验收；不能据此写“全机安全”
 2. 按 [网络与解决方法](network-and-remedies.md) 分别检查 HTTPS、DNS、IPv6、UDP、WebRTC；中性端点也要范围批准，不主动解析 Claude 域名
 3. 对确认的差异仅拟最小配置改动，展示语义 diff、配置持久化位置、更新覆盖风险、备份与回滚；批准后仅使用已验收的适配器，否则交给用户人工完成并复验
-4. macOS 严格出站保护可评估免费 **LuLu** 候选；核验官方来源、当前许可/兼容性、系统扩展权限、进程/子进程匹配和卸载恢复。安装不是本卡默认动作；未完成故障测试不能称已实现 kill switch
-5. Windows 优先评估系统内置防火墙的精确程序/作用域规则；先导出现有相关规则并核查组织策略。不要用全局 block 再假定 allow 回环能覆盖冲突；共享解释器规则可能影响其他项目
+4. macOS 严格出站保护可评估免费 **LuLu** 候选（逐步提示见 [local-firewall-prompts.md](local-firewall-prompts.md)）；核验官方来源、当前许可/兼容性、系统扩展权限、进程/子进程匹配和卸载恢复。安装不是本卡默认动作；未完成故障测试不能称已实现 kill switch
+5. Windows 优先评估系统内置防火墙的精确程序/作用域规则（逐步提示见 [local-firewall-prompts.md](local-firewall-prompts.md#windows)）；先导出现有相关规则并核查组织策略。不要用全局 block 再假定 allow 回环能覆盖冲突；共享解释器规则可能影响其他项目
 6. 故障演练前准备离线恢复和独立控制通道，单独请求授权。分别测节点失效、GUI 退出/内核仍在、内核停止、新进程、网络切换、IPv4/IPv6 和适用 UDP；未测项保留未测
 
 **验收/恢复**：正常与故障条件下有实际获准的新连接尝试和观测才能评价阻断；单次连接失败不够。恢复原配置/精确规则后复测 Codex、代理及用户必要应用。不得未经具体批准将 Codex 改为 DIRECT；获准的 Codex／救援独立直连须单列为例外并验收，不能称全软件零旁路。不能全机禁 UDP/IPv6 来隐藏缺口。

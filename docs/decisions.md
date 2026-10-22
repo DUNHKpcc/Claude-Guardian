@@ -162,3 +162,11 @@ ADR-016 再补充（同日）：所有者决定《完整教程焚诀.docx》和�
 
 未解决：本机 Mac 和 Windows 没有防火墙脚本，macOS 客机同样没有，待与所有者讨论方案；S08 第 3 到 5 页截图未读；R02 图片未入库。
 
+## ADR-022：本机路线防火墙用提示词，不写脚本（2026-10-21 已确认）
+
+所有者决定本机路线的防火墙仍以提示词解决：Windows 利用系统自带防火墙，Mac 依赖第三方软件（LuLu）。新增 references/local-firewall-prompts.md：通用工作方式（先问清楚、先看后改、一次一张变更卡、先让 TUN 跑通再加防火墙、必须故障演练、保留回滚）；Mac 一节包含 Clash Verge 的安装、导入节点、TUN（服务模式）、DNS 核对、验证，以及 LuLu 的来源、系统扩展批准、规则思路、覆盖范围实测和回滚，不自己写 PF 规则（见 ADR-006）；Windows 一节包含 Clash、TUN、网卡 IPv6，以及系统防火墙的备份、保险丝计划任务、先加 guardian- 开头的允许规则、最后切换默认出站为阻止、故障演练、回滚、更新后复查。
+
+接入：routes-and-platforms.md 的 L2 第 4、5 条指向它；SKILL.md 资料表新增一行；Windows 本机路线的 required_references 附它（锚点 #windows）和 S05，Mac 附它（锚点 #mac）和 macOS DNS 经验；VM 和 VPS 路线不附。
+
+边界：命令基于 PowerShell 和 netsh 的通用用法，没有在真实机器上实测，文档要求首次使用前先用只读命令或 -WhatIf 核对参数和别名；组织管理的设备不改防火墙；不自动安装 LuLu、不替用户点系统授权；LuLu 的覆盖范围不假定，必须故障演练；不承诺免封。
+

@@ -233,3 +233,23 @@ class LineAndWindowsReferenceTests(unittest.TestCase):
         self.assertEqual(order, sorted(order))
         mac = refs(answer(base('vm'), 'Q-V07', 'macos'))
         self.assertNotIn('assets/vm-killswitch/enable-guest-ssh.sh', mac)
+
+
+class LocalFirewallReferenceTests(unittest.TestCase):
+    def test_windows_local_gets_firewall_prompts_before_s05(self):
+        paths = refs(answer(base('local'), 'Q-C02', 'windows'))
+        self.assertIn('references/local-firewall-prompts.md', paths)
+        self.assertLess(paths.index('references/local-firewall-prompts.md'), paths.index('sources/S05-local-protection.md'))
+        item = [i for i in f.required_references(answer(base('local'), 'Q-C02', 'windows'))
+                if i['path'] == 'references/local-firewall-prompts.md'][0]
+        self.assertEqual(item['locator'], '#windows')
+
+    def test_mac_local_gets_firewall_prompts_and_dns_lessons(self):
+        paths = refs(answer(base('local'), 'Q-C02', 'macos'))
+        for path in ('references/local-firewall-prompts.md', 'references/macos-dns-case-lessons.md'):
+            self.assertIn(path, paths)
+        self.assertNotIn('sources/S05-local-protection.md', paths)
+
+    def test_vm_and_vps_do_not_get_local_firewall_prompts(self):
+        self.assertNotIn('references/local-firewall-prompts.md', refs(answer(base('vm'), 'Q-C02', 'macos')))
+        self.assertNotIn('references/local-firewall-prompts.md', refs(answer(base('vps'), 'Q-C02', 'windows')))

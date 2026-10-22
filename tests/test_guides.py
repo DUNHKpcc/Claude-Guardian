@@ -167,6 +167,19 @@ class GuidanceContracts(unittest.TestCase):
         lib = (REFS / "source-library.md").read_text(encoding="utf-8")
         self.assertIn("Agent 补充资料来源", lib)
 
+    def test_local_firewall_is_prompt_only_and_wired(self):
+        doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
+        for term in ("本机路线不提供脚本", "全部用提示词引导", "LuLu", "第三方", "Windows 防火墙", "netsh advfirewall export",
+                     "Set-NetFirewallProfile", "DefaultOutboundAction", "New-NetFirewallRule", "InterfaceAlias", "guardian-",
+                     "schtasks /Create", "故障演练", "没有在真实机器上实测", "Clash Verge", "服务模式", "Agent 不做的事"):
+            self.assertIn(term, doc)
+        self.assertIn("local-firewall-prompts.md", (REFS / "routes-and-platforms.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("references/local-firewall-prompts.md", skill)
+        scripts = ROOT / "skills" / "claude-guardian" / "scripts"
+        for path in scripts.glob("*.py"):
+            self.assertNotIn("Set-NetFirewallProfile", path.read_text(encoding="utf-8"), path.name)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

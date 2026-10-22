@@ -1821,6 +1821,8 @@ REFERENCE_PATHS = {
     'vm_ssh': 'assets/vm-killswitch/enable-guest-ssh.sh',
     'vm_tun': 'assets/vm-killswitch/install-flclash-tun.sh',
     'win_ipv6': 'references/agent-remediation.md',
+    'local_fw': 'references/local-firewall-prompts.md',
+    'mac_dns': 'references/macos-dns-case-lessons.md',
 }
 PAYMENT_REFERENCE_TASKS = {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue", "compare"}
 
@@ -1866,8 +1868,12 @@ def required_references(state):
     if route == 'local':
         add('egress', 'egress')
         if os_value == 'windows':
+            add('local_fw', 'local_firewall', '#windows')
             add('S05', 'local_protection')
             add('win_ipv6', 'windows_ipv6', '#windows-adapter-ipv6-hint')
+        elif os_value == 'macos':
+            add('local_fw', 'local_firewall', '#mac')
+            add('mac_dns', 'mac_dns')
     elif route == 'vm':
         add('vm', 'vm')
         add('egress', 'egress')
