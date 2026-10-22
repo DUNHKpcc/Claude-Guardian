@@ -116,6 +116,9 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("属于本机路线选 IP 出口的选项", routes)
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("[vps-guidance.md](references/vps-guidance.md)", skill)
+        vps_row = [l for l in skill.splitlines() if l.startswith("| VPS 路线（开发机")][0]
+        for link in ("S08-vps-claude-tutorial.pdf", "R02-vps-line-optimization.md", "vps-recommendations/INDEX.md", "S07-vps-script-catalog.md"):
+            self.assertIn(link, vps_row)
         root = ROOT / "skills" / "claude-guardian"
         for rel in ("sources/S08-vps-claude-tutorial.pdf", "sources/S08-extracted-text.md",
                     "sources/R02-vps-line-optimization.md", "sources/S03-source-text.md"):
