@@ -87,7 +87,8 @@ class SourceInventoryConsistencyTests(unittest.TestCase):
         self.assertIn('../sources/manifest.json', links)
         expected_paths = set()
         companions = []
-        for source in self.current['sources']:
+        collection_ids = {item['id'] for item in self.current.get('collections', [])}
+        for source in self.current['sources'] + self.current.get('collections', []):
             records = [(source['path'], source['distributed_sha256'])]
             companions.extend(source.get('companions', []))
             records.extend((item['path'], item['sha256'])
@@ -96,10 +97,15 @@ class SourceInventoryConsistencyTests(unittest.TestCase):
                 path = (SKILL / relative).resolve()
                 self.assertTrue(path.is_relative_to(SKILL.resolve()))
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
+                # A collection is linked from the library only through its index
+                # file; its member files are covered by that index's own test.
+                if source['id'] in collection_ids and relative != source['path']:
+                    continue
                 expected_paths.add(path)
         linked_paths = {(LIBRARY_PATH.parent / link).resolve() for link in links}
         self.assertEqual(linked_paths, expected_paths | {(SKILL / 'sources/manifest.json').resolve()})
-        self.assertEqual([item['path'] for item in companions], ['sources/S03-extracted-text.md'])
+        self.assertEqual([item['path'] for item in companions if item['path'].startswith('sources/S')],
+                         ['sources/S03-extracted-text.md'])
         self.assertNotEqual(self.sources['S06']['original_sha256'],
                             self.sources['S06']['distributed_sha256'])
 

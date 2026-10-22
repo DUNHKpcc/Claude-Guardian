@@ -29,7 +29,7 @@ def release_paths():
         raise AssertionError('Expected one explicit release list')
     paths = ast.literal_eval(assignments[0].value)
     manifest = json.loads((SKILL / 'sources/manifest.json').read_text(encoding='utf-8'))
-    for source in manifest['sources']:
+    for source in manifest['sources'] + manifest.get('collections', []):
         paths.append(source['path'])
         paths.extend(companion['path'] for companion in source.get('companions', []))
     return paths
@@ -80,14 +80,14 @@ class MacOSMetadataObserverPackagingTests(unittest.TestCase):
             check=True, capture_output=True, text=True, timeout=30,
         )
 
-    def test_explicit_68_member_package_contains_observer_and_no_audits(self):
+    def test_explicit_87_member_package_contains_observer_and_no_audits(self):
         expected = {'claude-guardian/' + path for path in self.paths}
         expected.add('claude-guardian/LICENSE')
         self.assertEqual(self.paths.count(OBSERVER), 1)
         self.assertEqual(self.paths.count("scripts/agent_rules_task.py"), 1)
         self.assertEqual(self.paths.count("references/agent-rules-task.md"), 1)
-        self.assertEqual(len(expected), 68)
-        self.assertEqual(len(self.members), 68)
+        self.assertEqual(len(expected), 87)
+        self.assertEqual(len(self.members), 87)
         self.assertEqual(set(self.members), expected)
         self.assertEqual(self.members, sorted(self.members))
         self.assertFalse(any('docs/' in name or 'tests/' in name for name in self.members))

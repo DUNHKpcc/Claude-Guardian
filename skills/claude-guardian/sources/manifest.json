@@ -133,5 +133,114 @@
         "带宽、磁盘、CPU 测试可能产生流量与资源成本"
       ]
     }
+  ],
+  "collections": [
+    {
+      "id": "R01",
+      "category": "reading",
+      "title": "VPS 推荐报告集（业务 / 性价比 / 高端家宽）",
+      "original_filename": "VPS 推荐 业务 / 性价比 / 高端家宽 三个文件夹（17 份 PDF）",
+      "original_sha256": "7b16eb6c06c9aa98f06078c537681dad9bcd2b052aea7bf4ef60fd16e697d243",
+      "path": "sources/vps-recommendations/INDEX.md",
+      "distributed_sha256": "7b16eb6c06c9aa98f06078c537681dad9bcd2b052aea7bf4ef60fd16e697d243",
+      "changes": [
+        "2026-10-21 所有者提供；PDF 字节不变，仅将含 emoji 的中文文件名改为 ASCII 文件名（原名见各 companion 的 original_filename）；INDEX.md 为本项目编写的索引"
+      ],
+      "attribution": "所有者提供的整理报告，保留原文中的商家与测评来源链接",
+      "redistribution": "所有者放入技能作为资料；不延伸到商家页面或第三方测评原文的再分发",
+      "limitations": [
+        "价格、配置、测试均为历史记录，不代表当前套餐",
+        "星级为报告作者的推荐指数，非本项目验证结论",
+        "千宿网络、NodeMach 两份报告含商家推广或邀请链接，不作推荐或排序依据",
+        "约 32MB，增加技能包体积"
+      ],
+      "companions": [
+        {
+          "path": "sources/vps-recommendations/biz-aws-ec2-taipei.pdf",
+          "sha256": "8924a03e1e9d198583dd4f154ab8a40088cf4586b65264ada0fbca6ba0d4ced0",
+          "original_filename": "VPS-推荐报告-AWS EC2 台北 t3.micro 🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/biz-aws-lightsail-my.pdf",
+          "sha256": "989afde43063f6f398fcf0e3f13ca78b26880ff1602bd930fe2e49fec78cd59a",
+          "original_filename": "VPS-推荐报告-AWS Lightsail 马来西亚 2C2G 🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/biz-azure-sg-b2ats.pdf",
+          "sha256": "bb4759bcabd5f93b01c3348604d87e5a60b66a2eafc969789575c62a91eb6995",
+          "original_filename": "VPS-推荐报告-Azure 新加坡 B2ats_v2 🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/biz-azure-jp-b2pts.pdf",
+          "sha256": "1bbd29d72ff31fbdbb2ed722188591d6ac8eb9d90c6b4fc4b4eee612f05b32e4",
+          "original_filename": "VPS-推荐报告-Azure 日本东部 B2pts_v2 ARM 🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/biz-dmit.pdf",
+          "sha256": "fd225c8e326b1087a96b47fd01bd0633bb22f3064cd38f78fb51ce96f0a2f5fa",
+          "original_filename": "VPS-推荐报告-DMIT 产品线与美西线路 🌟🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/value-vmiss.pdf",
+          "sha256": "1de82b4dc4f2bd0c592e835e8def124634de489d78ea8c536d9981a3a10ef56b",
+          "original_filename": "VPS-推荐报告-VMISS 美西三网优化 🌟🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/value-vmrack.pdf",
+          "sha256": "4a90ca1740d7cecd99781bb342a4a24544f74681edfbe4d39ba6bbff5130506a",
+          "original_filename": "VPS-推荐报告-VMRACK L3 三网优化 🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/value-qiansu.pdf",
+          "sha256": "a6b2f9af15e4d761fd08fc96573e83394cb92ac75d16c669258ff8665dc395dd",
+          "original_filename": "VPS-推荐报告-千宿网络 指数 🌟🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/value-bandwagon.pdf",
+          "sha256": "1203723c65cf81fcf41b7219c24a0fc1cc544c9cd655003500973a33bcca2f77",
+          "original_filename": "VPS-推荐报告-搬瓦工 MINIBOX与MegaBOX 🌟🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/home-aaitr.pdf",
+          "sha256": "eee89a6ef4caacd0e3e513bd6690690896ed57a51521b93001fdb68aa6f3eb91",
+          "original_filename": "VPS-推荐报告-AaITR 美日家宽与静态线路复测 🌟🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/home-nodemach.pdf",
+          "sha256": "75d1808c94b04823a35f0d2e6c21b979c7cef2c6490b92b624ee875e75279e6a",
+          "original_filename": "VPS-推荐报告-NodeMach(VIRCS) 🌟🌟🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/home-novixlink.pdf",
+          "sha256": "e1d8e61034a17398bde912ddacdb7aa7a8ce8d255e72c35afcfa67844cde0507",
+          "original_filename": "VPS-推荐报告-NovixLink 美国COX家宽 🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/home-qqpw.pdf",
+          "sha256": "95b3cd54bc1560dd1a552cb294bef4898f498f765decac03317f007b1be9805b",
+          "original_filename": "VPS-推荐报告-QQPW 夏威夷Hawaiian家宽 🌟🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/home-radonet.pdf",
+          "sha256": "3bfe5bae074d862959c72c5e86c13eaf155c7be5e5f929981e00e02f5e216bd2",
+          "original_filename": "VPS-推荐报告-RadoNet 日本SoftBank静态NAT 🌟🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/home-residentialvps.pdf",
+          "sha256": "846fe09c5e5ffadfdb9181296ef2d0b0ce0e98d54a733711a5d1a3675ad6d26d",
+          "original_filename": "VPS-推荐报告-ResidentialVPS 美国AT&T家宽 🌟🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/home-tokyonline.pdf",
+          "sha256": "1b47646714faf98e4dd9bed4bf3ea5679a600957be4fca066adce56324ba2740",
+          "original_filename": "VPS-推荐报告-Tokyonline 日本KDDI家宽 🌟🌟.pdf"
+        },
+        {
+          "path": "sources/vps-recommendations/home-zorocloud.pdf",
+          "sha256": "e6db736802c4cb0d6b5a92440dc52205d5993371374cbf58f6c0dd29c7bf15f4",
+          "original_filename": "VPS-推荐报告-ZoroCloud 美国AT&T静态家宽 🌟🌟🌟.pdf"
+        }
+      ]
+    }
   ]
 }

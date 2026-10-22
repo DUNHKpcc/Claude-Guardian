@@ -98,6 +98,10 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 **验收/恢复**：正常与故障条件下有实际获准的新连接尝试和观测才能评价阻断；单次连接失败不够。恢复原配置/精确规则后复测 Codex、代理及用户必要应用。不得未经具体批准将 Codex 改为 DIRECT；获准的 Codex／救援独立直连须单列为例外并验收，不能称全软件零旁路。不能全机禁 UDP/IPv6 来隐藏缺口。
 
+### L2a 固定出口 IP 的来源（本机，PC0 指引）
+
+用户已选本机、要固定一个出口 IP、但还没有稳定出口时，按 [egress-ip-options.md](egress-ip-options.md) 介绍纯净机场、自建梯（可搭配家宽出口）和家宽拼车三种来源及所有者推荐（Max 优先自建，Pro 推荐机场），并附社区分歧。机场和家宽拼车不给教程，让用户自己搜索；自建梯只给简版提示词（3x-ui、CN2 GIA 等优化线路 VPS、可选家宽出口、iOS 小火箭、Android FlClash、桌面 Clash Verge 或 FlClash），VPS 选择见[VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md)。不代买、不代配置；选 VM 或 VPS 路线时不触发。
+
 ### L3 安装、使用与更新（本机，PC1/PC2）
 
 1. 完成共用交接单后核实所选客户端的当前官方 OS/架构/安装依赖；不从第三方镜像或旧教程粘贴一键安装命令

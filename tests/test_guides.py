@@ -57,6 +57,23 @@ class GuidanceContracts(unittest.TestCase):
                      "S03-claude-experience.pdf"):
             self.assertTrue((ROOT / "skills" / "claude-guardian" / "sources" / link).exists(), link)
 
+    def test_local_route_egress_ip_options_and_vps_reports_are_wired(self):
+        egress = (REFS / "egress-ip-options.md").read_text(encoding="utf-8")
+        for term in ("纯净机场 IP", "自建梯", "家宽拼车", "Max", "Pro", "所有者推荐", "社区观点并不一致", "不代买",
+                     "请用户自己上网搜索", "3x-ui", "CN2 GIA", "小火箭", "FlClash", "Clash Verge"):
+            self.assertIn(term, egress)
+        routes = (REFS / "routes-and-platforms.md").read_text(encoding="utf-8")
+        self.assertIn("L2a 固定出口 IP 的来源", routes)
+        self.assertIn("选 VM 或 VPS 路线时不触发", routes)
+        skill_root = ROOT / "skills" / "claude-guardian"
+        index = (skill_root / "sources" / "vps-recommendations" / "INDEX.md").read_text(encoding="utf-8")
+        pdfs = sorted((skill_root / "sources" / "vps-recommendations").glob("*.pdf"))
+        self.assertEqual(len(pdfs), 17)
+        for pdf in pdfs:
+            self.assertIn(pdf.name, index)
+        for heading in ("## 业务", "## 性价比", "## 高端家宽"):
+            self.assertIn(heading, index)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):
