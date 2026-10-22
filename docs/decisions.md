@@ -200,3 +200,13 @@ C 档清单（所有者确认）：可能锁死自己的改动（默认出站切
 
 不变：记录只是追溯，不执行任何动作；访谈回答不会产生记录；评估结果的 G3 仍恒为 blocked，只多一个 authorization 摘要字段，旧字段不变；authorization_check 是辅助自查，不是执行授权。未做：命令行入口暂不提供写入这些记录的参数，由宿主通过函数调用。
 
+## ADR-027：开放 Mac 上 Clash Verge 的配置写入适配器（2026-10-22 已确认）
+
+所有者要求补上“没有生产环境配置写入适配器、Mac 修复链不完整”。`repair_execution._native_session` 原先始终抛 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE`，现在转到固定的 `native_clash_verge_mac.session`，只放行 macOS 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 扩展，路径必须是固定位置（应用 `Info.plist`、当前用户 Application Support 下的 `profiles.yaml` 和 `profiles/`），其余范围、其他平台和 `merge-policy` 照旧返回不可用，且不碰任何文件。
+
+写入者排除：macOS 没有强制文件锁，所有者确认采用“要求应用及其核心已退出，提交前后复查”。适配器用固定命令 `/bin/ps -axo comm=`（不经 shell，最小环境，5 秒超时）列进程，应用包路径下的进程或 `clash-verge`、`verge-mihomo`、`verge-mihomo-alpha`、`clash-verge-service` 任一在运行就返回 `CLASH_VERGE_RUNNING`；进程列表取不到则 `PROCESS_LIST_UNAVAILABLE`，一律失败关闭。同时复查基础 profile、`profiles.yaml` 和 `Info.plist` 的快照与目录身份（`SOURCE_SNAPSHOT_CHANGED`），应用元数据必须属于 root 或当前用户且无组/其他可写（`APP_METADATA_NOT_TRUSTED`）。这只能发现并失败，不能阻止两次复查之间的写入，文档里写明。
+
+Mac 修复链补全为：预检计划（A）→ 批准计划（B）→ 退出应用（B）→ 写入读回 → 重启应用（B）→ 验证出口与规则命中，失败回滚。应用的退出与重启由 Agent 通过宿主执行，不在适配器里。写入成功仍只报告 `written_but_not_verified`，应用重载和实际路由是单独步骤。
+
+未做：FlClash、Windows、`merge-policy`、代码签名校验（Clash Verge 的签名状态未核实，避免误拦）、真机验收。进程名是按 2.5.8 常见安装整理的，需要真机核对。测试：`tests/test_native_clash_verge_mac.py` 用合成进程列表和临时文件，覆盖拒绝路径、写入者启动于提交各阶段、真实端到端写入读回和恢复批次。
+

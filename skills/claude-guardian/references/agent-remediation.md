@@ -394,7 +394,7 @@ private_output = result.private_material()["output_bytes"]
 
 固定`cleanup_code`为`STAGING_RETAINED / STAGING_CLEANUP_FAILED / DESCRIPTOR_CLOSE_FAILED`时，主错误之外还存在保留材料或清理失败；按精确范围调查，不宣称没有残留或自动删除可能含秘密的暂存文件。
 
-这使限定恢复路径可由可信宿主调用，并保留Agent不可用时的独立入口；不是内置生产配置写入适配器，`NATIVE_REPAIR_ADAPTER_UNAVAILABLE`不改变。独立读取/恢复也不能绕过目标权限、PC0或操作系统拒绝。Linux合成临时文件/终端测试不代表Mac/Windows设备、实际断网、应用重载或规则命中通过。
+这使限定恢复路径可由可信宿主调用，并保留Agent不可用时的独立入口；这些恢复入口本身不是写入适配器；写入适配器仅放行 macOS Clash Verge Rev 2.5.8 的 `rules-prepend`（见下文“Mac 修复链”），其余范围 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE` 不变。独立读取/恢复也不能绕过目标权限、PC0或操作系统拒绝。Linux合成临时文件/终端测试不代表Mac/Windows设备、实际断网、应用重载或规则命中通过。
 
 ## 下一项真正可执行修复：窄范围系统代理端口适配（尚未实现）
 
@@ -444,3 +444,18 @@ restore --receipt-file <receipt> --expected-receipt-digest <document_digest>
 默认保护 CLI、配置、历史和扩展；独立选择且核实归属的 Claude 专属 C5 数据可另行纳入。源码、Codex、其他应用、共享对象和恢复通道继续保护。成功 quarantine 移除所有已选择并验证的活动根，隔离副本、日志及独立备份仍保留；这不是永久安全擦除，也不证明发现所有 Claude 对象。报告确切所选/排除范围和部分完成情况，不声称卸载、清除远程限制或免封。
 
 失败可能发生在真实移动之后，按 recovery_id、moved_count 和 stage 报告，不能因错误码断言未修改。保留计划与隔离批次；重新核实宿主、获准 reconcile 并保存新回执后，另行展示并批准 restore，不覆盖后续改动。永久 purge 未实现，未来需要独立实现和逐动作批准。
+
+## Mac 修复链：Clash Verge Rev 2.5.8 的 rules 扩展
+
+范围固定：macOS、Clash Verge Rev 2.5.8、`rules-prepend` 扩展。`merge-policy`、其他版本和其他系统仍返回 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE`。路径固定在 `/Applications/Clash Verge.app/Contents/Info.plist` 和当前用户的 `~/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/` 下，其他位置一律不放行。
+
+顺序（授权档位见[分级授权](authorization-tiers.md)）：
+
+1. **预检与计划（A 档）：** `repair_cli.py plan` 读取请求、目标和元数据，给出差异、备份位置和恢复办法。
+2. **你批准计划（B 档，批准一次）：** 计划里写明会退出和重启 Clash Verge。
+3. **退出 Clash Verge（B 档）：** 先退出应用，再确认主程序和核心 `verge-mihomo` 都不在进程列表里。适配器自己也会检查，应用还在运行就返回 `CLASH_VERGE_RUNNING`，不写入。
+4. **执行写入：** `repair_cli.py execute` 在适配器会话内备份、原子替换、读回；会话在提交前、授权时、替换前和读回后各复查一次进程和元数据文件（`profiles.yaml`、应用 `Info.plist`、基础 profile）。任何变化返回错误并带恢复批次编号，目标文件要么没动要么可按回执回滚。
+5. **重启 Clash Verge（B 档）：** 重新打开应用，让它载入新规则。写入成功只表示文件读回一致，不表示应用已载入。
+6. **验证出口与规则命中：** 用现有探测验证出口 IP、DNS 和 WebRTC；失败就用回执回滚，再重启应用。
+
+限制：macOS 没有强制文件锁，适配器只能发现并失败，不能阻止别的进程在两次复查之间写入。进程名（`clash-verge`、`verge-mihomo`、`verge-mihomo-alpha`、`clash-verge-service`）和应用路径按 2.5.8 的常见安装整理，需要在真实 Mac 上核对。适配器只有合成与 CI 测试，未真机验收。

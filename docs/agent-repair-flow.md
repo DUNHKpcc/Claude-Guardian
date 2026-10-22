@@ -220,7 +220,10 @@ The future admitted execution command uses those same exact arguments with
 `--plan-digest FULL_RETAINED_PLAN_DIGEST`. Use `retained_plan_digest`, not the
 inner transaction's separate `plan_digest`. The digest is an integrity binding,
 not permission. After current-entry and retained-plan validation, production
-execution still stops at `NATIVE_REPAIR_ADAPTER_UNAVAILABLE`; invalid inputs or
+execution is admitted only for the fixed macOS Clash Verge Rev 2.5.8
+`rules-prepend` scope (`native_clash_verge_mac.py`: application and core not
+running, rechecked before commit and after readback; detect-and-fail, not
+prevention). Every other scope still stops at `NATIVE_REPAIR_ADAPTER_UNAVAILABLE`; invalid inputs or
 entry/plan mismatches can fail earlier. No terminal phrase or request flag removes
 that blocker. Rebuilding a plan after expiry or a changed target/entry requires
 review and approval of the new scope, not reuse of the old decision.

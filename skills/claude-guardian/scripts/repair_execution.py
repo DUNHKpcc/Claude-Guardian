@@ -3,9 +3,10 @@
 Conversational approval belongs to the real execution host, which must match the
 exact command and plan digest against a fresh user decision. This module cannot
 authenticate chat and deliberately accepts no authorization JSON or token.
-Production admission is closed until product ownership/version/writer-exclusion
-checks are implemented and validated. Tests may substitute a synthetic adapter;
-no runtime plugin or callback import option exists.
+Production admission is limited to the fixed macOS Clash Verge Rev 2.5.8
+rules-extension scope (native_clash_verge_mac); all other scopes stay closed.
+Tests may substitute a synthetic adapter; no runtime plugin or callback import
+option exists.
 """
 from contextlib import contextmanager
 import os
@@ -22,11 +23,13 @@ SCHEMA = 'guardian-retained-repair/0.3'
 def _native_session(document):
     """Admission must hold writer exclusion until context exit, including readback.
 
-    A future fixed, reviewed product adapter must yield a recheck callable here
-    and release its resources in finally. No caller-supplied adapter is accepted.
+    Only the fixed, reviewed macOS Clash Verge Rev 2.5.8 rules-extension scope is
+    admitted (native_clash_verge_mac); every other scope stays unavailable. The
+    adapter yields a recheck callable. No caller-supplied adapter is accepted.
     """
-    raise tx.TransactionError('NATIVE_REPAIR_ADAPTER_UNAVAILABLE')
-    yield  # Keeps the resource-lifetime contract explicit; never reached.
+    import native_clash_verge_mac
+    with native_clash_verge_mac.session(document) as recheck:
+        yield recheck
 
 
 def retain(prepared, *, plan_path, backup_directory, cancelled=None):

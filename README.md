@@ -82,7 +82,7 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它不是一键修复程序，
 
 ## 它不是什么
 
-- **不是一键修复。** 内置的生产配置写入适配器尚未开放，修改需要你批准，由你或 Agent 在你批准的范围内执行。
+- **不是一键修复。** 内置的配置写入适配器目前只覆盖 Mac 上 Clash Verge Rev 2.5.8 的 rules 扩展（需先退出应用，未真机验收）；其他修改需要你批准，由你或 Agent 在你批准的范围内执行。
 - **不替你付款、注册、登录、做 KYC 或 OAuth 授权。** 这些永远由你本人完成。
 - **不收集凭据。** 不需要你提交 IP、订阅链接、密码、UUID 或完整配置。
 - **不接触 Claude / Anthropic。** 接触前阶段（PC0）不启动客户端、不登录、不访问其服务。
@@ -220,7 +220,7 @@ flowchart TD
 
 默认 CLI 不自动联网、付款、清理或修改配置。网络探测必须另行确认端点与范围；受限 POSIX 事务和恢复接口有独立前提，不能把测试文件中的成功当成用户设备上的成功。
 
-内置生产配置写入适配器尚未开放，`repair_cli.py execute` 仍受原生适配门禁阻塞。Agent 可在独立的具体授权下，通过应用受支持的编辑与保存流程处理限定改动。现有辅助接口可为 Clash Verge Rev 2.5.8 的专属空 rules 扩展准备单条规则候选，并比较宿主实际供给的读回内容；它不操作应用，也不证明保存、载入、生效或恢复已完成。不能用临时脚本、保存的布尔值或回调绕过权限或原生接口门禁。详见 [Agent 修复流程](skills/claude-guardian/references/agent-remediation.md)和[单条 rules 扩展任务](skills/claude-guardian/references/agent-rules-task.md)。
+内置配置写入适配器只开放 Mac 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 扩展（`native_clash_verge_mac.py`）：要求应用及其核心已退出，写入前后复查进程与元数据文件，检测到变化即失败并保留恢复批次；macOS 无强制文件锁，这只能发现不能阻止。其他系统、产品、版本和 `merge-policy` 的 `repair_cli.py execute` 仍受原生适配门禁阻塞。此适配器只有合成与 CI 测试，未真机验收。Agent 也可在独立的具体授权下，通过应用受支持的编辑与保存流程处理限定改动。现有辅助接口可为 Clash Verge Rev 2.5.8 的专属空 rules 扩展准备单条规则候选，并比较宿主实际供给的读回内容；它不操作应用，也不证明保存、载入、生效或恢复已完成。不能用临时脚本、保存的布尔值或回调绕过权限或原生接口门禁。详见 [Agent 修复流程](skills/claude-guardian/references/agent-remediation.md)和[单条 rules 扩展任务](skills/claude-guardian/references/agent-rules-task.md)。
 
 ### 开始前要知道
 
@@ -290,7 +290,7 @@ python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop
 
 - `interview_cli.py`、`guardian.py` 默认把结果写到 stdout，显式 `--output` 才另存新报告；`status_dashboard.py` 则要求 `--output` 指定新 HTML。
 - `diagnostic_session.py` 把 JSON 写到 stdout；显式 `--dashboard-output` 可保存新 HTML，取消或拒绝时不保存，阻塞状态也可能生成报告，不能把保存成功视为检查通过。
-- `repair_cli.py plan` 可通过 `--plan-file` 配合 `--backup-directory` 保留私有计划；`execute` 读取保留计划和摘要，仍受 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE` 阻塞。计划保存不代表目标配置已写入。
+- `repair_cli.py plan` 可通过 `--plan-file` 配合 `--backup-directory` 保留私有计划；`execute` 读取保留计划和摘要；仅 Mac 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 范围放行，其余仍受 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE` 阻塞。计划保存不代表目标配置已写入。
 - `recovery_cli.py inspect / preview / reconcile` 只读核对指定回执与适用目标；`rollback / restore-prepared` 在精确范围、排他访问和现场确认成立后会恢复目标文件字节/模式，并可能按事务契约保留恢复记录，不使用 `--output` 作为写入开关。详见[离线恢复](docs/offline-recovery.md)。
 - `cleanup_cli.py` 的宿主操作另有计划、回执与隔离/恢复契约（如 `--plan-output`、`--receipt-output`），默认缺少宿主时不能执行。`serve_webrtc.py` 会临时监听回环端口，不因没有 `--output` 就变成无副作用的离线解析器。
 

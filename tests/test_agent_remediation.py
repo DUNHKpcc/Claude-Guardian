@@ -95,7 +95,7 @@ class SelectionTests(unittest.TestCase):
                            'UNSUPPORTED_EXTENSION_TYPE', 'UNSUPPORTED_ACTIVE_PROFILE_TYPE'}
         for filename in ['transactions.py', 'windows_transactions.py',
                          'recovery_cli.py', 'repair_execution.py', 'repair_cli.py',
-                         'config_edit_plan.py', 'rules_extension_plan.py', 'clash_verge_258.py']:
+                         'config_edit_plan.py', 'rules_extension_plan.py', 'clash_verge_258.py', 'native_clash_verge_mac.py']:
             codes = set()
             tree = ast.parse((SCRIPTS / filename).read_text(encoding='utf-8'))
             for node in ast.walk(tree):
