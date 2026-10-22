@@ -216,3 +216,11 @@ Mac 修复链补全为：预检计划（A）→ 批准计划（B）→ 退出应
 
 不变：判定只支持提供的观察，不代表服务资格、IP 纯净或免封；旧的目标范围策略契约和 `traffic_policy` 输出没有改；不新增后台监视。未做：Windows 写入引擎；真机验收；验证器没有接入访谈评估的 `required_references`。
 
+## ADR-029：macOS 上 C5 清理的内置宿主（2026-10-22 已确认）
+
+所有者要求补上 C5 清理。核心（计划、隔离、对账、恢复）早已实现，缺的是 `cleanup_cli` 要求的宿主。新增 `native_cleanup_mac.py`，只支持 macOS，其他平台返回 `UNSUPPORTED_PLATFORM`；Windows 的清理按所有者前面的决定走 Agent 提示词。同意方式与备份方式均经所有者确认：同意必须由用户在真实终端（stdin 和 stdout 都是 TTY）输入 `CONFIRM <操作> <审阅摘要前 8 位>`，没有标志、文件、回调或非交互模式，同一进程内同一操作和摘要只需输入一次；备份由模块自己复制到 `~/.claude-guardian/backups/<backup_ref>`（0700，文件 0600）并写每个文件的 sha256 清单，该目录必须在受保护路径里。
+
+范围来自所有者的 S06 清理教程：`~/.claude`、桌面端的 Application Support（Claude、Claude-3p、claude-code-desktop）、HTTPStorages、Preferences（含 ByHost）、Caches 中 `com.anthropic.claudefordesktop*`、Logs/Claude。不在清单里的路径一律 `unknown_ownership`；`~/.claude.json` 和含 `.credentials.json` 的目录返回 `credential_scope`，独立 CLI 程序、`/Applications/Claude.app`、钥匙串、浏览器站点数据、永久删除不在范围内。`verify` 同时处理隔离前后的位置：根不在原处时去隔离批次里找，并和备份清单比对（文件大小、修改时间、权限、链接目标；内容哈希在每个宿主实例里校验一次备份）。`exclusive` 在进入和退出时检测 Claude 进程，进程按可执行文件名匹配（桌面端应用包路径、`claude`、`Claude Helper*`），Node 启动的 Claude Code 会话看不到，所以确认页要求用户先退出所有会话；macOS 没有强制锁，只能发现并失败。
+
+`cleanup_cli.py` 本身不变：普通运行仍无宿主；包装命令收下 `--host-scope` 和 `--entry-file`（私有 0600 的路线声明，不授予任何权限）。拒绝原因（`host_refusal`）打印到 stderr，因为分发器会把所有非通过结果折叠成 `HOST_SCOPE_UNVERIFIED`。未做：Windows、凭据和浏览器数据清理、卸载、永久清除、真机验收（备份会含登录状态等敏感文件，文档提示用户自己保管和删除）。测试：`tests/test_native_cleanup_mac.py` 用一次性主目录、合成进程列表和脚本化终端，覆盖清单、拒绝路径、备份校验、同意短语、排除区间，以及真实核心的备份、计划、隔离、对账、恢复往返。
+

@@ -437,7 +437,7 @@ reconcile --plan-file <retained-plan> --expected-plan-digest <document_digest> -
 restore --receipt-file <receipt> --expected-receipt-digest <document_digest>
 ```
 
-普通脚本运行没有宿主，返回 `HOST_ADAPTER_UNAVAILABLE`；不存在注入宿主模块或“已授权/已核实”的命令行开关。包装命令使用返回的 `document_digest`，不是核心 action digest；它只绑定材料，不授予权限。完整格式与回执恢复见随包[清理CLI用法](cleanup-cli-usage.md)，核心范围见[事故与清理指南](incidents-and-integrations.md#cleanup-migration-and-recovery-m13--env-09)。
+普通 `cleanup_cli.py` 运行没有宿主，返回 `HOST_ADAPTER_UNAVAILABLE`；不存在注入宿主模块或“已授权/已核实”的命令行开关。macOS 上用内置宿主 `native_cleanup_mac.py`（固定清单、Claude 已退出、内容校验的备份、用户在真实终端输入确认短语），详见随包清理CLI用法；其他平台没有宿主。包装命令使用返回的 `document_digest`，不是核心 action digest；它只绑定材料，不授予权限。完整格式与回执恢复见随包[清理CLI用法](cleanup-cli-usage.md)，核心范围见[事故与清理指南](incidents-and-integrations.md#cleanup-migration-and-recovery-m13--env-09)。
 
 宿主必须新鲜核实设备/用户/命名空间、独占 Claude 数据归属、应用与数据库停用、受保护/共享路径、独立内容备份，并在写入和校验期间保持真实写入者排除。`verify` 是获准的宿主核实；`approve` 逐次复核同一次仍有效的精确操作同意；`exclusive` 提供真实排除；`cancelled` 反映撤销或取消。不得用模型自行返回 True 的回调、保存的 JSON 或任意脚本绕过缺失前提。scope读/hash、保存计划、quarantine、reconcile、保存回执和restore各自按当前范围授权；隔离同意不包含恢复同意。
 

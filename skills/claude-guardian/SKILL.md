@@ -199,6 +199,6 @@ Mac严格上下文仅因 `RUNTIME_PATH_INVALID` 阻塞时，会话可在原剩�
 
 用户明确要求完整清理时，记录 `Q-D02=full_claude_data_reset`，无需先证明存在封禁史。选定设备的已确认历史经历只触发审计／清理计划提议，不自动选 C5 或执行。当前事故先处理，保留必要证据。
 
-C5 可以逐项选择经核实属于 Claude 的本地历史、配置、skills/hooks/plugins/extensions 和 Desktop 数据。源码、未提交工作、Codex、其他应用、共享或归属不明对象仍受保护；保护清单与“全清”冲突时先解决冲突。凭据／浏览器站点数据／应用卸载分别出范围和确认。默认采用可恢复的私有隔离，不永久清除，不轮换设备身份，不承诺解封或解除关联。
+macOS 上 C5 执行用 `scripts/native_cleanup_mac.py`：固定清单、Claude 已退出、先备份并校验内容，同意须由用户在真实终端输入 `CONFIRM <操作> <摘要前8位>`，Agent 不能代输；仍属 C 档，只有合成与 CI 测试。C5 可以逐项选择经核实属于 Claude 的本地历史、配置、skills/hooks/plugins/extensions 和 Desktop 数据。源码、未提交工作、Codex、其他应用、共享或归属不明对象仍受保护；保护清单与“全清”冲突时先解决冲突。凭据／浏览器站点数据／应用卸载分别出范围和确认。默认采用可恢复的私有隔离，不永久清除，不轮换设备身份，不承诺解封或解除关联。
 
 实际 Agent 调用顺序与限制见 [清理、迁移与恢复](references/incidents-and-integrations.md#cleanup-migration-and-recovery-m13--env-09)。只显示 assessment 不代表清理已实现或完成；调用成功也只证明已验证范围内的文件结果。

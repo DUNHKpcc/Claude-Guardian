@@ -24,7 +24,7 @@ Use the returned **document_digest** for the wrapper command, not the underlying
 
 ## Trusted Agent bridge
 
-The integration point for new plan/quarantine work is `cleanup_cli.main(argument_list, host=reviewed_live_host, entry_request=current_entry)`. Import from a trusted installed scripts directory or use isolated file-path loading; exact sibling dependencies are supported without modifying sys.path. There is no plugin-path, `--entry-file` or “yes/verified” cleanup flag: the reviewed host supplies the current dict explicitly.
+The integration point for new plan/quarantine work is `cleanup_cli.main(argument_list, host=reviewed_live_host, entry_request=current_entry)`. Import from a trusted installed scripts directory or use isolated file-path loading; exact sibling dependencies are supported without modifying sys.path. There is no plugin-path, `--entry-file` or “yes/verified” cleanup flag on `cleanup_cli.py` itself (the macOS wrapper below accepts a private entry declaration that grants nothing): the reviewed host supplies the current dict explicitly.
 
 Choose the current local/VM/VPS route before inspecting the selected target. Existing assets, a default recommendation or an old interview are not a current selection, and there is no automatic old-interview-to-entry adapter. The following complete sanitized declaration is a fictional local example with unknown network resources; it permits only entry to the original offline precheck gate:
 
@@ -95,3 +95,26 @@ Successful quarantine removes **all selected verified roots from their active lo
 A separate test parent creates and captures the exact private fixture identities, backup bytes and a synthetic explicit entry for that fixture target. One child interpreter plans and quarantines with that declaration; after it exits, a different interpreter independently rechecks those live bindings, reloads the retained plan using the parent-held digest, reconciles and restores without a new entry under new stage-specific synthetic consent. The fixture's cooperating writer lock and known absence of an application apply only to this disposable test. No saved approval is reused. Original/protected/backup content and retained records are checked afterward.
 
 This is an observed two-process synthetic recovery exercise, not a native ownership adapter or proof about real Claude processes, arbitrary external writers, macOS application behavior or Windows cleanup. Native acceptance remains `not_run`.
+
+## macOS built-in host (`native_cleanup_mac.py`)
+
+`scripts/native_cleanup_mac.py` is the reviewed host for macOS only; other platforms get `UNSUPPORTED_PLATFORM`. It wraps `cleanup_cli.main` and supplies the four host methods itself:
+
+- `verify`: the host context matches (`context` prints the opaque `host_context_ref` to put in the scope); every root is on a fixed list of Claude-owned locations (`allowed` prints it: `~/.claude`, `~/Library/Application Support/Claude`, `Claude-3p`, `claude-code-desktop`, the `com.anthropic.claudefordesktop` HTTPStorages/Preferences/Caches entries, `~/Library/Logs/Claude`); no Claude process is running; a content-verified backup made by this module matches each root at its active or quarantined location. Anything else is refused. `~/.claude.json` and any root containing `.credentials.json` are refused as `credential_scope`; the CLI binary, `~/.local/share/claude`, `/Applications/Claude.app`, the keychain and browser site data are out of scope.
+- `approve`: consent is typed in a real terminal (stdin and stdout must be TTYs). The prompt shows the operation, target, roots, protected paths, quarantine, backup and consequence, and asks for `CONFIRM <operation> <first 8 hex of the review digest>`. Any other input cancels. There is no flag, file or non-interactive mode; one consent covers one operation and digest within a process.
+- `exclusive`: Claude must not be running on entry or exit. macOS has no mandatory lock, so this detects and fails; processes are matched by executable name, so a Node-launched Claude Code session is not seen and the user is told to quit every session first.
+- `cancelled`.
+
+Commands (run by the user, or by an Agent in a terminal the user is watching):
+
+```text
+python native_cleanup_mac.py context
+python native_cleanup_mac.py allowed
+python native_cleanup_mac.py backup --scope /private/scope.json
+python native_cleanup_mac.py plan --scope /private/scope.json --plan-output /private/plan.json [--entry-file /private/entry.json]
+python native_cleanup_mac.py quarantine --plan-file ... --expected-plan-digest ... --host-scope /private/scope.json [--entry-file ...]
+python native_cleanup_mac.py reconcile --plan-file ... --expected-plan-digest ... --receipt-output ... --host-scope /private/scope.json
+python native_cleanup_mac.py restore --receipt-file ... --expected-receipt-digest ... --host-scope /private/scope.json
+```
+
+`backup` copies the roots to `~/.claude-guardian/backups/<backup_ref>/` (0700, files 0600, hashes in `manifest.json`); that directory must appear in `protected_paths`. The backup holds the same sensitive files as the roots, including login state: keep it private and delete it yourself when no longer needed. `--entry-file` is a private 0600 declaration of the selected route; it grants nothing. On a refusal the reason (`host_refusal`) is printed to stderr. Evidence is synthetic and CI only; native acceptance is `not_run`.
