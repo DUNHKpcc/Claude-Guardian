@@ -264,3 +264,15 @@ ADR-033 之后实测：文件层可达 100%，但章节层很低（232 个 H2/H3
 
 仍不是自动附的文档（刻意）：`intake.md`、`contact-and-safety.md`、`evidence-policy.md`、`source-library.md`、`scripts-index.md`、`agent-rules-task.md`、`S01` 术语表，以及 S03/S08 的文字版副本。它们是通用参考或来源副本，不对应某个访谈事实；Agent 仍从 `SKILL.md` 一跳可达。限制：索引保证小节“能被找到”，不保证 Agent 在合适的时候去找；主题到小节的判断仍靠资料表和必附资料。
 
+## ADR-035：Mac 真机验收结果（F2 修复后，2026-10-22）
+
+验收记录在所有者的 `Omarchy/Claude-Guardian-验收-20261022/验收结果记录.md`，设备 MacBookPro18,1（M1 Pro），macOS 15.7.4，Clash Verge Rev 2.5.8（默认路径，未开 TUN）。验收期间由 Agent 宿主（WorkBuddy）做只读和自动化部分，所有需要真人输入确认短语的步骤留给所有者在 Terminal.app 做。
+
+**真机通过：**4.2b：版本 2.5.8、默认路径、uid 归属；进程名与代码一致（`clash-verge`、`verge-mihomo` 在 `/Library/Application Support/clash-verge-service/cores/`、`clash-verge-service`，`verge-mihomo-alpha` 本机没有）；`plan` 返回 `planned_but_blocked`，差异是在偏移 64 处插入一条规则，保留计划摘要在两次独立运行中一致，与 `MATCH,PROXY` 的优先级重叠如实记录，归属报告如实标出 script、merge 链不受支持；应用运行时 `execute` 返回 `CLASH_VERGE_RUNNING`，目标文件哈希不变，没有生成备份。4.4：`egress_verifier.py` 五条判定路径（established、两种 violated、incomplete、INVALID_EVIDENCE）符合预期，报告不含出口 IP。4.5：`context`、`allowed`；Agent 会话里 `RUNNING_UNDER_CLAUDE`；Claude 运行时 `ACTIVE_HOST`；没有输入短语或非终端一律 `AUTHORIZATION_REQUIRED`；scope 结构门禁（`QUARANTINE_OVERLAP`、`ENVIRONMENT_ENTRY_REQUIRED`、`UNSAFE_DOCUMENT`）正确拦截（期间修正的三处是验收脚本自己配错）。4.6：钥匙串服务名核对一致（Safe Storage 存在，Code-credentials 未找到）；Claude 运行时 `keychain` 返回 `ACTIVE_HOST`；非法时区含 `..` 返回 `INVALID_TIMEZONE`。F2 的修复（ADR-031）已覆盖修复链和 C5 链，两条链的文件元数据门禁都走同一函数。
+
+**没验（需要真人或 C 档批准）：**4.2b 的真实写入、读回、重启后规则命中、回执回滚、plan 与 execute 之间启动应用的演练；4.5 放行全流程（backup、plan、quarantine、reconcile、restore，以及 `shared_scope`、`credential_scope` 的拒绝页，这些都要先输入确认短语）；4.6 的真实钥匙串删除、`simple on/off`、真实时区变更；4.2 的 TUN、LuLu、fail-closed 演练；4.4 的 GUI 联网取证和重启、睡眠、换网复验。
+
+**需要注意的两点：**其一，真实 profile 的计划里带 18 个 blockers，包括 `PROFILE_SCRIPT_CHAIN_UNSUPPORTED`、`PROFILE_MERGE_CHAIN_UNSUPPORTED`、`GLOBAL_SCRIPT_CHAIN_UNSUPPORTED` 和 `LATER_MERGE_SCRIPT_EFFECTS_UNVERIFIED`：这个 profile 有 script 和 merge 链，写进扩展的规则可能被后面的链改写。`apply_supported` 仍为 false，写入只证明文件字节，`effective_routing` 是 `not_run`，所以真实写入之后必须重启并探测，不能把写成功说成生效。其二，计划里仍报 `NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED`，而此范围已经有写入适配器：这个名字指的是另一件事（原生配置模式适配），措辞容易误读，已记下，没有改动，改动会牵动一处严格集合比较。
+
+**环境记录，不是仓库缺陷：**Agent 宿主沙箱里 `ps`、`pgrep` 被拦，宿主创建的文件带 `com.apple.provenance`；CPython 导入期的 `os.supports_dir_fd` 探测在该沙箱内间歇失败，导致在该会话里直接跑仓库测试出现大量假失败，仓库测试应在 Terminal 或 CI 跑。
+

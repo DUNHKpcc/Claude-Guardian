@@ -2,6 +2,7 @@
 
 ## 路线补全、访谈兜底与资料引用（2026-10-21）
 
+- **Mac 真机验收（2026-10-22，ADR-035）：**F2 修复后在一台 Mac（MacBookPro18,1，macOS 15.7.4，Clash Verge Rev 2.5.8）实测：4.2b 的版本、归属、进程名、`plan` 计划（两次独立运行摘要一致）、应用运行时 `execute` 拒绝且目标文件哈希不变；4.4 判定器五条路径；4.5 的 Claude 运行时、由 Claude 启动、无终端短语、非终端管道全部正确拒绝；4.6 钥匙串服务名与 `ACTIVE_HOST`、非法时区。**未验：**真实写入与回滚、C5 放行全流程、真实钥匙串删除、`simple`、真实时区变更、TUN/LuLu、整机出口的 GUI 联网取证。详见 ADR-035
 - **章节级可发现性（2026-10-22，ADR-034）：**新增 `references/section-index.md`，由 `tools/gen_section_index.py` 生成，列出每份 reference 的每个二、三级小节和锚点；守门测试检查它与生成结果一致、每个小节都有链接、访谈能发出的每个 `#锚点` 定位符都能解析（顺手发现并修复 `#a0b` 锚点不存在）。访谈 `required_references` 新增 `routes-and-platforms.md`（按路线定位到对应操作卡）和 `network-and-remedies.md`（任务为 network 或 environment 时）。发行包 111 个成员
 - **资料可发现性复查（2026-10-22，ADR-033）：**起因是 A0b 短期封号时间线和 KYC 指引只躺在 `account-onboarding.md` 里，Agent 不一定翻得到。修复：`SKILL.md` 资料表新增“账号被封或被限、KYC 触发或身份核验”必附行（A0b、S03 第 5 页、A3、S04 §2.3、M12）；访谈 `required_references` 新增封号与身份核验、整机出口、macOS 与 Windows 清理的必附资料，且同一文件的多个页码会合并；新增 `references/scripts-index.md`（每个脚本和资产的用途与入口）；`SKILL.md` 补直接指向 S03/S08 文字版、manifest、设计规格、cleanup-cli-usage。新增 `tests/test_skill_discoverability.py`：任何 references、sources、assets、scripts 文件从 `SKILL.md` 出发翻不到、脚本索引与 `scripts/` 不一致、相对链接或锚点失效，测试都失败。发行包 110 个成员
 - **Issue #12（2026-10-22，ADR-032）：**补充资料来源新增 IDC Flare 和 VPSHub，按 S03 第 5 页写明家宽、家宽拼车、VPS 的查找渠道和所有者列的帖子；skill 可直接当帖子与论坛搜索工具；短期封号时间线（S03 第 5 页图片表）写进 `account-onboarding.md` A0b

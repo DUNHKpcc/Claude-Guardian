@@ -458,4 +458,4 @@ restore --receipt-file <receipt> --expected-receipt-digest <document_digest>
 5. **重启 Clash Verge（B 档）：** 重新打开应用，让它载入新规则。写入成功只表示文件读回一致，不表示应用已载入。
 6. **验证出口与规则命中：** 用现有探测验证出口 IP、DNS 和 WebRTC；失败就用回执回滚，再重启应用。
 
-限制：macOS 没有强制文件锁，适配器只能发现并失败，不能阻止别的进程在两次复查之间写入。进程名（`clash-verge`、`verge-mihomo`、`verge-mihomo-alpha`、`clash-verge-service`）和应用路径按 2.5.8 的常见安装整理，需要在真实 Mac 上核对。适配器只有合成与 CI 测试，未真机验收。
+限制：macOS 没有强制文件锁，适配器只能发现并失败，不能阻止别的进程在两次复查之间写入。进程名（`clash-verge`、`verge-mihomo`、`verge-mihomo-alpha`、`clash-verge-service`）和应用路径已在一台真实 Mac 上核对一致（`verge-mihomo` 位于 `/Library/Application Support/clash-verge-service/cores/`，按 basename 匹配；`verge-mihomo-alpha` 本机未出现）。适配器的拒绝路径已真机验证，真实写入与回滚尚未实测。
