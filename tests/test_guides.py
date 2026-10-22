@@ -78,6 +78,18 @@ class GuidanceContracts(unittest.TestCase):
         for heading in ("## 业务", "## 性价比", "## 高端家宽"):
             self.assertIn(heading, index)
 
+    def test_mobile_guidance_is_wired_to_registration_and_in_app_purchase(self):
+        mobile = (REFS / "mobile-guidance.md").read_text(encoding="utf-8")
+        for term in ("网络出口", "IPv6", "DNS", "WebRTC", "系统时区", "定位权限", "Billing Address",
+                     "拔掉 SIM 卡", "社区经验", "S03-claude-experience.pdf", "不承诺免封"):
+            self.assertIn(term, mobile)
+        self.assertIn("mobile-guidance.md", (REFS / "account-onboarding.md").read_text(encoding="utf-8"))
+        acc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
+        self.assertGreaterEqual(acc.count("mobile-guidance.md"), 2)
+        self.assertIn("mobile-guidance.md", (REFS / "intake.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("[mobile-guidance.md](references/mobile-guidance.md)", skill)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

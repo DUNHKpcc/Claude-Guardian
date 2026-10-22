@@ -124,7 +124,7 @@ The following are short prompts/field meanings, not a mandatory sequence. Preser
 | Q-OS09 | Actual need for a language/timezone change versus usability check |
 | Q-OS10 | Windows 10 maintenance/ESU/migration arrangement when relevant |
 | Q-OS11 | macOS system-wide versus app-specific setting goal |
-| Q-OS12 | Out-of-scope desktop/mobile-only: general guidance or voluntary VM/VPS comparison |
+| Q-OS12 | Out-of-scope desktop/mobile-only: general guidance (see mobile-guidance.md) or voluntary VM/VPS comparison |
 
 ### History and network
 
