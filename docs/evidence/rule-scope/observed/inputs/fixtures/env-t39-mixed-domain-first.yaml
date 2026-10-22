@@ -1,3 +1,0 @@
-rules:
-  - DOMAIN,api.workflow.invalid,approved-group
-  - IP-CIDR,160.79.104.0/21,approved-group

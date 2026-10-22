@@ -123,7 +123,7 @@ These are baseline subtests, not 218 complete design-case acceptances.
 
 ## Exact checklist
 
-[The 218-case ledger](acceptance-rebuild-ledger.json) preserves every original ID,
+The 218-case ledger (removed 2026-10-21, recoverable from git history; see ADR-010) preserves every original ID,
 scenario, full requirement and literal verification layer from the published
 tracker. Its original-row SHA-256 is
 `84975325686c368a191b8232a0564518f1ba32ad7055ce4742d32cc4c26c77b9`.
@@ -184,7 +184,7 @@ compilation and repeatable packaging. ENV-T123 and native acceptance remain open
 ## Fourth-batch original-case revalidation
 
 T09, T19, T20 and T21 now have freshly reviewed evidence at their original L+C
-layers. See the pinned evidence paths in acceptance-rebuild-ledger.json. This
+layers. The pinned evidence was removed with the ledger (ADR-010). This
 means deterministic normalized-input replay plus full active-guidance review,
 not arbitrary model integration, native deployment or production safety. The
 other 214 original cases remain pending; T24 has a reproduced resume review gap.

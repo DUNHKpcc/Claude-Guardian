@@ -1,5 +1,0 @@
-# synthetic owned rules extension; retain all bytes outside the selected insertion
-prepend: ['DOMAIN,api.workflow.invalid,approved-group'] # preserve comment
-append: ['DOMAIN,append.example.invalid,Other']
-delete: []
-unknown-field: {nested: [true, 12, keep-extension]}

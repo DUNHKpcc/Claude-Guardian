@@ -1,9 +1,0 @@
---- original-supplied-snapshot
-+++ unapplied-candidate
-@@ -1,5 +1,5 @@
- # synthetic owned rules extension; retain all bytes outside the selected insertion
--prepend: [] # preserve comment
-+prepend: ['DOMAIN,api.workflow.invalid,approved-group', 'DOMAIN,downloads.workflow.invalid,approved-group', 'DOMAIN,connector.workflow.invalid,approved-group'] # preserve comment
- append: ['DOMAIN,append.example.invalid,Other']
- delete: []
- unknown-field: {nested: [true, 12, keep-extension]}

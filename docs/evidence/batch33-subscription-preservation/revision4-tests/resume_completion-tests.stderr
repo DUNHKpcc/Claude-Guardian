@@ -1,9 +1,0 @@
-test_completed_purchase_save_resume_changed_environment (__main__.ResumeCompletionTests.test_completed_purchase_save_resume_changed_environment) ... ok
-test_partial_cleanup_resume_observes_then_restores_without_redeletion (__main__.ResumeCompletionTests.test_partial_cleanup_resume_observes_then_restores_without_redeletion) ... ok
-test_secret_and_unapproved_export_rejected (__main__.ResumeCompletionTests.test_secret_and_unapproved_export_rejected) ... ok
-test_unknown_or_target_change_cannot_clear_resume (__main__.ResumeCompletionTests.test_unknown_or_target_change_cannot_clear_resume) ... ok
-
-----------------------------------------------------------------------
-Ran 4 tests in 0.302s
-
-OK

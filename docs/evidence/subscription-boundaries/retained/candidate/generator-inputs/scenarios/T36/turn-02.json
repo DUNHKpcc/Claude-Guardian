@@ -1,8 +1,0 @@
-{
-  "case_id": "T36",
-  "content": "用于付款的手机只有 iPhone，账户能否登录和商店地区我还没确认。先讲我这一步能确定什么，设备就不用再问了。",
-  "role": "user",
-  "synthetic": true,
-  "synthetic_observed_at": "2026-10-18T10:02:00Z",
-  "turn_id": "T36-02"
-}

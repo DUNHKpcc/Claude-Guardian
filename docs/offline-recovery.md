@@ -240,5 +240,5 @@ checks, same-content receipt/backup/target replacement, edits at every prompt,
 precommit witness failure, and post-replacement result-journal failure. These
 failure injections keep real terminal confirmation intact. The last case verifies
 restored bytes despite the error, retains a selected witness, and only observes
-it on the next invocation. See `docs/evidence/rebuild-prepared-recovery-cli.md`
+it on the next invocation. See git history for `docs/evidence/rebuild-prepared-recovery-cli.md`
 for the frozen scope, receipts and source pins.

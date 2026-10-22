@@ -20,7 +20,7 @@ def main():
         "scripts/recovery_cli.py", "scripts/repair_cli.py", "scripts/repair_execution.py", "scripts/clash_verge_258.py", "scripts/stun_probe.py", "scripts/network_probes.py", "scripts/transactions.py", "scripts/cleanup_transactions.py", "scripts/cleanup_cli.py", "scripts/serve_webrtc.py", "assets/webrtc-probe.html",
         "references/cleanup-cli-usage.md", "references/agent-remediation.md", "references/agent-rules-task.md", "references/intake.md", "references/contact-and-safety.md",
         "references/routes-and-platforms.md", "references/network-and-remedies.md", "references/macos-dns-case-lessons.md",
-        "references/accounts-and-payments.md", "references/incidents-and-integrations.md",
+        "references/accounts-and-payments.md", "references/account-onboarding.md", "references/incidents-and-integrations.md",
         "references/evidence-policy.md", "references/source-library.md", "sources/manifest.json",
     ]
     manifest = json.loads((skill / 'sources/manifest.json').read_text(encoding='utf-8'))

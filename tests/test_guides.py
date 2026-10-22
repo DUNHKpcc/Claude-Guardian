@@ -32,6 +32,15 @@ class GuidanceContracts(unittest.TestCase):
         for term in ("ipconfig /flushdns", "dscacheutil -flushcache", "mDNSResponder", "Fake-IP 本身不算泄漏"):
             self.assertIn(term, rem)
 
+    def test_account_warmup_guidance_is_labelled_community_experience(self):
+        section = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        for term in ("社区经验", "未经本项目验证", "邮箱注册", "Proton", "至少使用 3 天", "至少使用 15 天",
+                     "重置卡", "教育邮箱", "不购买、租借或伪造", "不是官方门槛", "不能据此断言"):
+            self.assertIn(term, section)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("社区经验，未经验证", skill)
+        self.assertNotIn("保证不封", section)
+
     def test_independent_route_lifecycles_have_ordered_cards(self):
         # Each route includes intake, preparation, contact, ordinary use and recovery.
         for prefix, count in (("L", 3), ("V", 4), ("P", 5)):

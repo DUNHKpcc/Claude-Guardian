@@ -54,3 +54,21 @@ PD-03：用户已确认采用可替换的 ipify 与 Cloudflare STUN 作为首批
 PRODUCT-DEVICE-CLEANUP-20261018
 
 The owner requested asking whether the selected local device previously used a banned account and a real complete Claude application-data cleanup option, rather than assessment alone. Add selected-target typed Q-D01 and independent explicit Q-D02 C5 intent. C5 permits separately selected verified Claude-owned local history/configuration/extensions and Desktop data; unrelated source/Codex/shared or unknown objects remain protected. Recoverable quarantine is the default; irreversible purge, credential/browser/native uninstall operations remain separate. Original D-SPEC §9/M13 and D-ENV §10 safeguards, PC0, action consent, backups and recovery remain in force. This is a supplemental product decision, not a rewrite of original source text, acceptance layers, or a claim that any original native case passed. No unban/fingerprint-reset promise.
+
+
+## ADR-009：注册与养号节奏作为社区经验提供（2026-10-21 已确认）
+
+所有者要求写入账号注册与使用节奏：邮箱注册优先、少用 Apple/Google 授权；Gmail/Outlook 优先，Proton 用于防拦截；Free 至少 3 天后升 Pro，Pro 至少 15 天后升 Max；额度不顶满、早期不用重置卡、不乱薅赠送优惠；美国/英国教育邮箱被社区认为权重高、手机号 KYC 概率低；新号 KYC 的社区解释为环境差加邮箱新。
+
+这与此前“不编造养号天数、不把 C02/C19 升级成产品承诺”的口径冲突。采用折中：写入 references/account-onboarding.md（A0），**明确标注为论坛社区经验、未经验证**，不承诺免封或免 KYC，不把天数当官方门槛，不对具体 KYC 原因作断言。教育邮箱仅限本人合法获发，禁止购买、租借或伪造；注册、登录、付款仍由本人完成，PC0 门禁与事故分诊不变。不提供轮换账号、绕过额度或伪造身份的流程。
+
+代价：社区经验可能过时或被官方规则推翻，使用时须与当前官方页面核对；若发现与官方规则冲突，以官方为准并更新本节。
+
+## ADR-010：移出验收台账与证据体系（2026-10-21 已确认）
+
+所有者认为项目臃肿，验收体系对日常改动成本过高：台账与历史夹具把普通指导文档、测试和打包脚本的字节也锁住，改一行文档就要重新登记审阅。决定移出：`docs/acceptance-rebuild-ledger.json`、`docs/evidence/`、30 个 `tests/test_acceptance_*.py`、验收回放脚本、`package_manifest_transition.py` 及其三条打包转换测试、历史夹具，以及 `acceptance-handoff`、`test-coverage-map`、`package-acceptance`、`entry-revalidation-status` 等文档。
+
+保留：设计规格原文（含 218 条验收条件）、全部运行代码和功能测试、`docs/validation.md` 等验证记录。所有被删内容可从 git 历史恢复。
+
+后果：218 项验收的逐项追踪与哈希防篡改不再存在，不能再声称某案例“已按台账验收”；“区分指导已写、代码已实现、夹具结果、原生实测”的原则仍然适用，AGENTS.md 对此不变。回滚：revert 本提交即可恢复全部文件。
+

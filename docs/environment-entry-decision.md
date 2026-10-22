@@ -41,4 +41,4 @@ A withdrawn, unknown, declined, stale, conflicting or comparison-only route cann
 
 Default native adapters still support only their documented platforms and locations. A valid VM/VPS declaration does not create an adapter or prove host/guest identity. Configuration imported into a client is not evidence that the client is using it. A valid entry permits the relevant next review, never actual configuration, network contact, deletion or a safe-account guarantee.
 
-Implementation regression uses synthetic declarations and disposable files only. Original accepted responses and source hashes remain historical evidence; current acceptance is tracked separately in `entry-revalidation-status.md`.
+Implementation regression uses synthetic declarations and disposable files only. Original accepted responses and source hashes remain historical evidence; the acceptance tracking files were removed on 2026-10-21 (ADR-010).

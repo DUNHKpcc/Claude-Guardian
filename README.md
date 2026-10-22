@@ -231,7 +231,7 @@ python3 tools/package_skill.py --help
 
 CI 在 Linux、macOS、Windows 上执行单测、回归与确定性打包检查，并另有面板预览检查。原生 smoke 与受控夹具只证明各自覆盖的范围，不能替代真实桌面、Clash、浏览器、写入或故障恢复验收。
 
-**原始 218 项验收要求保留。** 历史评审与当前适用性分开记录；入口顺序等要求变化后，受影响结论需要重验。当前进展以[验收台账](docs/acceptance-rebuild-ledger.json)、[重验状态](docs/entry-revalidation-status.md)和[验证记录](docs/validation.md)为准，不用单测数量代表产品完成度。
+**验收台账与证据已于 2026-10-21 移出仓库**（见 [ADR-010](docs/decisions.md)）。原 218 项验收要求仍写在 `skills/claude-guardian/sources/design/` 的设计规格中，可在 git 历史里找回台账；当前进展以[验证记录](docs/validation.md)为准，不用单测数量代表产品完成度。
 
 - [设计覆盖](docs/requirements.md)：已实现与未实现项
 - [开发状态](docs/rebuild-status.md)：当前交付顺序与剩余工作

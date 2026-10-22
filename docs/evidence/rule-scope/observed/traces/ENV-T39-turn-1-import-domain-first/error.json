@@ -1,7 +1,0 @@
-{
-  "exception_module": "rule_source_import",
-  "exception_type": "SourceImportError",
-  "message": "UNSUPPORTED_RULE_RECORD",
-  "traceback": "Traceback (most recent call last):\n  File \"/tmp/guardian-rule-scope-responses/evidence_tools.py\", line 36, in capture\n    result=func(*args,**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst/skills/claude-guardian/scripts/rule_source_import.py\", line 265, in import_rule_bindings\n    text, entries = _fragment_records(source_bytes, guard)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst/skills/claude-guardian/scripts/rule_source_import.py\", line 203, in _fragment_records\n    _fail('UNSUPPORTED_RULE_RECORD')\n  File \"/workspace/scratch/887ef42f8bd2/Claude-Guardian-thirtyfirst/skills/claude-guardian/scripts/rule_source_import.py\", line 33, in _fail\n    raise SourceImportError(code) from None\nrule_source_import.SourceImportError: UNSUPPORTED_RULE_RECORD\n",
-  "finished_at": "2026-10-18T11:05:35.411854+00:00"
-}
