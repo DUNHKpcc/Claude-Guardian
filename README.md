@@ -2,16 +2,11 @@
 
 # Claude-Guardian
 
+<img width="1920" height="1080" alt="claude-guardian-cover-16x9" src="https://github.com/user-attachments/assets/f5ed41fb-44ac-4f68-8acc-e2d0de76e921" />
+
 **让 Agent 带着真实经验，陪你把 Claude 的使用环境准备好、查清楚、配稳。**
 
 订阅前准备 · 账号注册与使用节奏 · 固定出口 IP · 本机 / VM / VPS 三条路线 · 防火墙与线路优化 · 分级授权
-
-<p>
-  <img alt="Codex Skill" src="https://img.shields.io/badge/Codex-Skill-111111?style=flat-square" />
-  <img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-8A2BE2?style=flat-square" />
-  <img alt="License: GPL-3.0-only" src="https://img.shields.io/badge/license-GPL--3.0--only-blue?style=flat-square" />
-  <a href="https://github.com/DUNHKpcc/Claude-Guardian/actions/workflows/tests.yml"><img alt="CI" src="https://github.com/DUNHKpcc/Claude-Guardian/actions/workflows/tests.yml/badge.svg" /></a>
-</p>
 
 <p>
   <b>平台</b>
@@ -19,15 +14,6 @@
   <img alt="Windows" src="https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white" />
   <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white" />
   <img alt="Omarchy / Arch Linux" src="https://img.shields.io/badge/Omarchy%20%2F%20Arch-1793D1?style=flat-square&logo=archlinux&logoColor=white" />
-</p>
-
-<p>
-  <b>运行时</b>
-  <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
-  <img alt="Bash" src="https://img.shields.io/badge/Bash-4EAA25?style=flat-square&logo=gnubash&logoColor=white" />
-  <img alt="PowerShell" src="https://img.shields.io/badge/PowerShell-5391FE?style=flat-square&logo=powershell&logoColor=white" />
-  <img alt="Mermaid" src="https://img.shields.io/badge/Mermaid-FF3670?style=flat-square&logo=mermaid&logoColor=white" />
-  <img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white" />
 </p>
 
 <p>
@@ -41,15 +27,6 @@
   <img alt="LuLu" src="https://img.shields.io/badge/LuLu-475569?style=flat-square" />
   <img alt="TUN" src="https://img.shields.io/badge/TUN-fail--closed-16A34A?style=flat-square" />
   <img alt="IPv4 only" src="https://img.shields.io/badge/IPv4__ONLY-policy-16A34A?style=flat-square" />
-</p>
-
-<p>
-  <b>开发环境</b>
-  <img alt="VS Code Remote-SSH" src="https://img.shields.io/badge/VS%20Code-Remote--SSH-007ACC?style=flat-square&logo=visualstudiocode&logoColor=white" />
-  <img alt="tmux" src="https://img.shields.io/badge/tmux-1BB91F?style=flat-square&logo=tmux&logoColor=white" />
-  <img alt="Xvfb + noVNC" src="https://img.shields.io/badge/Xvfb%20%2B%20noVNC-remote%20browser-6B7280?style=flat-square" />
-  <img alt="Realm relay" src="https://img.shields.io/badge/Realm-relay-0EA5E9?style=flat-square" />
-  <img alt="BBR" src="https://img.shields.io/badge/TCP-BBR-F97316?style=flat-square" />
 </p>
 
 **中文** · [English](README.en.md)
