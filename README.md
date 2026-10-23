@@ -52,6 +52,8 @@
   <img alt="BBR" src="https://img.shields.io/badge/TCP-BBR-F97316?style=flat-square" />
 </p>
 
+**中文** · [English](README.en.md)
+
 [它能干什么](#它能干什么) · [怎么工作](#怎么工作) · [分级授权](#分级授权你不需要每一步都在场) · [快速开始](#快速开始) · [选择运行路线](#选择运行路线) · [文档导航](#文档导航)
 
 [GPL-3.0-only](LICENSE) · [更新记录](CHANGELOG.md) · [决策记录](docs/decisions.md) · [反馈问题](https://github.com/DUNHKpcc/Claude-Guardian/issues)
