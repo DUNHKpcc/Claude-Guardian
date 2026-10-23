@@ -2,7 +2,7 @@
 
 ## Apple 内购续费入口提醒（2026-10-23）
 
-- `accounts-and-payments.md` B2 第 10 条补充用户反馈：从 App Store 订阅管理页续费可能出现扣款但会员未到账，建议在 Claude App 内的订阅页付费。标明为单例用户自述、原因未核实；仅文档改动
+- `accounts-and-payments.md` B2 第 10 条补充：Apple 渠道续费必须先打开 Claude App，在 App 内订阅页付费，不要从 App Store 订阅管理页续费（所有者提供的实例：扣款后会员未到账，Apple 与 Claude 互相推诿）；仅文档改动
 
 ## 减少停顿与重复读取（2026-10-23）
 
