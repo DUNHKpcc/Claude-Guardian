@@ -207,6 +207,8 @@ flowchart TD
 - **G1 → G2 → G3** 分别组织事实收集、方案和按档位的授权（A 范围内自行做、B 计划批准一次、C 当场确认）。选择路线或完成问卷只满足部分入口前提，不能代替检查、修改或联网授权。
 - **PC1 / PC2** 的客户端安装、基础测试、官方登录和支付有各自条件与授权；不是流程图走到末尾就可执行。VPS 采购和付款由用户本人完成；用户给出 SSH 访问后，Agent 可按分级授权通过 shell／SSH 执行文档里的命令和脚本来部署 VM 和 VPS（无内置部署程序，未真机实测）。
 
+清理 Claude 本机数据：macOS 有内置宿主，见[清理接口说明](docs/cleanup-cli-usage.md)；Windows 没有宿主，按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)。
+
 ### 开始前要知道
 
 - **先确认，再接触服务**：PC0（接触前阶段）不启动 Claude 客户端、不登录、不访问其服务；阅读来源中的命令不构成执行授权
