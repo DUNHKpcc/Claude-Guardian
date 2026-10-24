@@ -1,5 +1,9 @@
 # 版本记录
 
+## 注册即要手机号或 KYC 的号（2026-10-24）
+
+- `account-onboarding.md` A0 第 6 条补充：注册时就提示手机号或 KYC 的号直接放弃，存活率不高，修好环境和邮箱后重新注册；已使用中才弹出的 KYC 仍按 A3 本人完成。仅文档改动
+
 ## Apple 内购续费入口提醒（2026-10-23）
 
 - `accounts-and-payments.md` B2 第 10 条补充：Apple 渠道续费必须先打开 Claude App，在 App 内订阅页付费，不要从 App Store 订阅管理页续费（所有者提供的实例：扣款后会员未到账，Apple 与 Claude 互相推诿）；仅文档改动
