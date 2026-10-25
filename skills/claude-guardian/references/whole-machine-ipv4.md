@@ -2,7 +2,7 @@
 
 适用：用户已选**本机路线**，出口 IP 已经定了来源（见[固定出口 IP 的来源](egress-ip-options.md)），要让这台电脑**所有普通应用的公网流量都走同一个 IPv4 出口，不出现 IPv6**。口径与[现行整机统一路径](agent-remediation.md#ipv4-only-policy)一致。
 
-分工：**配置**由 Agent 按分级授权做；**判定**由 `scripts/egress_verifier.py` 根据 Agent 实际观察到的证据给出，它只读、不采集、不改任何东西。判定通过只说明这些观察成立，不代表平台认可、不代表 IP 纯净、不承诺免封。
+分工：**配置**由 Agent 按分级授权做；**判定**由 `scripts/egress_verifier.py` 根据 Agent 实际观察到的证据给出，它只读、不采集、不改任何东西。判定的是网络路径，不是平台对账号的认可。
 
 ## 1. 要达到什么
 
@@ -113,7 +113,8 @@ python scripts/egress_verifier.py check --input <证据文件.json>
 
 ## 7. 限制
 
-- 这套流程**没有在真实设备上跑过**；判定只相信 Agent 提供的观察。
+- Mac 上做过真机验收：TUN 开启下出口一致、DNS 与 WebRTC 无泄漏，自动取证判定 `established`（ADR-039）；重启、睡眠唤醒、换网后的复验和停核心演练还没在真机上做。Windows 按本文命令做，环境不同由 Agent 核对调整。
+- 判定只相信 Agent 提供的观察。
 - Windows 没有带事务的写入引擎，靠备份和读回哈希，不是原子替换。
 - IPv4 不可用时报告不可用，不回退到 IPv6，也不自动换节点。
 - 同一代理链不保证同一公网 IP，样本一致只支持实际测量的范围；IP 漂移要告知用户并复验。

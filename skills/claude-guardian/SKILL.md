@@ -1,11 +1,11 @@
 ---
 name: claude-guardian
-description: 为 Claude 订阅准备、账号与客户端异常、代理和运行环境问题提供分阶段访谈、有限只读检查和离线修复计划。覆盖 macOS/Windows 本机及可选 VM/VPS 路线、清理规划；不承诺免封；也可直接用作 VPS、家宽、线路和封号经验的帖子与论坛搜索工具；默认CLI不自动联网或修改系统，可选宿主库须逐项授权并满足可信目标/运行时前提。
+description: 带着作者和社区的真实经验，陪用户准备 Claude 的订阅、账号、固定出口 IP 和运行环境：订阅与支付渠道、注册与养号节奏、本机（Clash TUN、Windows 防火墙、Mac LuLu）/ VM / VPS 三条路线的搭建与防火墙、整机只走 IPv4 的出口验证、线路优化、403/429/529 等故障分诊、旧设备清理规划；改动按 A/B/C 三档授权。也可直接用作 VPS、家宽、线路和封号经验的帖子与论坛搜索工具。
 ---
 
 # Claude Guardian
 
-**0.2.0 工作流增量版**：访谈、获准的本地元数据检查、离线分析、面板和修复计划。默认CLI不自动联网、付款、清理或配置修改；可选探测库及限定POSIX事务/恢复接口须符合各自可信宿主、精确范围和即时授权契约，不是默认执行权限。原生设备与完整场景仍有未验收项；计划或样本不等于修复完成。
+**0.2.0 工作流增量版**：访谈、检查、离线分析、面板、修复计划，以及由 Agent 按分级授权执行的配置、部署和复测。付款、注册、登录由用户本人完成。
 
 ## 开始方式
 
@@ -125,7 +125,7 @@ POSIX独立恢复入口为 `scripts/recovery_cli.py`，须与 `transactions.py` 
 | Reddit | https://www.reddit.com（如 r/ClaudeAI） | 英文社区的 Claude 使用、账号、限额与新功能讨论 |
 | X | https://x.com | 作者和社区的最新动态、教程原帖、工具发布 |
 | IDC Flare | https://idcflare.com/ | VPS 渠道、家宽拼车（所有者指定；该站有 Cloudflare 验证，Agent 自动抓取可能被拦，被拦时如实说读不到，请用户在浏览器里打开，不绕过） |
-| VPSHub | https://vpshub.org/zh/ | VPS 商家与线路信息（所有者指定；站点内容本次未读取） |
+| VPSHub | https://vpshub.org/zh/ | VPS 商家与线路信息（所有者指定） |
 
 所有者在 S03 第 5 页指的路：找 VPS 搜 IDC Flare、NodeSeek、Linux.do 的 VPS 分区、VPSHub；**家宽去 Linux.do（L 站）的 VPS 分区找，家宽拼车去 IDC Flare 找**。所有者列出的帖子：[最新退款教程](https://linux.do/t/topic/2971757)、[NodeSeek 教程](https://www.nodeseek.com/post-968032-1)、[Linux.do 家宽总结篇](https://linux.do/t/topic/585764)、[GitHub issue 63](https://github.com/alchaincyf/zhangxuefeng-skill/issues/63)；其中 NodeSeek 那篇原作者的做法（改时区、清理等）是应审查的用户经验，不照单执行。
 

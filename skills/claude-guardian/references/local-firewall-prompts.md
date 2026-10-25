@@ -79,7 +79,7 @@ Mac 上不建议自己写 PF 规则：Apple 的技术说明不建议把 PF 当�
 6. **回滚：**`Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultOutboundAction Allow`，再 `Get-NetFirewallRule -DisplayName "guardian-*" | Remove-NetFirewallRule`；必要时 `netsh advfirewall import "<备份路径>\fw-backup.wfw"` 还原整体。
 7. **更新后复查：**换节点、改端口、更新客户端后，节点 IP 和核心路径可能变，规则要同步更新，否则会断网。
 
-以上命令基于 PowerShell 和 netsh 的通用用法，**没有在真实机器上实测**；Agent 首次使用前先在 `-WhatIf` 或只读命令里确认参数和别名。Issue #13 的真机反馈已并入：`::1` 规则被拒、回环接口读回、默认出站阻止后正常 HTTPS 超时的排查顺序。
+第 1 到 4 步在一台 Windows（10.0.26200，Clash Verge Rev 2.5.2，Issue #13）上跑过，备份、保险丝、加规则、切换和回滚都正常，碰到的 `::1` 被拒和切换后超时已补进上面和下面的诊断；第 5 步故障演练还没在真机上跑通。Windows 版本差异大，Agent 首次使用前先在 `-WhatIf` 或只读命令里确认参数和别名。
 
 <a id="windows-fw-layered-diagnosis"></a>
 ### 切换后不通：分层诊断
@@ -132,4 +132,3 @@ Agent 的执行工具返回 `blocked by policy` 之类的拒绝，是**宿主的
 - 不假定回环、局域网、系统进程默认放行；不把“规则配置完成”说成“kill switch 成功”。
 - 不自动安装 LuLu、不自动批准系统扩展、不替用户点系统授权弹窗。
 - 不索取订阅链接、节点密码、UUID，不把它们写进规则说明或报告。
-- 不承诺免封；防火墙和代理都不是账号状态的保证。

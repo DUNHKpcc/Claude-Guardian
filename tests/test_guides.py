@@ -212,7 +212,7 @@ class GuidanceContracts(unittest.TestCase):
         doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
         for term in ("本机路线不提供脚本", "全部用提示词引导", "LuLu", "第三方", "Windows 防火墙", "netsh advfirewall export",
                      "Set-NetFirewallProfile", "DefaultOutboundAction", "New-NetFirewallRule", "InterfaceAlias", "guardian-",
-                     "schtasks /Create", "故障演练", "没有在真实机器上实测", "Clash Verge", "服务模式", "Agent 不做的事"):
+                     "schtasks /Create", "故障演练", "Issue #13）上跑过", "第 5 步故障演练还没在真机上跑通", "Clash Verge", "服务模式", "Agent 不做的事"):
             self.assertIn(term, doc)
         self.assertIn("local-firewall-prompts.md", (REFS / "routes-and-platforms.md").read_text(encoding="utf-8"))
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
@@ -252,6 +252,19 @@ class GuidanceContracts(unittest.TestCase):
             for link in ("authorization-tiers.md", "local-firewall-prompts.md", "windows-cleanup.md",
                          "contact-and-safety.md", "device-report.yml"):
                 self.assertIn(link, body, name)
+
+    def test_guides_do_not_understate_recorded_real_device_runs(self):
+        # ADR-039 recorded a real Mac `established` run; Issue #13 ran Windows firewall steps 1-4.
+        egress = (REFS / "whole-machine-ipv4.md").read_text(encoding="utf-8")
+        self.assertNotIn("没有在真实设备上跑过", egress)
+        self.assertIn("ADR-039", egress)
+        firewall = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
+        self.assertNotIn("没有在真实机器上实测", firewall)
+        self.assertEqual(firewall.count("不承诺免封"), 1)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        header = skill.split("## 开始方式", 1)[0]
+        for text in ("有限只读检查", "仍有未验收项", "不是默认执行权限"):
+            self.assertNotIn(text, header)
 
     def test_s08_screenshots_ip_report_and_macos_guest_are_covered(self):
         root = ROOT / "skills" / "claude-guardian"
