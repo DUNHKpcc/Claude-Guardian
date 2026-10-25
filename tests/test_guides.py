@@ -253,6 +253,14 @@ class GuidanceContracts(unittest.TestCase):
                          "contact-and-safety.md", "device-report.yml"):
                 self.assertIn(link, body, name)
 
+    def test_self_built_proxy_checks_client_compatibility(self):
+        # Owner 2026-10-25: desktop Clash Verge connecting while Shadowrocket/FlClash fail must not happen.
+        doc = (REFS / "egress-ip-options.md").read_text(encoding="utf-8")
+        section = doc.split("## 自建梯提示词（简版）", 1)[1].split("\n## ", 1)[0]
+        for term in ("重点注意版本兼容性", "桌面端 Clash Verge 能连上、移动端小火箭和 FlClash 连不上",
+                     "用户所有客户端都支持", "每一个客户端", "只测了桌面端不算"):
+            self.assertIn(term, section)
+
     def test_trace_and_linux_cleanup_follow_owner_decisions(self):
         # Owner 2026-10-25: proxy/VPN logs and IP-lookup shell lines; only those lines; ask before moving
         # conversation records (recommend yes); debug is regenerable; Linux covered; no mobile this round.
