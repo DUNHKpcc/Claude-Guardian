@@ -71,11 +71,11 @@ class CleanupHandoffTests(unittest.TestCase):
    document=installed/handoff['documentation']
    self.assertTrue(document.is_file(),str(document))
    self.assertIn('cleanup_cli.main',document.read_text(encoding='utf-8'))
-   guide=(installed/'references/agent-remediation.md').read_text(encoding='utf-8')
+   guide=(installed/'references/host-libraries.md').read_text(encoding='utf-8')
    self.assertIn('](cleanup-cli-usage.md)',guide)
    self.assertEqual(catalog['authority'],'none')
  def test_guide_contract(self):
-  text=(ROOT/'skills/claude-guardian/references/agent-remediation.md').read_text(encoding='utf-8')
+  text=(ROOT/'skills/claude-guardian/references/host-libraries.md').read_text(encoding='utf-8')
   for term in ('cleanup_cli.main','C5-full-claude-data-reset','HOST_ADAPTER_UNAVAILABLE','document_digest','隔离副本','独立备份'):self.assertIn(term,text)
   self.assertNotIn('无清理执行器',text)
   self.assertNotIn('未实现内置清理执行器',json.dumps(ar.CATALOG,ensure_ascii=False))

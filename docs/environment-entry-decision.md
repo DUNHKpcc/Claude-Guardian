@@ -33,9 +33,8 @@ A withdrawn, unknown, declined, stale, conflicting or comparison-only route cann
 
 `environment_entry.py` validates a strict, sanitized declaration. A trusted Agent host must assemble that declaration from the user's current explicit choices; the existing interview JSON is not automatically converted into an execution grant. The same declarations are checked again around host callbacks, and retained mutation plans must bind the declaration used when planned.
 
-- `guardian.py check`, `diagnostic_session.py` and `repair_cli.py` accept an explicit `--entry-file`; their current safe file reader is POSIX-only. A reviewed host may supply the dictionary through the documented in-process entry API instead. No Windows command-line file support is implied.
+- `guardian.py check` and `repair_cli.py` accept an explicit `--entry-file`; their current safe file reader is POSIX-only. A reviewed host may supply the dictionary through the documented in-process entry API instead. No Windows command-line file support is implied.
 - `inventory_cli.py static-audit` uses the version 2 request envelope with `entry_request`; low-level pure parsers remain data-only helpers.
-- `network_probes.py` requires eligible current entry plus its separate target, endpoint and live network-consent contract.
 - `workflow_guard.py` binds entry eligibility to operation and checks current declarations after approval. Independent local explanation does not need a full questionnaire.
 - `cleanup_cli.py` requires current selection before planning or new quarantine. VPS quarantine is outside the basic non-intrusive profile. Exact retained reconciliation/restoration does not require a new route declaration, but retains its own identity, ownership, conflict and live-approval checks.
 

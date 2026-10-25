@@ -185,39 +185,23 @@ Windows 用户使用环境中实际可用的 Python 3 启动命令，例如 `py 
 
 ### CLI 与脚本索引
 
-下列路径均位于 `skills/claude-guardian/scripts/`，命令从仓库根目录执行。帮助和能力查询不执行设备检查。
+下列路径均位于 `skills/claude-guardian/scripts/`，命令从仓库根目录执行。
 
-| 脚本 | 用途与边界 | 入口示例 |
+| 脚本 | 用途 | 入口示例 |
 | --- | --- | --- |
-| `interview_cli.py` | 完整状态化访谈、单题调度和中断续接 | `python3 skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --account-ref account-a` |
-| `guardian.py` | 简化访谈、本机受控检查、离线分析与计划 | `python3 skills/claude-guardian/scripts/guardian.py --help` |
-| `status_dashboard.py` | 读取已有报告，生成新的静态离线 HTML，不做新检查 | `python3 skills/claude-guardian/scripts/status_dashboard.py --input report.json --output dashboard.html` |
-| `diagnostic_session.py` | 当前本机有限元数据会话，需要入口声明及现场终端确认；CLI 不开放 DNS | `python3 skills/claude-guardian/scripts/diagnostic_session.py --help` |
-| `inventory_cli.py` | 能力查询、门禁状态和授权静态配置审计 | `python3 skills/claude-guardian/scripts/inventory_cli.py capabilities` |
-| `agent_remediation.py` | 从本地报告选择结构化修复动作，不执行修复 | `python3 skills/claude-guardian/scripts/agent_remediation.py --help` |
-| `repair_cli.py` | 精确文件预检、计划、差异与受门禁阻塞的执行；含 `rules-prepend` 候选 | `python3 skills/claude-guardian/scripts/repair_cli.py --help` |
-| `recovery_cli.py` | POSIX 回执检查、协调与精确文件恢复，不能代替排他访问或操作授权 | `python3 skills/claude-guardian/scripts/recovery_cli.py --help` |
-| `cleanup_cli.py` | 清理能力查询；其余操作依赖可信宿主，默认阻塞 | `python3 skills/claude-guardian/scripts/cleanup_cli.py capabilities` |
-| `serve_webrtc.py` | 限时回环测试页；用户在浏览器确认后才发起 STUN，不能称为完全离线探测 | `python3 skills/claude-guardian/scripts/serve_webrtc.py --help` |
+| `interview_cli.py` | 完整访谈、单题调度和中断续接 | `python3 skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --account-ref account-a` |
+| `guardian.py` | 简化访谈、本机系统和代理设置检查、离线分析与计划 | `python3 skills/claude-guardian/scripts/guardian.py --help` |
+| `network_check.py` | 网络基础检测：路由、IPv4 出口、IPv6 是否堵住、DNS 泄露、UDP、故障演练（macOS、Windows、Linux） | `python3 skills/claude-guardian/scripts/network_check.py run --target-ref laptop-a` |
+| `egress_verifier.py` | 整机只走 IPv4 的判定 | `python3 skills/claude-guardian/scripts/egress_verifier.py check --input evidence.json` |
+| `status_dashboard.py` | 把报告做成离线 HTML 面板，`--network` 附上网络检测结果 | `python3 skills/claude-guardian/scripts/status_dashboard.py --input report.json --network net.json --output dashboard.html` |
+| `inventory_cli.py` | 能力查询、门禁状态和静态配置审计 | `python3 skills/claude-guardian/scripts/inventory_cli.py capabilities` |
+| `agent_remediation.py` | 从报告选择修复动作 | `python3 skills/claude-guardian/scripts/agent_remediation.py --help` |
+| `repair_cli.py` | 精确文件预检、计划、差异和执行；Mac 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 可写入 | `python3 skills/claude-guardian/scripts/repair_cli.py --help` |
+| `recovery_cli.py` | 按回执检查和恢复精确文件（POSIX） | `python3 skills/claude-guardian/scripts/recovery_cli.py --help` |
+| `cleanup_cli.py`、`native_cleanup_mac.py` | Claude 本地数据清理；macOS 有内置宿主 | `python3 skills/claude-guardian/scripts/native_cleanup_mac.py --help` |
+| `serve_webrtc.py` | 本机回环临时提供 WebRTC 测试页 | `python3 skills/claude-guardian/scripts/serve_webrtc.py --help` |
 
-`report.json` 必须是已授权且符合输入契约的本地报告，`dashboard.html` 必须是尚不存在的新文件。CLI 示例中的别名、声明和输入文件都不构成真实设备证据或操作授权。
-
-诊断会话在已核实的本机 macOS 可信宿主中，先由宿主依据本次明确选择准备当前入口声明，再使用绝对路径：
-
-```sh
-python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop-a \
-  --entry-file /approved-private-directory/entry.json
-```
-
-路径为占位示例；文件须满足 `environment_entry.require_entry(..., 'offline_precheck', 'laptop-a')`，随后仍需现场具体检查确认。当前 `--entry-file` 安全读取器仅支持 POSIX；Windows 不可照搬该命令，可信宿主须显式通过 `diagnostic_session.run(..., entry_request=...)` 或 `execute(..., entry_request=...)` 传入声明，并保留原有目标、权限和现场确认契约。不能用保存的问卷或伪造布尔值替代授权，详见[诊断会话](docs/diagnostic-session.md)和[环境入口](docs/environment-entry-decision.md)。
-
-**保存与修改按各入口契约区分：**
-
-- `interview_cli.py`、`guardian.py` 默认把结果写到 stdout，显式 `--output` 才另存新报告；`status_dashboard.py` 则要求 `--output` 指定新 HTML。
-- `diagnostic_session.py` 把 JSON 写到 stdout；显式 `--dashboard-output` 可保存新 HTML，取消或拒绝时不保存，阻塞状态也可能生成报告，不能把保存成功视为检查通过。
-- `repair_cli.py plan` 可通过 `--plan-file` 配合 `--backup-directory` 保留私有计划；`execute` 读取保留计划和摘要；仅 Mac 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 范围放行，其余仍受 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE` 阻塞。计划保存不代表目标配置已写入。
-- `recovery_cli.py inspect / preview / reconcile` 只读核对指定回执与适用目标；`rollback / restore-prepared` 在精确范围、排他访问和现场确认成立后会恢复目标文件字节/模式，并可能按事务契约保留恢复记录，不使用 `--output` 作为写入开关。详见[离线恢复](docs/offline-recovery.md)。
-- `cleanup_cli.py` 的宿主操作另有计划、回执与隔离/恢复契约（如 `--plan-output`、`--receipt-output`），默认缺少宿主时不能执行。`serve_webrtc.py` 会临时监听回环端口，不因没有 `--output` 就变成无副作用的离线解析器。
+输出文件（`--output`、`--evidence-output`、面板 HTML）都只写新文件，不覆盖已有文件。`repair_cli.py` 和 `recovery_cli.py` 的计划、回执与恢复见[离线恢复](docs/offline-recovery.md)，环境入口声明见[环境入口](docs/environment-entry-decision.md)。
 
 </details>
 
@@ -238,7 +222,6 @@ python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop
 | [线路优化](skills/claude-guardian/references/line-optimization.md) | Agent 逐项诊断与优化线路，变更卡与回滚 |
 | [网络与修复建议](skills/claude-guardian/references/network-and-remedies.md) | 代理、DNS、IPv4/IPv6、UDP/WebRTC 的证据解释 |
 | [环境状态面板](docs/environment-dashboard.md) | 使用已有报告生成离线页面，不触发新检查 |
-| [诊断会话](docs/diagnostic-session.md) | 限定采集、取消、保存与未知项 |
 | [规则扩展候选](docs/rules-extension-plan.md) | 私有差异、输入绑定和当前执行限制 |
 | [异常与清理](skills/claude-guardian/references/incidents-and-integrations.md) | 故障、保留范围、申诉和集成边界 |
 | [来源资料库](skills/claude-guardian/references/source-library.md) | 按主题查阅随包原文、章节与来源 |

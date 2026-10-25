@@ -94,13 +94,17 @@ class EntryPlanBinding(unittest.TestCase):
                 self.assertEqual(list(fixture.backups.iterdir()), [])
 
     def test_repair_legacy_plan_cannot_be_upgraded_by_adding_probe_context(self):
-        from test_neutral_probe_context import neutral_request
         fixture = self.fixture(repair_fixtures.RepairExecution)
         fixture.retained()
         original_plan = fixture.plan.read_bytes()
         current = copy.deepcopy(fixture.entry)
         current['schema_version'] = 'guardian-environment-entry-input/0.2'
-        current['probe_context'] = neutral_request(current['targets'][0]['target_ref'])['probe_context']
+        current['probe_context'] = {
+            'schema_version': 'guardian-probe-context/0.1', 'executor': 'shell',
+            'transport_path': 'direct_socket_os_route_tun_unknown',
+            'binding': {'target_ref': current['targets'][0]['target_ref'], 'user_ref': 'user',
+                        'namespace_ref': 'native', 'source': 'current_host_observation'},
+            'resource': {'selection': 'unknown', 'source': 'current_user_declaration'}}
         current['probe_context']['resource']['selection'] = current['network']['selection']
         fixture.arguments['entry_request'] = current
         with patch.object(repair_fixtures.e, '_native_session',

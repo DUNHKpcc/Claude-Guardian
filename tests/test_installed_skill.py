@@ -15,11 +15,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / 'skills' / 'claude-guardian'
 CLI_NAMES = ('guardian', 'interview_cli', 'inventory_cli', 'status_dashboard',
-             'diagnostic_session', 'recovery_cli', 'serve_webrtc')
-REQUIRED_LIBRARIES = ('config_edit_plan', 'interview_migration', 'remedy_plans',
-                      'dns_probe', 'stun_probe', 'network_probes', 'mihomo_dns_probe',
-                      'os_dns_probe', 'windows_dns_probe', 'native_context',
-                      'windows_native_context', 'windows_listener_binding')
+             'network_check', 'egress_verifier', 'recovery_cli', 'serve_webrtc')
+REQUIRED_LIBRARIES = ('config_edit_plan', 'remedy_plans', 'stun_probe', 'probe_evidence')
 
 
 class InstalledSkillTests(unittest.TestCase):

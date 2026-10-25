@@ -42,7 +42,7 @@ class RepairEnvironmentEntryTests(unittest.TestCase):
             self.assertIn(code, agent_remediation.GROUPS['bind-target'].split())
     def test_generated_environment_commands_include_explicit_entry_file(self):
         import agent_remediation
-        for name in ('reaudit', 'plan-rules', 'plan-prepend'):
+        for name in ('plan-rules', 'plan-prepend'):
             command = agent_remediation.CATALOG[name]['command_template']
             self.assertEqual(command.count('--entry-file'), 1)
             self.assertEqual(command[command.index('--entry-file') + 1], '<sanitized-entry.json>')

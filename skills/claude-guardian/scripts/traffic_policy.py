@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 import re
 import time
 
-# Same recognized credential-shape guard as source_evidence; kept stdlib-only so
+# Recognized credential-shape guard; kept stdlib-only so
 # legacy file-path imports of standalone producers do not require sys.path edits.
 _CREDENTIAL_ALIAS = re.compile(
     r"(?i)(?<![A-Za-z0-9])(?:gh[oprsu]_|github_pat_|sk-(?:ant-)?|xox[baprs]-)"

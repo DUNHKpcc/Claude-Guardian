@@ -321,44 +321,51 @@ def evidence(report, addresses):
             'firewall': 'unknown', 'os_ipv6': 'unknown'}
 
 
-def summary(report):
-    r, lines = report['results'], ['网络基础检测（%s，%s）' % (report['target_ref'], report['platform'])]
+def describe(report):
+    """[(key, label, status, detail)] in display order; shared by the summary and the dashboard."""
+    r, rows = report['results'], []
 
-    def line(key, label, detail):
-        lines.append('[%s] %s：%s' % (STATUS_TEXT[r[key]['status']], label, detail))
+    def add(key, label, detail):
+        rows.append((key, label, r[key]['status'], detail))
 
     route = r['route']
-    line('route', '默认路由', ('走 TUN（%s）' % route['interface']) if route['via_tun'] == 'yes'
-         else ('没走 TUN（%s）' % route['interface']) if route['interface'] else '读不到')
+    add('route', '默认路由', ('走 TUN（%s）' % route['interface']) if route['via_tun'] == 'yes'
+        else ('没走 TUN（%s）' % route['interface']) if route.get('interface') else '读不到')
     exit4 = r['exit_ipv4']
-    line('exit_ipv4', 'IPv4 出口', '%s · %s' % ((exit4.get('country') or '?').upper(), exit4.get('asn') or '?')
-         if exit4['status'] != 'error' else '连不上测试站点')
+    add('exit_ipv4', 'IPv4 出口', '%s · %s' % ((exit4.get('country') or '?').upper(), exit4.get('asn') or '?')
+        if exit4['status'] != 'error' else '连不上测试站点')
     if 'exit_via_proxy' in r:
         same = r['exit_via_proxy'].get('same_exit_as_direct')
-        line('exit_via_proxy', '经本地代理端口的出口', '和直连出口一致' if same else '和直连出口不一致' if same is False else '没测成')
-    line('ipv6', 'IPv6', '没有 IPv6 出口' if r['ipv6']['probe'] == 'unreachable' else '有 IPv6 出口，会绕过 IPv4 出口')
+        add('exit_via_proxy', '经本地代理端口的出口',
+            '和直连出口一致' if same else '和直连出口不一致' if same is False else '没测成')
+    add('ipv6', 'IPv6 是否堵住', '已堵住，只走 IPv4' if r['ipv6'].get('probe') == 'unreachable'
+        else '没堵住：有 IPv6 出口，会绕过 IPv4 出口')
     dns = r['dns_leak']
-    places = '、'.join(sorted({'%s %s' % ((s['country'] or '?').upper(), s['asn'] or '') for s in dns['servers']}))
+    places = '、'.join(sorted({'%s %s' % ((s.get('country') or '?').upper(), s.get('asn') or '')
+                               for s in dns.get('servers', [])}))
     detail = {'pass': '解析服务器：%s，没有国内解析' % places,
               'warn': '没有国内解析；解析服务器和出口不在同一地区：%s' % places,
               'fail': '有解析服务器在本国：%s' % places,
               'not_run': '测试站没收到解析请求，再跑一次', 'error': '连不上测试站点'}[dns['status']]
     if dns.get('fake_ip') == 'yes':
         detail += '；系统 DNS 已由代理核心接管（fake-ip）'
-    line('dns_leak', 'DNS 泄露', detail)
-    udp = r['udp']
-    line('udp', 'UDP', {'pass': 'STUN 映射地址和 TCP 出口一致', 'fail': 'UDP 出口和 TCP 出口不一致',
-                        'warn': 'UDP 不通（WebRTC、QUIC 用不了，但不会漏）', 'not_run': '没有 TCP 出口可比',
-                        'error': '没测成'}[udp['status']])
+    add('dns_leak', 'DNS 泄露', detail)
+    add('udp', 'UDP', {'pass': 'STUN 映射地址和 TCP 出口一致', 'fail': 'UDP 出口和 TCP 出口不一致',
+                       'warn': 'UDP 不通（WebRTC、QUIC 用不了，但不会漏）', 'not_run': '没有 TCP 出口可比',
+                       'error': '没测成'}[r['udp']['status']])
     drill = r['failure_drill']
-    line('failure_drill', '故障演练', {'pass': '停掉代理后连不出去，没有直连',
-                                      'fail': '停掉代理后直连出去了',
-                                      'not_run': '加 --failure-drill 在终端里按提示停一次代理核心'
-                                      if drill.get('result') not in ('core_still_running', 'inconclusive')
-                                      else '停掉后还能用代理出口，核心可能没停，再做一次' if drill.get('result') == 'core_still_running'
-                                      else '重新打开代理后也连不上，先检查网络再做一次',
-                                      }.get(drill['status'], '没测成'))
-    line('webrtc', 'WebRTC', '运行 serve_webrtc.py，在浏览器里点一次')
+    result = drill.get('result')
+    add('failure_drill', '故障演练', {'pass': '停掉代理后连不出去，没有直连', 'fail': '停掉代理后直连出去了'}.get(
+        drill['status'], '停掉后还能用代理出口，核心可能没停，再做一次' if result == 'core_still_running'
+        else '重新打开代理后也连不上，先检查网络再做一次' if result == 'inconclusive'
+        else '加 --failure-drill 在终端里按提示停一次代理核心'))
+    add('webrtc', 'WebRTC', '运行 serve_webrtc.py，在浏览器里点一次')
+    return rows
+
+
+def summary(report):
+    lines = ['网络基础检测（%s，%s）' % (report['target_ref'], report['platform'])]
+    lines += ['[%s] %s：%s' % (STATUS_TEXT[status], label, detail) for _key, label, status, detail in describe(report)]
     lines.append('结论：%s' % {'pass': '这几项都通过', 'fail': '有问题，见上面标“有问题”的项',
                              'incomplete': '还有没查完的项'}[report['overall']])
     return '\n'.join(lines)

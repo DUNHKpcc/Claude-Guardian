@@ -36,7 +36,7 @@ SEMANTIC_PLAN_BLOCKED 来自既有 compile_plan 语义前提检查，与本次�
 
 输入由已经获准的私有宿主提供：选定扩展、基础 profile、应用 plist、配置索引的完整有界字节，以及已核对的版本、当前来源和非识别性别名。真实路径、域名、组名、订阅或认证资料不进入公开摘要。仅在私有操作审阅中读取任务的私有材料；不能 pickle、公开上传或把完整配置打印进诊断报告。
 
-先复用 [环境入口](agent-remediation.md#environment-entry) 选择本轮路线并绑定实际目标；准备内存候选不证明目标可用，真正采集和配置动作仍分别使用 offline_precheck／configuration 入口。VM 宿主和来宾分开绑定；已有 VPS 出口不把本机任务变成 VPS 任务。退出、改选、证据过期或目标变化后，旧任务不能直接执行。
+先复用 [环境入口](host-libraries.md#environment-entry) 选择本轮路线并绑定实际目标；准备内存候选不证明目标可用，真正采集和配置动作仍分别使用 offline_precheck／configuration 入口。VM 宿主和来宾分开绑定；已有 VPS 出口不把本机任务变成 VPS 任务。退出、改选、证据过期或目标变化后，旧任务不能直接执行。
 
 ## Agent 的实际操作
 

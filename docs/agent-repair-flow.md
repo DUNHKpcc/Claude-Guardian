@@ -168,7 +168,7 @@ The host first binds the selected device/user/namespace and authorizes reading
 the explicitly selected entry file, request and target. All four CLI commands
 (`preflight`, `diff`, `plan`, `execute`) require `--entry-file`, containing a
 complete `guardian-environment-entry-input/0.1` object whose selected target
-matches `--target-ref`. See the [environment-entry format and file requirements](../skills/claude-guardian/references/agent-remediation.md#environment-entry).
+matches `--target-ref`. See the [environment-entry format and file requirements](../skills/claude-guardian/references/host-libraries.md#environment-entry).
 The first three commands require `offline_precheck` eligibility; `execute`
 requires `configuration`. Unknown resource/configuration states can permit an
 offline precheck but do not permit configuration execution. Entry eligibility

@@ -13,11 +13,9 @@ from unittest.mock import Mock, patch
 
 SCRIPTS = Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts'
 sys.path.insert(0, str(SCRIPTS))
-import diagnostic_session as session
 import environment_entry as entry
 import guardian
 import inventory_cli as inventory
-import network_probes as probes
 
 
 def entry_request(target='target', route='local', *, available=True):
@@ -127,116 +125,6 @@ class NativeEntryTests(unittest.TestCase):
         gate.assert_not_called()
 
 
-class SessionEntryTests(unittest.TestCase):
-    def setUp(self):
-        self.stack = ExitStack()
-        self.addCleanup(self.stack.close)
-        self.stack.enter_context(patch.object(session.sys, 'platform', 'darwin'))
-        self.capture = self.stack.enter_context(patch.object(session.native_context,
-            'capture_current_context', return_value=object()))
-        self.stack.enter_context(patch.object(session.native_context, 'recheck_context', return_value={}))
-        self.stack.enter_context(patch.object(session.native_context, 'describe_context', return_value={}))
-        self.child = self.stack.enter_context(patch.object(session.os_dns_probe,
-            '_run_child', return_value=b'["192.0.2.1"]'))
-        self.consent = Mock(return_value=True)
-
-    def test_missing_withdrawn_unasked_mismatch_no_callback_or_target_io(self):
-        for request in denied_requests():
-            with self.subTest(request=request):
-                result = session.execute('target', consent=self.consent, entry_request=request)
-                self.assertEqual(result['status'], 'blocked')
-                self.assertIn(result['errors'][0], {'E_OBJECT_SHAPE', 'E_ENTRY_BLOCKED'})
-        self.consent.assert_not_called()
-        self.capture.assert_not_called()
-        self.child.assert_not_called()
-
-    def test_eligible_entry_still_needs_consent(self):
-        self.consent.return_value = False
-        result = session.execute('target', consent=self.consent, entry_request=entry_request())
-        self.assertEqual(result['errors'], ['DECLINED'])
-        self.capture.assert_not_called()
-
-    def test_resource_absence_allows_metadata_but_not_dns(self):
-        result = session.execute('target', consent=self.consent,
-            queries=[('reserved.test', 'A')], entry_request=entry_request(available=False))
-        self.assertEqual(result['errors'], ['E_ENTRY_BLOCKED'])
-        self.assertEqual(self.capture.call_count, 1)
-        self.assertEqual(self.consent.call_count, 1)
-        self.child.assert_not_called()
-
-    def test_same_eligibility_resource_alias_mutation_during_consent_is_rejected(self):
-        request = entry_request()
-        def approve(scope):
-            request['network']['resource_ref'] = 'resource-b'
-            return True
-        result = session.execute('target', consent=approve, entry_request=request)
-        self.assertEqual(result['errors'], ['ENTRY_CHANGED'])
-        self.capture.assert_not_called()
-        self.child.assert_not_called()
-
-    def test_withdrawal_during_consent_is_rejected_before_capture(self):
-        request = entry_request()
-        def approve(scope):
-            request['route']['state'] = 'withdrawn'
-            return True
-        result = session.execute('target', consent=approve, entry_request=request)
-        self.assertEqual(result['errors'], ['E_ENTRY_BLOCKED'])
-        self.capture.assert_not_called()
-
-    def test_dns_approval_cannot_change_resource_before_transport(self):
-        request = entry_request()
-        binding = session.os_dns_probe.Binding('target', 'user', 'namespace', 'darwin',
-                                               '/trusted/python', '/trusted')
-        host = session.DNSHost(binding, Mock(return_value=True), Mock(return_value=True), Mock(return_value=True))
-        def approve(scope):
-            if scope['operation'] == 'system_dns_query':
-                request['network']['resource_ref'] = 'resource-b'
-            return True
-        result = session.execute('target', consent=approve, dns_host=host,
-            queries=[('reserved.test', 'A')], entry_request=request)
-        self.assertEqual(result['errors'], ['ENTRY_CHANGED'])
-        self.assertEqual(result['report']['facts'][0]['state'], 'stale')
-        self.child.assert_not_called()
-
-    def test_cancellation_callback_cannot_replace_validated_resource(self):
-        request = entry_request()
-        def cancelled():
-            request['network']['resource_ref'] = 'resource-b'
-            return False
-        result = session.execute('target', consent=self.consent, cancelled=cancelled,
-                                 entry_request=request)
-        self.assertEqual(result['errors'], ['ENTRY_CHANGED'])
-        self.consent.assert_not_called()
-        self.capture.assert_not_called()
-
-    def test_windows_trusted_host_dict_remains_available_without_file_reader(self):
-        with patch.object(session.sys, 'platform', 'win32'), \
-                patch.object(session.windows_native_context, 'capture_current_context', return_value=object()) as capture, \
-                patch.object(session.windows_native_context, 'recheck_context', return_value={}), \
-                patch.object(session.windows_native_context, 'describe_context', return_value={}), \
-                patch.object(inventory, 'read_request', side_effect=AssertionError):
-            result = session.execute('target', consent=self.consent, entry_request=entry_request())
-        self.assertEqual(result['status'], 'partial')
-        capture.assert_called_once()
-        self.capture.assert_not_called()
-        self.child.assert_not_called()
-
-    def test_cli_host_dict_does_not_read_file_or_reuse_stdin(self):
-        out = io.StringIO()
-        with patch.object(session, 'TerminalConsent', return_value=self.consent), \
-                patch.object(inventory, 'read_request', side_effect=AssertionError):
-            code = session.run(['--target-ref', 'target'], entry_request=entry_request(), outgoing=out)
-        self.assertEqual(code, 0)
-        self.assertEqual(self.capture.call_count, 1)
-
-    def test_cli_help_does_not_read_entry_or_capture(self):
-        out = io.StringIO()
-        with patch.object(inventory, 'read_request', side_effect=AssertionError):
-            self.assertEqual(session.run(['--help'], outgoing=out), 0)
-        self.assertEqual(json.loads(out.getvalue())['status'], 'help')
-        self.capture.assert_not_called()
-
-
 class InventoryEntryTests(unittest.TestCase):
     def setUp(self):
         # Host-valid syntax only. read_request and audit_inventory remain mocked.
@@ -341,126 +229,9 @@ class InventoryEntryTests(unittest.TestCase):
                 self.assertEqual(inventory.run(argv, outgoing=io.StringIO()), 0)
 
 
-class ProbeEntryTests(unittest.TestCase):
-    def probe(self, request, **overrides):
-        options = dict(approved_endpoints=[probes.ENDPOINTS['ipify_v4'][0]],
-            approved_paths=['explicit_proxy'], target_ref='target', path_kind='explicit_proxy',
-            transport=self.transport, entry_request=request)
-        options.update(overrides)
-        return probes.probe_https_ip('ipify_v4', **options)
-
-    def setUp(self):
-        self.transport = Mock(path_kind='explicit_proxy')
-        self.transport.request.return_value = probes.Response(200, b'{"ip":"8.8.8.8"}')
-
-    def test_missing_withdrawn_unasked_mismatch_never_constructs_or_calls_transport(self):
-        for request in denied_requests():
-            with self.subTest(request=request), patch.object(probes, 'SystemRouteTransport') as constructor:
-                with self.assertRaises(probes.ProbeError) as caught:
-                    self.probe(request, transport=None)
-                self.assertIn(str(caught.exception), {'E_OBJECT_SHAPE', 'E_ENTRY_BLOCKED'})
-                constructor.assert_not_called()
-        self.transport.request.assert_not_called()
-
-    def test_network_resource_absence_blocks_even_with_route_and_endpoint_approval(self):
-        with self.assertRaisesRegex(probes.ProbeError, '^E_ENTRY_BLOCKED$'):
-            self.probe(entry_request(available=False))
-        self.transport.request.assert_not_called()
-
-    def test_entry_never_grants_endpoint_or_path_consent(self):
-        for override, code in (({'approved_endpoints': []}, 'exact_endpoint_consent_required'),
-                               ({'approved_paths': []}, 'explicit_path_consent_required')):
-            with self.subTest(override=override), self.assertRaisesRegex(probes.ProbeError, '^' + code + '$'):
-                self.probe(entry_request(), **override)
-        self.transport.request.assert_not_called()
-
-    def test_current_entry_and_old_gates_allow_one_mock_transport(self):
-        result = self.probe(entry_request())
-        self.assertEqual(result['status'], 'observed')
-        self.transport.request.assert_called_once()
-
-    def test_adapter_property_cannot_switch_resource_after_validation(self):
-        request = entry_request()
-        transport = self.transport
-        class MutatingAdapter:
-            @property
-            def path_kind(self):
-                request['network']['resource_ref'] = 'resource-b'
-                return 'explicit_proxy'
-            request = transport.request
-        with self.assertRaisesRegex(probes.ProbeError, '^ENTRY_CHANGED$'):
-            self.probe(request, transport=MutatingAdapter())
-        self.transport.request.assert_not_called()
-
-
-    def test_request_getter_cannot_withdraw_route_before_transport(self):
-        request = entry_request()
-        transport = self.transport
-        lookups = []
-        class MutatingRequestAdapter:
-            path_kind = 'explicit_proxy'
-            @property
-            def request(self):
-                lookups.append('request')
-                request['route']['state'] = 'withdrawn'
-                return transport.request
-        with self.assertRaisesRegex(probes.ProbeError, '^E_ENTRY_BLOCKED$'):
-            self.probe(request, transport=MutatingRequestAdapter())
-        self.assertEqual(lookups, ['request'])
-        self.transport.request.assert_not_called()
-
-    def test_request_getter_cannot_replace_same_eligibility_resource_before_transport(self):
-        request = entry_request()
-        transport = self.transport
-        lookups = []
-        class MutatingRequestAdapter:
-            path_kind = 'explicit_proxy'
-            @property
-            def request(self):
-                lookups.append('request')
-                request['network']['resource_ref'] = 'resource-b'
-                return transport.request
-        with self.assertRaisesRegex(probes.ProbeError, '^ENTRY_CHANGED$'):
-            self.probe(request, transport=MutatingRequestAdapter())
-        self.assertEqual(lookups, ['request'])
-        self.transport.request.assert_not_called()
-
-    def test_request_getter_is_bound_once_and_does_not_echo_errors(self):
-        transport = self.transport
-        lookups = []
-        class StableRequestAdapter:
-            path_kind = 'explicit_proxy'
-            @property
-            def request(self):
-                lookups.append('request')
-                if len(lookups) != 1:
-                    raise RuntimeError('synthetic-private-getter-error')
-                return transport.request
-        self.assertEqual(self.probe(entry_request(), transport=StableRequestAdapter())['status'], 'observed')
-        self.assertEqual(lookups, ['request'])
-        transport.request.assert_called_once()
-
-        class BrokenRequestAdapter:
-            path_kind = 'explicit_proxy'
-            @property
-            def request(self):
-                raise RuntimeError('synthetic-private-getter-error')
-        class BrokenPathAdapter:
-            @property
-            def path_kind(self):
-                raise RuntimeError('synthetic-private-getter-error')
-            request = transport.request
-        for adapter in (BrokenRequestAdapter(), BrokenPathAdapter()):
-            with self.subTest(adapter=type(adapter).__name__):
-                with self.assertRaisesRegex(probes.ProbeError, '^transport_error$'):
-                    self.probe(entry_request(), transport=adapter)
-        # No second request follows either malformed getter.
-        transport.request.assert_called_once()
-
-
 class EntryFileReaderTests(unittest.TestCase):
     def test_standalone_file_path_imports_do_not_need_scripts_on_sys_path(self):
-        for filename in ('guardian.py', 'network_probes.py'):
+        for filename in ('guardian.py',):
             with self.subTest(filename=filename), patch.dict(sys.modules, {'environment_entry': None}):
                 spec = importlib.util.spec_from_file_location('standalone_entry_test', SCRIPTS / filename)
                 module = importlib.util.module_from_spec(spec)
@@ -480,10 +251,6 @@ class EntryFileReaderTests(unittest.TestCase):
                 self.assertEqual(guardian.main(['check', '--target-ref', 'target', '--target-os', 'macos',
                                                 '--entry-file', str(path)]), 0)
             self.assertEqual(native.call_args.kwargs['entry_request'], entry_request())
-            with patch.object(session, 'execute', return_value={'status': 'partial', 'dashboard_html': ''}) as execute:
-                self.assertEqual(session.run(['--target-ref', 'target', '--entry-file', str(path)],
-                                             outgoing=io.StringIO()), 0)
-            self.assertEqual(execute.call_args.kwargs['entry_request'], entry_request())
 
     @unittest.skipUnless(os.name == 'posix', 'POSIX request-reader fixtures')
     def test_linked_or_oversize_entry_file_cannot_reach_native_check(self):

@@ -19,48 +19,9 @@ def load(name):
     return module
 
 
-listener = load('windows_listener_binding')
 transactions = load('windows_transactions')
 workflow = load('workflow_guard')
 INVALID = (float('nan'), float('inf'), -float('inf'), True, 10**1000)
-
-
-class ListenerTimeTests(unittest.TestCase):
-    def run_listener(self, **kwargs):
-        selected = listener.Selection('target', 'namespace', 'user', '127.0.0.1', 1234, 123, 456)
-        reader = Mock()
-        reader.observe.return_value = listener._Observation(456, True, (('127.0.0.1', 123),))
-        return listener.verify_listener(selected, approve_read=lambda *a: True,
-                verify_context=lambda *a: True, run_native=lambda call, *a: call(),
-                _reader=reader, **kwargs)
-
-    def test_invalid_clock_initial_and_later(self):
-        for value in INVALID:
-            for sequence in ([value] * 30, [100, 100, value] + [100] * 30):
-                with self.subTest(value=type(value).__name__, later=sequence[0] == 100), patch.object(listener.time, 'monotonic', side_effect=sequence):
-                    result = self.run_listener()
-                    self.assertEqual(result['error_code'], 'NATIVE_READ_FAILED')
-                    self.assertFalse(result['listener_owner_verified'])
-                    self.assertEqual(result['execution_status'], 'blocked')
-
-    def test_unrepresentable_deadline(self):
-        for value in (1e308, -1e308):
-            with patch.object(listener.time, 'monotonic', return_value=value):
-                self.assertEqual(self.run_listener()['error_code'], 'NATIVE_READ_FAILED')
-
-    def test_backwards_clock_even_above_start(self):
-        for sequence in ([100, 99] + [99] * 30, [100, 101, 100.5] + [101] * 30):
-            with patch.object(listener.time, 'monotonic', side_effect=sequence):
-                self.assertEqual(self.run_listener()['error_code'], 'NATIVE_READ_FAILED')
-
-    def test_budget_and_deadline(self):
-        for value in INVALID:
-            self.assertEqual(self.run_listener(budget=listener.Budget(max_seconds=value))['error_code'], 'INPUT_INVALID')
-        with patch.object(listener.time, 'monotonic', side_effect=[100, 103]):
-            self.assertEqual(self.run_listener()['error_code'], 'TIMEOUT')
-        with patch.object(listener.time, 'monotonic', return_value=100):
-            self.assertEqual(self.run_listener(cancelled=lambda: True)['error_code'], 'CANCELLED')
-            self.assertEqual(self.run_listener()['execution_status'], 'completed')
 
 
 class TransactionTimeTests(unittest.TestCase):

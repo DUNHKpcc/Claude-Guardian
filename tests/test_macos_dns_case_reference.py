@@ -65,14 +65,13 @@ class MacOSDnsCaseReferenceTests(unittest.TestCase):
                        '也不能单独证明 DoH、DoT', '不得覆盖后来发生的合法配置变更'):
             self.assertIn(caveat, text)
 
-    def test_network_guide_distinguishes_host_libraries_from_native_acceptance(self):
+    def test_network_guide_points_to_the_network_check(self):
         text = (SKILL / 'references/network-and-remedies.md').read_text(encoding='utf-8')
         for old in ('本版所有主动网络测试均未开放', 'neutral network probes remain unavailable',
-                    'Future probe/validation design, not shipped capability', 'A future endpoint registry'):
+                    '尚无通用主动网络 CLI', 'Guarded host libraries', 'PRODUCT-IPV4-20261018'):
             self.assertNotIn(old, text)
-        for current in ('可信宿主核验与逐次授权', '尚无通用主动网络 CLI',
-                        '未完成端到端原生验收', 'This reference grants no probe authorization',
-                        'Configuration drift', 'stop/restart lifecycle', 'UDP/TCP DNS'):
+        for current in ('network_check.py run', 'never Claude or Anthropic', 'B tier', '--failure-drill',
+                        'egress_verifier.py', 'serve_webrtc.py', 'agent-remediation.md#ipv4-only-policy'):
             self.assertIn(current, text)
 
     def test_package_includes_only_public_reference_and_preserves_source_manifest(self):

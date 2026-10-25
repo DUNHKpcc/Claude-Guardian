@@ -27,7 +27,7 @@ python skills/claude-guardian/scripts/status_dashboard.py \
 - 单项证据、来源章节和限制置于原生 `<details>`，默认折叠；报告说明单独折叠
 - 白底、细分隔线、小字号、窄屏换行，无营销标题、卡片网格或重复图例；授权边界仅一行
 - 严格区分 `verified`、`error`、`unknown`、`not_run`、`authorization_needed`
-- 当前报告格式没有完整验收证据，面板不会生成 `verified`；折叠说明保留其含义
+- `verified`（已验证）只来自 `--network` 附上的、24 小时内的 `network_check.py` 实测通过项
 - 完成采集、关闭系统代理、TUN 开启都不等于环境通过或失败
 - 白名单显示 OS family、S04 架构枚举及进程视图标签、P06 布尔 enabled 或固定格式的Mac默认开关摘要、P11 模式、P12 布尔 TUN；不展示原始版本字符串、地址、端口、路径、用户名、设备标识、凭据或配置
 - 仅展示状态为 observed、单字段时间和快照时间均在过去 24 小时内的白名单事实；未来、缺失、过期时间不会被当作当前证据
@@ -35,7 +35,7 @@ python skills/claude-guardian/scripts/status_dashboard.py \
 - 报告时间、页面生成时间与合成演示标签独立展示；时钟未经外部核验
 - 文件是静态快照，重新打开不会刷新，也不会按浏览时间重新计算时效；需要新证据时重新生成
 - 报告内容是未经独立认证的输入声明；页面不是实际授权、身份绑定或完整诊断报告
-- 可用 `--probes` 导入现有 HTTPS/STUN 输出；没有样本的检查保持 not_run，不从不同来源拼凑验证结论
+- 用 `--network` 附上 `network_check.py` 的报告；没附的网络卡片保持 not_run
 
 输入仅投影有限枚举、布尔、计数和解析后的日期。任意自由文本、发现代码、
 原始证据、计划差异、下一步指令均不回显；简短授权边界提醒先确认操作权限。
@@ -81,57 +81,13 @@ HTTPS 与独立 STUN 的细粒度离线结果可单独导入；DNS、浏览器�
 
 输入出现重复 fact ID（即便值相同）或非字符串 ID 时拒绝生成。只统计 S01—S16、P01—P24 已定义字段；未知 ID 不计入观察证据。
 
-## HTTPS / STUN 离线证据接入（ENV-03/04）
-
-`--probes /approved-local-directory/probe-evidence.json` 可与原有 `--input` 同用。
-该附件只投影已经保存的结果，不调用 `network_probes.py` 或 `stun_probe.py`，不添加端点或自动重试。
-
-附件结构：
-
-```json
-{
-  "schema_version": "guardian-probe-evidence/0.1",
-  "target_ref": "local-target-alias",
-  "samples": [
-    {
-      "expected_path_kind": "direct_socket_os_route_tun_unknown",
-      "captured_at": "2026-10-15T12:00:00+00:00",
-      "result": {"sample_type": "...existing complete probe result..."}
-    }
-  ]
-}
-```
-
-上面 `result` 是结构占位，使用时必须换成现有模块返回的完整字典；不是可执行探测请求。
-最多 64 个样本；使用现有输入文件大小限制与重复 JSON 键拒绝机制。
-HTTPS 读取结果中的 `started_at` / `finished_at`；独立 STUN 当前没有墙钟时间，
-因此要求封装宿主在取得结果时单独记录 `captured_at`，缺失时显示时间未知。
-渲染时绝不把现在写成采集时间。24 小时窗口只筛选输入时间声明，不能认证时钟或来源。
-
-`target_ref` 与逐条结果的目标别名作精确比较，逐条路径与 `expected_path_kind` 比较。
-这只是附件内部声明的一致性，不证明它属于主盘点报告或当前设备；没有跨报告自动身份绑定。
-输入的 `approved` / `authorized` / `verified` / provenance 等标志均不授予权限，也不认证来源。
-真正的宿主需要另行核实设备、用户、命名空间、版本、配置与实时授权；
-这个离线接口不生成 `workflow_guard.Evidence`，也不打开 PC0 接触门禁。
-
-紧凑摘要显示成功声明、取消、过期、时间无效、目标/路径不匹配、超时与授权缺口的数量；
-展开保留每条样本的原顺序、固定端点标签、地址族、路径类别、目标声明一致性和解析后的时间。
-新旧、成功与失败样本均保留，不用“最后一条成功”覆盖冲突。不同样本的原始目标别名、IP、
-端口、异常自由文本、凭据与附带指令不显示。有样本但无更强发现的行状态为 unknown；已有报告错误/授权缺口及其说明继续保留，不能被成功样本覆盖。成功只表示导入的样本声明。
-
-IPv4/IPv6-only HTTPS 样本分开；自然双栈样本标明 ipify_dual，不冒充 IPv6-only 检查。
-双栈失败且地址族未知时两行都保留该条不确定样本。独立 STUN 只进入 STUN 行，
-不填充一般 UDP、浏览器/WebRTC、DNS 泄露、TUN 或故障阻断的验证状态。
-超时不证明阻断，出口地址不证明目标策略或平台许可，测试夹具始终标注为本地夹具。
-
-回归命令：
+## 网络检测结果接入（--network）
 
 ```sh
-python -m unittest discover -s tests -p test_probe_evidence.py -v
-python -m unittest discover -s tests -p test_status_dashboard.py -v
+python3 skills/claude-guardian/scripts/network_check.py run --target-ref laptop-a --output net.json
+python3 skills/claude-guardian/scripts/status_dashboard.py --input report.json --network net.json --output dashboard.html
 ```
 
-新测试使用合成记录、注入的 HTTPS transport 和不打开 socket 的 STUN 取消结果；
-不运行公网探测、不采集设备，不关闭任何原生平台验收门槛。
+`net.json` 是 `network_check.py --output` 写的报告（`guardian-network-check/0.1`，不含 IP）。卡片对应：路由 → TUN；IPv4 出口 → IPv4；经本地代理端口的出口 → 代理入口；IPv6 是否堵住 → IPv6；DNS 泄露 → DNS 泄露和 DNS；UDP → UDP 和 STUN；故障演练 → 失效／防直连；WebRTC 仍为 not_run（用 `serve_webrtc.py` 另测）。通过 → 已验证，有问题 → 发现问题，注意 → 未知；超过 24 小时或时间在未来的结果一律显示未知。报告格式不对时拒绝生成。
 
-本次离线接入回归：13 项适配器测试与 23 项原面板测试通过；完整 Linux 合成测试 522 项，其中 5 项跳过。未进行浏览器渲染或原生设备验收。
+回归：`python -m unittest discover -s tests -p test_network_dashboard.py -v`。

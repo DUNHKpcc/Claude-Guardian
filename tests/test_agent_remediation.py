@@ -13,7 +13,6 @@ SCRIPTS = ROOT / 'skills/claude-guardian/scripts'
 sys.path.insert(0, str(SCRIPTS))
 import agent_remediation as ar
 import clash_inventory
-import controller_inventory
 
 
 def report(*codes):
@@ -51,7 +50,6 @@ class SelectionTests(unittest.TestCase):
         self.assertTrue(codes)
         self.assertFalse(codes - ar.FINDING_ACTIONS.keys())
         self.assertFalse(clash_inventory.PUBLIC_ERROR_CODES - ar.FINDING_ACTIONS.keys())
-        self.assertFalse(controller_inventory.PUBLIC_ERROR_CODES - ar.FINDING_ACTIONS.keys())
 
     def test_transaction_and_controller_gates_do_not_become_missing_adapters(self):
         for code in ['AUTHORIZATION_DENIED', 'AUTHORIZATION_REQUIRED',

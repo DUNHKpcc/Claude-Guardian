@@ -137,5 +137,5 @@ in-memory edit without modifying any input. The full batch evidence and remainin
 native/CI limits are recorded in git 历史中的 `docs/validation.md`（已移出，见 ADR-024）.
 
 2026-10-18 idempotent-replanning increment: 28 compiler tests pass. See
-[evidence and original-requirement limits](evidence/rebuild-idempotent-replanning.md).
+evidence and original-requirement limits.
 This closes only a bounded candidate/replanning subgap, not full ENV-T60 (L + R).

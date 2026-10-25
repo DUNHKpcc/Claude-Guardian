@@ -52,7 +52,7 @@ parent marker cases rejected unexpected attribute names. Both positive cases
 reported `no_acl_reported` on that host, so this does not demonstrate the separate
 `empty_acl` native branch. User-device control documents, application writes and
 restoration remain unverified. The helper remains internal; no production CLI or
-write admission was opened. See [read scope](macos-private-control-read.md).
+write admission was opened. See read scope.
 
 The preceding entry-order Windows fixture defects were corrected in
 `8f7e03b9676eaadeeee306d723d3769c5195872b`, with all four CI platforms passing.

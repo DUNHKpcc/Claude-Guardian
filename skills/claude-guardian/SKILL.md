@@ -62,7 +62,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 - **网络基础检测用 `scripts/network_check.py run`**（三平台，B 档批准后跑）：路由、IPv4 出口、IPv6、DNS 泄露、UDP，`--failure-drill` 做故障演练，`--evidence-output` 交给 `egress_verifier.py`。`guardian.py check` 不测网络。
 - `scripts/repair_cli.py`：精确文件的 `preflight / plan / diff / execute`；当前开放的写入只有 macOS 上 Clash Verge Rev 2.5.8 的 `rules-prepend`（应用须已退出，已在真机验证写入与回滚），其他组合返回 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE`，由 Agent 按 [agent-remediation.md](references/agent-remediation.md) 在实际环境里做最小修复。用应用界面改 2.5.8 的 rules 扩展时按 [agent-rules-task.md](references/agent-rules-task.md) 生成候选。
 - `scripts/inventory_cli.py capabilities`：查看实际开放范围；`scripts/status_dashboard.py`：把已有报告生成离线 HTML 面板。
-- `scripts/diagnostic_session.py`：本机终端元数据会话；`scripts/recovery_cli.py`：POSIX 回执检查与精确文件恢复。
+- `scripts/recovery_cli.py`：POSIX 回执检查与精确文件恢复。
 - DNS、STUN、监听者核对、原生上下文、配置候选等是供可信宿主集成的库，没有 CLI，不自动执行。
 
 各入口和库的输入格式、阻塞条件和边界见 [host-libraries.md](references/host-libraries.md)，用到哪个读哪个小节；脚本清单见 [scripts-index.md](references/scripts-index.md)。

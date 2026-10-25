@@ -1,5 +1,14 @@
 # 版本记录
 
+## 删除不干活的部分（2026-10-25）
+
+- **ADR-048：**删除没有入口调用的 17 个脚本和 2 个工具（HTTPS、DNS 探测库，终端元数据会话与原生上下文，监听端口核对，ENV-06 规则转换链，旧访谈迁移，macOS 元数据观察），连同测试、开发文档和 CI 步骤，约 2 万行
+- 面板 `--network` 直接读 `network_check.py` 报告，网络卡片显示实测结果；选择器的检测类动作改指 `network_check.py`；`stun_probe.py` 只留编解码
+- `agent-remediation.md` 67KB → 11KB，开发契约移到 `host-libraries.md`；`network-and-remedies.md`、README 开发者表同步
+- Windows 本机路线默认关闭网卡 IPv6（B 档）；面板策略行改为“整机只走 IPv4，IPv6 关闭”
+- 发行包 102 个成员；测试 1623 项
+- **已知限制：**`traffic_policy.py`、`workflow_guard.py`、`windows_transactions.py` 等和报告格式有牵连的部分留到第二批。回滚：回退本提交
+
 ## 网络基础检测（2026-10-25）
 
 - **ADR-047：**新增 `scripts/network_check.py run`（macOS、Windows、Linux）：默认路由是否走 TUN、IPv4 出口（只显示国家和 ASN）、经本地代理端口的出口、IPv6 是否堵住、DNS 泄露（fake-ip 下也测得到，解析服务器在本国判泄露）、UDP（STUN）、`--failure-drill` 交互式故障演练；`--evidence-output` 交给 `egress_verifier.py`，判定器支持 Linux

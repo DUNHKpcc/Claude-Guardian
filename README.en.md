@@ -160,39 +160,23 @@ On Windows, use whichever Python 3 launcher is actually available, such as `py -
 
 ### CLI and script index
 
-All paths below are under `skills/claude-guardian/scripts/`, with commands run from the repository root. Help and capability queries do not check any device.
+All paths are under `skills/claude-guardian/scripts/`; run commands from the repository root.
 
-| Script | Purpose and limits | Example |
+| Script | Purpose | Example |
 | --- | --- | --- |
-| `interview_cli.py` | Stateful full interview, single-question scheduling and resume | `python3 skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --account-ref account-a` |
-| `guardian.py` | Simplified interview, controlled local check, offline analysis and planning | `python3 skills/claude-guardian/scripts/guardian.py --help` |
-| `status_dashboard.py` | Reads an existing report and builds a new static offline HTML; runs no new check | `python3 skills/claude-guardian/scripts/status_dashboard.py --input report.json --output dashboard.html` |
-| `diagnostic_session.py` | Limited-metadata session on the current machine; needs an entry declaration and on-site terminal confirmation; the CLI does not open DNS | `python3 skills/claude-guardian/scripts/diagnostic_session.py --help` |
-| `inventory_cli.py` | Capability query, gate status and audit of authorized static config | `python3 skills/claude-guardian/scripts/inventory_cli.py capabilities` |
-| `agent_remediation.py` | Selects structured repair actions from a local report; executes nothing | `python3 skills/claude-guardian/scripts/agent_remediation.py --help` |
-| `repair_cli.py` | Exact-file precheck, plan, diff and gated execution; includes `rules-prepend` candidates | `python3 skills/claude-guardian/scripts/repair_cli.py --help` |
-| `recovery_cli.py` | POSIX receipt check, reconciliation and exact-file restore; does not replace exclusive access or operation authorization | `python3 skills/claude-guardian/scripts/recovery_cli.py --help` |
-| `cleanup_cli.py` | Cleanup capability query; other operations depend on a trusted host and are blocked by default | `python3 skills/claude-guardian/scripts/cleanup_cli.py capabilities` |
-| `serve_webrtc.py` | Time-limited loopback test page; STUN starts only after you confirm in the browser, so it is not a fully offline probe | `python3 skills/claude-guardian/scripts/serve_webrtc.py --help` |
+| `interview_cli.py` | Full interview, single-question scheduling and resume | `python3 skills/claude-guardian/scripts/interview_cli.py --target-ref laptop-a --account-ref account-a` |
+| `guardian.py` | Simplified interview, local system and proxy-settings check, offline analysis and planning | `python3 skills/claude-guardian/scripts/guardian.py --help` |
+| `network_check.py` | Basic network check: route, IPv4 exit, IPv6 blocked, DNS leak, UDP, failure drill (macOS, Windows, Linux) | `python3 skills/claude-guardian/scripts/network_check.py run --target-ref laptop-a` |
+| `egress_verifier.py` | Whole-machine IPv4-only judgement | `python3 skills/claude-guardian/scripts/egress_verifier.py check --input evidence.json` |
+| `status_dashboard.py` | Offline HTML dashboard from a report; `--network` adds the network check | `python3 skills/claude-guardian/scripts/status_dashboard.py --input report.json --network net.json --output dashboard.html` |
+| `inventory_cli.py` | Capability query, gate status and static config audit | `python3 skills/claude-guardian/scripts/inventory_cli.py capabilities` |
+| `agent_remediation.py` | Selects repair actions from a report | `python3 skills/claude-guardian/scripts/agent_remediation.py --help` |
+| `repair_cli.py` | Exact-file precheck, plan, diff and execution; writes the `rules-prepend` extension of Clash Verge Rev 2.5.8 on Mac | `python3 skills/claude-guardian/scripts/repair_cli.py --help` |
+| `recovery_cli.py` | Receipt-based check and exact-file restore (POSIX) | `python3 skills/claude-guardian/scripts/recovery_cli.py --help` |
+| `cleanup_cli.py`, `native_cleanup_mac.py` | Claude local-data cleanup; built-in host on macOS | `python3 skills/claude-guardian/scripts/native_cleanup_mac.py --help` |
+| `serve_webrtc.py` | Temporary loopback WebRTC test page | `python3 skills/claude-guardian/scripts/serve_webrtc.py --help` |
 
-`report.json` must be an authorized local report that meets the input contract, and `dashboard.html` must be a file that does not yet exist. Aliases, declarations and input files in the CLI examples are neither real device evidence nor operation authorization.
-
-Run a diagnostic session on a verified local macOS trusted host, after the host has prepared the current entry declaration from this round's explicit choice, using absolute paths:
-
-```sh
-python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop-a \
-  --entry-file /approved-private-directory/entry.json
-```
-
-The path is a placeholder; the file must satisfy `environment_entry.require_entry(..., 'offline_precheck', 'laptop-a')`, and a specific on-site check confirmation is still required afterwards. The `--entry-file` safe reader currently supports POSIX only; on Windows do not copy this command: a trusted host must pass the declaration explicitly via `diagnostic_session.run(..., entry_request=...)` or `execute(..., entry_request=...)`, keeping the existing target, permission and on-site confirmation contract. A saved questionnaire or a forged boolean cannot replace authorization; see [diagnostic session](docs/diagnostic-session.md) and [environment entry](docs/environment-entry-decision.md).
-
-**Saving and modifying differ by entry contract:**
-
-- `interview_cli.py` and `guardian.py` write results to stdout by default and save a new report only with an explicit `--output`; `status_dashboard.py` requires `--output` for a new HTML.
-- `diagnostic_session.py` writes JSON to stdout; an explicit `--dashboard-output` saves a new HTML, nothing is saved on cancel or refusal, and a blocked state may still produce a report, so a successful save does not mean the check passed.
-- `repair_cli.py plan` can keep a private plan via `--plan-file` with `--backup-directory`; `execute` reads the kept plan and digest; only the `rules-prepend` scope of Clash Verge Rev 2.5.8 on Mac is released, everything else stays blocked by `NATIVE_REPAIR_ADAPTER_UNAVAILABLE`. Saving a plan does not mean the target config was written.
-- `recovery_cli.py inspect / preview / reconcile` only read and verify the given receipt and applicable target; `rollback / restore-prepared`, once exact scope, exclusive access and on-site confirmation hold, restore the target file bytes/mode and may keep recovery records per the transaction contract; `--output` is not a write switch. See [offline recovery](docs/offline-recovery.md).
-- Host operations of `cleanup_cli.py` have their own plan, receipt and isolate/restore contracts (such as `--plan-output`, `--receipt-output`) and cannot run without a host. `serve_webrtc.py` briefly listens on a loopback port, so lacking `--output` does not make it a side-effect-free offline parser.
+Output files (`--output`, `--evidence-output`, dashboard HTML) are always new files and never overwrite. Plans, receipts and restores for `repair_cli.py` and `recovery_cli.py` are in [offline recovery](docs/offline-recovery.md); the environment entry declaration is in [environment entry](docs/environment-entry-decision.md).
 
 </details>
 
@@ -213,7 +197,6 @@ The path is a placeholder; the file must satisfy `environment_entry.require_entr
 | [Route optimization](skills/claude-guardian/references/line-optimization.md) | Item-by-item diagnosis and tuning, change cards and rollback |
 | [Network and remedies](skills/claude-guardian/references/network-and-remedies.md) | Interpreting evidence for proxy, DNS, IPv4/IPv6, UDP/WebRTC |
 | [Environment dashboard](docs/environment-dashboard.md) | Build an offline page from an existing report, no new check |
-| [Diagnostic session](docs/diagnostic-session.md) | Limited collection, cancel, save and unknowns |
 | [Rules extension candidate](docs/rules-extension-plan.md) | Private diff, input binding and current execution limits |
 | [Incidents and cleanup](skills/claude-guardian/references/incidents-and-integrations.md) | Failures, retained scope, appeals and integration boundaries |
 | [Source library](skills/claude-guardian/references/source-library.md) | Bundled originals, sections and sources by topic |

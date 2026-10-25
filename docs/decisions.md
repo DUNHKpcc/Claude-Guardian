@@ -369,3 +369,17 @@ SKILL.md 每次运行都整篇载入，原 42KB 里约一半是宿主库和内�
 DNS 泄露的两点实测发现：fake-ip 下只做解析不会触发真实查询，测试站收不到请求，所以脚本对每个测试域名再发起一次连接，让代理核心去解析；bash.ws 自带的“may be leaking”只是解析器 ASN 和出口 ASN 不同，走代理时这是常态，所以改按国家判断：解析服务器在用户本国（`--home-country`，默认 cn）即泄露。在所有者的 Omarchy（FlClash TUN、fake-ip）上实跑：路由、出口、代理端口出口、IPv6、DNS、UDP 全部通过，约 6 秒。
 
 授权：按 B 档，用户批准检测计划后由 Agent 运行；脚本启动不另要确认。还没覆盖：WebRTC 仍用 `serve_webrtc.py` 在浏览器里测；TUN 严格路由、核心 IPv6、规则兜底这些配置项由 Agent 读配置补；面板还没接入这份报告。
+
+## ADR-048：删除不干活的模块；agent-remediation 瘦身；Windows 网卡 IPv6 默认关闭（2026-10-25 所有者确认）
+
+所有者要求“复查所有文件，不要出现不干活的部分”。判断标准：没有任何命令入口或流程调用、只有自身测试在跑的代码；文档里写“尚未实现”“旧兼容”的部分；已被 `network_check.py`（ADR-047）取代的部分。
+
+删除（约 5,400 行代码及其测试和开发文档）：HTTPS 探测库 `network_probes.py`；DNS 探测库 `dns_probe.py`、`os_dns_probe.py`、`windows_dns_probe.py`、`mihomo_dns_probe.py` 和只给它用的 `controller_inventory.py`；终端元数据会话 `diagnostic_session.py` 与 `native_context.py`、`windows_native_context.py`；`windows_listener_binding.py`；ENV-06 规则转换链 `rule_source_import.py`、`rule_format_conversion.py`、`rule_policy_conversion.py`、`source_evidence.py`；`interview_migration.py`；`macos_metadata_observer.py`、`macos_private_read.py` 及 `tools/` 下两个 macOS 探测脚本；CI 中对应的三个步骤。这些库都要求一个从未实现的“可信宿主”来调用，实际没人调。
+
+改造：面板 `--probes` 改为 `--network`，直接读 `network_check.py` 报告，网络卡片显示实测结果（24 小时内通过为“已验证”）；`probe_evidence.py` 改写为该报告的投影；`stun_probe.py` 只留编解码；选择器的 reaudit、probe-plan、dns、udp 动作改指 `network_check.py`。
+
+文档：`agent-remediation.md` 从 67KB 改写为 11KB 的实用指南（闭环、复验、整机只走 IPv4、Windows 网卡 IPv6、选择器对照表、Agent 接手、Mac 修复链）；环境入口 JSON、静态 inventory 信封、回执恢复、C5 交接这些开发契约原文移到 `host-libraries.md`；删除 /0.2 HTTPS 入口、ENV-06 四节、旧兼容契约 PRODUCT-IPV4-20261018、“下一项（尚未实现）”。`network-and-remedies.md` 去掉旧目标范围方法和宿主库一节，改指 `network_check.py`。README 开发者表同步。
+
+IPv6：所有者确认 Windows 要关。整机只走 IPv4；Windows 本机路线默认关闭物理网卡 IPv6（B 档，记原值，虚拟网卡和组织管理的电脑不动）；macOS、Linux 在代理核心和 TUN 层关闭 IPv6。面板策略行改为“整机只走 IPv4，IPv6 关闭”。
+
+测试：删除对应模块的测试；锁定旧长篇措辞的文档测试改为检查新指南的要点；新增面板 `--network` 测试、发行包成员测试（按磁盘上每个脚本都入包检查）。第二批（`traffic_policy.py` 旧目标范围契约、`workflow_guard.py` 与 `windows_transactions.py`、环境入口里只给已删 HTTPS 库用的 probe_context）和报告格式有牵连，另行拿方案。

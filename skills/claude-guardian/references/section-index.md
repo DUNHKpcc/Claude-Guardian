@@ -47,29 +47,14 @@ M02/M03: accounts, subscription, and payment planning（18 节）
 
 ## agent-remediation.md
 
-Agent 编排检测与修复（22 节）
+Agent 编排检测与修复（7 节）
 
 - [一次任务的闭环](agent-remediation.md#一次任务的闭环)
-- [修复后的出口稳定性与生命周期复验](agent-remediation.md#修复后的出口稳定性与生命周期复验)
-- [当前环境入口：完整声明与实际调用](agent-remediation.md#当前环境入口完整声明与实际调用)
-  - [文件与宿主入口](agent-remediation.md#文件与宿主入口)
-  - [受控中性 HTTPS 样本的 /0.2 入口](agent-remediation.md#受控中性-https-样本的-02-入口)
-  - [探测准备失败的受控诊断](agent-remediation.md#探测准备失败的受控诊断)
-  - [静态 inventory 的 /2 信封](agent-remediation.md#静态-inventory-的-2-信封)
-  - [路线与失败边界](agent-remediation.md#路线与失败边界)
-- [输入与状态](agent-remediation.md#输入与状态)
-- [现行整机统一路径与明确例外（2026-10-19）](agent-remediation.md#现行整机统一路径与明确例外2026-10-19)
-  - [PRODUCT-IPV4-20261018：旧兼容规划契约](agent-remediation.md#product-ipv4-20261018旧兼容规划契约)
-- [能力与覆盖矩阵](agent-remediation.md#能力与覆盖矩阵)
-- [ENV-04：Windows 网卡 IPv6 的提示词（仅提示，无自动执行）](agent-remediation.md#env-04windows-网卡-ipv6-的提示词仅提示无自动执行)
-- [ENV-06：先选择适用来源，再转换整批字节](agent-remediation.md#env-06先选择适用来源再转换整批字节)
-- [ENV-06：把已读取规则来源转换为受限候选输入](agent-remediation.md#env-06把已读取规则来源转换为受限候选输入)
-- [ENV-06：固定兼容版本的纯谓词格式转换](agent-remediation.md#env-06固定兼容版本的纯谓词格式转换)
-- [ENV-06：受限主规则动作与顺序转换](agent-remediation.md#env-06受限主规则动作与顺序转换)
-- [已替换但回执未完成：精确文件恢复](agent-remediation.md#已替换但回执未完成精确文件恢复)
-- [下一项真正可执行修复：窄范围系统代理端口适配（尚未实现）](agent-remediation.md#下一项真正可执行修复窄范围系统代理端口适配尚未实现)
-- [内置脚本修不了：Agent继续负责](agent-remediation.md#内置脚本修不了agent继续负责)
-- [C5：限定清理宿主交接](agent-remediation.md#c5限定清理宿主交接)
+- [修复后的复验](agent-remediation.md#修复后的复验)
+- [整机只走 IPv4（所有者 2026-10-19 确认，2026-10-25 补充）](agent-remediation.md#整机只走-ipv4所有者-2026-10-19-确认2026-10-25-补充)
+- [Windows 网卡 IPv6：默认关闭（B 档）](agent-remediation.md#windows-网卡-ipv6默认关闭b-档)
+- [选择器能做什么](agent-remediation.md#选择器能做什么)
+- [内置脚本修不了：Agent 继续负责](agent-remediation.md#内置脚本修不了agent-继续负责)
 - [Mac 修复链：Clash Verge Rev 2.5.8 的 rules 扩展](agent-remediation.md#mac-修复链clash-verge-rev-258-的-rules-扩展)
 
 ## agent-rules-task.md
@@ -138,17 +123,20 @@ M14：证据、来源与发布规则（5 节）
 
 ## host-libraries.md
 
-内置脚本与宿主库的契约说明（9 节）
+内置脚本与宿主库的契约说明（12 节）
 
 - [Agent内部修复入口（按动作能力分流）](host-libraries.md#agent内部修复入口按动作能力分流)
 - [限定静态盘点入口](host-libraries.md#限定静态盘点入口)
 - [本地环境状态面板](host-libraries.md#本地环境状态面板)
-  - [DNS 库与离线样本](host-libraries.md#dns-库与离线样本)
-  - [系统 DNS 样本库](host-libraries.md#系统-dns-样本库)
-  - [窄范围上下文与终端会话](host-libraries.md#窄范围上下文与终端会话)
   - [私有配置候选（不可应用）](host-libraries.md#私有配置候选不可应用)
 - [环境入口校验](host-libraries.md#环境入口校验)
 - [旧目标范围契约与整机结论](host-libraries.md#旧目标范围契约与整机结论)
+- [环境入口：完整声明与实际调用](host-libraries.md#环境入口完整声明与实际调用)
+  - [文件与宿主入口](host-libraries.md#文件与宿主入口)
+  - [静态 inventory 的 /2 信封](host-libraries.md#静态-inventory-的-2-信封)
+  - [路线与失败边界](host-libraries.md#路线与失败边界)
+- [已替换但回执未完成：精确文件恢复](host-libraries.md#已替换但回执未完成精确文件恢复)
+- [C5：限定清理宿主交接](host-libraries.md#c5限定清理宿主交接)
 
 ## incidents-and-integrations.md
 
@@ -264,14 +252,13 @@ macOS DNS、IPv6 与 WebRTC：单机经验的通用提炼（8 节）
 
 ## network-and-remedies.md
 
-M04/M05/M10: network evidence and offline remedies（7 节）
+M04/M05/M10: network evidence and offline remedies（6 节）
 
-- [PRODUCT-IPV4-20261018: legacy selected-target methods](network-and-remedies.md#product-ipv4-20261018-legacy-selected-target-methods)
 - [ENV modules and evidence boundaries](network-and-remedies.md#env-modules-and-evidence-boundaries)
 - [Layered interpretation](network-and-remedies.md#layered-interpretation)
 - [TLS 字段与服务方向：先解释，后限定规则候选](network-and-remedies.md#tls-字段与服务方向先解释后限定规则候选)
 - [Finding → minimal plan](network-and-remedies.md#finding--minimal-plan)
-- [Guarded host libraries and remaining native validation](network-and-remedies.md#guarded-host-libraries-and-remaining-native-validation)
+- [Detection tools](network-and-remedies.md#detection-tools)
 - [Report format](network-and-remedies.md#report-format)
 
 ## routes-and-platforms.md
@@ -316,7 +303,7 @@ M01/M06–M09: independent environment routes（31 节）
 
 - [访谈与评估](scripts-index.md#访谈与评估)
 - [检查与报告（只读）](scripts-index.md#检查与报告只读)
-- [网络探测（需要单独授权）](scripts-index.md#网络探测需要单独授权)
+- [网络检测的其他部分](scripts-index.md#网络检测的其他部分)
 - [修复计划与规则（离线，不写入）](scripts-index.md#修复计划与规则离线不写入)
 - [写入与恢复（有事务和备份）](scripts-index.md#写入与恢复有事务和备份)
 - [清理（C 档）](scripts-index.md#清理c-档)

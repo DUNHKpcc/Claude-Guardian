@@ -13,7 +13,6 @@ import unittest
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'skills/claude-guardian/scripts'))
-import native_context as native
 import serve_webrtc as webrtc
 
 
@@ -373,50 +372,6 @@ class WebRTCCleanupTests(unittest.TestCase):
         self.assertIn('stage=cleanup; error=IO_ERROR; probe_state=unknown', output)
         self.assertIn('cleanup_state=complete', output)
         self.assertEqual(bound.server_close.call_count, 2)
-
-
-class MacConsoleDiagnosticTests(unittest.TestCase):
-    def api(self):
-        with patch.object(ctypes, 'CDLL', return_value=Mock()):
-            api = native._MacAPI()
-        api.session.return_value = 0
-        api.console.return_value = None
-        return api
-
-    def test_console_null_is_unknown_with_fixed_stage_not_inactive(self):
-        api = self.api()
-        with self.assertRaises(native.ContextError) as caught:
-            api.read()
-        self.assertEqual(str(caught.exception), 'CONTEXT_UNKNOWN')
-        self.assertEqual(native.api_diagnostic(caught.exception),
-                         {'stage': 'console_user', 'reason': 'null_result'})
-        api.graphics.assert_not_called()
-        api.release.assert_not_called()
-
-    def test_console_null_cannot_produce_handle_or_metadata_fallback(self):
-        for operation in (native.capture_current_context, native.observe_context_metadata):
-            with self.subTest(operation=operation.__name__):
-                api = self.api()
-                with patch.object(native.sys, 'platform', 'darwin'), \
-                        patch.object(native, '_MacAPI', return_value=api), \
-                        patch.object(native, '_runtime') as runtime:
-                    with self.assertRaises(native.ContextError) as caught:
-                        operation()
-                self.assertEqual(str(caught.exception), 'CONTEXT_UNKNOWN')
-                self.assertEqual(native.api_diagnostic(caught.exception),
-                                 {'stage': 'console_user', 'reason': 'null_result'})
-                runtime.assert_not_called()
-                api.graphics.assert_not_called()
-
-    def test_native_diagnostic_revalidates_fixed_enums(self):
-        for value in (PRIVATE, [], {}, True, None):
-            error = native.ContextError('CONTEXT_UNKNOWN', stage=value, reason=value)
-            self.assertEqual(native.api_diagnostic(error), {'stage': 'unknown', 'reason': 'unknown'})
-            error.stage = error.reason = value
-            self.assertEqual(native.api_diagnostic(error), {'stage': 'unknown', 'reason': 'unknown'})
-            self.assertNotIn(PRIVATE, json.dumps(native.api_diagnostic(error)))
-        self.assertEqual(native.api_diagnostic(RuntimeError(PRIVATE)),
-                         {'stage': 'unknown', 'reason': 'unknown'})
 
 
 if __name__ == '__main__':

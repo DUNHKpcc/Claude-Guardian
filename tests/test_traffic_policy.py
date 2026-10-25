@@ -330,7 +330,7 @@ class PolicyIntegrationTests(unittest.TestCase):
         html = status_dashboard.render(report)
         self.assertIn('IPv4_ONLY', html)
         self.assertIn('禁止IPv6回退', html)
-        self.assertIn('保留代理外层IPv6', html)
+        self.assertIn('IPv6 关闭', html)
         self.assertNotIn('SECRET', html)
         report.pop('traffic_policy')
         self.assertEqual(status_dashboard.project(report)['traffic_policy'], EXPECTED)

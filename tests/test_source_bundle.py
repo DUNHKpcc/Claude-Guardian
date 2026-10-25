@@ -45,14 +45,8 @@ class SourceBundleTests(unittest.TestCase):
                 self.assertIn('claude-guardian/sources/S03-claude-experience.pdf',names)
                 self.assertIn('claude-guardian/scripts/status_dashboard.py',names)
                 self.assertIn('claude-guardian/scripts/config_edit_plan.py',names)
-                self.assertIn('claude-guardian/scripts/native_context.py',names)
-                self.assertIn('claude-guardian/scripts/windows_native_context.py',names)
-                self.assertIn('claude-guardian/scripts/diagnostic_session.py',names)
                 self.assertIn('claude-guardian/scripts/probe_evidence.py',names)
-                self.assertIn('claude-guardian/scripts/dns_probe.py',names)
-                self.assertIn('claude-guardian/scripts/mihomo_dns_probe.py',names)
-                self.assertIn('claude-guardian/scripts/os_dns_probe.py',names)
-                self.assertIn('claude-guardian/scripts/windows_dns_probe.py',names)
+                self.assertIn('claude-guardian/scripts/network_check.py',names)
                 self.assertFalse(any('private-report' in name for name in names))
 
     def test_tampered_source_rejected(self):

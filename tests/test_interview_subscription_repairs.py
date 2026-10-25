@@ -21,7 +21,6 @@ sys.path.insert(0, str(SCRIPTS))
 spec = importlib.util.spec_from_file_location('subscription_repairs_flow', SCRIPTS / 'interview_flow.py')
 f = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(f)
-import interview_migration as migration
 
 OLD_TIME = '2026-10-17T08:00:00+00:00'
 NOW = '2026-10-18T09:30:00+00:00'
@@ -552,19 +551,6 @@ class SubscriptionRepairFlowTests(unittest.TestCase):
                 else:
                     self.assertIsNone(f.resume_review_prompt(s))
                     self.assertIsNone(f.next_question(s))
-
-    def test_t84_legacy_migration_does_not_turn_target_into_current_plan(self):
-        compact = {'schema_version': 'guardian-interview/0.1', 'answers': {
-            'subscription_stage': 'existing_subscriber', 'current_task': 'environment',
-            'target_plan': 'Pro', 'Q-C08': 'legacy-entitlement-value', 'Q-C07': 'retired'}}
-        result = migration.migrate_legacy(compact, target_alias='device', account_alias='account')
-        self.assertEqual(result['status'], 'review_required')
-        s = result['state']
-        self.assertNotIn('Q-C13', s['facts'])
-        self.assertNotIn('Q-C07', s['facts'])
-        self.assertEqual(s['facts']['Q-C08']['state'], 'stale')
-        self.assertEqual(s['current_subscription']['status'], 'unknown')
-        self.assertNotIn('plan_compatibility_needed', s['context'])
 
 
 class SubscriptionRepairCLITests(unittest.TestCase):

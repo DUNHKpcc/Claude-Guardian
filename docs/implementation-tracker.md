@@ -353,9 +353,9 @@ Mac首轮优先只读：确认环境与依赖→系统/架构/时区/网络服�
 | 范围 | 新实现 | 证据边界与剩余项 |
 |---|---|---|
 | M00 / ENG-01 | `interview_flow.py`、`interview_cli.py` 全95-ID条件访谈与保存续接；`workflow_guard.py`阶段/范围资格 | 离线与合成回归；实际Codex界面编排和所有T场景仍需逐例对应；门禁不是OS隔离 |
-| ENV-02 / ENG-03 | `clash_inventory.py`静态白名单投影；`controller_inventory.py`限定无凭据回环快照 | 静态schema版本仅夹具标签；本机身份/监听者绑定须可信宿主；不证明真实流量、跨来源原子快照或完整规则图 |
+| ENV-02 / ENG-03 | `clash_inventory.py`静态白名单投影 | 静态schema版本仅夹具标签；本机身份/监听者绑定须可信宿主；不证明真实流量、跨来源原子快照或完整规则图 |
 | ENV-02 / ENG-01 | `inventory_cli.py`限定静态入口，默认关闭；精确路径确认，拒绝保存授权 | 不开放控制器自动请求；Windows静态文件读取未开放；CLI输入不证明原生目标身份 |
-| ENV-03—05 | `network_probes.py`与`serve_webrtc.py`+本地页面 | 已有协议/超时/取消/生命周期测试；真实DNS/STUN、浏览器策略与流量观察仍缺 |
+| ENV-03—05、ENV-10 | `network_check.py`（路由、IPv4 出口、IPv6、DNS 泄露、UDP、故障演练）与`serve_webrtc.py`+本地页面 | 所有者 Omarchy（Linux、FlClash TUN）实跑通过；macOS、Windows 待用户环境实跑 |
 | ENV-09 / ENG-08 | `transactions.py`POSIX精确文件底座；`windows_transactions.py`Windows只读句柄计划 | POSIX临时文件回归与云端Mac覆盖；Windows写/备份/回滚尚不支持，原生临时边界测试与真实应用验收分开 |
 | VAL-08 | 固定清单打包、源文件哈希、三端一致ZIP元数据 | PR #2三平台包一致；每次后续改动必须重跑，不继承历史包哈希 |
 
@@ -384,6 +384,8 @@ error、unknown、not_run、authorization_needed；当前输入没有完整验�
 
 ### 2026-10-15 增量：离线 HTTPS/STUN → 状态面板
 
+> 2026-10-25 已删除：这批模块没有入口调用，网络检测由 `network_check.py` 取代（ADR-048）。下文保留为历史记录。
+
 ENV-03/04 的既有结果可通过 `guardian-probe-evidence/0.1` 附件接入三列表格。
 实现：`scripts/probe_evidence.py`、`status_dashboard.py --probes`。
 证据：`tests/test_probe_evidence.py` 的离线边界/端到端投影回归；
@@ -395,6 +397,8 @@ ENV-03/04 的既有结果可通过 `guardian-probe-evidence/0.1` 附件接入三
 
 
 ## 11. DNS 协议与 Mihomo 查询增量（2026-10-15）
+
+> 2026-10-25 已删除：这批模块没有入口调用，网络检测由 `network_check.py` 取代（ADR-048）。下文保留为历史记录。
 
 ENV-04 / D-ENV §20.4：`dns_probe.py` 提供纯 A/AAAA wire 编解码与问题/响应关联；
 `mihomo_dns_probe.py` 实现 §20.4.2 的部分内核查询库接口，严格区分配置审计与主动查询授权。
@@ -410,6 +414,8 @@ DNS 卡片保留样本失败/取消/过期，不证明系统或浏览器采用�
 
 ## 12. 系统 DNS 样本与固定命令清理（2026-10-15）
 
+> 2026-10-25 已删除：这批模块没有入口调用，网络检测由 `network_check.py` 取代（ADR-048）。下文保留为历史记录。
+
 ENV-04A / D-ENV §20.4.2：新增 macOS `os_dns_probe.py` 与 Windows `windows_dns_probe.py`，分别使用规定的 getaddrinfo 与 Resolve-DnsName -DnsOnly 路径，单独授权 A/AAAA，保持可信宿主绑定/运行时前提。没有新的 CLI、自动查询、运行时安装、缓存/配置修改或真实设备操作。
 离线投影 `probe_evidence.py` 保留系统样本来源与失败/取消/过期状态，既有错误/授权缺口不被覆盖；不发明包 RCODE、DNS服务器、浏览器路径或无泄露结论。
 固定命令执行器的受控进程生命周期补充回归，不扩大允许命令集合。此批不含原生上下文核验模块；真实身份/运行时/权限适配仍另行开发验收。
@@ -417,6 +423,8 @@ ENV-04A / D-ENV §20.4.2：新增 macOS `os_dns_probe.py` 与 Windows `windows_d
 
 
 ## 13. 原生上下文与诊断会话（2026-10-15）
+
+> 2026-10-25 已删除：这批模块没有入口调用，网络检测由 `network_check.py` 取代（ADR-048）。下文保留为历史记录。
 
 ENV-01/02、ENG-01、UI-I01—I06：当前进程/控制台观察库提供有限身份连续性，私有短时句柄和白名单摘要分离。它不提供硬件归属、完整命名空间/ACL/依赖信任或实际操作授权。
 `diagnostic_session.py` 是 Mac/Windows 终端元数据入口及可调用宿主会话，fresh nonce范围同意、可选新文件保存、逐查询授权和失败锁定已实现。CLI无DNS选项；可调用DNS必须由真实宿主提供绑定/运行时/中性端点核验，不能用上下文观察或报告代替。
@@ -540,8 +548,8 @@ ENV-02/06、ENG/VAL：统一内部CLI提供精确preflight/plan/private diff及�
 上面 218 行及其“待建立”列保留为发布基线的历史快照，不改写原条件和层级。当前状态以 逐项 ledger（已移出） 的重建状态及固定证据为准。
 
 本轮独立复核后，T09、T19、T20、T21 在原 L+C 层级通过重新验收：
-- [T09 完全相同来源去重](evidence/rebuild-source-dedup.md)
-- [T19/T20/T21 路线与新手指导](evidence/rebuild-route-cases.md)
+- T09 完全相同来源去重
+- T19/T20/T21 路线与新手指导
 
 其余 214 行仍为 pending_revalidation。T24 已复现“恢复后未先核实环境变化”的缺口，不能整行通过。L 证据采用明确归一化输入的确定性回放，C 为活动指导逐句语义审阅；没有证明任意模型表现、原生设备部署或生产安全。相关实现或指导变更后需重新复核证据。
 
@@ -553,3 +561,7 @@ T24 中断续接的原 L+C 条件已补齐并独立复核：同任务保留 VM/V
 当前共 5 行 accepted_revalidated：T09、T19、T20、T21、T24；其余 213 行仍为 pending_revalidation。完整原行及其哈希保持不变。台账与证据已于 2026-10-21 移出仓库（见 ADR-010），可从 git 历史找回。
 
 L 为确定性归一化输入回放，C 为活动指导逐句语义审阅。宿主必须真实区分中断、当前回复与历史导入；不声称已验证任意模型、UI、真实设备部署或操作许可。原生延期及其余验收边界不变。
+
+## 15. 删除不干活的模块（2026-10-25，ADR-048）
+
+删除没有入口调用、只有自身测试在跑的模块约 5,400 行：`network_probes.py`、`dns_probe.py`、`os_dns_probe.py`、`windows_dns_probe.py`、`mihomo_dns_probe.py`、`controller_inventory.py`、`diagnostic_session.py`、`native_context.py`、`windows_native_context.py`、`windows_listener_binding.py`、`rule_source_import.py`、`rule_format_conversion.py`、`rule_policy_conversion.py`、`source_evidence.py`、`interview_migration.py`、`macos_metadata_observer.py`、`macos_private_read.py` 及 `tools/` 下两个 macOS 探测脚本，连同它们的测试和开发文档。网络检测统一由 `network_check.py` 完成，面板通过 `--network` 读取其报告；`stun_probe.py` 只保留编解码。

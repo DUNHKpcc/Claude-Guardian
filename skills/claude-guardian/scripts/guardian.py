@@ -362,9 +362,8 @@ def report_member_vocabulary():
         "snapshot": set(template["snapshot"]),
         "contact_control": set(template["contact_control"]),
         "privacy": set(template["privacy"]),
-        # system_dns_sample: diagnostic_session; the two command_* members: native_check.
-        "limits": set(template["limits"]) | {"command_timeout_seconds", "command_stdout_max_bytes",
-                                             "system_dns_sample"},
+        # the two command_* members: native_check.
+        "limits": set(template["limits"]) | {"command_timeout_seconds", "command_stdout_max_bytes"},
         "target_binding": {"declared_os", "desktop_user_relation", "filesystem_namespace", "execution_location",
                            "binding_state", "requested_role", "network_namespace"},
         "fact": {"id", "value", "state", "context_ref", "observed_at", "layer", "source_ref", "source_refs",

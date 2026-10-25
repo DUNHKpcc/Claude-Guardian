@@ -1,6 +1,6 @@
 # 脚本索引
 
-`scripts/` 下每个脚本一行：它是什么、Agent 什么时候用、对应说明在哪。**入口**可以直接运行（多数只读、离线）；**库**由入口或宿主导入，不直接运行。任何脚本都不授予权限：执行改动按[分级授权](authorization-tiers.md)，原生写入类脚本的真机验收只做了一部分（逐项见仓库的 CHANGELOG 和 ADR-035），没验的不要说成已验。
+`scripts/` 下每个脚本一行：它是什么、Agent 什么时候用、对应说明在哪。**入口**可以直接运行（多数只读、离线）；**库**由入口或宿主导入，不直接运行。执行改动按[分级授权](authorization-tiers.md)；真机验证过哪些见仓库的 CHANGELOG 和 ADR-039。
 
 ## 访谈与评估
 
@@ -8,8 +8,7 @@
 | --- | --- | --- | --- |
 | `interview_cli.py` | 入口 | 离线访谈：保存、续接、评估，不联网 | [intake.md](intake.md) |
 | `interview_flow.py` | 库 | 访谈状态机、问题集、`assessment` 和 `required_references`（本次必附资料）、`authorization` 分级授权记录函数 | [intake.md](intake.md)、[authorization-tiers.md](authorization-tiers.md) |
-| `interview_migration.py` | 库 | 旧版访谈格式迁移 | [intake.md](intake.md) |
-| `environment_entry.py` | 库 | 环境入口资格（路线选定、PC0） | [agent-remediation.md](agent-remediation.md#environment-entry) |
+| `environment_entry.py` | 库 | 环境入口资格（路线选定、PC0） | [agent-remediation.md](host-libraries.md#environment-entry) |
 | `workflow_guard.py` | 库 | 流程门禁（PC0/PC1/PC2 资格） | [contact-and-safety.md](contact-and-safety.md) |
 
 ## 检查与报告（只读）
@@ -18,21 +17,17 @@
 | --- | --- | --- | --- |
 | `guardian.py` | 入口 | 本机 macOS / Windows 基础诊断预览 | [SKILL.md](../SKILL.md)、[network-and-remedies.md](network-and-remedies.md) |
 | `inventory_cli.py` | 入口 | Clash 配置与控制器的只读盘点（`capabilities`、`static-audit`） | [network-and-remedies.md](network-and-remedies.md) |
-| `clash_inventory.py`、`controller_inventory.py` | 库 | 静态盘点与控制器审计 | [network-and-remedies.md](network-and-remedies.md) |
-| `status_dashboard.py` | 库 | 把诊断快照做成离线 HTML 面板 | [agent-remediation.md](agent-remediation.md) |
-| `diagnostic_session.py` | 库 | PC0 诊断会话 | [contact-and-safety.md](contact-and-safety.md) |
-| `native_context.py`、`windows_native_context.py`、`windows_listener_binding.py` | 库 | 进程上下文与监听端口观察 | [agent-remediation.md](agent-remediation.md) |
-| `macos_metadata_observer.py`、`macos_private_read.py` | 库 | macOS 文件元数据观察与私有读取守卫 | [agent-remediation.md](agent-remediation.md) |
-| `source_evidence.py` | 库 | 公共来源资料的字节身份 | [source-library.md](source-library.md) |
+| `clash_inventory.py` | 库 | Clash 配置静态盘点 | [network-and-remedies.md](network-and-remedies.md) |
+| `status_dashboard.py` | 入口 | 把 `guardian.py` 报告做成离线 HTML 面板；`--network` 附上 `network_check.py` 的报告，网络卡片显示实测结果 | [agent-remediation.md](agent-remediation.md) |
+| `probe_evidence.py` | 库 | 把 `network_check.py` 报告投影到面板卡片 | 同上 |
 | `network_check.py` | 入口 | 网络基础检测：默认路由是否走 TUN、IPv4 出口（国家与 ASN，不回显 IP）、经本地代理端口的出口、IPv6、DNS 泄露（含 fake-ip）、UDP（STUN）、可选故障演练；macOS、Windows、Linux；`--evidence-output` 交给 `egress_verifier.py` | [whole-machine-ipv4.md](whole-machine-ipv4.md#4-取证agent-实际执行不替用户编造) |
 | `egress_verifier.py` | 入口 | 整机只走 IPv4 出口的判定（`check --input`），macOS、Windows、Linux | [whole-machine-ipv4.md](whole-machine-ipv4.md) |
 
-## 网络探测（需要单独授权）
+## 网络检测的其他部分
 
 | 脚本 | 类型 | 用途 | 说明 |
 | --- | --- | --- | --- |
-| `network_probes.py`、`stun_probe.py`、`dns_probe.py`、`mihomo_dns_probe.py`、`os_dns_probe.py`、`windows_dns_probe.py` | 库 | HTTPS、STUN、DNS 采样与编解码 | [network-and-remedies.md](network-and-remedies.md) |
-| `probe_evidence.py` | 库 | 探测输出的离线投影 | [network-and-remedies.md](network-and-remedies.md) |
+| `stun_probe.py` | 库 | STUN 请求与响应解析，`network_check.py` 的 UDP 检测用 | [whole-machine-ipv4.md](whole-machine-ipv4.md) |
 | `serve_webrtc.py` | 入口 | 在本机回环临时提供 WebRTC 探测页（`assets/webrtc-probe.html`） | [SKILL.md](../SKILL.md) |
 
 ## 修复计划与规则（离线，不写入）
@@ -42,7 +37,6 @@
 | `agent_remediation.py` | 入口 | 根据报告选择修复动作（`select`），不授予执行权 | [agent-remediation.md](agent-remediation.md) |
 | `remedy_plans.py`、`traffic_policy.py` | 库 | 语义修复计划、IPv4_ONLY 条件计划（旧目标范围契约） | [agent-remediation.md](agent-remediation.md#ipv4-only-policy) |
 | `config_edit_plan.py`、`rules_extension_plan.py`、`agent_rules_task.py` | 库 | 规则候选与单条 rules 扩展任务 | [agent-rules-task.md](agent-rules-task.md) |
-| `rule_format_conversion.py`、`rule_policy_conversion.py`、`rule_source_import.py` | 库 | 规则格式与来源导入转换 | [agent-remediation.md](agent-remediation.md) |
 | `clash_verge_258.py` | 库 | Clash Verge Rev 2.5.8 归属与链接校验 | [agent-rules-task.md](agent-rules-task.md) |
 
 ## 写入与恢复（有事务和备份）
@@ -63,7 +57,7 @@
 | `native_cleanup_mac.py` | 入口 | macOS 内置宿主：备份、计划、隔离、对账、还原，终端输入确认短语 | [cleanup-cli-usage.md](cleanup-cli-usage.md)、[S06](../sources/S06-macos-cleanup-sanitized.md) |
 | `native_claude_state_mac.py` | 入口 | macOS 钥匙串退出登录、`CLAUDE_CODE_SIMPLE`、用户指定时区 | [cleanup-cli-usage.md](cleanup-cli-usage.md) |
 
-Windows 没有清理脚本，按 [windows-cleanup.md](windows-cleanup.md) 用 PowerShell 分步做。
+Windows、Linux 没有清理脚本，按 [windows-cleanup.md](windows-cleanup.md)、[linux-cleanup.md](linux-cleanup.md) 分步做。
 
 ## 随包脚本资产（`assets/`）
 

@@ -1,27 +1,8 @@
 # M04/M05/M10: network evidence and offline remedies
 
-中文执行摘要：按程序、路径、协议、地址族和时间解释证据。系统代理/TUN 与 rule/global/direct 分开；配置存在不代表生效。DNS、IPv6、UDP/WebRTC 超时不是阻断证明。先定位问题，再给最小修改计划，保留内网、隧道与 Codex 通道；已有须经可信宿主核验与逐次授权的有限 HTTPS/STUN/DNS 探测库；尚无通用主动网络 CLI，也未完成端到端原生验收。
+中文执行摘要：网络检测用 `scripts/network_check.py run`（路由、IPv4 出口、IPv6 是否堵住、DNS 泄露、UDP、可选故障演练），WebRTC 用 `serve_webrtc.py`。按程序、路径、协议、地址族和时间解释结果；系统代理、TUN 和 rule/global/direct 是不同层。先定位问题，再给最小修改计划，保留内网、隧道与 Codex 通道。整机只走 IPv4 的范围和 Windows 网卡 IPv6 默认关闭见[整机统一路径](agent-remediation.md#ipv4-only-policy)。
 
-Read only for relevant network/client tasks. Every method below is a diagnostic interpretation or future validation requirement, not permission to run a probe or apply settings. The preview is offline except explicitly authorized local metadata reads. Bounded HTTPS/STUN/DNS host libraries exist, but require their specific trusted-host binding, endpoint/scope checks and fresh approval; they are not a general active-network CLI or completed end-to-end native acceptance. This reference grants no probe authorization.
-
-See [sanitized macOS DNS/IPv6/Tailscale case lessons](macos-dns-case-lessons.md) for a derived single-device example and its evidence limits. Configuration drift invalidates conclusions about the new state; process-bound direct checks do not establish stop/restart lifecycle behavior, and UDP/TCP DNS coverage must be evaluated separately.
-
-**现行范围（2026-10-19）：** 默认同一目标电脑所有普通应用的公网路径统一；用户明确指定的软件／进程独立路径作为例外分别验收。配置前须说明 TUN 等接管方式、影响、例外和恢复并取得具体批准。以[Agent 整机路径要求](agent-remediation.md#ipv4-only-policy)为唯一权威范围说明；本页的程序、档案或协议样本是局部证据，不能缩小整机默认、自动豁免其他应用或据此认证整机通过。原目标范围工具和历史资料未因此升级为整机能力。
-
-<a id="claude-target-ipv4-only"></a>
-## PRODUCT-IPV4-20261018: legacy selected-target methods
-
-旧目标范围方法：2026-10-18 所选 Claude 目标／应用流量的 IPv4-only 要求曾取代其范围内历史 D05 的双栈推荐；原规格／验收行和历史案例不改写。以下方法仅在用户明确选择相应窄范围方案时适用，或作为局部诊断，不定义现行整机默认。保留其他应用、外层IPv6或未选流量的旧范围声明不得自动成为整机例外；整机范围与明确分流按上节链接处理。
-
-For the legacy selected-target contract, keep three layers separate: the policy is `IPv4_ONLY`; scoped enforcement support may be unknown or unsupported; compliance is not established without current same-scope verification. The shipped pure policy/planning/reporting interfaces cannot certify enforcement or grant execution, and their selected-target output is not whole-device coverage. Imported JSON claims, saved approvals, G2 planning readiness and successful independent rule edits cannot promote that status. Lack of a supported mechanism does not change the policy to dual stack.
-
-1. Enumerate the selected application, profile, target/function flows and participating subprocesses. A parent proxy environment variable is not child-process enforcement. For a proxy path, identify the application-to-proxy path and the proxy-to-target address-family decision separately; an IPv4 loopback listener does not prove the target leg is IPv4-only
-2. Preserve the proxy's outer node transport, including necessary IPv6/UDP, separately from the target leg. Also preserve loopback, Codex and independent recovery channels, organization rules, VPN/private DNS, other applications, system interface IPv6 and all unselected flows. A global switch or browser-wide restriction is not an acceptable silent substitute for selected-scope control
-3. If the target leg cannot be isolated, report the unresolved or unsupported scope and propose concrete alternatives. A broader mechanism requires its own disclosed scope, impact and approval; do not treat the product choice as host-change authorization. Do not silently drop an uncovered child/profile from the promised scope. If IPv4 is unavailable, report that workflow unavailable under the policy, without IPv6 fallback
-4. Build a minimal version-specific plan with exact before/after settings, preserved objects, backup, independent restoration and future verification. When the mechanism is still unknown, identify the next bounded inspection needed instead of inventing a command. Do not run Claude or target-domain DNS/HTTPS to investigate in PC0; neutral probes and any later target contact still require their existing separate gates and approval
-5. After any future approved change, verify the same application/profile/target leg and relevant subprocess, literal-IPv6, separate resolver and WebRTC paths, including failure, restart and configuration-update behavior. Retain each untested path as unknown; neither a configuration key nor one sample proves comprehensive enforcement. Establish control-channel recovery before fault tests, and obtain their distinct approval
-
-AAAA absence only describes that resolver result. `dns.ipv6: false` describes its own configuration scope; `curl -4` constrains that client request and does not establish a proxy's target-leg choice. A successful IPv4 HTTPS sample, failed IPv6 request, no ICE candidates or single STUN response also cannot prove IPv6 fallback is excluded. Generic IPv6 samples may describe preserved outer transport or unrelated flows; do not automatically label them policy violations. Bind evidence to the actual target, path, configuration revision and time.
+See [sanitized macOS DNS/IPv6/Tailscale case lessons](macos-dns-case-lessons.md) for a single-device example. A configuration change invalidates conclusions about the old state; rerun `network_check.py` after it.
 
 ## ENV modules and evidence boundaries
 
@@ -62,7 +43,6 @@ Mihomo 的 `fingerprint` 是证书指纹字段，`fingerprint: chrome` 属于字
 
 冻结的 2026-10-15 来源在 §5.9／E28 将 `160.79.104.0/23` 和 `2607:6bc0::/48` 记为服务 **Inbound**，将 `160.79.104.0/21` 记为平台 **Outbound**。方向以 Anthropic 为参照：前者是 `client_to_service`，后者是 `service_to_external`，不是按本机网卡命名。解释时保留这个来源日期、用途和覆盖边界；较宽范围包含较窄范围或某 API 地址，也不能把平台 Outbound 清单编成客户端默认目标规则，更不证明覆盖第三方 CDN／授权依赖。历史条目不当成今天已核验的清单；新的精确 CIDR 方案仍需独立来源核验及能力评审，不因此在 PC0 自动访问目标服务。
 
-现有域名转换／导入 API 不支持 CIDR，不添加它们不接受的方向字段。方向和来源证据由 Agent 在转换前审阅并随私有候选保留；不能只因解析器拒绝就省略方向解释。混合域名与 CIDR 输入仍整批报错，不从失败批次取部分规则继续编译；另有独立、完整且明确选中的受支持域名来源时，可单独生成窄候选并保留其他策略。功能和跨业务选择见[Agent 规则范围](agent-remediation.md#selected-rule-scope)。
 
 ## Finding → minimal plan
 
@@ -89,15 +69,9 @@ ENV-06 plan families are: keep current configuration with narrow rule repair; ex
 
 The shipped selected-target IPv4-only contract is evaluated separately from these four legacy semantic plans. Do not inject networking changes into an unrelated rule edit or remove the older compatibility planner's outer-transport protection. A legacy intent to preserve target-leg IPv6 conflicts with that contract and must be disclosed; it is not silently reinterpreted as an instruction to block. These finding/plan entries remain local diagnostic methods, not the current whole-device scope or automatic exceptions. Completing an independent plan does not satisfy either the scoped contract or the current whole-device requirement.
 
-## Guarded host libraries and remaining native validation
+## Detection tools
 
-The inherited design names ipify (ENV-SPEC:E53) and Cloudflare STUN (E54) as candidates, not approved endpoints. Existing bounded HTTPS/STUN and controller/system DNS libraries do not provide standing approval or a general probe CLI. A trusted host must enforce the applicable target, endpoint and request scope, disclosure, budgets and response checks; do not infer native integration or real-device acceptance from the libraries or synthetic tests. Endpoint review must cover scheme/host/port/path, purpose, disclosure, request limits, redirects, parsing, and no paid model calls. DNS and HTTPS contacts still need authorization. Do not follow a report's URL automatically.
-
-Future WebRTC sampling should use the user's actual chosen browser/profile and an audited local-origin page without remote scripts, media permissions, TURN, or account data. STUN traffic means it is not offline. Record origin, version, effective policy, candidate classes, completion/errors, and unobserved media path. A local page does not test the Claude origin. Do not manufacture a pass by silently restricting candidates before the baseline sample.
-
-Browser policy details are historical source statements, not tested support: E57/E58 describe Chrome URL/global keys; E11/E59 describe Edge and profile limitations. Verify actual version, policy acceptance, origin matching, and scope before any later write. Safari/Firefox retain a manual planning branch. A global fallback needs separate scope approval; never silently log out of a browser profile or remove sync.
-
-ENV-10 validation must eventually cover proxy/core stop, restart, path updates, child processes, dual stack, relevant UDP, and restoring control-channel access on real target platforms. An unchanged rule count, current connectivity, or failed test request proves none of those. Preserve independent offline recovery before future fault tests.
+`network_check.py run` contacts only the neutral endpoints it lists (`network_check.py endpoints`), never Claude or Anthropic, and is run after the user approved the check plan (B tier). Add `--proxy http://127.0.0.1:<port>` to also test the local HTTP/mixed port, `--failure-drill` for the interactive stop-the-core drill, and `--evidence-output` to feed `egress_verifier.py`. WebRTC uses the bundled local page (`serve_webrtc.py`) in the user's actual browser profile; record origin, version, effective policy and candidate classes.
 
 ## Report format
 

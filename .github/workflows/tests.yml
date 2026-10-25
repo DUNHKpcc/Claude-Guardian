@@ -19,21 +19,7 @@ jobs:
       - name: Unit and regression suite
         env:
           GUARDIAN_TEST_WINDOWS_TRANSACTION_BOUNDARY: "1"
-          GUARDIAN_WINDOWS_LISTENER_CI: "1"
         run: python -m unittest discover -s tests -v
-      - name: Owned PowerShell stage diagnostic (not probe acceptance)
-        if: always() && runner.os == 'Windows'
-        env:
-          GUARDIAN_WINDOWS_DNS_DIAGNOSTIC: "1"
-        run: python -m unittest discover -s tests -p test_windows_dns_probe.py -k test_owned_powershell_stage_diagnostic -v
-      - name: Owned-process native context smoke (blocked is not desktop acceptance)
-        env:
-          GUARDIAN_NATIVE_CONTEXT_CI: "1"
-        run: python -m unittest discover -s tests -p test_native_context_smoke.py -v
-      - name: Owned Darwin private-read fixtures (not user-device acceptance)
-        if: runner.os == 'macOS'
-        timeout-minutes: 2
-        run: python -B tools/macos_private_read_probe.py
       - name: Synthetic WebRTC lifecycle regression (no network)
         run: node tests/webrtc-lifecycle.cjs
       - name: Compile runtime

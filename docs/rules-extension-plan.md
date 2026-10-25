@@ -165,6 +165,6 @@ configuration mutation to reverse.
 Selected global/default UIDs and extensions referenced by another local/remote profile are rejected; a unique file item alone does not establish a single-profile change scope.
 
 2026-10-18 idempotent-replanning increment: 23 compiler and 16 rules CLI tests
-pass. See [exact before/after evidence](evidence/rebuild-idempotent-replanning.md).
+pass. See exact before/after evidence.
 Full ENV-T60 (L + R), native repeated application and subscription-refresh
 acceptance remain open.

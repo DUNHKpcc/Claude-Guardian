@@ -10,10 +10,10 @@ from traffic_policy import policy_projection
 import sys
 
 from guardian import GuardianError, PROXY_SUMMARY, load_json, reject_unknown_report_members, save_new
-from probe_evidence import project_samples, sample_text, STATUS_LABELS
+from probe_evidence import NetworkReportError, project_network
 
 STATES = {
-    "verified": ("已验证", "仅用于有对应范围验收证据的检查；本预览不生成此结论"),
+    "verified": ("已验证", "network_check.py 实测通过"),
     "error": ("发现问题", "报告存在错误、冲突或执行失败"),
     "unknown": ("未知", "证据不足、缺失或已过期"),
     "not_run": ("未执行", "当前报告格式没有此项实际检测证据"),
@@ -109,7 +109,7 @@ def safe_facts(facts):
     return list(dict.fromkeys(details))
 
 
-def project(report, now=None, probe_report=None):
+def project(report, now=None, network_report=None):
     """Project only enums/counts/dates. No arbitrary text, values or identifiers survive."""
     now = now or datetime.now(timezone.utc)
     if not isinstance(report, dict) or report.get("schema_version") not in ("guardian-report/0.1", "env-inventory/0.2"):
@@ -149,34 +149,34 @@ def project(report, now=None, probe_report=None):
                       "observed": current if snapshot_fresh else 0, "total": len(selected),
                       "evidence_at": min((timestamp(f.get("observed_at")) for f in selected if f.get("state") == "observed" and fresh(f.get("observed_at"), now)), default=None) if snapshot_fresh else None,
                       "details": safe_facts([f for f in selected if snapshot_fresh and f.get("state") == "observed" and fresh(f.get("observed_at"), now)])})
-    samples = project_samples(probe_report, now) if probe_report is not None else []
+    measured = {}
+    if network_report is not None:
+        try:
+            measured = project_network(network_report, now)
+        except NetworkReportError:
+            raise GuardianError("INPUT_OR_RESPONSE_INVALID") from None
     for card in cards:
-        scoped = [sample for sample in samples if card["key"] in sample["keys"]]
-        card["samples"] = scoped
-        if scoped:
-            # Imported success is useful evidence to review, never host provenance.
-            if card["state"] not in ("error", "authorization_needed"):
-                card["state"] = "unknown"
-            else:
-                card["details"].append("报告存在错误或冲突" if card["state"] == "error" else "缺少授权或权限")
-            card["details"].append("；".join("%s %d" % (label, sum(s["status"] == state for s in scoped))
-                                           for state, label in STATUS_LABELS.items()
-                                           if any(s["status"] == state for s in scoped)) + "（来源未核验）")
+        card["measured"] = measured.get(card["key"])
+        if card["measured"]:
+            card["state"] = card["measured"]["state"]
+            card["details"] = [card["measured"]["text"]] + card["details"]
+            card["evidence_at"] = card["measured"]["checked_at"]
     execution = report.get("execution_status")
     execution_text = {"completed": "报告生成完成（结论看各卡片）", "failed": "报告执行失败",
                       "blocked": "报告执行受阻", "interrupted": "报告执行中断"}.get(execution if isinstance(execution, str) else "", "执行状态未知")
     return {"traffic_policy": policy_projection(), "cards": cards, "observed_at": observed.isoformat() if observed else "未知",
             "generated_at": now.isoformat(), "snapshot_fresh": snapshot_fresh,
             "synthetic": report.get("record_kind") == "synthetic_example", "execution": execution_text,
-            "overall": "error" if execution == "failed" or any(c["state"] == "error" for c in cards) else "unknown"}
+            "overall": "error" if execution == "failed" or any(c["state"] == "error" for c in cards) else "unknown",
+            "network": bool(measured)}
 
 
 def badge(state):
     return '<span class="badge %s" title="%s">%s</span>' % (escape(state, quote=True), escape(state), escape(STATES[state][0]))
 
 
-def render(report, now=None, probe_report=None):
-    view = project(report, now, probe_report)
+def render(report, now=None, network_report=None):
+    view = project(report, now, network_report)
     by_key = {card["key"]: card for card in view["cards"]}
     labels = {"ipv4": "IPv4", "ipv6": "IPv6", "dns_leak": "DNS 泄露", "udp": "UDP",
               "stun": "STUN", "browser": "WebRTC", "tun": "TUN", "dns": "DNS 配置 / 查询",
@@ -196,8 +196,8 @@ def render(report, now=None, probe_report=None):
         else:
             fact = "无检测证据" if card["state"] == "not_run" else "证据不足"
         evidence = "当前有效观察字段：%d / %d。证据最早时间（UTC）：%s。路径：未知 / 未独立绑定。" % (card["observed"], card["total"], evidence_at)
-        if card["samples"]:
-            evidence = "；".join(sample_text(sample) for sample in card["samples"]) + "。样本来自导入的声明，目标绑定另外核实。"
+        if card["measured"]:
+            evidence = "network_check.py 实测（UTC %s）。" % card["measured"]["checked_at"].isoformat()
         rows.append('<tr data-check="%s"><th scope="row">%s</th><td>%s</td><td><details><summary>%s</summary><p>%s</p><p>%s</p><p>依据：D-ENV-v0.3 %s · %s。状态：%s</p></details></td></tr>' %
                     (key, escape(labels[key]), badge(card["state"]), escape(fact), escape(evidence), escape(limitation), escape(section), escape(card["module"]), escape(card["state"])))
     sample = '<span class="sample">合成演示</span>' if view["synthetic"] else '<span class="sample">离线快照</span>'
@@ -210,9 +210,9 @@ def render(report, now=None, probe_report=None):
 <meta name="referrer" content="no-referrer"><title>Claude-Guardian · 环境状态</title><style>''' + CSS + '''</style></head><body><main>
 <header><h1>环境状态</h1>''' + sample + '''<span class="brand">Claude-Guardian</span></header>
 <p class="meta">快照（UTC）：''' + escape(view["observed_at"]) + escape(freshness) + escape(execution_note) + '''</p>
-<p>当前策略：IPv4_ONLY（仅所选Claude目标应用流量，禁止IPv6回退）。整机合规状态见下方各项。</p><p>保留代理外层IPv6、Codex控制通道与其他应用，整机IPv6不关。应用作用域不支持时，给出具体方案再取得许可。IPv6阻断以同范围实测为准。</p>
+<p>当前策略：IPv4_ONLY，整机只走 IPv4，IPv6 关闭，禁止IPv6回退；结果见下方各项。</p>
 <table><caption>检查结果</caption><colgroup><col class="item"><col class="state"><col></colgroup><thead><tr><th scope="col">项目</th><th scope="col">状态</th><th scope="col">关键事实 · 展开查看证据</th></tr></thead><tbody>''' + ''.join(rows) + '''</tbody></table>
-<details class="report-details"><summary>报告信息与限制</summary><p>''' + escape(sample_note) + escape(view["execution"]) + '''。</p><p>页面生成（UTC）：''' + escape(view["generated_at"]) + '''。快照及字段有效期为 24 小时；时钟未经外部核验，重新打开不会刷新。</p><p>verified（已验证）只在完整验收证据齐全时出现。unknown 是证据还不够；not_run 是还没检测。</p><p>仅显示白名单摘要；不含原始地址、路径或设备标识。支持 guardian-report/0.1 与 env-inventory/0.2；可附加 guardian-probe-evidence/0.1 离线样本（单独显示为 unknown）。完整证据看本地原始报告，分享前人工复核。</p></details>
+<details class="report-details"><summary>报告信息与限制</summary><p>''' + escape(sample_note) + escape(view["execution"]) + '''。</p><p>页面生成（UTC）：''' + escape(view["generated_at"]) + '''。快照及字段有效期为 24 小时；时钟未经外部核验，重新打开不会刷新。</p><p>已验证：network_check.py 在 24 小时内实测通过。未知：证据还不够或结果过期。未执行：还没检测。</p><p>仅显示白名单摘要；不含原始地址、路径或设备标识。支持 guardian-report/0.1 与 env-inventory/0.2；可附加 network_check.py 的报告（--network）。完整证据看本地原始报告，分享前人工复核。</p></details>
 <p class="authorization">操作权限：联网探测、修改配置或接触 Claude 须另行授权。</p>
 <footer>静态快照 · 无自动检测</footer>
 </main></body></html>\n'''
@@ -222,10 +222,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Generate a private offline HTML status snapshot; no probes or auto-open.")
     parser.add_argument("--input", required=True, help="Explicit local guardian-report/0.1 or env-inventory/0.2 JSON file")
     parser.add_argument("--output", required=True, help="New local HTML file; never overwrite")
-    parser.add_argument("--probes", help="Optional local guardian-probe-evidence/0.1 JSON; declarations only, no execution")
+    parser.add_argument("--network", help="Optional network_check.py report (guardian-network-check/0.1) to fill the network cards")
     args = parser.parse_args(argv)
     try:
-        save_new(args.output, render(load_json(args.input), probe_report=load_json(args.probes) if args.probes else None))
+        save_new(args.output, render(load_json(args.input), network_report=load_json(args.network) if args.network else None))
     except KeyboardInterrupt:
         sys.stderr.write("DASHBOARD_CANCELLED\n")
         return 3
