@@ -91,7 +91,7 @@ class SelectionTests(unittest.TestCase):
                            'UNSUPPORTED_CANDIDATE_KIND', 'NATIVE_REPAIR_ADAPTER_UNAVAILABLE',
                            'UNSUPPORTED_PRODUCT_OR_VERSION', 'UNSUPPORTED_REMEDY',
                            'UNSUPPORTED_EXTENSION_TYPE', 'UNSUPPORTED_ACTIVE_PROFILE_TYPE'}
-        for filename in ['transactions.py', 'windows_transactions.py',
+        for filename in ['transactions.py',
                          'recovery_cli.py', 'repair_execution.py', 'repair_cli.py',
                          'config_edit_plan.py', 'rules_extension_plan.py', 'clash_verge_258.py', 'native_clash_verge_mac.py']:
             codes = set()

@@ -91,11 +91,9 @@ class EnvironmentEntryTests(unittest.TestCase):
         request['network']['selection'] = 'unselected'
         result = entry.assess_entry(request)
         self.assertEqual(status(result, 'offline_precheck'), 'blocked')
-        self.assertEqual(status(result, 'active_probe'), 'blocked')
         request['route']['state'] = 'selected'
         result = entry.assess_entry(request)
         self.assertEqual(status(result, 'offline_precheck'), 'eligible_for_existing_gate')
-        self.assertEqual(status(result, 'active_probe'), 'blocked')
 
     def test_no_owned_resource_and_unknown_network_allow_only_offline_precheck(self):
         for possession in ('none', 'unknown'):
@@ -109,7 +107,6 @@ class EnvironmentEntryTests(unittest.TestCase):
                     result = entry.assess_entry(request)
                     self.assertEqual(status(result, 'offline_precheck'), 'eligible_for_existing_gate')
                     self.assertEqual(status(result, 'configuration'), 'blocked')
-                    self.assertEqual(status(result, 'active_probe'), 'blocked')
 
     def test_selected_direct_needs_no_purchase_but_retains_probe_authorization(self):
         for possession in ('none', 'unknown', 'present'):
@@ -117,19 +114,13 @@ class EnvironmentEntryTests(unittest.TestCase):
             request['network']['possession'] = possession
             result = entry.assess_entry(request)
             self.assertEqual(status(result, 'offline_precheck'), 'eligible_for_existing_gate')
-            self.assertEqual(status(result, 'active_probe'), 'eligible_for_existing_gate')
-            self.assertIn('CONCRETE_APPROVED_ENDPOINTS_AND_DISCLOSURE',
-                          result['gates']['active_probe']['host_requirements'])
 
     def test_direct_is_a_terminal_kind_not_a_proxy_protocol(self):
         request = direct_fixture()
         request['final_egress']['protocol'] = 'socks5'
         result = entry.assess_entry(request)
-        self.assertEqual(status(result, 'active_probe'), 'blocked')
-        self.assertIn('DIRECT_PATH_DECLARATION_CONFLICT', result['gates']['active_probe']['gaps'])
         request = direct_fixture()
         request['local_entry'] = {'kind': 'http', 'entry_ref': 'entry-a'}
-        self.assertEqual(status(entry.assess_entry(request), 'active_probe'), 'blocked')
 
     def test_local_and_vm_have_detailed_distinct_declaration_scopes(self):
         local = entry.assess_entry(fixture())
@@ -176,9 +167,6 @@ class EnvironmentEntryTests(unittest.TestCase):
         self.assertEqual(result['suggested_check_depth'], 'basic_nonintrusive')
         self.assertEqual(status(result, 'configuration'), 'blocked')
         self.assertIn('VPS_CONFIGURATION_OUTSIDE_BASIC_CHECK_SCOPE', result['gates']['configuration']['gaps'])
-        self.assertIn('NONINTRUSIVE_PROBE_BUDGET_AND_SCOPE', result['gates']['active_probe']['host_requirements'])
-        self.assertEqual(status(entry.assess_entry(direct_fixture('vps')), 'active_probe'),
-                         'eligible_for_existing_gate')
 
     def test_absent_or_imported_configuration_can_enter_planning_not_claim_effectiveness(self):
         for state in ('absent', 'imported'):
@@ -187,27 +175,16 @@ class EnvironmentEntryTests(unittest.TestCase):
             result = entry.assess_entry(request)
             self.assertEqual(status(result, 'configuration'), 'eligible_for_existing_gate')
             self.assertIn('EXACT_REVIEWED_PLAN_AND_SEMANTIC_DIFF', result['gates']['configuration']['host_requirements'])
-            if state == 'absent':
-                self.assertEqual(status(result, 'active_probe'), 'blocked')
-                self.assertIn('EFFECTIVE_CONFIGURATION_UNVERIFIED', result['gates']['active_probe']['gaps'])
-            else:
-                self.assertEqual(status(result, 'active_probe'), 'eligible_for_existing_gate')
         self.assertEqual(result['configuration_readiness'], 'imported_effectiveness_unverified')
 
     def test_imported_configuration_can_be_probed_without_claiming_effectiveness(self):
         request = fixture()
         request['network']['configuration'] = 'imported'
-        result = entry.require_entry(request, 'active_probe', 'target-local')
+        result = entry.require_entry(request, 'offline_precheck', 'target-local')
         self.assertEqual(result['status'], 'eligible_for_existing_gate')
         self.assertEqual(result['configuration_readiness'], 'imported_effectiveness_unverified')
         self.assertEqual(result['binding_status'], 'not_verified_by_this_module')
         self.assertIn('EXISTING_SCOPED_ACTION_AUTHORIZATION', result['host_requirements'])
-        self.assertIn('CONCRETE_APPROVED_ENDPOINTS_AND_DISCLOSURE', result['host_requirements'])
-        for field, value in (('selection', 'unknown'), ('path', 'unknown'), ('possession', 'none')):
-            changed = deepcopy(request)
-            changed['network'][field] = value
-            with self.assertRaises(entry.EntryBlocked):
-                entry.require_entry(changed, 'active_probe', 'target-local')
 
     def test_stale_unknown_conflicting_configuration_is_offline_only(self):
         for state in ('stale', 'unknown', 'conflict'):
@@ -216,13 +193,10 @@ class EnvironmentEntryTests(unittest.TestCase):
             result = entry.assess_entry(request)
             self.assertEqual(status(result, 'offline_precheck'), 'eligible_for_existing_gate')
             self.assertEqual(status(result, 'configuration'), 'blocked')
-            self.assertEqual(status(result, 'active_probe'), 'blocked')
 
     def test_proxy_selection_requires_resource_alias_and_availability(self):
         request = fixture()
         del request['network']['resource_ref']
-        self.assertIn('SELECTED_RESOURCE_ALIAS_REQUIRED',
-                      entry.assess_entry(request)['gates']['active_probe']['gaps'])
         request = fixture()
         request['network']['possession'] = 'none'
         self.assertIn('SELECTED_RESOURCE_AVAILABILITY_REQUIRED',
@@ -233,24 +207,21 @@ class EnvironmentEntryTests(unittest.TestCase):
             request = fixture()
             request['local_entry']['kind'] = kind
             self.assertEqual(request['final_egress']['protocol'], 'socks5')
-            self.assertEqual(status(entry.assess_entry(request), 'active_probe'), 'eligible_for_existing_gate')
 
     def test_code_cannot_use_socks_listener_directly(self):
         request = fixture()
         request['local_entry']['kind'] = 'socks'
         result = entry.assess_entry(request)
         self.assertEqual(status(result, 'offline_precheck'), 'eligible_for_existing_gate')
-        for gate in ('configuration', 'active_probe'):
+        for gate in ('configuration',):
             self.assertEqual(status(result, gate), 'blocked')
             self.assertIn('CLAUDE_CODE_HTTP_MIXED_ENTRY_REQUIRED', result['gates'][gate]['gaps'])
         request['client'] = 'browser'
-        self.assertEqual(status(entry.assess_entry(request), 'active_probe'), 'eligible_for_existing_gate')
 
     def test_tun_path_does_not_mistake_unused_listener_for_code_configuration(self):
         request = fixture()
         request['network']['path'] = 'tun'
         request['local_entry'] = {'kind': 'none'}
-        self.assertEqual(status(entry.assess_entry(request), 'active_probe'), 'eligible_for_existing_gate')
 
     def test_unknown_client_or_final_proxy_never_infers_code_or_egress_support(self):
         for key, value in (('client', 'unknown'), ('final_egress', {'kind': 'proxy', 'protocol': 'unknown'})):
@@ -258,30 +229,25 @@ class EnvironmentEntryTests(unittest.TestCase):
             request[key] = value
             result = entry.assess_entry(request)
             self.assertEqual(status(result, 'configuration'), 'blocked')
-            self.assertEqual(status(result, 'active_probe'), 'blocked')
 
     def test_route_withdrawal_never_reuses_old_eligibility(self):
         request = fixture('vm')
         old = entry.assess_entry(request)
-        self.assertEqual(status(old, 'active_probe'), 'eligible_for_existing_gate')
         for state in ('withdrawn', 'unknown', 'stale', 'conflict'):
             request['route']['state'] = state
             new = entry.assess_entry(request)
-            self.assertEqual(status(new, 'active_probe'), 'blocked')
             self.assertEqual(new['target_scopes'], [])
             self.assertEqual(new['host_revalidation']['route_unusable'], 'yes')
             self.assertEqual(new['host_revalidation']['performed_by_this_module'], 'none')
             self.assertEqual(set(new['host_revalidation']['on_route_or_target_change']), {
                 'INVALIDATE_DEPENDENT_CONFIRMATIONS', 'INVALIDATE_OLD_TARGET_BINDINGS',
                 'INVALIDATE_DEPENDENT_PLANS'})
-        self.assertEqual(status(old, 'active_probe'), 'eligible_for_existing_gate')
 
     def test_network_withdrawal_keeps_only_offline_precheck(self):
         request = fixture()
         request['network']['selection'] = 'withdrawn'
         result = entry.assess_entry(request)
         self.assertEqual(status(result, 'offline_precheck'), 'eligible_for_existing_gate')
-        self.assertEqual(status(result, 'active_probe'), 'blocked')
         self.assertEqual(result['host_revalidation']['network_selection_unusable'], 'yes')
 
     def test_strict_allowlist_rejects_sensitive_and_authorization_fields_at_every_level(self):
@@ -369,11 +335,9 @@ class EnvironmentEntryTests(unittest.TestCase):
             self.assertEqual(result, entry.assess_entry(request))
         self.assertEqual(request, original)
         result['target_scopes'][0]['target_ref'] = 'target-changed'
-        result['gates']['active_probe']['host_requirements'].append('UNTRUSTED')
         self.assertEqual(request, original)
         fresh = entry.assess_entry(request)
         self.assertEqual(fresh['target_scopes'][0]['target_ref'], 'target-host')
-        self.assertNotIn('UNTRUSTED', fresh['gates']['active_probe']['host_requirements'])
 
     def test_listener_and_exit_protocol_spellings_match_remedy_semantics(self):
         tree = ast.parse((SCRIPTS / 'remedy_plans.py').read_text(encoding='utf-8'))
@@ -393,11 +357,10 @@ class EnvironmentEntryTests(unittest.TestCase):
             request['targets'][0]['target_ref'] = alias
             request['network']['resource_ref'] = 'chosen_proxy'
             request['local_entry']['entry_ref'] = 'listener'
-            self.assertEqual(entry.require_entry(request, 'active_probe', alias)['target_ref'], alias)
 
     def test_require_entry_selects_exact_operation_and_target(self):
         request = fixture('vm')
-        for purpose in ('offline_precheck', 'configuration', 'active_probe'):
+        for purpose in ('offline_precheck', 'configuration'):
             result = entry.require_entry(request, purpose, 'target-guest')
             self.assertEqual(result['purpose'], purpose)
             self.assertEqual(result['target_ref'], 'target-guest')
@@ -407,7 +370,7 @@ class EnvironmentEntryTests(unittest.TestCase):
 
     def test_require_entry_rejects_wrong_target_even_when_route_is_eligible(self):
         with self.assertRaises(entry.EntryBlocked) as error:
-            entry.require_entry(fixture('vm'), 'active_probe', 'other-target')
+            entry.require_entry(fixture('vm'), 'offline_precheck', 'other-target')
         self.assertEqual(str(error.exception), 'E_ENTRY_BLOCKED')
         self.assertEqual(error.exception.gaps, ('REQUESTED_TARGET_NOT_IN_CURRENT_ROUTE',))
         self.assertNotIn('other-target', repr(error.exception))
@@ -416,7 +379,7 @@ class EnvironmentEntryTests(unittest.TestCase):
         request = fixture()
         request['network']['selection'] = 'unknown'
         entry.require_entry(request, 'offline_precheck', 'target-local')
-        for purpose in ('configuration', 'active_probe'):
+        for purpose in ('configuration',):
             with self.assertRaises(entry.EntryBlocked) as error:
                 entry.require_entry(request, purpose, 'target-local')
             self.assertIn('EXPLICIT_CURRENT_NETWORK_SELECTION_REQUIRED', error.exception.gaps)
@@ -425,19 +388,13 @@ class EnvironmentEntryTests(unittest.TestCase):
         for purpose in ('rollback', 'approved', 'apply', '', True):
             with self.assertRaisesRegex(entry.InvalidProjection, '^E_ENUM_VALUE$'):
                 entry.require_entry(fixture(), purpose, 'target-local')
-        for request in (None, {}, entry.assess_entry(fixture())):
-            with self.assertRaises(entry.InvalidProjection):
-                entry.require_entry(request, 'active_probe', 'target-local')
 
     def test_require_entry_revalidates_after_withdrawal_and_has_no_io(self):
         request = fixture()
-        entry.require_entry(request, 'active_probe', 'target-local')
         request['route']['state'] = 'withdrawn'
-        with patch.object(builtins, 'open', side_effect=AssertionError('I/O')), \
-                patch.object(socket, 'socket', side_effect=AssertionError('network')), \
-                patch.object(subprocess, 'Popen', side_effect=AssertionError('process')):
-            with self.assertRaises(entry.EntryBlocked) as error:
-                entry.require_entry(request, 'active_probe', 'target-local')
+        with patch('builtins.open', side_effect=AssertionError), \
+                self.assertRaises(entry.EntryBlocked) as error:
+            entry.require_entry(request, 'offline_precheck', 'target-local')
         self.assertIn('EXPLICIT_CURRENT_ROUTE_SELECTION_REQUIRED', error.exception.gaps)
 
 

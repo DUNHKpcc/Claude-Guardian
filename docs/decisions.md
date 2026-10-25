@@ -393,3 +393,13 @@ IPv6：所有者确认 Windows 要关。整机只走 IPv4；Windows 本机路线
 同步：`sources/manifest.json` 去掉两条设计规格；references 和 SKILL.md 里引用规格章节的句子删除；面板每张卡片不再显示“依据：D-ENV-v0.3 §…”；README 去掉设计覆盖、开发状态、来源清单链接，清理说明改指 Skill 里的 `cleanup-cli-usage.md`；AGENTS.md 的“目标与设计基线”改为以 SKILL.md、references、ADR 和 CHANGELOG 为准，模块追踪改记在 CHANGELOG 和 ADR；CLAUDE.md 一句同步。测试里检查历史清单和设计规格的部分删除，其余改为检查规格已不在发行包和资料库里。
 
 保留：`docs/decisions.md`（为什么这么改）、CHANGELOG（改了什么），以及仍在用的脚本的开发说明（环境面板、环境入口、访谈续接、inventory、离线恢复、规则扩展候选）。
+
+## ADR-050：第二批清理——旧策略、门禁空壳和探测入口版本（2026-10-25 所有者确认）
+
+ADR-048 留下的第二批：
+
+1. `traffic_policy.py`：原来盖在每份报告上的是 2026-10-18 的旧策略（只管 Claude 目标流量、`other_applications: unchanged`、保留节点外层 IPv6），和现行“整机只走 IPv4”矛盾；后半部分 `plan_ipv4_only` 条件规划器只经 `remedy_plans.compile_ipv4_policy_plan` 暴露，没有调用方。改为只输出现行策略（`guardian-traffic-policy/0.2`：整机、只走 IPv4、IPv6 关闭、禁止回退、Windows 网卡 IPv6 默认关闭、代理失效不直连、例外须用户明确要求、由 `network_check.py` 测、`egress_verifier.py` 判），删除规划器；旧版策略的报告会被拒绝，重新生成即可。选择器的 `ipv4-only-policy` 动作改为整机关 IPv6 的调查动作，由 `IPV6_EXIT_OBSERVED`、`LAYER_IPV6_PROBE_FAIL` 触发。
+2. `workflow_guard.py`（716 行）只被 `inventory_cli workflow-status` 用来打印一个固定的“关闭”默认值；`windows_transactions.py`（663 行）只给 `inventory_cli capabilities` 报告“Windows 未开放”；`inventory_cli controller-audit` 永远返回不可用。三者连同子命令、测试和 CI 环境变量一起删除。
+3. `environment_entry.py` 的 `guardian-environment-entry-input/0.2`、`probe_context` 以及 `active_probe`、`client_contact` 两个门只给已删的 HTTPS 探测库用；实际调用只有 `offline_precheck` 和 `configuration`。删除后 0.2 声明会被当作格式错误拒绝。
+
+测试：删除只测这些代码的测试；`test_traffic_policy.py` 只留集成检查（每份报告带同一份固定策略、伪造策略被拒、脱敏往返、按文件路径导入）；`test_environment_entry.py` 去掉对已删门的断言，三处补回对现有门的调用。

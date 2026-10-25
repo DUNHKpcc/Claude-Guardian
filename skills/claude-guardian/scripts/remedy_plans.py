@@ -7,7 +7,7 @@ from copy import deepcopy
 import re
 
 try:
-    from traffic_policy import plan_ipv4_only
+    from traffic_policy import policy_projection
 except ModuleNotFoundError as _policy_import_error:
     if _policy_import_error.name != 'traffic_policy':
         raise
@@ -21,7 +21,7 @@ except ModuleNotFoundError as _policy_import_error:
     _policy_module = _policy_importlib.module_from_spec(_policy_spec)
     _policy_sys.modules[_policy_spec.name] = _policy_module
     _policy_spec.loader.exec_module(_policy_module)
-    plan_ipv4_only = _policy_module.plan_ipv4_only
+    policy_projection = _policy_module.policy_projection
 
 SCHEMA = 'guardian-remedy-plan-input/0.1'
 TEMPLATES = ('keep-existing', 'explicit-rule', 'tun-rule', 'scoped-compatibility')
@@ -209,7 +209,7 @@ def compile_plan(request):
     _validate(request)
     result = {'schema_version': 'guardian-remedy-plan/0.1', 'status': 'blocked',
               'target_ref': request['target_ref'], 'route_ref': request['route_ref'],
-              'traffic_policy': plan_ipv4_only().preview(),
+              'traffic_policy': policy_projection(),
               'template': request['template'], 'revision_refs': deepcopy(request['revision_refs']),
               'proposed_changes': [], 'blockers': [], 'dns_checks': {},
               'protected_control_path': {'status': 'unknown'},
@@ -243,11 +243,6 @@ def compile_plan(request):
     if result['blockers']:
         return result
     facts, intent, template = request['facts'], request['intent'], request['template']
-    # Legacy ipv6 intent cannot silently override the current Claude-target policy.
-    # Keep this gap separate from independent rule-edit admission/proposal sets.
-    if intent.get('ipv6_goal') in ('preserve', 'proxy'):
-        result['traffic_policy']['reason_codes'].append('IPV4_ONLY_INTENT_CONFLICT')
-        result['traffic_policy']['planning_status'] = 'unresolved'
     block('NATIVE_SCHEMA_ADAPTER_NOT_IMPLEMENTED')
     block('NATIVE_ACCEPTANCE_NOT_RUN')
     versions = facts.get('versions', {})
@@ -375,7 +370,3 @@ def compile_plan(request):
     result['dns_checks']['policy_rule'] = 'preserve full effective nameserver-policy; never deep-merge blindly'
     return result
 
-
-def compile_ipv4_policy_plan(scope=None, *, max_seconds=5, cancelled=lambda: False):
-    """Separate pure policy plan; never feeds executable rule-edit proposals."""
-    return plan_ipv4_only(scope, max_seconds=max_seconds, cancelled=cancelled)

@@ -224,7 +224,7 @@ class InventoryEntryTests(unittest.TestCase):
             self.test_original_terminal_consent_stays_required()
 
     def test_pure_capabilities_and_help_need_no_entry(self):
-        for argv in (['capabilities'], ['workflow-status'], ['--help']):
+        for argv in (['capabilities'], ['--help']):
             with self.subTest(argv=argv), patch.object(inventory, 'read_request', side_effect=AssertionError):
                 self.assertEqual(inventory.run(argv, outgoing=io.StringIO()), 0)
 

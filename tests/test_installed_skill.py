@@ -75,10 +75,7 @@ class InstalledSkillTests(unittest.TestCase):
     def test_capabilities_and_workflow_are_offline_and_closed(self):
         caps = json.loads(self.invoke('inventory_cli', 'capabilities').stdout)
         self.assertEqual(caps['cli']['mutations'], 'unavailable')
-        self.assertEqual(caps['windows']['native_transaction_acceptance'], 'not_run')
-        status = json.loads(self.invoke('inventory_cli', 'workflow-status').stdout)
-        self.assertEqual(status['workflow']['gate_state'], 'closed')
-        self.assertFalse(status['workflow']['transition_available'])
+        self.assertNotIn('windows', caps)
 
     def test_offline_interview_save_and_resume(self):
         with tempfile.TemporaryDirectory(dir=self.root) as tmp:

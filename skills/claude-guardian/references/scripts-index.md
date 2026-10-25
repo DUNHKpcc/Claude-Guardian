@@ -9,14 +9,13 @@
 | `interview_cli.py` | 入口 | 离线访谈：保存、续接、评估，不联网 | [intake.md](intake.md) |
 | `interview_flow.py` | 库 | 访谈状态机、问题集、`assessment` 和 `required_references`（本次必附资料）、`authorization` 分级授权记录函数 | [intake.md](intake.md)、[authorization-tiers.md](authorization-tiers.md) |
 | `environment_entry.py` | 库 | 环境入口资格（路线选定、PC0） | [agent-remediation.md](host-libraries.md#environment-entry) |
-| `workflow_guard.py` | 库 | 流程门禁（PC0/PC1/PC2 资格） | [contact-and-safety.md](contact-and-safety.md) |
 
 ## 检查与报告（只读）
 
 | 脚本 | 类型 | 用途 | 说明 |
 | --- | --- | --- | --- |
 | `guardian.py` | 入口 | 本机 macOS / Windows 基础诊断预览 | [SKILL.md](../SKILL.md)、[network-and-remedies.md](network-and-remedies.md) |
-| `inventory_cli.py` | 入口 | Clash 配置与控制器的只读盘点（`capabilities`、`static-audit`） | [network-and-remedies.md](network-and-remedies.md) |
+| `inventory_cli.py` | 入口 | Clash 配置的只读盘点（`capabilities`、`static-audit`） | [network-and-remedies.md](network-and-remedies.md) |
 | `clash_inventory.py` | 库 | Clash 配置静态盘点 | [network-and-remedies.md](network-and-remedies.md) |
 | `status_dashboard.py` | 入口 | 把 `guardian.py` 报告做成离线 HTML 面板；`--network` 附上 `network_check.py` 的报告，网络卡片显示实测结果 | [agent-remediation.md](agent-remediation.md) |
 | `probe_evidence.py` | 库 | 把 `network_check.py` 报告投影到面板卡片 | 同上 |
@@ -46,7 +45,7 @@
 | `repair_cli.py` | 入口 | 修复预检与计划（`plan`、`execute`）；不要加 `-I` | [agent-remediation.md](agent-remediation.md#mac-修复链clash-verge-rev-258-的-rules-扩展) |
 | `repair_execution.py` | 库 | 修复写入传输，原生门禁只放行 macOS Clash Verge Rev 2.5.8 的 rules 扩展 | 同上 |
 | `native_clash_verge_mac.py` | 库 | 上述门禁的固定 macOS 适配器（应用须已退出，前后复查） | 同上 |
-| `transactions.py`、`windows_transactions.py` | 库 | 精确文件事务（POSIX 写入；Windows 只读） | [agent-remediation.md](agent-remediation.md) |
+| `transactions.py` | 库 | 精确文件事务（POSIX） | [agent-remediation.md](agent-remediation.md) |
 | `recovery_cli.py` | 入口 | 独立的回执检查与恢复（`inspect`、`preview`、`rollback`、`reconcile`） | [agent-remediation.md](agent-remediation.md) |
 
 ## 清理（C 档）

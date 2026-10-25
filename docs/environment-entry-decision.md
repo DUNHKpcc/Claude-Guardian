@@ -35,7 +35,6 @@ A withdrawn, unknown, declined, stale, conflicting or comparison-only route cann
 
 - `guardian.py check` and `repair_cli.py` accept an explicit `--entry-file`; their current safe file reader is POSIX-only. A reviewed host may supply the dictionary through the documented in-process entry API instead. No Windows command-line file support is implied.
 - `inventory_cli.py static-audit` uses the version 2 request envelope with `entry_request`; low-level pure parsers remain data-only helpers.
-- `workflow_guard.py` binds entry eligibility to operation and checks current declarations after approval. Independent local explanation does not need a full questionnaire.
 - `cleanup_cli.py` requires current selection before planning or new quarantine. VPS quarantine is outside the basic non-intrusive profile. Exact retained reconciliation/restoration does not require a new route declaration, but retains its own identity, ownership, conflict and live-approval checks.
 
 Default native adapters still support only their documented platforms and locations. A valid VM/VPS declaration does not create an adapter or prove host/guest identity. Configuration imported into a client is not evidence that the client is using it. A valid entry permits the relevant next review, never actual configuration, network contact, deletion or a safe-account guarantee.

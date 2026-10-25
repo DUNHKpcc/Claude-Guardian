@@ -93,28 +93,6 @@ class EntryPlanBinding(unittest.TestCase):
                 self.assertEqual(fixture.target.read_bytes(), repair_fixtures.RAW)
                 self.assertEqual(list(fixture.backups.iterdir()), [])
 
-    def test_repair_legacy_plan_cannot_be_upgraded_by_adding_probe_context(self):
-        fixture = self.fixture(repair_fixtures.RepairExecution)
-        fixture.retained()
-        original_plan = fixture.plan.read_bytes()
-        current = copy.deepcopy(fixture.entry)
-        current['schema_version'] = 'guardian-environment-entry-input/0.2'
-        current['probe_context'] = {
-            'schema_version': 'guardian-probe-context/0.1', 'executor': 'shell',
-            'transport_path': 'direct_socket_os_route_tun_unknown',
-            'binding': {'target_ref': current['targets'][0]['target_ref'], 'user_ref': 'user',
-                        'namespace_ref': 'native', 'source': 'current_host_observation'},
-            'resource': {'selection': 'unknown', 'source': 'current_user_declaration'}}
-        current['probe_context']['resource']['selection'] = current['network']['selection']
-        fixture.arguments['entry_request'] = current
-        with patch.object(repair_fixtures.e, '_native_session',
-                          side_effect=AssertionError('native admission')):
-            with self.assertRaisesRegex(repair_fixtures.r.RepairError,
-                                        '^ENVIRONMENT_ENTRY_PLAN_MISMATCH$'):
-                repair_fixtures.e.execute(**fixture.arguments)
-        self.assertEqual(fixture.plan.read_bytes(), original_plan)
-        self.assertEqual(fixture.target.read_bytes(), repair_fixtures.RAW)
-        self.assertEqual(list(fixture.backups.iterdir()), [])
 
     def test_repair_equivalent_fresh_entry_and_reordered_keys_keep_plan_usable(self):
         fixture = self.fixture(repair_fixtures.RepairExecution)

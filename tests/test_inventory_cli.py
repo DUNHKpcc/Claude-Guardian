@@ -171,19 +171,9 @@ class InventoryCliTests(unittest.TestCase):
         with patch.object(cli, 'read_request', side_effect=AssertionError):
             code, result, _ = self.invoke(['capabilities'])
         self.assertEqual(code, 0)
-        self.assertEqual(result['windows']['native_transaction_acceptance'], 'not_run')
+        self.assertNotIn('windows', result)
         self.assertEqual(result['cli']['mutations'], 'unavailable')
 
-    def test_workflow_default_never_opens(self):
-        code, result, _ = self.invoke(['workflow-status'])
-        self.assertEqual(code, 0)
-        self.assertEqual(result['workflow']['gate_state'], 'closed')
-        self.assertFalse(result['workflow']['transition_available'])
-
-    def test_controller_no_io(self):
-        code, result, _ = self.invoke(['controller-audit'])
-        self.assertEqual((code, result['error_code']), (2, 'NATIVE_CONTROLLER_HOST_ADAPTER_UNAVAILABLE'))
-        self.assertNotIn('controller_inventory', cli.__dict__)
 
     def test_noncanonical_request_paths(self):
         for path in (str(self.root) + '//request.json', str(self.path) + '/',
@@ -275,16 +265,11 @@ class CrossPlatformCliTests(unittest.TestCase):
         self.assertEqual(cli.run(['capabilities'], outgoing=out), 0)
         result = json.loads(out.getvalue())
         self.assertEqual(result['cli']['mutations'], 'unavailable')
-        self.assertEqual(result['windows']['native_transaction_acceptance'], 'not_run')
+        self.assertNotIn('windows', result)
 
-    def test_controller_is_unavailable(self):
-        out = io.StringIO()
-        self.assertEqual(cli.run(['controller-audit'], outgoing=out), 2)
-        self.assertEqual(json.loads(out.getvalue())['error_code'], 'NATIVE_CONTROLLER_HOST_ADAPTER_UNAVAILABLE')
 
     def test_help_uses_json_and_injected_stream(self):
-        for argv in (['--help'], ['static-audit', '--help'], ['capabilities', '--help'],
-                     ['controller-audit', '--help'], ['workflow-status', '--help']):
+        for argv in (['--help'], ['static-audit', '--help'], ['capabilities', '--help']):
             with self.subTest(argv=argv), patch.object(cli.sys, 'stdout', new_callable=io.StringIO) as global_out:
                 out = io.StringIO()
                 self.assertEqual(cli.run(argv, outgoing=out), 0)
@@ -292,20 +277,6 @@ class CrossPlatformCliTests(unittest.TestCase):
                 self.assertEqual(result['status'], 'help')
                 self.assertIn('usage:', result['help'])
                 self.assertEqual(global_out.getvalue(), '')
-
-    def test_controller_reaches_no_io_boundary(self):
-        with patch('socket.socket') as sock, patch('socket.create_connection') as connect, \
-                patch('socket.getaddrinfo') as dns, patch('os.open') as opened, \
-                patch('builtins.open') as builtin_open, patch('subprocess.Popen') as process:
-            out = io.StringIO()
-            self.assertEqual(cli.run(['controller-audit'], outgoing=out), 2)
-        for spy in (sock, connect, dns, opened, builtin_open, process):
-            spy.assert_not_called()
-
-    def test_new_workflow_remains_closed(self):
-        out = io.StringIO()
-        self.assertEqual(cli.run(['workflow-status'], outgoing=out), 0)
-        self.assertEqual(json.loads(out.getvalue())['workflow']['gate_state'], 'closed')
 
 
 if __name__ == '__main__':

@@ -1,29 +1,14 @@
 # Conservative inventory entrypoint
 
-`skills/claude-guardian/scripts/inventory_cli.py` provides read-only component
-integration for ENV-02 and an informational workflow default. It is not the full
-ENV-01/02 aggregate contract, PC-G1 acceptance, or an executor. No command writes
-files, scans configuration directories, launches applications, or opens a network
-connection. Output goes to stdout only; it is never implicitly saved.
-
-## Offline commands
+`skills/claude-guardian/scripts/inventory_cli.py` reads a Clash configuration you
+point it at (static audit) and lists what the CLI can do. It writes nothing,
+scans nothing and opens no network connection; output goes to stdout.
 
 ```sh
 python skills/claude-guardian/scripts/inventory_cli.py capabilities
-python skills/claude-guardian/scripts/inventory_cli.py workflow-status
 ```
 
-Capabilities include the Windows library's exact operation support. Windows
-read-only planning is a host-library interface, not a CLI operation. Native
-transaction acceptance remains `not_run`; mutation, verification and rollback
-remain unavailable. `workflow-status` describes a fresh closed workflow default,
-not a persisted session, device observation, or consent. There are no transition,
-resume-grant, apply or probe options.
-
-`controller-audit` returns `NATIVE_CONTROLLER_HOST_ADAPTER_UNAVAILABLE` without
-importing controller transport or sending a request. The controller library is
-available to a trusted host only after it implements real native ownership and
-live approval adapters. JSON booleans cannot supply those adapters.
+Network checks are in `network_check.py`.
 
 ## Static audit, on the intended Mac only
 

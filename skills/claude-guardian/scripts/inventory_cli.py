@@ -17,8 +17,6 @@ import sys
 
 import clash_inventory
 import environment_entry
-import windows_transactions
-import workflow_guard
 
 MAX_REQUEST_BYTES = 65536
 BOUNDARY = ('Caller-asserted target/user/namespace and local hydrated storage; '
@@ -176,24 +174,13 @@ def run(argv=None, *, incoming=None, outgoing=None, prompt=None):
         parser = Parser(prog='inventory_cli.py', description=__doc__)
         commands = parser.add_subparsers(dest='command', required=True, parser_class=Parser)
         commands.add_parser('capabilities')
-        commands.add_parser('workflow-status')
-        commands.add_parser('controller-audit')
         audit = commands.add_parser('static-audit')
         audit.add_argument('--request', required=True, help='Absolute local hydrated request JSON path')
         audit.add_argument('--target-ref', required=True, help='Exact independently checked target alias')
         args = parser.parse_args(argv)
         if args.command == 'capabilities':
-            result['windows'] = windows_transactions.capabilities()
-            result['cli'] = {'static_audit': 'macos_terminal_only_unvalidated',
-                             'controller_audit': 'blocked_no_native_host_adapter',
-                             'windows_plan': 'host_library_only', 'mutations': 'unavailable'}
-        elif args.command == 'workflow-status':
-            state = workflow_guard.State()
-            result['workflow'] = {'phase': state.phase.value, 'gate_state': state.gate.value,
-                                  'observed_contact': state.observed_contact, 'scope': 'new_process_default_only',
-                                  'transition_available': False}
-        elif args.command == 'controller-audit':
-            raise InputError('NATIVE_CONTROLLER_HOST_ADAPTER_UNAVAILABLE')
+            result['cli'] = {'static_audit': 'macos_terminal_only', 'mutations': 'unavailable',
+                             'network_check': 'scripts/network_check.py run'}
         else:
             request = read_request(args.request)
             validate_request(request, args.target_ref)
