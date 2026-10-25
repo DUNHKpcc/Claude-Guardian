@@ -253,6 +253,23 @@ class GuidanceContracts(unittest.TestCase):
                          "contact-and-safety.md", "device-report.yml"):
                 self.assertIn(link, body, name)
 
+    def test_host_library_contracts_live_outside_skill_md(self):
+        # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        libs = (REFS / "host-libraries.md").read_text(encoding="utf-8")
+        self.assertLess(len(skill.encode("utf-8")), 32000)
+        self.assertIn("## 内置脚本与宿主库", skill)
+        self.assertIn("references/host-libraries.md", skill)
+        self.assertNotIn("当前尚无开放的内置生产配置写入适配器", skill)
+        for heading in ("## Agent内部修复入口（按动作能力分流）", "## 限定静态盘点入口", "## 本地环境状态面板",
+                        "### DNS 库与离线样本", "### 系统 DNS 样本库", "### 窄范围上下文与终端会话",
+                        "### 私有配置候选（不可应用）", "## 环境入口校验", "## 旧目标范围契约与整机结论"):
+            self.assertIn(heading, libs)
+            self.assertNotIn(heading, skill)
+        for term in ("NATIVE_REPAIR_ADAPTER_UNAVAILABLE", "guardian-retained-repair/0.3", "restore-prepared",
+                     "apply_supported始终false", "Retry-After", "不能 pass"):
+            self.assertIn(term, libs)
+
     def test_guides_do_not_understate_recorded_real_device_runs(self):
         # ADR-039 recorded a real Mac `established` run; Issue #13 ran Windows firewall steps 1-4.
         egress = (REFS / "whole-machine-ipv4.md").read_text(encoding="utf-8")

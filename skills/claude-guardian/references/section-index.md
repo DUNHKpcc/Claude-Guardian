@@ -135,6 +135,20 @@ M14：证据、来源与发布规则（5 节）
 - [发布与更新](evidence-policy.md#发布与更新)
 - [官方与技术入口（历史索引）](evidence-policy.md#官方与技术入口历史索引)
 
+## host-libraries.md
+
+内置脚本与宿主库的契约说明（9 节）
+
+- [Agent内部修复入口（按动作能力分流）](host-libraries.md#agent内部修复入口按动作能力分流)
+- [限定静态盘点入口](host-libraries.md#限定静态盘点入口)
+- [本地环境状态面板](host-libraries.md#本地环境状态面板)
+  - [DNS 库与离线样本](host-libraries.md#dns-库与离线样本)
+  - [系统 DNS 样本库](host-libraries.md#系统-dns-样本库)
+  - [窄范围上下文与终端会话](host-libraries.md#窄范围上下文与终端会话)
+  - [私有配置候选（不可应用）](host-libraries.md#私有配置候选不可应用)
+- [环境入口校验](host-libraries.md#环境入口校验)
+- [旧目标范围契约与整机结论](host-libraries.md#旧目标范围契约与整机结论)
+
 ## incidents-and-integrations.md
 
 M07/M10–M13: clients, incidents, integrations, and preservation（21 节）
