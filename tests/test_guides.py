@@ -253,6 +253,20 @@ class GuidanceContracts(unittest.TestCase):
                          "contact-and-safety.md", "device-report.yml"):
                 self.assertIn(link, body, name)
 
+    def test_beginner_combo_is_stated_directly(self):
+        # Owner fact 2026-10-25: the beginner combo and the phone-then-KYC-within-24h verdict.
+        doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        section = doc.split("## A0a：新手试错推荐组合", 1)[1].split("\n## ", 1)[0]
+        for term in ("苹果内购", "Gmail 或 Outlook", "VPS 纯净个人 IP", "VM 或本机", "**Pro**",
+                     "退款成功率高、稳定率高", "24 小时内又要 KYC", "基本宣判死刑"):
+            self.assertIn(term, section)
+        for hedge in ("单例", "未核实", "只是推测", "稳妥做法", "不承诺"):
+            self.assertNotIn(hedge, section)
+        self.assertIn("基本宣判死刑", doc.split("## A0a", 1)[0])
+        self.assertIn("account-onboarding.md#a0a", (REFS / "accounts-and-payments.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("references/account-onboarding.md#a0a", skill)
+
     def test_host_library_contracts_live_outside_skill_md(self):
         # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")

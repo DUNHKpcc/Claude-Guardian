@@ -4,8 +4,9 @@
 
 ## account-onboarding.md
 
-A0: 新账号注册与使用节奏（1 节）
+A0: 新账号注册与使用节奏（2 节）
 
+- [A0a：新手试错推荐组合](account-onboarding.md#a0a新手试错推荐组合)
 - [A0b：短期封号时间线（出问题时先对照排查方向）](account-onboarding.md#a0b短期封号时间线出问题时先对照排查方向)
 
 ## accounts-and-payments.md
