@@ -31,17 +31,17 @@ GROUPS = (("system", "系统与目标", "ENV-01", "S"),
           ("browser", "浏览器 / WebRTC", "ENV-05", None),
           ("failure", "代理失效 / 防直连", "ENV-10", None))
 COVERAGE = {
-    "system": ("§19", "目标设备、用户、命名空间；目标绑定另外核实"),
-    "proxy": ("§19 / §20.1–3", "系统代理、显式 HTTP/mixed 入口、浏览器路径分别核实；端口要实测可用"),
-    "tun": ("§20.4.4 / §20.6", "TUN 开关、IPv4/IPv6 路由、DNS 与 UDP 接管分别核实；开启后要实测覆盖"),
-    "ipv4": ("§20.3 / §20.5", "需区分系统继承、显式代理、TUN 与浏览器的 HTTPS IPv4 样本；这里看的是网络路径"),
-    "ipv6": ("§20.5", "分别记录本机接口、节点外层通道、代理到目标、浏览器 ICE；AAAA 为空或超时只是线索，阻断要用 IPv6 实测确认"),
-    "dns": ("§20.4", "系统、浏览器 DoH、Mihomo、引导解析与实际解析器连接分别核实；Fake-IP 差异不自动判错"),
-    "dns_leak": ("§20.4.1–4", "判泄露要把批准的查询、解析目标与实际连接对上；只看解析器设置或地区差异不够"),
-    "udp": ("§20.6", "区分应用 UDP 与代理隧道外层 UDP；其他目的地、端口和协议另测"),
-    "stun": ("§20.6.1–2", "独立 Binding 事务的地址族、映射分类、路径与时间须有证据；不展示映射 IP，浏览器样本另测"),
-    "browser": ("§20.7", "所选浏览器/Profile 的政策、HTTPS 路径、ICE host/srflx/relay 与 IPv6 分别核实；没有候选时换方式再测"),
-    "failure": ("§18 / §20.5 / ENV-10", "代理失效后的行为、程序/子进程范围与恢复要单独演练；防直连以停核心演练为准"),
+    "system": "目标设备、用户、命名空间；目标绑定另外核实",
+    "proxy": "系统代理、显式 HTTP/mixed 入口、浏览器路径分别核实；端口要实测可用",
+    "tun": "TUN 开关、IPv4/IPv6 路由、DNS 与 UDP 接管分别核实；开启后要实测覆盖",
+    "ipv4": "需区分系统继承、显式代理、TUN 与浏览器的 HTTPS IPv4 样本；这里看的是网络路径",
+    "ipv6": "分别记录本机接口、节点外层通道、代理到目标、浏览器 ICE；AAAA 为空或超时只是线索，阻断要用 IPv6 实测确认",
+    "dns": "系统、浏览器 DoH、Mihomo、引导解析与实际解析器连接分别核实；Fake-IP 差异不自动判错",
+    "dns_leak": "判泄露要把批准的查询、解析目标与实际连接对上；只看解析器设置或地区差异不够",
+    "udp": "区分应用 UDP 与代理隧道外层 UDP；其他目的地、端口和协议另测",
+    "stun": "独立 Binding 事务的地址族、映射分类、路径与时间须有证据；不展示映射 IP，浏览器样本另测",
+    "browser": "所选浏览器/Profile 的政策、HTTPS 路径、ICE host/srflx/relay 与 IPv6 分别核实；没有候选时换方式再测",
+    "failure": "代理失效后的行为、程序/子进程范围与恢复要单独演练；防直连以停核心演练为准",
 }
 FACT_IDS = {"S%02d" % n for n in range(1, 17)} | {"P%02d" % n for n in range(1, 25)}
 ERROR_CODES = frozenset({"PROXY_PORT_ASSOCIATION_CONFLICT", "COLLECTOR_INTERNAL_FAILURE",
@@ -185,7 +185,7 @@ def render(report, now=None, network_report=None):
     rows = []
     for key in order:
         card = by_key[key]
-        section, limitation = COVERAGE[key]
+        limitation = COVERAGE[key]
         evidence_at = card["evidence_at"].isoformat() if card["evidence_at"] else "未知 / 未执行"
         if card["details"]:
             fact = "；".join(card["details"])
@@ -198,8 +198,8 @@ def render(report, now=None, network_report=None):
         evidence = "当前有效观察字段：%d / %d。证据最早时间（UTC）：%s。路径：未知 / 未独立绑定。" % (card["observed"], card["total"], evidence_at)
         if card["measured"]:
             evidence = "network_check.py 实测（UTC %s）。" % card["measured"]["checked_at"].isoformat()
-        rows.append('<tr data-check="%s"><th scope="row">%s</th><td>%s</td><td><details><summary>%s</summary><p>%s</p><p>%s</p><p>依据：D-ENV-v0.3 %s · %s。状态：%s</p></details></td></tr>' %
-                    (key, escape(labels[key]), badge(card["state"]), escape(fact), escape(evidence), escape(limitation), escape(section), escape(card["module"]), escape(card["state"])))
+        rows.append('<tr data-check="%s"><th scope="row">%s</th><td>%s</td><td><details><summary>%s</summary><p>%s</p><p>%s</p><p>%s · 状态：%s</p></details></td></tr>' %
+                    (key, escape(labels[key]), badge(card["state"]), escape(fact), escape(evidence), escape(limitation), escape(card["module"]), escape(card["state"])))
     sample = '<span class="sample">合成演示</span>' if view["synthetic"] else '<span class="sample">离线快照</span>'
     freshness = "" if view["snapshot_fresh"] else " · 时间缺失、过期或无效"
     execution_note = "" if report.get("execution_status") == "completed" else " · " + view["execution"]

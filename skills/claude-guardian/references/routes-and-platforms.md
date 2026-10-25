@@ -229,4 +229,4 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ## 来源与维护定位
 
-本手册由 [D-SPEC §3–5、§9–10](../sources/design/D-SPEC-v0.1.10.md) 与 [D-ENV §8、§11、§18](../sources/design/D-ENV-v0.3.md) 展开。[S04 路线/FAQ](../sources/S04-claude-guide.md)、[S05 本地防护](../sources/S05-local-protection.md)、[S07 测试目录](../sources/S07-vps-script-catalog.md) 是背景材料，不授予执行权；[S08 VPS 教程](../sources/S08-vps-claude-tutorial.pdf)的命令，Agent 可在用户授权的 SSH 会话里按分级授权执行，详见 [vps-guidance.md](vps-guidance.md)。官方 OS/客户端入口沿用 D-SPEC 附录 A、D-ENV §14 的历史链接，使用前按阶段复核；本次没有实时核验厂商版本、费用或实际设备。
+[S04 路线/FAQ](../sources/S04-claude-guide.md)、[S05 本地防护](../sources/S05-local-protection.md)、[S07 测试目录](../sources/S07-vps-script-catalog.md) 是背景材料，不授予执行权；[S08 VPS 教程](../sources/S08-vps-claude-tutorial.pdf)的命令，Agent 可在用户授权的 SSH 会话里按分级授权执行，详见 [vps-guidance.md](vps-guidance.md)。官方 OS 和客户端入口使用前核对当前版本。

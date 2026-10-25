@@ -64,7 +64,7 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual([c['key'] for c in view['cards']],
                          ['system', 'proxy', 'tun', 'ipv4', 'ipv6', 'dns', 'dns_leak', 'udp', 'stun', 'browser', 'failure'])
         html = dashboard.render(report(), NOW)
-        for text in ['AAAA', 'DoH', 'Fake-IP', 'host/srflx/relay', 'Binding', '路径：未知', 'D-ENV-v0.3']:
+        for text in ['AAAA', 'DoH', 'Fake-IP', 'host/srflx/relay', 'Binding', '路径：未知', 'ENV-04']:
             self.assertIn(text, html)
 
     def test_compact_table_semantics_and_primary_order(self):

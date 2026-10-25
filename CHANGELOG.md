@@ -1,5 +1,11 @@
 # 版本记录
 
+## 删除最初的设计规格、验收台账和不用的开发文档（2026-10-25）
+
+- **ADR-049：**删除两份最初设计规格（约 400KB，原先随包发给用户）、验收与进度台账、历史输入清单、7 份没人引用的开发说明和 1 份重复文档
+- manifest、references、SKILL.md、README、AGENTS.md、CLAUDE.md 去掉对它们的引用；面板卡片不再显示规格章节号
+- 发行包少了两份大文件；测试 1620 项全部通过。回滚：回退本提交
+
 ## IPv6 统一为只走 IPv4；所有者资料全部上 Wiki（2026-10-25）
 
 - **IPv6：**全项目统一为“只走 IPv4，IPv6 关闭”：Windows 本机路线默认关闭物理网卡 IPv6（B 档，远程机器仍是 C 档），Mac 可选；`authorization-tiers.md`、`whole-machine-ipv4.md`、`local-firewall-prompts.md`、SKILL.md 同步；手机端改为在小火箭、FlClash 里关闭 IPv6

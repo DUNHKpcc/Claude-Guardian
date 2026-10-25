@@ -14,7 +14,7 @@ A prior suspension triggers factual incident triage, not re-registration, hardwa
 
 An expired returning subscriber's explicit pending refund/restoration is `billing_issue`; a relevant old-channel migration is `change_channel`. Preserve the reported absence of an effective subscription and any selected future Q-C08 plan. No contradiction or current entitlement is implied. Ask only missing old-order facts, with actual past channel separate from the proposed future payment channel. A complete reported Q-P02 old-channel/status/pending-issue answer covers Q-A06; do not ask it twice, manufacture facts, or repeat the question after unknown/refusal/defer. See [intake's normalization contract](intake.md#已到期用户的相关旧账单t76).
 
-A refund explanation does not require a new iPhone, App Store region, gift card, renewal plan, checkout or deployment survey. The channel prerequisite trees below apply to actual purchase preparation, not as prerequisites to handling a legacy bill. On returning to resubscription preparation in the same task, reuse the selected target and explicit expired status. Account access, current refund policy checks and actual refund submission remain separately scoped; no refund or entitlement is promised. Source: [D-SPEC §5.5, §6.8–6.9, D.5–D.6](../sources/design/D-SPEC-v0.1.10.md).
+A refund explanation does not require a new iPhone, App Store region, gift card, renewal plan, checkout or deployment survey. The channel prerequisite trees below apply to actual purchase preparation, not as prerequisites to handling a legacy bill. On returning to resubscription preparation in the same task, reuse the selected target and explicit expired status. Account access, current refund policy checks and actual refund submission remain separately scoped; no refund or entitlement is promised.
 
 ## Channel prerequisite trees
 
@@ -196,7 +196,6 @@ Every payment answer ends with the references block, S02 first (see B1, ADR-011)
 - O07 [付费计划账单](https://support.claude.com/en/articles/8325618-paid-plan-billing-faqs)、O10 [退款](https://support.claude.com/en/articles/12386328-request-a-refund-for-a-paid-claude-plan)
 - O12 [Apple 兑换](https://support.apple.com/en-us/118242)、O13 [Apple 余额用途](https://support.apple.com/en-us/118245)、O14 [兑换错误](https://support.apple.com/en-us/108285)、O15 [Apple 账户国家或地区](https://support.apple.com/en-my/118283)
 - O16 [iOS 购买入口说明](https://support.claude.com/en/articles/9266495-how-do-i-sign-up-for-claude-pro-on-the-claude-app-for-ios)、O17 [Android 购买入口说明](https://support.claude.com/en/articles/9612892-how-do-i-sign-up-for-claude-pro-on-claude-for-android)
-- [D-SPEC M02/M03、§6.8–6.9、附录 D.5–D.7](../sources/design/D-SPEC-v0.1.10.md)、[D-ENV §18.5–18.10](../sources/design/D-ENV-v0.3.md) 是阶段与问项依据
 - [S02 原作者支付整理](../sources/S02-ai-payments.md)、[S03 PDF 第 2 页](../sources/S03-claude-experience.pdf)、[S04 FAQ](../sources/S04-claude-guide.md) 保留原署名；价格、卡费、准入变化快，购买前核对当前官方页面和当次订单
 
 本次没有实时核验上述政策、价格、账户或订单；执行前必须在获准阶段补齐相关证据。

@@ -383,3 +383,13 @@ DNS 泄露的两点实测发现：fake-ip 下只做解析不会触发真实查�
 IPv6：所有者确认 Windows 要关。整机只走 IPv4；Windows 本机路线默认关闭物理网卡 IPv6（B 档，记原值，虚拟网卡和组织管理的电脑不动）；macOS、Linux 在代理核心和 TUN 层关闭 IPv6。面板策略行改为“整机只走 IPv4，IPv6 关闭”。
 
 测试：删除对应模块的测试；锁定旧长篇措辞的文档测试改为检查新指南的要点；新增面板 `--network` 测试、发行包成员测试（按磁盘上每个脚本都入包检查）。第二批（`traffic_policy.py` 旧目标范围契约、`workflow_guard.py` 与 `windows_transactions.py`、环境入口里只给已删 HTTPS 库用的 probe_context）和报告格式有牵连，另行拿方案。
+
+## ADR-049：删除最初的设计规格、验收台账和不再使用的开发文档（2026-10-25 所有者要求）
+
+所有者要求清掉“最开始的测试文档、check 验收文档和与 Skill 干活不相关的东西”。
+
+删除：两份最初设计规格 `sources/design/D-SPEC-v0.1.10.md`、`D-ENV-v0.3.md`（约 400KB，原先也随发行包发给用户）；验收与进度跟踪 `docs/implementation-tracker.md`、`rebuild-status.md`、`requirements.md`；历史输入清单 `docs/source-manifest.json`；没有任何地方引用的开发说明 `agent-repair-flow.md`、`cleanup-full-data.md`、`config-edit-plan.md`、`macos-native-adaptation.md`、`remedy-plans.md`、`windows-transactions-design.md`、`dashboard-preview-ci.md`；和 Skill 里同名文件重复的 `docs/cleanup-cli-usage.md`。需要时都能从 git 历史找回。
+
+同步：`sources/manifest.json` 去掉两条设计规格；references 和 SKILL.md 里引用规格章节的句子删除；面板每张卡片不再显示“依据：D-ENV-v0.3 §…”；README 去掉设计覆盖、开发状态、来源清单链接，清理说明改指 Skill 里的 `cleanup-cli-usage.md`；AGENTS.md 的“目标与设计基线”改为以 SKILL.md、references、ADR 和 CHANGELOG 为准，模块追踪改记在 CHANGELOG 和 ADR；CLAUDE.md 一句同步。测试里检查历史清单和设计规格的部分删除，其余改为检查规格已不在发行包和资料库里。
+
+保留：`docs/decisions.md`（为什么这么改）、CHANGELOG（改了什么），以及仍在用的脚本的开发说明（环境面板、环境入口、访谈续接、inventory、离线恢复、规则扩展候选）。

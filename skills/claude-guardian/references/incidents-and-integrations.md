@@ -189,7 +189,6 @@ State the concrete symptom, known versus unknown cause, evidence source/time/sco
 
 ## 来源、官方入口与更新规则
 
-- [D-SPEC §4 M10–M12、§5.5–5.6、§8–10](../sources/design/D-SPEC-v0.1.10.md)；[D-ENV §8、§10–11、§18](../sources/design/D-ENV-v0.3.md) 是本手册边界和步骤依据
 - O03 [认证与合规](https://code.claude.com/docs/en/legal-and-compliance)、O04 [网络配置](https://code.claude.com/docs/en/network-config)、O09 [Agent SDK 与计划](https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan)：历史入口，需在 PC1 获准范围内核验当前内容、版本和更新说明
 - O06 [API 错误](https://platform.claude.com/docs/en/api/errors)、O11 [警告与申诉](https://support.claude.com/en/articles/8241253-safeguards-warnings-and-appeals)、O10 [退款](https://support.claude.com/en/articles/12386328-request-a-refund-for-a-paid-claude-plan)：只在相应事故/渠道使用，不代表当前资格已核实
 - [S03 PDF 第 3–5 页](../sources/S03-claude-experience.pdf)、[S04 FAQ](../sources/S04-claude-guide.md)、[S05 子进程防护](../sources/S05-local-protection.md)、[S06 保留 CLI 的清理](../sources/S06-macos-cleanup-sanitized.md) 是带归属的经验/阅读材料；与当前官方政策和目标设备实测分层。S09 是上文指定的外部固定提交阅读指针，未随本仓库 S01–S08 来源包提供，未验证为可用适配器；只供另行审阅，不能作为已验收脚本直接执行

@@ -311,7 +311,7 @@ M01/M06–M09: independent environment routes（31 节）
 
 ## source-library.md
 
-原始资料阅读库（15 节）
+原始资料阅读库（14 节）
 
 - [Agent 补充资料来源](source-library.md#agent-补充资料来源)
 - [对话中的使用方式](source-library.md#对话中的使用方式)
@@ -324,7 +324,6 @@ M01/M06–M09: independent environment routes（31 节）
   - [S06：macOS 清理，同时保留 CLI](source-library.md#s06macos-清理同时保留-cli)
   - [S07：VPS IP 质量与网络测试清单（精简版）](source-library.md#s07vps-ip-质量与网络测试清单精简版)
   - [S08：VPS Claude 教程（极低的封号风险）](source-library.md#s08vps-claude-教程极低的封号风险)
-- [设计规范：产品与工程背景](source-library.md#设计规范产品与工程背景)
 - [补充资料集合：R01 VPS 推荐报告集（业务／性价比／高端家宽）](source-library.md#补充资料集合r01-vps-推荐报告集业务性价比高端家宽)
 - [补充资料集合：R02 VPS 线路优化与家宽中转教程](source-library.md#补充资料集合r02-vps-线路优化与家宽中转教程)
 - [版本、来源与分发记录](source-library.md#版本来源与分发记录)

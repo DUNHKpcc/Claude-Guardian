@@ -14,7 +14,7 @@ SKILL = ROOT / 'skills/claude-guardian'
 class SourceBundleTests(unittest.TestCase):
     def test_exact_manifest_and_hashes(self):
         manifest = json.loads((SKILL / 'sources/manifest.json').read_text(encoding='utf-8'))
-        self.assertEqual({s['id'] for s in manifest['sources']}, {'S01','S02','S03','S04','S05','S06','S07','S08','D-SPEC','D-ENV'})
+        self.assertEqual({s['id'] for s in manifest['sources']}, {'S01','S02','S03','S04','S05','S06','S07','S08'})
         for source in manifest['sources']:
             records=[(source['path'],source['distributed_sha256'])]
             records.extend((c['path'],c['sha256']) for c in source.get('companions',[]))

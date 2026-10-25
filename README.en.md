@@ -129,7 +129,7 @@ If you only want to understand the subscription or compare options, stop at the 
 
 The three routes are parallel choices, not an upgrade path; using a VPS as a network exit is not the same as choosing the VPS route. No proxy or server yet? You can start with an offline pre-check. For the difference between an HTTP/mixed entry and an upstream SOCKS5 exit, see [environment entry and route boundaries](docs/environment-entry-decision.md).
 
-Cleaning Claude data from an old device: macOS has a built-in host, see the [cleanup interface guide](docs/cleanup-cli-usage.md); Windows uses a [PowerShell prompt](skills/claude-guardian/references/windows-cleanup.md) based on the official paths, Linux has its own [Linux cleanup](skills/claude-guardian/references/linux-cleanup.md). After a ban, proxy-client logs, VPN logs and IP-lookup commands in shell history are covered by [trace cleanup](skills/claude-guardian/references/trace-cleanup.md).
+Cleaning Claude data from an old device: macOS has a built-in host, see the [cleanup interface guide](skills/claude-guardian/references/cleanup-cli-usage.md); Windows uses a [PowerShell prompt](skills/claude-guardian/references/windows-cleanup.md) based on the official paths, Linux has its own [Linux cleanup](skills/claude-guardian/references/linux-cleanup.md). After a ban, proxy-client logs, VPN logs and IP-lookup commands in shell history are covered by [trace cleanup](skills/claude-guardian/references/trace-cleanup.md).
 
 For the full rules see [contact and authorization boundaries](skills/claude-guardian/references/contact-and-safety.md) and the [network evidence notes](skills/claude-guardian/references/network-and-remedies.md).
 
@@ -211,14 +211,7 @@ python3 -m compileall -q skills/claude-guardian/scripts
 python3 tools/package_skill.py --help
 ```
 
-When packaging, use `--output` for a new ZIP path in your own temporary directory; tests use synthetic data only. CI runs over 2000 unit, regression and deterministic packaging checks on Linux, macOS and Windows.
-
-The acceptance ledger moved out of the repository on 2026-10-21 (see [ADR-010](docs/decisions.md)); current progress is in the [CHANGELOG](CHANGELOG.md) and [decision log](docs/decisions.md):
-
-- [Design coverage](docs/requirements.md): implemented and unimplemented items
-- [Development status](docs/rebuild-status.md): current delivery order and remaining work
-- [Key decisions](docs/decisions.md): trade-offs and confirmation conditions
-- [Source manifest](docs/source-manifest.json): design input versions and hashes
+When packaging, use `--output` for a new ZIP path in your own temporary directory; tests use synthetic data only. CI runs unit, regression and deterministic packaging checks on Linux, macOS and Windows. What changed is in the [CHANGELOG](CHANGELOG.md); why is in the [decision log](docs/decisions.md).
 
 **Real-device verification and feedback:** the author verified these tutorials and scripts on their own Mac, Windows, VM and VPS, and the Clash Verge write and rollback and the whole-machine egress ruling on Mac went through item-by-item real-device acceptance (see [ADR-039](docs/decisions.md)). Tell us which item you used, how it went and what needed adjusting through the [device report](https://github.com/DUNHKpcc/Claude-Guardian/issues/new?template=device-report.yml).
 

@@ -65,7 +65,7 @@ QUESTION_PROMPTS = {'Q-J01': '这次是第一次准备订阅（包括只用过�
  'Q-C10': '希望逐步指导，还是直接给检查项和命令？',
  'Q-C11': '老用户这次主要是续费/升级、调整使用方案，还是检查环境/解决问题？',
  'Q-C12': '哪些已有项目、历史、客户端或配置不能动？',
- # Derived implementation ID for D-SPEC §6.4/§6.11 and T84; not a source-spec ID.
+ # Derived implementation ID (Q-C13).
  'Q-C13': '为判断这次具体客户端功能的套餐依赖：当前订阅是什么套餐，涉及哪项功能？只说已知情况，不确定或暂不回答也可以；无需打开 Claude。',
  'Q-OS01': '本机是 Mac 还是 Windows？',
  'Q-OS02': '如果 Windows：是 Windows 10/11？具体 Edition（Home、Home Single Language、Pro……）是什么？',

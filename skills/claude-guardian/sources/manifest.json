@@ -98,30 +98,6 @@
       "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
     },
     {
-      "id": "D-SPEC",
-      "category": "design",
-      "title": "Skill 设计规范 v0.1.10",
-      "original_filename": "Claude_AntiBan_Skill_Design_Spec_v0.1.10.md",
-      "original_sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
-      "path": "sources/design/D-SPEC-v0.1.10.md",
-      "distributed_sha256": "6c520d5ee50c914dcf519e5e63ba15641654e9b828c51c30f7fd3b80b6ba0562",
-      "changes": [],
-      "attribution": "用户提供的设计规范快照",
-      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
-    },
-    {
-      "id": "D-ENV",
-      "category": "design",
-      "title": "环境脚本设计规范 v0.3",
-      "original_filename": "Claude_Environment_Scripts_Design_Spec_v0.3.md",
-      "original_sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
-      "path": "sources/design/D-ENV-v0.3.md",
-      "distributed_sha256": "ea396f8bf36d37165761ac0d3fe2528eb1c1824c5abfda772a5c1b2b7240eef4",
-      "changes": [],
-      "attribution": "用户提供的设计规范快照",
-      "redistribution": "用户已确认公开分发；保留第三方原有署名和许可声明，不构成统一重新许可"
-    },
-    {
       "id": "S07",
       "category": "reading",
       "title": "VPS IP 质量与网络测试清单（精简版）",

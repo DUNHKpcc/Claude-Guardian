@@ -142,7 +142,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 - [section-index.md](references/section-index.md)：`references/` 每个文件的每个二、三级小节和锚点链接（由 `tools/gen_section_index.py` 生成）；定位到文件后，在这里找具体小节，不要通读整份文件，也不要漏掉没有被资料表点到的小节
 - [host-libraries.md](references/host-libraries.md)：内置入口和宿主库的输入格式、阻塞条件与边界（repair/recovery/inventory/诊断会话/面板/DNS/STUN/配置候选）；用到哪个读哪个小节
 - [scripts-index.md](references/scripts-index.md)：`scripts/` 和 `assets/` 里每个脚本的用途、入口还是库、对应说明；找不到该用哪个脚本时先看这里（访谈状态机 `interview_flow.py`、各 `native_*_mac.py`、`egress_verifier.py` 都列在里面）
-- [source-library.md](references/source-library.md)：全部来源资料的清单、哈希和使用限制；`sources/manifest.json` 是它的机器可读版，设计规格 [D-SPEC](sources/design/D-SPEC-v0.1.10.md) 和 [D-ENV](sources/design/D-ENV-v0.3.md) 在 `sources/design/`；S08 文字版见 [S08-extracted-text.md](sources/S08-extracted-text.md)
+- [source-library.md](references/source-library.md)：全部来源资料的清单、哈希和使用限制；`sources/manifest.json` 是它的机器可读版；S08 文字版见 [S08-extracted-text.md](sources/S08-extracted-text.md)
 
 参考资料采用中英双语结构，英文技术细则供执行者阅读，不直接把整份参考文件作为中文用户的操作答复。
 

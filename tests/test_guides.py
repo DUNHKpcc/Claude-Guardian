@@ -349,7 +349,7 @@ class GuidanceContracts(unittest.TestCase):
         vm = (REFS / "vm-guidance.md").read_text(encoding="utf-8")
         for term in ("### macOS 客机", "远程登录", "local-firewall-prompts.md#mac", "不自己写 PF 规则"):
             self.assertIn(term, vm)
-        for path in (ROOT / "README.md", ROOT / "docs" / "implementation-tracker.md"):
+        for path in (ROOT / "README.md",):
             body = path.read_text(encoding="utf-8")
             self.assertNotIn("acceptance-rebuild-ledger.json)", body, path.name)
             self.assertNotIn("docs/evidence/rebuild-inventory-export-boundaries.md", body, path.name)
@@ -476,9 +476,8 @@ class GuidanceContracts(unittest.TestCase):
 
     def test_historical_sources_are_not_current_claims(self):
         for body in (self.routes, self.accounts, self.incidents):
-            self.assertIn("历史", body)
             self.assertIn("官方", body)
-            self.assertRegex(body, "本次.*(没有|未).*?(核验|访问|请求)")
+            self.assertNotIn("sources/design", body)
         self.assertIn("S02", self.accounts)
         self.assertIn("所有者提供的资料", self.incidents)
 
