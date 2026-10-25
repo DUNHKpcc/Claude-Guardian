@@ -243,6 +243,16 @@ class GuidanceContracts(unittest.TestCase):
                          "contact-and-safety.md", "device-report.yml"):
                 self.assertIn(link, body, name)
 
+    def test_kyc_ip_consistency_and_pro_abandon_rule(self):
+        # Owner 2026-10-25: KYC checks the IP; a mismatch with payment/usage raises risk; Pro hit by KYC later: abandon.
+        payments = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
+        a3 = payments.split("### A3 ", 1)[1].split("\n## ", 1)[0]
+        for term in ("KYC 会检查 IP", "支付、日常使用环境不一致", "network_check.py run", "Pro 用了一段时间后才遇到 KYC，直接弃号"):
+            self.assertIn(term, a3)
+        onboarding = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        for term in ("KYC 会检查 IP", "Pro 用了一段时间后遇到 KYC，直接弃号"):
+            self.assertIn(term, onboarding)
+
     def test_self_built_proxy_checks_client_compatibility(self):
         # Owner 2026-10-25: desktop Clash Verge connecting while Shadowrocket/FlClash fail must not happen.
         doc = (REFS / "egress-ip-options.md").read_text(encoding="utf-8")

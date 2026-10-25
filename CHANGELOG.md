@@ -1,5 +1,9 @@
 # 版本记录
 
+## KYC 与 IP 一致性（2026-10-25）
+
+- 所有者提供：KYC 会检查 IP，IP 与支付、使用环境不一致会增大风险；Pro 后期遇到 KYC 直接弃号。写入 `accounts-and-payments.md` A3 和 `account-onboarding.md` A0 第 6 条（做 KYC 前先用 `network_check.py` 确认出口和平时一致）；新增守门测试。回滚：回退本提交
+
 ## 第二批清理：旧策略、门禁空壳、探测入口版本（2026-10-25）
 
 - **ADR-050：**报告里的 `traffic_policy` 改为现行整机只走 IPv4 策略（0.2），删除没人调的旧条件规划器；删除 `workflow_guard.py`、`windows_transactions.py` 和 `inventory_cli` 的 `workflow-status`、`controller-audit` 子命令；环境入口删除 0.2 版本、`probe_context` 和两个没人用的门
