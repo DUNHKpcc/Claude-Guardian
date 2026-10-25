@@ -40,15 +40,15 @@ rules:
 | 出变更卡：原值→新值、影响（局域网、VPN、DNS）、备份、恢复 | A | |
 | 改 Clash Verge 合并文件和客户端 TUN／DNS 设置 | B | 计划批准一次；先备份，改后读回；失败自动恢复原值 |
 | 退出和重启 Clash Verge | B | 写文件前先退出，改完再启动 |
-| 关闭网卡 IPv6 | **C** | 先确认节点外层不依赖 IPv6；当场确认；见下 |
+| 关闭本机网卡 IPv6 | B | Windows 默认做，Mac 可选；节点用 IPv4 地址；见下 |
 | 默认出站阻止／killswitch | **C** | 见[本机防火墙提示词](local-firewall-prompts.md) |
 | 故障演练（停代理核心） | B（本机且用户在场）／**C**（远程或唯一入口） | |
 
 **Mac：** 写合并文件时，Agent 先 `cp` 备份到用户目录下的私有备份文件夹，写后读回对比哈希；规则扩展（rules-prepend）有内置写入适配器，见 [Mac 修复链](agent-remediation.md#mac-修复链clash-verge-rev-258-的-rules-扩展)，合并文件和客户端设置没有，按上面方式处理。
 
-**Windows：** 没有内置写入引擎，由 Agent 按提示词操作：配置在 `%APPDATA%\io.github.clash-verge-rev.clash-verge-rev\` 下，改前 `Copy-Item` 到私有备份目录，改后 `Get-FileHash` 读回，出问题用备份恢复；TUN 要管理员权限，系统弹窗由用户确认。Windows 防火墙见[本机防火墙提示词](local-firewall-prompts.md)，网卡 IPv6 见 [Windows 网卡 IPv6 提示词](agent-remediation.md#windows-adapter-ipv6-hint)。
+**Windows：** 没有内置写入引擎，由 Agent 按提示词操作：配置在 `%APPDATA%\io.github.clash-verge-rev.clash-verge-rev\` 下，改前 `Copy-Item` 到私有备份目录，改后 `Get-FileHash` 读回，出问题用备份恢复；TUN 要管理员权限，系统弹窗由用户确认。Windows 防火墙见[本机防火墙提示词](local-firewall-prompts.md)，网卡 IPv6 默认关闭，见 [Windows 网卡 IPv6](agent-remediation.md#windows-adapter-ipv6-hint)。
 
-**关闭网卡 IPv6（C 档）：** Mac 先 `networksetup -listallnetworkservices` 列出服务名，再 `networksetup -setv6off "<服务名>"`，恢复用 `networksetup -setv6automatic "<服务名>"`。核心 `ipv6: false` 已经挡住代理里的 IPv6，关网卡是更强的一层，不是必须；不关会在判定里留一条建议 `OS_IPV6_NOT_DISABLED`。
+**关闭网卡 IPv6（B 档）：** Windows 默认关闭，步骤见 [Windows 网卡 IPv6](agent-remediation.md#windows-adapter-ipv6-hint)。Mac 可选：先 `networksetup -listallnetworkservices` 列出服务名，再 `networksetup -setv6off "<服务名>"`，恢复用 `networksetup -setv6automatic "<服务名>"`；核心 `ipv6: false` 已经挡住代理里的 IPv6，不关会在判定里留一条建议 `OS_IPV6_NOT_DISABLED`。
 
 ## 4. 取证（Agent 实际执行，不替用户编造）
 

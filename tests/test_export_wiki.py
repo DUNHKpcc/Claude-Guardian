@@ -28,6 +28,22 @@ class ExportWiki(unittest.TestCase):
             self.assertIn(source.split('/', 1)[1], text)
             self.assertTrue((w.ROOT / source).is_file(), source)
 
+    def test_every_owner_source_is_on_the_wiki(self):
+        # Owner 2026-10-25: all owner-provided materials, the payment summary included, go to the wiki.
+        sources = {source for _, source, _ in w.PAGES}
+        for source in ('sources/S01-server-glossary.md', 'sources/S02-ai-payments.md', 'sources/S03-source-text.md',
+                       'sources/S04-claude-guide.md', 'sources/S05-local-protection.md',
+                       'sources/S06-macos-cleanup-sanitized.md', 'sources/S07-vps-script-catalog.md',
+                       'sources/S08-extracted-text.md', 'sources/vps-recommendations/INDEX.md',
+                       'sources/R02-vps-line-optimization.md'):
+            self.assertIn(source, sources)
+        payments = self.files[w.page_name('S02 AI 所有支付方式汇总') + '.md']
+        self.assertNotIn('1124987353', payments)
+        self.assertIn('交流与反馈', payments)
+        self.assertIn('S03-claude-experience.pdf', self.files[w.page_name('S03 Claude 使用经验') + '.md'])
+        reports = self.files[w.page_name('VPS 推荐报告') + '.md']
+        self.assertEqual(len(set(re.findall(r'sources/vps-recommendations/[\w-]+\.pdf', reports))), 17)
+
     def test_page_names_are_unique_and_filesystem_safe(self):
         names = [w.page_name(title) for title, _, _ in w.PAGES]
         self.assertEqual(len(names), len(set(names)))

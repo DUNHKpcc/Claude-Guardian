@@ -41,9 +41,9 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 ## 同一电脑默认统一代理路径，可明确指定分流例外
 
-**2026-10-19 用户确认更新，优先于旧 target-only 默认：** 网络准备／修复默认要求同一目标电脑的所有普通应用、子进程和后台服务的公网 TCP／UDP／DNS 经同一指定代理路径／出口，普通应用到目标采用 `IPv4_ONLY`，禁止 IPv6 fallback；代理失效不得直连或切换未经批准的出口。不是只保护 Claude，也不能因某软件忽略系统代理就排除它。原 `PRODUCT-IPV4-20261018`、设计快照和历史验收保留原义，不改写为整机已实现。
+网络准备／修复默认要求同一目标电脑的所有普通应用、子进程和后台服务的公网 TCP／UDP／DNS 经同一指定代理路径／出口，普通应用到目标采用 `IPv4_ONLY`，禁止 IPv6 fallback；代理失效不得直连或切换未经批准的出口。不是只保护 Claude，也不能因某软件忽略系统代理就排除它。
 
-配置前必须先告知将如何接管整机流量，例如 TUN，以及对其他应用、LAN／VPN、DNS和控制连接的影响、明确例外、备份与独立恢复方案，取得具体批准后才执行。TUN 和 Clash 的 global 模式是两回事，故障防直连要靠防火墙另外做；代理上游外层的地址族与必要引导／本地例外逐项说明，旧的外层 IPv6 例外要重新确认，不直接关闭整机 IPv6。
+配置前必须先告知将如何接管整机流量，例如 TUN，以及对其他应用、LAN／VPN、DNS和控制连接的影响、明确例外、备份与独立恢复方案，取得具体批准后才执行。TUN 和 Clash 的 global 模式是两回事，故障防直连要靠防火墙另外做；只走 IPv4：核心和 DNS 关 IPv6，Windows 默认关闭网卡 IPv6（B 档），节点用 IPv4 地址。
 
 用户明确要求某软件／进程独立路径时，核实精确范围、路径、协议／地址族和失败行为，作为明确例外分别配置与验收；也可明确选择仅 Claude 的窄范围模式。存在例外就不能仍称全软件同一路径。完整默认、例外、能力与证据边界以 [Agent 整机路径要求](references/agent-remediation.md#ipv4-only-policy) 为准；[网络参考](references/network-and-remedies.md)的旧目标范围方法仅用于相应窄范围方案或局部诊断。
 
@@ -90,7 +90,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 | VM 路线（客机系统、网卡、出口、防火墙脚本） | [vm-guidance.md](references/vm-guidance.md)、[egress-ip-options.md](references/egress-ip-options.md)（必附）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（出口选自建梯、要选 VPS 时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（检查出口 IP 时）、[VM 搭建脚本](assets/vm-killswitch/enable-guest-ssh.sh)（开客机 SSH）、[FlClash TUN 安装](assets/vm-killswitch/install-flclash-tun.sh)、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（Linux 客机，按这个顺序） |
 | 进阶路线（目标 Linux 机器无法直连：反向隧道、崩溃自愈、出口钉死覆盖矩阵；叠加在 VM／VPS 路线之上） | [advanced-route.md](references/advanced-route.md)、[vm-guidance.md](references/vm-guidance.md)（必附）、[反向隧道脚本](assets/remote-hardening/install-reverse-tunnel.sh)、[崩溃自愈脚本](assets/remote-hardening/flclash-crash-heal.sh)、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（最后装，C 档） |
 | 本机路线：Clash（TUN）与防火墙（Windows 系统防火墙、Mac 用第三方 LuLu），提示词引导、无脚本 | [local-firewall-prompts.md](references/local-firewall-prompts.md)、[macOS DNS 经验](references/macos-dns-case-lessons.md)（Mac）、[S05 本地防护](sources/S05-local-protection.md) |
-| Windows 本机：网卡 IPv6 旁路、出口泄漏 | [agent-remediation.md 的 Windows 网卡 IPv6 提示词](references/agent-remediation.md#windows-adapter-ipv6-hint)（只提示，用户同意后才由用户或经批准执行，不自动改网卡） |
+| Windows 本机：关闭网卡 IPv6（默认，B 档） | [agent-remediation.md 的 Windows 网卡 IPv6](references/agent-remediation.md#windows-adapter-ipv6-hint) |
 | **账号被封或被限、问“多久被封的”、KYC 触发或身份核验**（任一出现就附，不必等用户问） | **[account-onboarding.md 的 A0b 短期封号时间线](references/account-onboarding.md#a0b短期封号时间线出问题时先对照排查方向)**（五个时间段对应的排查方向，来自 [S03 第 5 页](sources/S03-claude-experience.pdf)，必附）、[accounts-and-payments.md 的 A3 身份核验](references/accounts-and-payments.md#a3-真实身份核验异常会话与凭据保护)、[S04 §2.3 KYC 触发](sources/S04-claude-guide.md)、[事故分诊 M12](references/incidents-and-integrations.md)；先按时间段说常见原因方向，再查证据定原因 |
 | Windows 清理 Claude 本机数据（官方路径、分档、备份、隔离、还原；无内置宿主） | [windows-cleanup.md](references/windows-cleanup.md)（必附）、官方 [.claude 目录说明](https://code.claude.com/docs/en/claude-directory) |
 | Linux 清理 Claude 本机数据（VM 客机、VPS） | [linux-cleanup.md](references/linux-cleanup.md)（必附） |

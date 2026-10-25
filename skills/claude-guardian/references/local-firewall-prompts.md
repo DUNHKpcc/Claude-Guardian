@@ -51,7 +51,7 @@ Mac 上不建议自己写 PF 规则：Apple 的技术说明不建议把 PF 当�
 
 1. 客户端（Clash Verge 或 FlClash）从官方发布页安装，记录版本；用户自己导入节点配置，Agent 不索取订阅链接和密码。
 2. **TUN：**开启 TUN 需要管理员权限，由用户确认系统弹窗。说明影响：整机流量被接管，局域网、VPN、DNS 可能受影响。
-3. **网卡 IPv6：**如果有 IPv6 旁路风险，按 [Windows 网卡 IPv6 提示词](agent-remediation.md#windows-adapter-ipv6-hint)（只提示，用户同意后才由用户执行，先确认节点外层不依赖 IPv6）。
+3. **网卡 IPv6：**默认关闭，和 TUN 放在同一张计划里批准（B 档），步骤见 [Windows 网卡 IPv6](agent-remediation.md#windows-adapter-ipv6-hint)；节点用 IPv4 地址。
 4. 验证出口、WebRTC、DNS 的方法同 Mac。
 
 ### Windows 的防火墙：系统自带

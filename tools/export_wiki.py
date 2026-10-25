@@ -37,10 +37,17 @@ PAGES = [
     ('Windows 清理', 'references/windows-cleanup.md', '清理'),
     ('Linux 清理', 'references/linux-cleanup.md', '清理'),
     ('环境痕迹清理 代理 VPN 终端历史', 'references/trace-cleanup.md', '清理'),
-    ('VPS Claude 教程 文字版', 'sources/S08-extracted-text.md', '所有者提供的教程'),
-    ('VPS 线路优化与家宽中转教程', 'sources/R02-vps-line-optimization.md', '所有者提供的教程'),
+    ('S01 服务器术语', 'sources/S01-server-glossary.md', '所有者提供的资料'),
+    ('S02 AI 所有支付方式汇总', 'sources/S02-ai-payments.md', '所有者提供的资料'),
+    ('S03 Claude 使用经验', 'sources/S03-source-text.md', '所有者提供的资料'),
+    ('S04 Claude 防封号指南', 'sources/S04-claude-guide.md', '所有者提供的资料'),
+    ('S05 Claude 本地防护实战', 'sources/S05-local-protection.md', '所有者提供的资料'),
+    ('S07 IP 质量与网络测试清单', 'sources/S07-vps-script-catalog.md', '所有者提供的资料'),
+    ('VPS Claude 教程 文字版', 'sources/S08-extracted-text.md', '所有者提供的资料'),
+    ('VPS 推荐报告', 'sources/vps-recommendations/INDEX.md', '所有者提供的资料'),
+    ('VPS 线路优化与家宽中转教程', 'sources/R02-vps-line-optimization.md', '所有者提供的资料'),
 ]
-GROUP_ORDER = ['入门', '出口 IP', '三条路线', '清理', '所有者提供的教程']
+GROUP_ORDER = ['入门', '出口 IP', '三条路线', '清理', '所有者提供的资料']
 CHANNEL = ('- Telegram 频道：[https://t.me/+q4D4_Qf_FIs5NDk1](https://t.me/+q4D4_Qf_FIs5NDk1)\n'
            '- QQ：1048450370\n')
 
@@ -52,6 +59,26 @@ class ExportError(Exception):
 def page_name(title):
     """GitHub turns spaces in a page file name into hyphens; keep the name filesystem-safe."""
     return re.sub(r'[\\/:*?"<>|]', '', title).replace(' ', '-')
+
+
+# Contact details inside owner sources stay off the wiki (ADR-032); the Home page lists the channels.
+WIKI_REPLACEMENTS = {
+    'sources/S02-ai-payments.md': (('🐧群 1124987353', '🐧群（加群方式见 Wiki 首页“交流与反馈”）'),
+                                   ('**OpenRouter **', '**OpenRouter**')),  # stray space breaks the bold
+    # Badges that link into S04's upstream repository: keep the images, drop the links.
+    'sources/S04-claude-guide.md': (
+        ('[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)',
+         '![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)'),
+        ('[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)',
+         '![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)')),
+}
+
+
+PAGE_NOTES = {
+    'sources/S03-source-text.md': '原始 PDF（第 4 页手机端表格、第 5 页短期封号时间线是图片）：'
+                                  '[S03-claude-experience.pdf](%s/blob/main/skills/claude-guardian/sources/S03-claude-experience.pdf)'
+                                  % GITHUB,
+}
 
 
 def sources():
@@ -88,6 +115,8 @@ def rewrite_links(text, source, problems):
         path_part, _, fragment = target.partition('#')
         resolved = (source.parent / path_part).resolve()
         if not resolved.exists():
+            if source.relative_to(ROOT).parts[0] == 'sources' and not bang:
+                return label  # an owner source's link into its own upstream repository: keep the text
             problems.append('%s: unresolved link %s' % (source.relative_to(ROOT), target))
             return match.group(0)
         suffix = '#' + fragment if fragment else ''
@@ -141,11 +170,16 @@ def check_forbidden(name, text, problems):
 def render_page(title, source, commit, problems):
     path = ROOT / source
     body = path.read_text(encoding='utf-8')
+    for old, new in WIKI_REPLACEMENTS.get(source, ()):
+        if old not in body:
+            problems.append('%s: expected text to replace is missing' % source)
+        body = body.replace(old, new)
     body = rewrite_links(body, path.resolve(), problems)
     relative = path.relative_to(REPO).as_posix()
     banner = ('%s\n> 本页由仓库 [`%s`](%s/blob/main/%s) 自动生成（提交 `%s`）。**请到仓库修改，不要直接改 wiki**，否则下次同步会被覆盖。\n\n'
               % (MARKER, relative, GITHUB, relative, commit))
-    return bold_to_html(banner + body)
+    note = PAGE_NOTES.get(source)
+    return bold_to_html(banner + ('> %s\n\n' % note if note else '') + body)
 
 
 def render_home(commit):
