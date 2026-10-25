@@ -359,3 +359,13 @@ SKILL.md 每次运行都整篇载入，原 42KB 里约一半是宿主库和内�
 落地：新增 `references/trace-cleanup.md`（代理客户端 `logs` 目录整体隔离、配置不动、日志等级调到 warning；VPN 优先用客户端自带清除；zsh/bash/fish/PowerShell 只删匹配查 IP 站点的行，删前整份备份；命令输出只问用户在哪几处，不全盘搜索；系统日志不清）和 `references/linux-cleanup.md`（Claude Code 的 Linux 路径、同样的分档、bash 审计/备份/隔离/还原）。`native_cleanup_mac.py` 新增 `conversation` 档（`~/.claude/projects`、`history.jsonl`），只在用户选进范围时处理，终端确认页标明“本次包含对话记录、旧会话无法续接”，未选时写“对话记录不在本次范围”；`debug` 从受保护改为可再生。Windows 指引同步。理由：这些本地记录不会自动上传，风险在于以后 Claude Code 在这台机器上读到它们或用户贴进对话；对话记录里保存着以前跑过的命令输出，是旧 IP 最完整的一份。
 
 不变：设置、skills、插件、凭据仍始终保护；`~/.claude` 整体不能当根；隔离可还原，不永久删除；终端确认短语照旧。发行包 117 个成员。
+
+## ADR-047：网络基础检测脚本 network_check.py（2026-10-25 所有者要求“没检测到的统一修”）
+
+现状：`guardian.py check` 只采系统和代理设置等元数据，自己把 ENV-03（出口）、ENV-04（DNS/IPv6/UDP）、ENV-05（WebRTC）、ENV-10（故障演练）列为未测；DNS 泄露只在整机出口流程里靠人打开 dnsleaktest.com 看；STUN、DNS 探测库没有命令行入口；面板的 DNS 泄露、UDP、故障卡片永远是“未执行”；判定器不支持 Linux。
+
+新增 `scripts/network_check.py`（macOS、Windows、Linux，标准库）：默认路由是否走 TUN、IPv4 出口（国家与 ASN，不回显 IP；出口在本国判为直连）、经本地 HTTP/mixed 端口的出口是否和直连一致、IPv6 是否堵住（返回 IPv4 也算堵住）、DNS 泄露、fake-ip 接管、UDP（STUN 映射与 TCP 出口一致）、可选交互式故障演练（停核心后连不出去为通过；重开后也连不上判为网络本身有问题，不算通过）。联系的站点固定为 ipinfo.io、api6.ipify.org、bash.ws、stun.cloudflare.com，不碰 Claude 和 Anthropic。`--evidence-output` 写 0600 新文件交给 `egress_verifier.py`，判定器加入 Linux。
+
+DNS 泄露的两点实测发现：fake-ip 下只做解析不会触发真实查询，测试站收不到请求，所以脚本对每个测试域名再发起一次连接，让代理核心去解析；bash.ws 自带的“may be leaking”只是解析器 ASN 和出口 ASN 不同，走代理时这是常态，所以改按国家判断：解析服务器在用户本国（`--home-country`，默认 cn）即泄露。在所有者的 Omarchy（FlClash TUN、fake-ip）上实跑：路由、出口、代理端口出口、IPv6、DNS、UDP 全部通过，约 6 秒。
+
+授权：按 B 档，用户批准检测计划后由 Agent 运行；脚本启动不另要确认。还没覆盖：WebRTC 仍用 `serve_webrtc.py` 在浏览器里测；TUN 严格路由、核心 IPv6、规则兜底这些配置项由 Agent 读配置补；面板还没接入这份报告。

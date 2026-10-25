@@ -52,13 +52,23 @@ rules:
 
 ## 4. 取证（Agent 实际执行，不替用户编造）
 
+**先跑一条命令（B 档，用户批准检测计划后执行）：**
+
+```bash
+python3 scripts/network_check.py run --target-ref <别名> --proxy http://127.0.0.1:<mixed 端口> --evidence-output <私有目录>/evidence.json
+```
+
+它一次测完：默认路由是否走 TUN、IPv4 出口（只显示国家和 ASN）、经本地代理端口的出口是否和直连一致、IPv6 有没有出口、DNS 泄露（会主动连接测试域名，fake-ip 下也测得到；有解析服务器在本国就判泄露，`--home-country` 默认 `cn`）、UDP（STUN 映射地址和 TCP 出口是否一致）。加 `--failure-drill` 会在终端里提示用户停一次代理核心、再打开，测故障时有没有直连。联系的站点只有 `network_check.py endpoints` 列出的几个，不碰 Claude 和 Anthropic。`evidence.json` 含出口 IP，权限 0600，交给第 5 节的判定器；TUN 严格路由、核心 IPv6、规则兜底这些配置项它看不到，由 Agent 按第 2 节读配置后补进去，WebRTC 用下表的本地探测页。
+
+下表是手动取证的办法，脚本测不了的项或要复核时用：
+
 | 要证明的 | Mac | Windows |
 | --- | --- | --- |
 | TUN 开启、默认路由经 TUN | `route -n get default` 看接口是 `utun*`；`ifconfig | grep utun` | `Get-NetRoute -DestinationPrefix 0.0.0.0/0 | Sort-Object RouteMetric`；`Get-NetAdapter` 找 TUN 网卡 |
 | IPv4 出口（浏览器、终端、其他应用、后台各取一次） | 终端 `curl -4 -sS --max-time 10 https://ifconfig.me`；浏览器打开检测页 | `curl.exe -4 -sS --max-time 10 https://ifconfig.me`；浏览器同上 |
 | IPv6 不可达 | `curl -6 -sS --max-time 10 https://ifconfig.me`，应失败 | `curl.exe -6 -sS --max-time 10 https://ifconfig.me`，应失败 |
 | WebRTC | 包内[本地探测页](../assets/webrtc-probe.html) | 同左 |
-| DNS 泄漏 | 检测页（dnsleaktest.com）；看有没有本地运营商解析 | 同左 |
+| DNS 泄漏 | `network_check.py`；或检测页（dnsleaktest.com）看有没有本地运营商解析 | 同左 |
 | 系统 IPv6 状态 | `networksetup -getinfo "<服务名>"` | `Get-NetIPInterface -AddressFamily IPv6` |
 | 故障演练 | 退出 Clash Verge 或停核心，`curl` 和浏览器应全部失败；再启动应恢复 | 同左 |
 

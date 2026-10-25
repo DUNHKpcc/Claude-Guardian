@@ -51,14 +51,15 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 ## 完整访谈入口
 
-完整状态化访谈使用 `scripts/interview_cli.py`：默认仅输出下一题和阶段评估；已确认答案通过本地 answer JSON 传入；用户明确要求保存时才指定 `--output`。普通读档或连续轮次用 `--input`；真正中断后继续须加 `--resume <本次事件别名>`，按 [intake.md 的续接规则](references/intake.md#interruption-and-resume) 先核实相关变化，再规划。问题 ID 按条件调度，Q-C07 始终停用。`guardian.py interview` 保留为兼容的简化入口，不把它的八字段流程当作完整访谈。
+完整状态化访谈使用 `scripts/interview_cli.py`：默认仅输出下一题和阶段评估；已确认答案通过本地 answer JSON 传入；用户明确要求保存时才指定 `--output`。普通读档或连续轮次用 `--input`；真正中断后继续须加 `--resume <本次事件别名>`，按 [intake.md 的续接规则](references/intake.md#interruption-and-resume) 先核实相关变化，再规划。问题 ID 按条件调度，Q-C07 始终停用。`guardian.py interview` 是兼容的简化入口。
 
-由 Agent 编排检测、解释、选择内置动作、具体确认、执行和复测，详见 [agent-remediation.md](references/agent-remediation.md)。`scripts/agent_remediation.py select --input <本地报告.json> --target-ref <目标别名>` 生成结构化动作清单；清单只是选择，不执行。内置写入只开放下一节的一个范围；内置脚本修不了时，由 Agent 继续检查实际环境，用获准的宿主工具或经审阅的限定临时脚本完成最小修复、备份恢复和复测。内置门禁不绕过，授权来自用户在对话里的明确回复，不用返回 True 的回调代替。
+由 Agent 编排检测、解释、选择内置动作、具体确认、执行和复测，详见 [agent-remediation.md](references/agent-remediation.md)。`scripts/agent_remediation.py select --input <本地报告.json> --target-ref <目标别名>` 生成结构化动作清单；清单只是选择，不执行；内置脚本修不了时，由 Agent 在实际环境里用获准的工具做最小修复、备份恢复和复测。内置门禁不绕过，授权来自用户在对话里的明确回复。
 
 ## 内置脚本与宿主库
 
 内置入口按动作能力分流，常用的几个：
 
+- **网络基础检测用 `scripts/network_check.py run`**（三平台，B 档批准后跑）：路由、IPv4 出口、IPv6、DNS 泄露、UDP，`--failure-drill` 做故障演练，`--evidence-output` 交给 `egress_verifier.py`。`guardian.py check` 不测网络。
 - `scripts/repair_cli.py`：精确文件的 `preflight / plan / diff / execute`；当前开放的写入只有 macOS 上 Clash Verge Rev 2.5.8 的 `rules-prepend`（应用须已退出，已在真机验证写入与回滚），其他组合返回 `NATIVE_REPAIR_ADAPTER_UNAVAILABLE`，由 Agent 按 [agent-remediation.md](references/agent-remediation.md) 在实际环境里做最小修复。用应用界面改 2.5.8 的 rules 扩展时按 [agent-rules-task.md](references/agent-rules-task.md) 生成候选。
 - `scripts/inventory_cli.py capabilities`：查看实际开放范围；`scripts/status_dashboard.py`：把已有报告生成离线 HTML 面板。
 - `scripts/diagnostic_session.py`：本机终端元数据会话；`scripts/recovery_cli.py`：POSIX 回执检查与精确文件恢复。

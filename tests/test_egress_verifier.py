@@ -105,7 +105,7 @@ class EgressVerifier(unittest.TestCase):
     def test_invalid_input_is_rejected_with_fixed_codes(self):
         bad = {
             'INVALID_EVIDENCE': [[], dict(GOOD, extra=1), dict(GOOD, schema_version='x')],
-            'UNSUPPORTED_PLATFORM': [dict(GOOD, platform='linux')],
+            'UNSUPPORTED_PLATFORM': [dict(GOOD, platform='freebsd'), dict(GOOD, platform='ios')],
             'INVALID_TARGET_REF': [dict(GOOD, target_ref='../x'), dict(GOOD, target_ref='')],
             'INVALID_TUN': [evidence(tun={'enabled': 'maybe'}), dict(GOOD, tun={'enabled': 'yes'})],
             'INVALID_FIREWALL': [dict(GOOD, firewall='yes')],

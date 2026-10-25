@@ -61,7 +61,7 @@ def _ip(value):
 def _validate(evidence):
     if type(evidence) is not dict or set(evidence) - KEYS or evidence.get('schema_version') != SCHEMA:
         _bad('INVALID_EVIDENCE')
-    if evidence.get('platform') not in ('macos', 'windows'):
+    if evidence.get('platform') not in ('macos', 'windows', 'linux'):
         _bad('UNSUPPORTED_PLATFORM')
     if type(evidence.get('target_ref')) is not str or not REF.match(evidence['target_ref']):
         _bad('INVALID_TARGET_REF')

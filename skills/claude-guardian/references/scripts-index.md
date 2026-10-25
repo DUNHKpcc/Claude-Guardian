@@ -24,7 +24,8 @@
 | `native_context.py`、`windows_native_context.py`、`windows_listener_binding.py` | 库 | 进程上下文与监听端口观察 | [agent-remediation.md](agent-remediation.md) |
 | `macos_metadata_observer.py`、`macos_private_read.py` | 库 | macOS 文件元数据观察与私有读取守卫 | [agent-remediation.md](agent-remediation.md) |
 | `source_evidence.py` | 库 | 公共来源资料的字节身份 | [source-library.md](source-library.md) |
-| `egress_verifier.py` | 入口 | 整机只走 IPv4 出口的判定（`check --input`） | [whole-machine-ipv4.md](whole-machine-ipv4.md) |
+| `network_check.py` | 入口 | 网络基础检测：默认路由是否走 TUN、IPv4 出口（国家与 ASN，不回显 IP）、经本地代理端口的出口、IPv6、DNS 泄露（含 fake-ip）、UDP（STUN）、可选故障演练；macOS、Windows、Linux；`--evidence-output` 交给 `egress_verifier.py` | [whole-machine-ipv4.md](whole-machine-ipv4.md#4-取证agent-实际执行不替用户编造) |
+| `egress_verifier.py` | 入口 | 整机只走 IPv4 出口的判定（`check --input`），macOS、Windows、Linux | [whole-machine-ipv4.md](whole-machine-ipv4.md) |
 
 ## 网络探测（需要单独授权）
 

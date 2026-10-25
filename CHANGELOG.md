@@ -1,5 +1,12 @@
 # 版本记录
 
+## 网络基础检测（2026-10-25）
+
+- **ADR-047：**新增 `scripts/network_check.py run`（macOS、Windows、Linux）：默认路由是否走 TUN、IPv4 出口（只显示国家和 ASN）、经本地代理端口的出口、IPv6 是否堵住、DNS 泄露（fake-ip 下也测得到，解析服务器在本国判泄露）、UDP（STUN）、`--failure-drill` 交互式故障演练；`--evidence-output` 交给 `egress_verifier.py`，判定器支持 Linux
+- `whole-machine-ipv4.md` 第 4 节改为先跑这条命令；scripts-index、SKILL.md 登记；发行包 118 个成员
+- **测试：**新增 12 个单测（路由解析、DNS 判定、IPv6 返回 IPv4、出口在本国、报告不含 IP、证据被判定器接受、故障演练四种结果、STUN 比对、只写新文件、只接受本机代理端口）；所有者 Omarchy 上实跑全部通过
+- **已知限制：**WebRTC 仍在浏览器里测；面板尚未接入。回滚：回退本提交
+
 ## 自建梯客户端版本兼容提醒（2026-10-25）
 
 - 所有者提供：自建梯时重点注意版本兼容性，不要出现桌面端 Clash Verge 能连上、移动端小火箭和 FlClash 连不上的情况。`egress-ip-options.md` 自建梯提示第 4 条：3x-ui 的 Xray core、协议和传输选项选所有客户端都支持的组合，建好后用用户实际要用的每个客户端各连一次、各测一次出口，只测桌面端不算建好；新增守门测试。仅文档改动。回滚：回退本提交
