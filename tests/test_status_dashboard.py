@@ -169,7 +169,7 @@ class DashboardTests(unittest.TestCase):
 }''')
         view = dashboard.project(obj, NOW)
         text = ' '.join(view['cards'][1]['details'])
-        for expected in ('HTTP 开启', 'HTTPS 关闭', 'SOCKS 未知', 'PAC 未知', 'WPAD 未知', '存在，详情未采集', '不代表实际路径'):
+        for expected in ('HTTP 开启', 'HTTPS 关闭', 'SOCKS 未知', 'PAC 未知', 'WPAD 未知', '存在，详情未采集', '实际路径另测'):
             self.assertIn(expected, text)
         self.assertNotIn('PRIVATE', dashboard.render(obj, NOW))
         self.assertEqual(view['cards'][1]['state'], 'unknown')

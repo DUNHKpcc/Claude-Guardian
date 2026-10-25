@@ -253,6 +253,25 @@ class GuidanceContracts(unittest.TestCase):
                          "contact-and-safety.md", "device-report.yml"):
                 self.assertIn(link, body, name)
 
+    def test_skill_md_tells_the_agent_how_to_talk(self):
+        # Owner 2026-10-25: the Agent echoed "不保证/不成立/不改变/不背书" back to users.
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        voice = skill.split("## 和用户说话的方式（先读这一节）", 1)[1].split("\n## ", 1)[0]
+        self.assertLess(skill.index("## 和用户说话的方式"), skill.index("## 开始方式"))
+        for term in ("写给你执行的规则，不是念给用户听的台词", "不说这些句式", "免封只在用户问到时说一次",
+                     "所有者的经验按事实直接说", "已确认 / 还没查 / 下一步"):
+            self.assertIn(term, voice)
+        rest = skill.replace(voice, "")
+        for hedge in ("不保证", "不成立", "不代表", "不等于", "不构成", "不证明", "不承诺", "背书", "不宣称", "不推定", "不断言"):
+            self.assertNotIn(hedge, rest, hedge)
+
+    def test_dashboard_and_action_strings_do_not_lecture(self):
+        scripts = ROOT / "skills" / "claude-guardian" / "scripts"
+        for name in ("status_dashboard.py", "agent_remediation.py", "probe_evidence.py"):
+            body = (scripts / name).read_text(encoding="utf-8")
+            for hedge in ("不证明", "不代表", "不等于", "不宣称", "不是完整阻断证明"):
+                self.assertNotIn(hedge, body, (name, hedge))
+
     def test_beginner_combo_is_stated_directly(self):
         # Owner fact 2026-10-25: the beginner combo and the phone-then-KYC-within-24h verdict.
         doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")

@@ -174,7 +174,7 @@ class MihomoDashboardTests(unittest.TestCase):
         html = dashboard.render(report(), NOW, raw)
         for forbidden in ('SECRET_SENTINEL', '<script', 'href=', 'src='):
             self.assertNotIn(forbidden, html)
-        self.assertIn('缓存来源、Fake-IP 和上游路径未验证', html)
+        self.assertIn('缓存来源、Fake-IP 和上游路径还要另查泄露', html)
 
     def test_mixed_outcomes_preserved_in_original_order(self):
         items = [item(), item(result(error='TIMEOUT')), item(result(rcode=3))]

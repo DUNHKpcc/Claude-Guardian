@@ -20,9 +20,9 @@ class Issue12Sources(unittest.TestCase):
         self.assertIn('请用户自己上网搜索', EGRESS)  # still no recommendation of specific sellers
         self.assertIn('不推荐具体卖家', EGRESS)
 
-    def test_short_term_ban_timeline_is_a_non_causal_checklist(self):
+    def test_short_term_ban_timeline_gives_direction_then_evidence(self):
         for term in ('A0b', '注册后几分钟到 1 小时', '开 Pro/Max 后几分钟到当天', '第一次跑 Claude Code 后 0.5 小时到数小时',
-                     '注册后 1 到 2 天', '几周到几个月后', '不是因果判定', '不断言原因'):
+                     '注册后 1 到 2 天', '几周到几个月后', '先定排查方向', '查证据定原因'):
             self.assertIn(term, ONBOARDING)
 
     def test_no_contact_number_is_added_to_authored_docs(self):

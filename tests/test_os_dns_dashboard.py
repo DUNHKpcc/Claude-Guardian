@@ -215,7 +215,7 @@ class OSDnsDashboardTests(unittest.TestCase):
         html = dashboard.render(report(), NOW, raw)
         self.assertNotIn('SECRET_SENTINEL', html)
         self.assertNotIn('<script', html)
-        self.assertIn('服务器和上游路径未知', html)
+        self.assertIn('服务器和上游路径还要另查泄露', html)
 
 
 if __name__ == '__main__':

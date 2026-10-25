@@ -43,7 +43,7 @@ STATUS_LABELS = {'observed': '已记录成功声明', 'response_observed': '已�
                  'cancelled': '已取消', 'stale': '证据已过期',
                  'target_mismatch': '目标声明不匹配', 'path_mismatch': '路径声明不匹配',
                  'time_invalid': '时间缺失或无效', 'authorization_needed': '授权或权限不足',
-                 'timeout': '超时（不证明阻断）', 'error': '探测未成功'}
+                 'timeout': '超时', 'error': '探测未成功'}
 
 
 def _time(value):
@@ -336,7 +336,7 @@ def sample_text(sample):
         response = ('查询 %s / IPv%d；地址 %d；全局单播地址类 %d / 非全局地址类 %d' % (
             value['query_type'], sample['family'], value['address_count'],
             value['globally_routable'], value['non_global'])) if value else '无解析事实'
-        return '样本 %d：%s；%s；%s；%s；%s；UTC %s；时效：%s；原因：%s。系统解析样本，没有 DNS 报文/RCODE 证据；缓存来源、服务器和上游路径未知，不证明无 DNS 泄露' % (
+        return '样本 %d：%s；%s；%s；%s；%s；UTC %s；时效：%s；原因：%s。系统解析样本，没有 DNS 报文/RCODE 证据；缓存来源、服务器和上游路径还要另查泄露' % (
             sample['index'], STATUS_LABELS[sample['status']], sample['source_label'], response,
             '解析 API 路径声明一致（未核验）' if sample['path_matches'] else '解析 API 路径声明未知或不匹配',
             {'matching_declaration': '目标声明一致（未核验）', 'mismatch': '目标声明不匹配', 'unknown': '目标上下文未知'}[sample['target']],
@@ -348,7 +348,7 @@ def sample_text(sample):
             value['query_type'], sample['family'], value['rcode'], '是' if value['truncated'] else '否',
             value['answer_count'], value['address_count'], value['cname_count'],
             value['globally_routable'], value['non_global'])) if value else '无响应事实'
-        return '样本 %d：%s；Mihomo DNS 查询；%s；%s；%s；UTC %s；时效：%s。仅响应摘要；缓存来源、Fake-IP 和上游路径未验证，不证明无 DNS 泄露' % (
+        return '样本 %d：%s；Mihomo DNS 查询；%s；%s；%s；UTC %s；时效：%s。仅响应摘要；缓存来源、Fake-IP 和上游路径还要另查泄露' % (
             sample['index'], STATUS_LABELS[sample['status']], response,
             '控制器查询路径声明一致（未核验）' if sample['path_matches'] else '控制器查询路径声明未知或不匹配',
             {'matching_declaration': '目标声明一致（未核验）', 'mismatch': '目标声明不匹配', 'unknown': '目标上下文未知'}[sample['target']],

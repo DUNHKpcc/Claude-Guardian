@@ -31,17 +31,17 @@ GROUPS = (("system", "系统与目标", "ENV-01", "S"),
           ("browser", "浏览器 / WebRTC", "ENV-05", None),
           ("failure", "代理失效 / 防直连", "ENV-10", None))
 COVERAGE = {
-    "system": ("§19", "目标设备、用户、命名空间；系统信息不证明目标绑定"),
-    "proxy": ("§19 / §20.1–3", "系统代理、显式 HTTP/mixed 入口、浏览器路径须分别核实；端口声明不证明可用"),
-    "tun": ("§20.4.4 / §20.6", "TUN 开关、IPv4/IPv6 路由、DNS 与 UDP 接管分别核实；开启不等于覆盖"),
-    "ipv4": ("§20.3 / §20.5", "需区分系统继承、显式代理、TUN 与浏览器的 HTTPS IPv4 样本；出口/地区标签不证明平台许可"),
-    "ipv6": ("§20.5", "分别记录本机接口、节点外层通道、代理到目标、浏览器 ICE；AAAA 为空或超时不证明阻断"),
+    "system": ("§19", "目标设备、用户、命名空间；目标绑定另外核实"),
+    "proxy": ("§19 / §20.1–3", "系统代理、显式 HTTP/mixed 入口、浏览器路径分别核实；端口要实测可用"),
+    "tun": ("§20.4.4 / §20.6", "TUN 开关、IPv4/IPv6 路由、DNS 与 UDP 接管分别核实；开启后要实测覆盖"),
+    "ipv4": ("§20.3 / §20.5", "需区分系统继承、显式代理、TUN 与浏览器的 HTTPS IPv4 样本；这里看的是网络路径"),
+    "ipv6": ("§20.5", "分别记录本机接口、节点外层通道、代理到目标、浏览器 ICE；AAAA 为空或超时只是线索，阻断要用 IPv6 实测确认"),
     "dns": ("§20.4", "系统、浏览器 DoH、Mihomo、引导解析与实际解析器连接分别核实；Fake-IP 差异不自动判错"),
-    "dns_leak": ("§20.4.1–4", "解析器设置不等于泄露证据；需关联批准的查询、解析目标与实际连接。不同解析器或地区不自动判泄露"),
-    "udp": ("§20.6", "区分应用 UDP 与代理隧道外层 UDP；单次 STUN 不证明所有目的地、端口或协议覆盖"),
-    "stun": ("§20.6.1–2", "独立 Binding 事务的地址族、映射分类、路径与时间须有证据；不展示映射 IP，不代替浏览器样本"),
-    "browser": ("§20.7", "所选浏览器/Profile 的政策、HTTPS 路径、ICE host/srflx/relay 与 IPv6 分别核实；无候选不证明无泄露"),
-    "failure": ("§18 / §20.5 / ENV-10", "代理失效后的行为、程序/子进程范围与恢复需单独验收；超时或配置声明不证明防直连"),
+    "dns_leak": ("§20.4.1–4", "判泄露要把批准的查询、解析目标与实际连接对上；只看解析器设置或地区差异不够"),
+    "udp": ("§20.6", "区分应用 UDP 与代理隧道外层 UDP；其他目的地、端口和协议另测"),
+    "stun": ("§20.6.1–2", "独立 Binding 事务的地址族、映射分类、路径与时间须有证据；不展示映射 IP，浏览器样本另测"),
+    "browser": ("§20.7", "所选浏览器/Profile 的政策、HTTPS 路径、ICE host/srflx/relay 与 IPv6 分别核实；没有候选时换方式再测"),
+    "failure": ("§18 / §20.5 / ENV-10", "代理失效后的行为、程序/子进程范围与恢复要单独演练；防直连以停核心演练为准"),
 }
 FACT_IDS = {"S%02d" % n for n in range(1, 17)} | {"P%02d" % n for n in range(1, 25)}
 ERROR_CODES = frozenset({"PROXY_PORT_ASSOCIATION_CONFLICT", "COLLECTOR_INTERNAL_FAILURE",
@@ -92,7 +92,7 @@ def safe_facts(facts):
             label = "采集进程架构：" if fact.get('coverage') == 'current_process_os' else "架构声明："
             details.append(label + value)
         elif field == "P06" and isinstance(value, dict) and type(value.get("enabled")) is bool:
-            details.append("系统代理声明：" + ("开启" if value["enabled"] else "关闭") + "（不代表实际路径）")
+            details.append("系统代理声明：" + ("开启" if value["enabled"] else "关闭") + "（实际路径另测）")
         elif (field == 'P06' and type(value) is str and value.startswith('http=')
               and re.fullmatch(PROXY_SUMMARY, value)):
             flags = dict(item.split('=') for item in value.split(';'))
@@ -100,10 +100,10 @@ def safe_facts(facts):
             details.append('系统代理默认开关：' + ' / '.join(
                 name + ' ' + labels[flags[key]] for key, name in
                 (('http', 'HTTP'), ('https', 'HTTPS'), ('socks', 'SOCKS'), ('pac', 'PAC'), ('wpad', 'WPAD')))
-                + '（不代表实际路径）')
+                + '（实际路径另测）')
             details.append('作用域代理：' + ('存在，详情未采集' if flags['scoped'] == 'present' else '未报告，详情未采集'))
         elif field == "P12" and type(value) is bool:
-            details.append("TUN 声明：" + ("开启" if value else "关闭") + "（不代表接管已验证）")
+            details.append("TUN 声明：" + ("开启" if value else "关闭") + "（接管另测）")
         elif field == "P11" and isinstance(value, str) and value in {"rule", "global", "direct"}:
             details.append("代理模式声明：" + value)
     return list(dict.fromkeys(details))
@@ -163,7 +163,7 @@ def project(report, now=None, probe_report=None):
                                            for state, label in STATUS_LABELS.items()
                                            if any(s["status"] == state for s in scoped)) + "（来源未核验）")
     execution = report.get("execution_status")
-    execution_text = {"completed": "报告生成完成（不代表环境通过）", "failed": "报告执行失败",
+    execution_text = {"completed": "报告生成完成（结论看各卡片）", "failed": "报告执行失败",
                       "blocked": "报告执行受阻", "interrupted": "报告执行中断"}.get(execution if isinstance(execution, str) else "", "执行状态未知")
     return {"traffic_policy": policy_projection(), "cards": cards, "observed_at": observed.isoformat() if observed else "未知",
             "generated_at": now.isoformat(), "snapshot_fresh": snapshot_fresh,
@@ -197,7 +197,7 @@ def render(report, now=None, probe_report=None):
             fact = "无检测证据" if card["state"] == "not_run" else "证据不足"
         evidence = "当前有效观察字段：%d / %d。证据最早时间（UTC）：%s。路径：未知 / 未独立绑定。" % (card["observed"], card["total"], evidence_at)
         if card["samples"]:
-            evidence = "；".join(sample_text(sample) for sample in card["samples"]) + "。输入声明不建立真实目标绑定，不授予任何操作权限。"
+            evidence = "；".join(sample_text(sample) for sample in card["samples"]) + "。样本来自导入的声明，目标绑定另外核实。"
         rows.append('<tr data-check="%s"><th scope="row">%s</th><td>%s</td><td><details><summary>%s</summary><p>%s</p><p>%s</p><p>依据：D-ENV-v0.3 %s · %s。状态：%s</p></details></td></tr>' %
                     (key, escape(labels[key]), badge(card["state"]), escape(fact), escape(evidence), escape(limitation), escape(section), escape(card["module"]), escape(card["state"])))
     sample = '<span class="sample">合成演示</span>' if view["synthetic"] else '<span class="sample">离线快照</span>'
@@ -210,9 +210,9 @@ def render(report, now=None, probe_report=None):
 <meta name="referrer" content="no-referrer"><title>Claude-Guardian · 环境状态</title><style>''' + CSS + '''</style></head><body><main>
 <header><h1>环境状态</h1>''' + sample + '''<span class="brand">Claude-Guardian</span></header>
 <p class="meta">快照（UTC）：''' + escape(view["observed_at"]) + escape(freshness) + escape(execution_note) + '''</p>
-<p>当前策略：IPv4_ONLY（仅所选Claude目标应用流量，禁止IPv6回退）。执行能力与合规状态：未知，未通过验收。</p><p>保留代理外层IPv6、Codex控制通道与其他应用；不整机关闭IPv6。不支持应用作用域时说明具体方案并另行取得许可，不默认为双栈。AAAA为空、单次IPv4成功或IPv6超时均不是完整阻断证明。</p>
+<p>当前策略：IPv4_ONLY（仅所选Claude目标应用流量，禁止IPv6回退）。整机合规状态见下方各项。</p><p>保留代理外层IPv6、Codex控制通道与其他应用，整机IPv6不关。应用作用域不支持时，给出具体方案再取得许可。IPv6阻断以同范围实测为准。</p>
 <table><caption>检查结果</caption><colgroup><col class="item"><col class="state"><col></colgroup><thead><tr><th scope="col">项目</th><th scope="col">状态</th><th scope="col">关键事实 · 展开查看证据</th></tr></thead><tbody>''' + ''.join(rows) + '''</tbody></table>
-<details class="report-details"><summary>报告信息与限制</summary><p>''' + escape(sample_note) + escape(view["execution"]) + '''。</p><p>页面生成（UTC）：''' + escape(view["generated_at"]) + '''。快照及字段有效期为 24 小时；时钟未经外部核验，重新打开不会刷新。</p><p>当前报告缺少完整验收证据，不生成 verified（已验证）。unknown 为证据不足；not_run 为没有对应检测证据。采集完成、配置声明或网络成功均不代表环境就绪或平台许可。</p><p>仅显示白名单摘要；不含原始地址、路径或设备标识。支持 guardian-report/0.1 与 env-inventory/0.2；可附加 guardian-probe-evidence/0.1 离线样本，样本成功声明仍为 unknown，不覆盖其他检查。完整证据请查看本地原始报告，分享前人工复核。</p></details>
+<details class="report-details"><summary>报告信息与限制</summary><p>''' + escape(sample_note) + escape(view["execution"]) + '''。</p><p>页面生成（UTC）：''' + escape(view["generated_at"]) + '''。快照及字段有效期为 24 小时；时钟未经外部核验，重新打开不会刷新。</p><p>verified（已验证）只在完整验收证据齐全时出现。unknown 是证据还不够；not_run 是还没检测。</p><p>仅显示白名单摘要；不含原始地址、路径或设备标识。支持 guardian-report/0.1 与 env-inventory/0.2；可附加 guardian-probe-evidence/0.1 离线样本（单独显示为 unknown）。完整证据看本地原始报告，分享前人工复核。</p></details>
 <p class="authorization">操作权限：联网探测、修改配置或接触 Claude 须另行授权。</p>
 <footer>静态快照 · 无自动检测</footer>
 </main></body></html>\n'''
