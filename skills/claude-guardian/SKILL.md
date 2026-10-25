@@ -92,6 +92,8 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 | Windows 本机：网卡 IPv6 旁路、出口泄漏 | [agent-remediation.md 的 Windows 网卡 IPv6 提示词](references/agent-remediation.md#windows-adapter-ipv6-hint)（只提示，用户同意后才由用户或经批准执行，不自动改网卡） |
 | **账号被封或被限、问“多久被封的”、KYC 触发或身份核验**（任一出现就附，不必等用户问） | **[account-onboarding.md 的 A0b 短期封号时间线](references/account-onboarding.md#a0b短期封号时间线出问题时先对照排查方向)**（五个时间段对应的排查方向，来自 [S03 第 5 页](sources/S03-claude-experience.pdf)，必附）、[accounts-and-payments.md 的 A3 身份核验](references/accounts-and-payments.md#a3-真实身份核验异常会话与凭据保护)、[S04 §2.3 KYC 触发](sources/S04-claude-guide.md)、[事故分诊 M12](references/incidents-and-integrations.md)；先按时间段说常见原因方向，再查证据定原因 |
 | Windows 清理 Claude 本机数据（官方路径、分档、备份、隔离、还原；无内置宿主） | [windows-cleanup.md](references/windows-cleanup.md)（必附）、官方 [.claude 目录说明](https://code.claude.com/docs/en/claude-directory) |
+| Linux 清理 Claude 本机数据（VM 客机、VPS） | [linux-cleanup.md](references/linux-cleanup.md)（必附） |
+| 封号后换环境：代理客户端日志、VPN 日志、终端历史里查 IP 的命令 | [trace-cleanup.md](references/trace-cleanup.md)（必附）及对应平台的 Claude 清理 |
 | 整机统一出口：只走 IPv4、不走 IPv6（TUN、DNS、规则兜底、泄漏与故障演练；判定用 `scripts/egress_verifier.py`） | [whole-machine-ipv4.md](references/whole-machine-ipv4.md)（必附）、[agent-remediation.md 整机统一路径](references/agent-remediation.md#ipv4-only-policy) |
 | 线路优化（晚高峰慢、断流、卡顿、出口不对、中转、BBR；VPS 路线和自建梯节点；访谈 Q-T01） | [line-optimization.md](references/line-optimization.md)、[R02 线路优化与家宽中转教程](sources/R02-vps-line-optimization.md)（必附）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（要换线路或选机时） |
 | VPS 路线（开发机：系统、环境一致、远程桌面、防火墙） | [vps-guidance.md](references/vps-guidance.md)、[S08 VPS 教程](sources/S08-vps-claude-tutorial.pdf)（必附）、[R02 家宽中转教程](sources/R02-vps-line-optimization.md)（套家宽出口时）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（选服务器时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（创建后检查 IP 时）、[VPS 防火墙脚本](assets/vps-firewall/vps-guard.sh)（出口是 VPS 自己的 IP 时）、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（套家宽、VPS 上跑 TUN 时） |
@@ -186,6 +188,8 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 用户明确要求完整清理时，记录 `Q-D02=full_claude_data_reset`，无需先证明存在封禁史。选定设备的已确认历史经历只触发审计／清理计划提议，不自动选 C5 或执行。当前事故先处理，保留必要证据。
 
-macOS 上 C5 执行用 `scripts/native_cleanup_mac.py`：只处理可再生缓存/日志和桌面端持久数据，`~/.claude` 里的对话记录、历史、设置、skills、插件、凭据始终受保护（整个 `~/.claude` 不能当根）；Claude 已退出、不由 Claude Code 启动；先备份并校验内容；同意须由用户在真实终端输入 `CONFIRM <操作> <摘要前8位>`，Agent 不能代输；仍属 C 档，只有合成与 CI 测试。钥匙串退出登录、最小提示词模式（`CLAUDE_CODE_SIMPLE`）、用户指定的系统时区各有独立命令 `scripts/native_claude_state_mac.py`，同样终端确认；不提供设备标识（userID、machineID）轮换。Windows 见 [windows-cleanup.md](references/windows-cleanup.md)，没有内置宿主，按官方路径用 PowerShell 分步做。C5 可以逐项选择经核实属于 Claude 的本地历史、配置、skills/hooks/plugins/extensions 和 Desktop 数据。源码、未提交工作、Codex、其他应用、共享或归属不明对象仍受保护；保护清单与“全清”冲突时先解决冲突。凭据／浏览器站点数据／应用卸载分别出范围和确认。默认采用可恢复的私有隔离，不永久清除，不轮换设备身份；清理是清本地残留，账号能否恢复另走申诉。
+**对话记录要单独问：**清理时问用户“要不要把对话记录也移走？保险起见建议移走”（以前查 IP 的输出就在里面），同意才放进范围。
+
+macOS 上 C5 执行用 `scripts/native_cleanup_mac.py`：处理可再生缓存/日志（含 `debug`）、桌面端持久数据，以及用户同意后的对话记录（`conversation` 档）；`~/.claude` 里的设置、skills、插件、凭据始终受保护（整个 `~/.claude` 不能当根）；Claude 已退出、不由 Claude Code 启动；先备份并校验内容；同意须由用户在真实终端输入 `CONFIRM <操作> <摘要前8位>`，Agent 不能代输；仍属 C 档，只有合成与 CI 测试。钥匙串退出登录、最小提示词模式（`CLAUDE_CODE_SIMPLE`）、用户指定的系统时区各有独立命令 `scripts/native_claude_state_mac.py`，同样终端确认；不提供设备标识（userID、machineID）轮换。Windows 见 [windows-cleanup.md](references/windows-cleanup.md)、Linux 见 [linux-cleanup.md](references/linux-cleanup.md)，没有内置宿主，按文档分步做。源码、未提交工作、Codex、其他应用、归属不明对象始终保护；保护清单与“全清”冲突时先解决冲突。凭据／浏览器站点数据／应用卸载分别出范围和确认。默认采用可恢复的私有隔离，不永久清除，不轮换设备身份；清理是清本地残留，账号能否恢复另走申诉。
 
 实际 Agent 调用顺序与限制见 [清理、迁移与恢复](references/incidents-and-integrations.md#cleanup-migration-and-recovery-m13--env-09)。清理完成后按实际处理过的文件汇报结果。

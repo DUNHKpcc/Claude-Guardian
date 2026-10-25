@@ -35,6 +35,8 @@ PAGES = [
     ('线路优化', 'references/line-optimization.md', '三条路线'),
     ('macOS 清理教程', 'sources/S06-macos-cleanup-sanitized.md', '清理'),
     ('Windows 清理', 'references/windows-cleanup.md', '清理'),
+    ('Linux 清理', 'references/linux-cleanup.md', '清理'),
+    ('环境痕迹清理 代理 VPN 终端历史', 'references/trace-cleanup.md', '清理'),
     ('VPS Claude 教程 文字版', 'sources/S08-extracted-text.md', '所有者提供的教程'),
     ('VPS 线路优化与家宽中转教程', 'sources/R02-vps-line-optimization.md', '所有者提供的教程'),
 ]

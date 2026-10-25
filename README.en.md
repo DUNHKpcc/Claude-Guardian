@@ -34,7 +34,7 @@ Claude-Guardian is a Skill for Agents. It hands your Agent the author's and comm
 | 🔒 | **Whole-machine uniform egress** | IPv4 only, no IPv6: strict TUN routing, DNS, fallback rules, and evidence checklists for leak and failure drills (Mac, Windows). `egress_verifier.py` rules `established / violated / incomplete` from the evidence you actually observed, without echoing the IP |
 | 📈 | **Route optimization** | The Agent diagnoses and tunes the route item by item: SSH dynamic forwarding, Realm relay, BBR, each with a recorded original value and a rollback |
 | 🩺 | **Failure triage** | `403` / `429` / `529`, billing conflicts, suspected credential leaks: pause retries, gather evidence, then propose the next step |
-| 🧹 | **Cleanup planning** | Plans cleanup of Claude leftovers on an old device while protecting source code, Git history and Codex; isolation (recoverable) is confirmed by you in a terminal, nothing is permanently deleted; Windows uses step-by-step PowerShell on official paths |
+| 🧹 | **Cleanup planning** | Plans cleanup of Claude leftovers (Mac, Windows, Linux), moving conversation records only after asking you; after a ban, also clears proxy-client logs, VPN logs and IP-lookup commands in shell history; isolation (recoverable) is confirmed by you, nothing is permanently deleted, source code, Git history and Codex are left alone |
 | 📚 | **Sources with every answer** | Each answer links its sources; beyond them it can search Linux.do, NodeSeek, IDC Flare, V2EX, Reddit and X, labelling source and date; also usable as a search tool for VPS, residential-IP, route and ban-experience posts |
 
 ## Ground rules
@@ -129,7 +129,7 @@ If you only want to understand the subscription or compare options, stop at the 
 
 The three routes are parallel choices, not an upgrade path; using a VPS as a network exit is not the same as choosing the VPS route. No proxy or server yet? You can start with an offline pre-check. For the difference between an HTTP/mixed entry and an upstream SOCKS5 exit, see [environment entry and route boundaries](docs/environment-entry-decision.md).
 
-Cleaning Claude data from an old device: macOS has a built-in host, see the [cleanup interface guide](docs/cleanup-cli-usage.md); Windows uses a [PowerShell prompt](skills/claude-guardian/references/windows-cleanup.md) based on the official paths.
+Cleaning Claude data from an old device: macOS has a built-in host, see the [cleanup interface guide](docs/cleanup-cli-usage.md); Windows uses a [PowerShell prompt](skills/claude-guardian/references/windows-cleanup.md) based on the official paths, Linux has its own [Linux cleanup](skills/claude-guardian/references/linux-cleanup.md). After a ban, proxy-client logs, VPN logs and IP-lookup commands in shell history are covered by [trace cleanup](skills/claude-guardian/references/trace-cleanup.md).
 
 For the full rules see [contact and authorization boundaries](skills/claude-guardian/references/contact-and-safety.md) and the [network evidence notes](skills/claude-guardian/references/network-and-remedies.md).
 

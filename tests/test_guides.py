@@ -253,6 +253,30 @@ class GuidanceContracts(unittest.TestCase):
                          "contact-and-safety.md", "device-report.yml"):
                 self.assertIn(link, body, name)
 
+    def test_trace_and_linux_cleanup_follow_owner_decisions(self):
+        # Owner 2026-10-25: proxy/VPN logs and IP-lookup shell lines; only those lines; ask before moving
+        # conversation records (recommend yes); debug is regenerable; Linux covered; no mobile this round.
+        trace = (REFS / "trace-cleanup.md").read_text(encoding="utf-8")
+        for term in ("io.github.clash-verge-rev.clash-verge-rev/logs", "log-level: warning", "VPN 客户端日志",
+                     "只删查 IP 的命令", "unset HISTFILE", "grep -a -i -v -E", "history delete --contains",
+                     "HistorySavePath", "ClearHistory()", "ipinfo\\.io", "保险起见建议移走", "系统日志",
+                     "C 档", "隔离目录"):
+            self.assertIn(term, trace)
+        self.assertNotIn("Shadowrocket", trace)
+        linux = (REFS / "linux-cleanup.md").read_text(encoding="utf-8")
+        for term in ("~/.cache/claude-cli-nodejs", "`debug`", "保险起见建议移走", "$CLAUDECODE", "diff -r",
+                     "~/.claude/.credentials.json", "trace-cleanup.md"):
+            self.assertIn(term, linux)
+        windows = (REFS / "windows-cleanup.md").read_text(encoding="utf-8")
+        self.assertIn("调试日志 `debug`", windows)
+        protected = windows.split("**始终保护，不进入任何清理范围：**", 1)[1].split("\n", 1)[0]
+        for name in ("`projects`", "`history.jsonl`", "`debug`"):
+            self.assertNotIn(name, protected)
+        self.assertIn("保险起见建议移走", windows)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        for name in ("references/trace-cleanup.md", "references/linux-cleanup.md", "保险起见建议移走"):
+            self.assertIn(name, skill)
+
     def test_skill_md_tells_the_agent_how_to_talk(self):
         # Owner 2026-10-25: the Agent echoed "不保证/不成立/不改变/不背书" back to users.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")

@@ -210,6 +210,19 @@ M00: adaptive intake and stable question registry（14 节）
 - [第四步：验证与记录](line-optimization.md#第四步验证与记录)
 - [Agent 不做的事](line-optimization.md#agent-不做的事)
 
+## linux-cleanup.md
+
+Linux：Claude 本机数据清理（Agent 提示词，无内置宿主）（8 节）
+
+- [1. 路径](linux-cleanup.md#1-路径)
+- [2. 分档](linux-cleanup.md#2-分档)
+- [3. 只读审计（A 档）](linux-cleanup.md#3-只读审计a-档)
+- [4. 备份（B 档，整个计划批准一次）](linux-cleanup.md#4-备份b-档整个计划批准一次)
+- [5. 隔离（C 档，当场确认）](linux-cleanup.md#5-隔离c-档当场确认)
+- [6. 退出登录与凭据（C 档，单独确认）](linux-cleanup.md#6-退出登录与凭据c-档单独确认)
+- [7. 官方的项目级清理](linux-cleanup.md#7-官方的项目级清理)
+- [8. 不做的事](linux-cleanup.md#8-不做的事)
+
 ## local-firewall-prompts.md
 
 本机路线：Clash 与防火墙（Agent 提示词）（12 节）
@@ -328,6 +341,17 @@ M01/M06–M09: independent environment routes（31 节）
 - [补充资料集合：R01 VPS 推荐报告集（业务／性价比／高端家宽）](source-library.md#补充资料集合r01-vps-推荐报告集业务性价比高端家宽)
 - [补充资料集合：R02 VPS 线路优化与家宽中转教程](source-library.md#补充资料集合r02-vps-线路优化与家宽中转教程)
 - [版本、来源与分发记录](source-library.md#版本来源与分发记录)
+
+## trace-cleanup.md
+
+环境痕迹清理：代理、VPN、终端历史里的旧 IP（Agent 提示词）（6 节）
+
+- [1. 代理客户端日志（Clash Verge、Mihomo、FlClash）](trace-cleanup.md#1-代理客户端日志clash-vergemihomoflclash)
+- [2. VPN 客户端日志](trace-cleanup.md#2-vpn-客户端日志)
+- [3. Shell 历史：只删查 IP 的命令](trace-cleanup.md#3-shell-历史只删查-ip-的命令)
+- [4. 命令的输出存在哪](trace-cleanup.md#4-命令的输出存在哪)
+- [5. Claude 对话记录](trace-cleanup.md#5-claude-对话记录)
+- [6. 不碰的东西](trace-cleanup.md#6-不碰的东西)
 
 ## vm-guidance.md
 

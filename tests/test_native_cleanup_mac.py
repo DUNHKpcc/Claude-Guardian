@@ -111,6 +111,9 @@ class NativeCleanupMac(unittest.TestCase):
                  h + '/.claude/stats-cache.json': ('cli_app_data', 'regenerable'),
                  h + '/.claude/shell-snapshots': ('cli_app_data', 'regenerable'),
                  h + '/.claude/statsig': ('cli_app_data', 'regenerable'),
+                 h + '/.claude/debug': ('cli_app_data', 'regenerable'),
+                 h + '/.claude/projects': ('cli_app_data', 'conversation'),
+                 h + '/.claude/history.jsonl': ('cli_app_data', 'conversation'),
                  h + '/Library/Caches/claude-cli-nodejs': ('cli_app_data', 'regenerable'),
                  h + '/Library/Logs/Claude': ('desktop_app_data', 'regenerable'),
                  h + '/Library/Logs/DiagnosticReports/Claude-2026.ips': ('desktop_app_data', 'regenerable'),
@@ -124,8 +127,8 @@ class NativeCleanupMac(unittest.TestCase):
         for path, (kind, level) in cases.items():
             with self.subTest(path=path):
                 self.assertEqual((native.classify(path, h), native.tier(path, h)), (kind, level))
-        for path in (h, h + '/Documents', h + '/.claude', h + '/.claude/projects', h + '/.claude/projects/p',
-                     h + '/.claude/history.jsonl', h + '/.claude/settings.json', h + '/.claude/skills/x',
+        for path in (h, h + '/Documents', h + '/.claude', h + '/.claude/projects/p',
+                     h + '/.claude/projects/p/s.jsonl', h + '/.claude/settings.json', h + '/.claude/skills/x',
                      h + '/.claude/.credentials.json', h + '/.claude/backups', h + '/.claude/cache/sub',
                      h + '/Library/Application Support', h + '/Library/Application Support/Claude/sub',
                      h + '/.local/share/claude', h + '/.local/bin/claude', '/Applications/Claude.app',
@@ -133,11 +136,13 @@ class NativeCleanupMac(unittest.TestCase):
                      h + '/.claude.json'):
             with self.subTest(path=path):
                 self.assertIsNone(native.classify(path, h))
-        for path in (h + '/.claude', h + '/.claude/projects', h + '/.claude/projects/p/s.jsonl',
-                     h + '/.claude/history.jsonl', h + '/.claude/.credentials.json', h + '/.claude/skills/x'):
+        for path in (h + '/.claude', h + '/.claude/settings.json', h + '/.claude/plugins/x',
+                     h + '/.claude/.credentials.json', h + '/.claude/skills/x'):
             with self.subTest(protected=path):
                 self.assertTrue(native.is_protected(path, h))
-        self.assertFalse(native.is_protected(h + '/.claude/cache', h))
+        for path in (h + '/.claude/cache', h + '/.claude/debug', h + '/.claude/projects', h + '/.claude/history.jsonl'):
+            self.assertFalse(native.is_protected(path, h), path)
+        self.assertEqual(native.allowed_locations(h)['conversation'], ['~/.claude/projects', '~/.claude/history.jsonl'])
 
     def test_verify_refuses_each_unverified_condition(self):
         host = self.verified_host()
@@ -169,7 +174,7 @@ class NativeCleanupMac(unittest.TestCase):
         scope = copy.deepcopy(self.scope)
         scope['roots'][0]['data_kind'] = 'desktop_app_data'
         self.assertEqual(self.verify(self.host(scope), scope), 'unknown_ownership')
-        for protected in (self.dot_claude, self.home + '/.claude/projects', self.home + '/.claude/history.jsonl'):
+        for protected in (self.dot_claude, self.home + '/.claude/settings.json', self.home + '/.claude/skills'):
             with self.subTest(protected=protected):
                 scope = copy.deepcopy(self.scope)
                 scope['roots'][0] = {'root_ref': 'cli', 'path': protected, 'data_kind': 'cli_app_data'}
@@ -289,6 +294,37 @@ class NativeCleanupMac(unittest.TestCase):
         self.assertEqual(Path(self.dot_claude, 'history.jsonl').read_bytes(), b'prompts')
         self.assertEqual(Path(self.desktop, 'Local Storage/x').read_bytes(), b'x')
         self.assertTrue(os.path.isdir(self.backup_dir + '/data/root-0000'))
+
+    def test_conversation_records_move_only_when_chosen_and_the_prompt_says_so(self):
+        # Owner 2026-10-25: transcripts can hold old command output (real IPs); the user may move them out.
+        os.makedirs(self.home + '/.claude/skills', exist_ok=True)
+        Path(self.home, '.claude/skills/s.md').write_text('keep')
+        scope = copy.deepcopy(self.scope)
+        scope['roots'] = [{'root_ref': 'projects', 'path': self.dot_claude + '/projects', 'data_kind': 'cli_app_data'},
+                          {'root_ref': 'history', 'path': self.dot_claude + '/history.jsonl', 'data_kind': 'cli_app_data'}]
+        self.save(self.scope_file, scope)
+        host = self.host(scope)
+        host.create_backup()
+        plan_file = Path(self.home) / 'plan.json'
+        code, result = self.run_cli(['plan', '--scope', str(self.scope_file), '--plan-output', str(plan_file)], host)
+        self.assertEqual(code, 0, result)
+        code, result = self.run_cli(['quarantine', '--plan-file', str(plan_file),
+                                     '--expected-plan-digest', result['document_digest']], host)
+        self.assertEqual(code, 0, result)
+        self.assertFalse(os.path.exists(self.dot_claude + '/projects'))
+        self.assertFalse(os.path.exists(self.dot_claude + '/history.jsonl'))
+        self.assertTrue(Path(self.dot_claude, 'settings.json').exists())
+        self.assertEqual(Path(self.home, '.claude/skills/s.md').read_text(), 'keep')
+        prompt = self.terminal.prompts[-1]
+        self.assertIn('对话记录（含自动记忆和输入历史；移走后无法续接旧会话）', prompt)
+        self.assertIn('本次包含对话记录', prompt)
+
+    def test_default_scope_prompt_says_conversation_records_are_untouched(self):
+        host = self.verified_host()
+        plan_file = Path(self.home) / 'plan.json'
+        code, result = self.run_cli(['plan', '--scope', str(self.scope_file), '--plan-output', str(plan_file)], host)
+        self.assertEqual(code, 0, result)
+        self.assertIn('对话记录不在本次范围', self.terminal.prompts[-1])
 
     def test_quarantine_stops_without_terminal_consent_and_when_claude_is_running(self):
         host = self.verified_host()

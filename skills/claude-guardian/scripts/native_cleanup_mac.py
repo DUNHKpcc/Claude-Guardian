@@ -6,9 +6,10 @@ is that host for macOS only. It supplies the four obligations the dispatcher nee
 * ``verify``: the device/user context matches; every root is on a fixed list of
   Claude-owned locations (the owner's macOS cleanup guide, the official Claude Code
   data documentation and a reviewed third-party cleanup list) split into
-  ``regenerable`` caches/logs and ``persistent`` Desktop data; nothing under the
-  protected part of ``~/.claude`` (transcripts, history, settings, skills, plugins,
-  credentials ...) may be a root or inside one; no Claude process is running; and a
+  ``regenerable`` caches/logs, ``persistent`` Desktop data and ``conversation``
+  records (``~/.claude/projects`` and ``history.jsonl``, only when the user chose to
+  remove them); nothing under the protected part of ``~/.claude`` (settings, skills,
+  plugins, credentials ...) may be a root or inside one; no Claude process is running; and a
   content-verified backup made by this module matches the root, wherever the root
   currently is (active location or the quarantine batch).
 * ``approve``: consent is typed by the user in a real terminal, bound to the
@@ -89,11 +90,16 @@ def context_ref():
 # the reviewed third-party cache list). Everything else there is protected.
 CLI_REGENERABLE = ('cache', 'stats-cache.json', 'telemetry', 'usage-data', 'usage.jsonl',
                    'usage.with-fix.jsonl', 'remote-settings.json', 'policy-limits.json',
-                   'policy-limits.json.stamp.json', 'shell-snapshots', 'statsig', 'logs', 'image-cache')
+                   'policy-limits.json.stamp.json', 'shell-snapshots', 'statsig', 'logs', 'image-cache',
+                   'debug')
+# Conversation records (transcripts with auto memory, prompt history). They can hold old
+# command output such as a real public IP, so the user may choose to move them out;
+# the Agent asks first (owner 2026-10-25). Never part of a default scope.
+CLI_CONVERSATION = ('projects', 'history.jsonl')
 CLI_PROTECTED = frozenset({
     '.credentials.json', 'CLAUDE.md', 'agent-memory', 'agents', 'backups', 'commands', 'daemon',
-    'debug', 'file-history', 'history.jsonl', 'hooks', 'jobs', 'keybindings.json', 'mcp-servers',
-    'output-styles', 'plans', 'plugins', 'projects', 'rules', 'scripts', 'session-env', 'sessions',
+    'file-history', 'hooks', 'jobs', 'keybindings.json', 'mcp-servers',
+    'output-styles', 'plans', 'plugins', 'rules', 'scripts', 'session-env', 'sessions',
     'settings.json', 'settings.local.json', 'skills', 'tasks', 'themes', 'todos', 'uploads',
     'workflows'})
 LIBRARY_REGENERABLE = ('Library/Caches/claude-cli-nodejs', 'Library/Logs/Claude')
@@ -117,12 +123,15 @@ def is_protected(path, home):
 
 
 def tier(path, home):
-    """'regenerable' (caches/logs), 'persistent' (Desktop data, sign-in state) or None."""
+    """'regenerable' (caches/logs), 'persistent' (Desktop data, sign-in state),
+    'conversation' (transcripts and prompt history) or None."""
     if is_protected(path, home):
         return None
     claude = home + '/.claude/'
     if path.startswith(claude) and path[len(claude):] in CLI_REGENERABLE:
         return 'regenerable'
+    if path.startswith(claude) and path[len(claude):] in CLI_CONVERSATION:
+        return 'conversation'
     if path in [home + '/' + item for item in LIBRARY_REGENERABLE]:
         return 'regenerable'
     parent, name = os.path.split(path)
@@ -155,6 +164,7 @@ def allowed_locations(home):
                '~/Library/Application Support/CrashReporter/Claude*'],
             'persistent': ['~/' + item for item in LIBRARY_DESKTOP]
             + ['~/Library/Preferences/ByHost/com.anthropic.claudefordesktop*.plist'],
+            'conversation': ['~/.claude/' + item for item in CLI_CONVERSATION],
             'protected_in_dot_claude': sorted(CLI_PROTECTED)}
 
 
@@ -384,13 +394,16 @@ class MacCleanupHost:
             return True
         scope = self.scope
         home = _home()
-        labels = {'regenerable': '可再生缓存/日志', 'persistent': '桌面端持久数据（含登录状态）', None: '未知'}
+        labels = {'regenerable': '可再生缓存/日志', 'persistent': '桌面端持久数据（含登录状态）',
+                  'conversation': '对话记录（含自动记忆和输入历史；移走后无法续接旧会话）', None: '未知'}
+        chosen = any(tier(r['path'], home) == 'conversation' for r in scope['roots'])
         lines = ['操作: %s' % group, '目标: %s' % target, '要处理的目录:']
         lines += ['  - %s [%s]' % (r['path'], labels[tier(r['path'], home)]) for r in scope['roots']]
         lines += ['受保护路径:'] + ['  - %s' % p for p in scope['protected_paths']]
         lines += ['隔离目录: %s' % scope['quarantine_directory'], '备份: %s' % self.backup_directory(),
                   '后果: %s' % CONSEQUENCE.get(group, '只读或保存私有记录，不移动数据'),
-                  '~/.claude 里的对话记录、历史、设置、skills、插件、凭据等始终受保护，不会被处理。',
+                  ('本次包含对话记录：旧会话会被移到隔离目录，Claude Code 里看不到也无法续接，需要时可恢复。' if chosen
+                   else '对话记录不在本次范围。') + '~/.claude 里的设置、skills、插件、凭据等始终受保护，不会被处理。',
                   '请先退出所有 Claude 桌面端和 Claude Code 会话。永久删除、钥匙串、浏览器数据都不在此范围。']
         if terminal_consent(group, digest, lines, self.console):
             self._consent.add(key)
@@ -480,7 +493,7 @@ HINTS = {
     'SCOPE_REQUIRED': '请用 --scope（plan、backup）或 --host-scope（其余命令）给出范围文件。',
     'INVALID_ENTRY_FILE': '--entry-file 需要是权限 0600 的私有 JSON 文件。',
     'INVALID_ARGUMENTS': '命令只支持 context、allowed、backup、plan、quarantine、reconcile、restore。',
-    'shared_scope': '这个路径属于受保护范围（对话记录、历史、设置、skills、插件、凭据），请改选缓存、日志或桌面端数据；allowed 命令会列出可选项。',
+    'shared_scope': '这个路径属于受保护范围（设置、skills、插件、凭据等），请改选缓存、日志、桌面端数据或对话记录；allowed 命令会列出可选项。',
     'credential_scope': '这个范围含登录凭据，不能作为清理根；退出登录请用 native_claude_state_mac.py keychain。',
     'unknown_ownership': '这个路径不在固定清单里；allowed 命令会列出可选项。',
     'backup_unverified': '备份不存在、内容不一致或目录在备份之后变过：请先重新运行 backup。',

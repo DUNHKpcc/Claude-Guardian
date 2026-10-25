@@ -59,7 +59,7 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它把作者和社区的真实
 | 🔒 | **整机统一出口** | 整机只走 IPv4、不走 IPv6：`TUN` 严格路由、DNS、规则兜底、泄漏与故障演练的取证清单（Mac、Windows），`egress_verifier.py` 按你实际观察到的证据判定 `established / violated / incomplete`，不回显 IP |
 | 📈 | **线路优化** | Agent 逐项诊断并优化线路：SSH 动态转发、Realm 中转、BBR，每项都有原值记录和回滚 |
 | 🩺 | **故障分流** | `403` / `429` / `529`、账单冲突、疑似凭据泄露：先暂停重试、整理证据，再给下一步 |
-| 🧹 | **清理规划** | 规划旧设备 Claude 残留的清理，保护源码、Git 历史和 Codex；隔离（可恢复）由你在终端亲自确认，不永久删除；Windows 按官方路径用 PowerShell 分步清理 |
+| 🧹 | **清理规划** | 规划旧设备 Claude 残留的清理（Mac、Windows、Linux），对话记录问过你再移走；封号后换环境时一并清代理客户端日志、VPN 日志和终端历史里查 IP 的命令；隔离（可恢复）由你确认，不永久删除，源码、Git 历史和 Codex 不动 |
 | 📚 | **资料随答附带** | 每个回答附上对应来源链接；资料之外需要补充时，可到 Linux.do、NodeSeek、IDC Flare、V2EX、Reddit、X 查找并标明来源和日期；也可直接当 VPS、家宽、线路、封号经验的帖子与论坛搜索工具用 |
 
 ## 几条底线
@@ -154,7 +154,7 @@ Agent 会先问你在哪个阶段、用什么系统、想达到什么目标，�
 
 三条路线是并列的选择，不是升级顺序；把 VPS 当网络出口不等于选了 VPS 路线。还没买代理或服务器也没关系，可以先做离线预检。HTTP/mixed 入口和上游 SOCKS5 出口的区别见[环境入口与路线边界](docs/environment-entry-decision.md)。
 
-清理旧设备上的 Claude 数据：macOS 有内置宿主，见[清理接口说明](docs/cleanup-cli-usage.md)；Windows 按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)。
+清理旧设备上的 Claude 数据：macOS 有内置宿主，见[清理接口说明](docs/cleanup-cli-usage.md)；Windows 按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)，Linux 见 [Linux 清理](skills/claude-guardian/references/linux-cleanup.md)。封号后换环境，代理客户端日志、VPN 日志和终端历史里查 IP 的命令见[环境痕迹清理](skills/claude-guardian/references/trace-cleanup.md)。
 
 完整规则见[接触与授权边界](skills/claude-guardian/references/contact-and-safety.md)及[网络证据说明](skills/claude-guardian/references/network-and-remedies.md)。
 

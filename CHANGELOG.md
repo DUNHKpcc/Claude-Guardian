@@ -1,5 +1,14 @@
 # 版本记录
 
+## 封号后的环境痕迹清理与 Linux 清理（2026-10-25）
+
+- **ADR-046：**新增 `trace-cleanup.md`：代理客户端日志（Clash Verge Rev 三平台路径、FlClash 等定位方法，整体隔离 `logs`、配置不动、日志等级调到 warning）、VPN 客户端日志、Shell 历史只删查 IP 的命令（zsh/bash/fish/PowerShell，删前备份）、命令输出可能留存的几处、系统日志不清
+- 新增 `linux-cleanup.md`：Claude Code 在 Linux（VM 客机、VPS）上的路径、分档、审计、备份、隔离与还原
+- **对话记录可选移走：**`native_cleanup_mac.py` 新增 `conversation` 档（`~/.claude/projects`、`history.jsonl`），用户同意后才处理，终端确认页写明后果；Windows、Linux 指引同步；Agent 清理时单独询问并建议移走
+- `~/.claude/debug` 从受保护改为可再生（Mac 模块与 Windows、Linux 指引）
+- SKILL.md 资料表、README、Wiki 同步；新增守门测试和 Mac 模块的对话记录往返测试；发行包 117 个成员
+- **已知限制：**手机端（Shadowrocket 等）这次不做；新增的 Linux、痕迹清理命令为常规用法，首次使用先跑只读审计核对路径。回滚：回退本提交
+
 ## Agent 说话方式：少说“不保证、不成立”（2026-10-25）
 
 - **ADR-045：**SKILL.md 开头新增“和用户说话的方式”，说明门禁和证据口径是给 Agent 执行的规则、不念给用户；列出不要说的句式，免封只在被问到时说一次，所有者经验按事实直接说，汇报用“已确认 / 还没查 / 下一步”

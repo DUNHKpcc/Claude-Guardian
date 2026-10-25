@@ -351,3 +351,11 @@ SKILL.md 每次运行都整篇载入，原 42KB 里约一半是宿主库和内�
 处理分三层。第一层，SKILL.md 开头新增“和用户说话的方式”：门禁和证据口径是给 Agent 执行的规则，对用户只说做了什么、看到了什么、下一步谁做；限制只在用户要越过时说一次并给出路；列出不要说的句式；免封只在用户问到时说一次；所有者经验按事实直接说；汇报用“已确认 / 还没查 / 下一步”。第二层，SKILL.md 其余部分去掉这类句式，同样的约束改成正面说法（例如“配置导入后要实测确认生效”代替“配置已导入不等于已经生效”）。第三层，面板、动作清单和探测样本的用户可见文字改为“另测”“还要另查”“以实测为准”，判定逻辑和状态值不变：unknown、not_run、verified 的条件一条没改。A0b 短期封号时间线的开头和用法同步改写。
 
 测试：三条原本锁定旧措辞的断言改成新措辞（意思相同：DNS 路径要另查、时间线给方向再查证据）；新增守门测试，SKILL.md 除说话方式一节外不再出现这些句式，三个脚本的用户可见文字也不出现。下一步：references 按需读取的文件（agent-remediation.md 57 处最多，其次 accounts-and-payments、routes-and-platforms、incidents-and-integrations、intake）分批改写。
+
+## ADR-046：封号后的环境痕迹清理、对话记录可选移走、Linux 清理（2026-10-25 所有者确认）
+
+所有者要求在封号环境清理里加入代理软件日志、VPN 客户端日志和 Shell 历史，并问现有清理是否覆盖 Claude 本机日志。讨论后所有者定了五点：手机端（Shadowrocket 等）这次不做；Shell 历史只删查 IP 的命令行；对话记录询问用户是否删，建议删；`~/.claude/debug` 改为可清；Linux 要覆盖。
+
+落地：新增 `references/trace-cleanup.md`（代理客户端 `logs` 目录整体隔离、配置不动、日志等级调到 warning；VPN 优先用客户端自带清除；zsh/bash/fish/PowerShell 只删匹配查 IP 站点的行，删前整份备份；命令输出只问用户在哪几处，不全盘搜索；系统日志不清）和 `references/linux-cleanup.md`（Claude Code 的 Linux 路径、同样的分档、bash 审计/备份/隔离/还原）。`native_cleanup_mac.py` 新增 `conversation` 档（`~/.claude/projects`、`history.jsonl`），只在用户选进范围时处理，终端确认页标明“本次包含对话记录、旧会话无法续接”，未选时写“对话记录不在本次范围”；`debug` 从受保护改为可再生。Windows 指引同步。理由：这些本地记录不会自动上传，风险在于以后 Claude Code 在这台机器上读到它们或用户贴进对话；对话记录里保存着以前跑过的命令输出，是旧 IP 最完整的一份。
+
+不变：设置、skills、插件、凭据仍始终保护；`~/.claude` 整体不能当根；隔离可还原，不永久删除；终端确认短语照旧。发行包 117 个成员。
