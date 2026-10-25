@@ -72,12 +72,58 @@ Mac 上不建议自己写 PF 规则：Apple 的技术说明不建议把 PF 当�
    - TUN 网卡：`New-NetFirewallRule -DisplayName "guardian-allow-tun" -Direction Outbound -InterfaceAlias "<TUN 网卡别名>" -Action Allow`（别名用 `Get-NetAdapter` 核实）。
    - DHCP：`New-NetFirewallRule -DisplayName "guardian-allow-dhcp" -Direction Outbound -Protocol UDP -LocalPort 68 -RemotePort 67 -Action Allow`。
    - 回环和必要的局域网例外**逐项核对**，不要假定默认放行；有则加规则。
-4. **最后切换默认出站为阻止（保险丝已就位）：**`Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultOutboundAction Block`。切换后立刻验证出口仍通、浏览器可用。
-5. **故障演练：**停掉代理核心，确认外网全部失败（没有直连）；再启动，确认恢复。通过后删除保险丝任务。未演练就不删。
+   - **回环用接口，不用 `::1`：**部分 Windows 版本（Issue #13 的 10.0.26200）拒绝 `-RemoteAddress ::1` 或 `::1/128`，报“已指定未指定的多播、广播或环回 IPv6 地址”。改用回环软件接口：先 `Get-NetIPInterface | Where-Object InterfaceAlias -like "Loopback*"` 核实本机唯一的回环接口别名（通常是 `Loopback Pseudo-Interface 1`），再 `New-NetFirewallRule -DisplayName "guardian-allow-loopback" -Direction Outbound -InterfaceAlias "<回环接口别名>" -Action Allow`。读回时 `(Get-NetFirewallRule -DisplayName "guardian-allow-loopback" | Get-NetFirewallInterfaceFilter).InterfaceAlias` 只有一个值时是字符串，不是数组，不要取 `[0]`（会只拿到第一个字符）。
+   - **核心程序路径以正在运行的为准：**`Get-Process | Where-Object Name -like "*mihomo*" | Select-Object Name,Path`。Clash Verge 的服务模式下跑的是服务目录里的核心，不是安装目录里的那个；路径不对，第 4 步之后核心连不上节点，所有经 TUN 的连接都会超时。节点用域名的，按当前解析结果填全部 IP，并给核心解析节点域名所需的 DNS 单独放行。
+4. **最后切换默认出站为阻止（保险丝已就位）：**`Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultOutboundAction Block`。切换后立刻验证出口仍通、浏览器可用；不通就按下面“[切换后不通：分层诊断](#windows-fw-layered-diagnosis)”在保险丝时间内查，查不清就回滚，不扩大白名单碰运气。
+5. **故障演练：**第 4 步的正常代理通信确认通了才做。停掉代理核心，确认外网全部失败（没有直连）；再启动，确认恢复。通过后删除保险丝任务。未演练就不删。
 6. **回滚：**`Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultOutboundAction Allow`，再 `Get-NetFirewallRule -DisplayName "guardian-*" | Remove-NetFirewallRule`；必要时 `netsh advfirewall import "<备份路径>\fw-backup.wfw"` 还原整体。
 7. **更新后复查：**换节点、改端口、更新客户端后，节点 IP 和核心路径可能变，规则要同步更新，否则会断网。
 
-以上命令基于 PowerShell 和 netsh 的通用用法，**没有在真实机器上实测**；Agent 首次使用前先在 `-WhatIf` 或只读命令里确认参数和别名。
+以上命令基于 PowerShell 和 netsh 的通用用法，**没有在真实机器上实测**；Agent 首次使用前先在 `-WhatIf` 或只读命令里确认参数和别名。Issue #13 的真机反馈已并入：`::1` 规则被拒、回环接口读回、默认出站阻止后正常 HTTPS 超时的排查顺序。
+
+<a id="windows-fw-layered-diagnosis"></a>
+### 切换后不通：分层诊断
+
+默认出站切成阻止后正常上网失败，在**同一个保险丝窗口里**按下面顺序各测一次，每步记 curl 退出码和 HTTP 状态码，不记返回的 IP 和节点地址。一个窗口测不完就先回滚，下个窗口接着测，不要每次从头猜。
+
+| 顺序 | 测什么 | 命令形式 | 说明哪一层 |
+| --- | --- | --- | --- |
+| 1 | 显式本地代理 | `curl.exe -sS -o NUL -w "%{http_code}" -x http://127.0.0.1:<mixed 端口> https://example.com` | 通：核心到节点这条允许规则没问题；不通：先查核心程序路径、节点 IP、TCP/UDP 协议 |
+| 2 | IPv4 字面地址经 TUN | `curl.exe -sS -o NUL -w "%{http_code}" -k https://<中性站点的 IPv4>` | 1 通而 2 不通：TUN 网卡规则或 TUN 路由有问题 |
+| 3 | 系统 DNS | `Resolve-DnsName example.com -Type A` | 1、2 通而 3 不通：DNS 劫持或 DNS 放行有问题 |
+| 4 | 域名 HTTPS | `curl.exe -sS -o NUL -w "%{http_code}" https://example.com` | 前三步都通而 4 不通：看 TLS 或规则分流 |
+
+curl 退出码对照：`6` 解析失败（DNS 层）；`7` 连接被拒或被拦（TCP 层，IPv6 字面地址在核心关了 IPv6 时就是 7，属预期）；`28` 超时（包发出去没回应，最常见是核心到节点被拦）；`35` 或 `60` 是 TLS 层。四步都通过后才进入第 5 步故障演练。
+
+### 查 WFP 丢包记录
+
+想确认是哪条规则拦的，可以查 WFP 事件，全程只读：
+
+- 管理员 PowerShell 里先进入可写的私有目录，或显式指定输出文件：`netsh wfp show netevents file="<私有目录>\netevents.xml"`。不指定时写当前目录，没有写权限就退出码 1、没有文件。
+- 记下退出码，错误输出只记类别（权限不足、参数错误、无输出文件），不贴原文。**查询失败、没生成 XML 或 XML 解析失败都不等于“没有阻断事件”**；输出里有尖括号也可能只是帮助文本。
+- 还查不到时，可以临时开启“筛选平台连接”失败审计（B 档，可撤销）：先 `auditpol /get /subcategory:"Filtering Platform Connection"` 记原值，再 `auditpol /set /subcategory:"Filtering Platform Connection" /failure:enable`，复现一次后 `Get-WinEvent -FilterHashtable @{LogName='Security'; Id=5157} -MaxEvents 20` 看被拦的程序、方向和端口，查完按原值恢复。
+- 只在本机看，不上传原始 WFP 日志或安全日志；给反馈时只写“哪个程序、哪个方向、哪个端口类型被拦”。
+- 不要反复让用户粘贴长命令和长日志；Agent 能执行就自己执行，不能执行就给一段完整的脚本让用户一次运行，输出只保留上面这些摘要字段。
+
+### 宿主拒绝执行时
+
+Agent 的执行工具返回 `blocked by policy` 之类的拒绝，是**宿主的限制**，和本项目门禁、Windows 权限不足、防火墙规则错误是四件不同的事，分开记录：
+
+1. 停下这一步，不换工具、不换写法、不拆成小命令绕过去；用户授权也解除不了宿主限制。
+2. 先确认系统处在安全状态：保险丝任务还在，或默认出站已恢复为允许、`guardian-*` 临时规则已清理。
+3. 交接给用户：说明被拒的是哪一步、它要做什么，把完整命令或脚本交给用户在自己的管理员终端里运行，或者就此收尾。
+4. 在报告里写成“宿主拒绝”，不写成脚本失败或 Windows 故障。
+
+### 最小反馈清单
+
+需要用户帮忙验证或提交反馈时，只要这些，不要账号、真实节点地址、订阅、完整配置：
+
+- Windows 版本号（`[Environment]::OSVersion.Version`）、客户端和核心版本、TUN 栈（gVisor／system／mixed）、规则或全局模式。
+- 三个防火墙配置文件的 `Enabled` 和 `DefaultOutboundAction`。
+- `guardian-*` 规则的名称、方向、动作和过滤类型（程序／接口／端口），不含地址。
+- 分层诊断四步各自的 curl 退出码和 HTTP 状态码。
+- WFP 或审计查询的退出码与错误类别。
+- 当前恢复状态：默认出站、临时规则数、保险丝任务是否已清理。
 
 ## Agent 不做的事
 

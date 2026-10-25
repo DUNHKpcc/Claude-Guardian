@@ -221,6 +221,38 @@ class GuidanceContracts(unittest.TestCase):
         for path in scripts.glob("*.py"):
             self.assertNotIn("Set-NetFirewallProfile", path.read_text(encoding="utf-8"), path.name)
 
+    def test_windows_firewall_issue13_guidance(self):
+        # Issue #13: ::1 rules rejected, readback of a single alias, timeouts after Block,
+        # failed netsh queries read as "no events", and host refusals mixed with other failures.
+        doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
+        for term in ("回环用接口，不用 `::1`", "Loopback*", "不是数组", "核心程序路径以正在运行的为准",
+                     "### 切换后不通：分层诊断", "#windows-fw-layered-diagnosis", "同一个保险丝窗口",
+                     "显式本地代理", "IPv4 字面地址经 TUN", "Resolve-DnsName", "`28` 超时",
+                     "四步都通过后才进入第 5 步故障演练", "### 查 WFP 丢包记录", 'netsh wfp show netevents file=',
+                     "不等于“没有阻断事件”", "auditpol /get", "### 宿主拒绝执行时", "blocked by policy",
+                     "不换工具", "### 最小反馈清单"):
+            self.assertIn(term, doc)
+        diagnosis = doc.split("### 切换后不通：分层诊断", 1)[1].split("\n### ", 1)[0]
+        self.assertLess(diagnosis.index("显式本地代理"), diagnosis.index("IPv4 字面地址经 TUN"))
+        self.assertLess(diagnosis.index("IPv4 字面地址经 TUN"), diagnosis.index("Resolve-DnsName"))
+
+    def test_readme_is_not_defensive(self):
+        # The README states what the project does; boundaries live in one short list.
+        for name, heading, dropped in (
+                ("README.md", "## 几条底线", ("## 它不是什么", "## 核心场景", "## 工作流与门禁机制",
+                                             "### 开始前要知道", "不是已完成检查或修复的演示结果",
+                                             "加载受第三方服务可用性影响")),
+                ("README.en.md", "## Ground rules", ("## What it is not", "## Core scenarios", "## Workflow and gates",
+                                                    "### Before you start", "not demonstrations of completed",
+                                                    "depends on that third-party service"))):
+            body = (ROOT / name).read_text(encoding="utf-8")
+            self.assertIn(heading, body, name)
+            for text in dropped:
+                self.assertNotIn(text, body, name)
+            for link in ("authorization-tiers.md", "local-firewall-prompts.md", "windows-cleanup.md",
+                         "contact-and-safety.md", "device-report.yml"):
+                self.assertIn(link, body, name)
+
     def test_s08_screenshots_ip_report_and_macos_guest_are_covered(self):
         root = ROOT / "skills" / "claude-guardian"
         text = (root / "sources" / "S08-extracted-text.md").read_text(encoding="utf-8")

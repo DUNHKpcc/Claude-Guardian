@@ -197,7 +197,7 @@ M00: adaptive intake and stable question registry（14 节）
 
 ## local-firewall-prompts.md
 
-本机路线：Clash 与防火墙（Agent 提示词）（8 节）
+本机路线：Clash 与防火墙（Agent 提示词）（12 节）
 
 - [通用工作方式（两个系统相同）](local-firewall-prompts.md#通用工作方式两个系统相同)
 - [Mac](local-firewall-prompts.md#mac)
@@ -206,6 +206,10 @@ M00: adaptive intake and stable question registry（14 节）
 - [Windows](local-firewall-prompts.md#windows)
   - [Windows 上的 Clash](local-firewall-prompts.md#windows-上的-clash)
   - [Windows 的防火墙：系统自带](local-firewall-prompts.md#windows-的防火墙系统自带)
+  - [切换后不通：分层诊断](local-firewall-prompts.md#切换后不通分层诊断)
+  - [查 WFP 丢包记录](local-firewall-prompts.md#查-wfp-丢包记录)
+  - [宿主拒绝执行时](local-firewall-prompts.md#宿主拒绝执行时)
+  - [最小反馈清单](local-firewall-prompts.md#最小反馈清单)
 - [Agent 不做的事](local-firewall-prompts.md#agent-不做的事)
 
 ## macos-dns-case-lessons.md

@@ -35,7 +35,7 @@
 
 **中文** · [English](README.en.md)
 
-[它能干什么](#它能干什么) · [怎么工作](#怎么工作) · [分级授权](#分级授权你不需要每一步都在场) · [快速开始](#快速开始) · [选择运行路线](#选择运行路线) · [文档导航](#文档导航)
+[它能干什么](#它能干什么) · [几条底线](#几条底线) · [怎么工作](#怎么工作) · [分级授权](#分级授权你不需要每一步都在场) · [快速开始](#快速开始) · [选择运行路线](#选择运行路线) · [文档导航](#文档导航)
 
 [GPL-3.0-only](LICENSE) · [更新记录](CHANGELOG.md) · [决策记录](docs/decisions.md) · [反馈问题](https://github.com/DUNHKpcc/Claude-Guardian/issues)
 
@@ -43,9 +43,7 @@
 
 ---
 
-Claude-Guardian 是一个给 Agent 用的 Skill。它不是一键修复程序，而是把作者和社区的真实经验、一批经过整理的资料和少量脚本交给 Agent，让 Agent 能**根据你的需求和环境**，一步步陪你把订阅、账号、网络出口和运行环境准备好。每个人的系统、网络、预算和目标都不一样，所以它不给固定答案，而是先了解你，再给适合你的做法，并把风险高的步骤留给你拍板。
-
-> **项目不承诺免封。** 检查通过、出口干净，都不代表平台认可你的网络环境；价格和准入变化快，购买前请核对官方页面。
+Claude-Guardian 是一个给 Agent 用的 Skill。它把作者和社区的真实经验、整理好的资料和一批脚本交给 Agent，让 Agent **按你的需求和环境**，陪你一步步把订阅、账号、网络出口和运行环境准备好。每个人的系统、网络、预算和目标都不一样，所以它先了解你，再给适合你的做法；风险高的步骤由你拍板。
 
 ## 它能干什么
 
@@ -64,13 +62,13 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它不是一键修复程序，
 | 🧹 | **清理规划** | 规划旧设备 Claude 残留的清理，保护源码、Git 历史和 Codex；隔离（可恢复）由你在终端亲自确认，不永久删除；Windows 按官方路径用 PowerShell 分步清理 |
 | 📚 | **资料随答附带** | 每个回答附上对应来源链接；资料之外需要补充时，可到 Linux.do、NodeSeek、IDC Flare、V2EX、Reddit、X 查找并标明来源和日期；也可直接当 VPS、家宽、线路、封号经验的帖子与论坛搜索工具用 |
 
-## 它不是什么
+## 几条底线
 
-- **不是一键修复。** 内置的配置写入适配器目前只覆盖 Mac 上 Clash Verge Rev 2.5.8 的 rules 扩展（需先退出应用；Mac 上的拒绝路径、计划、真实写入和回滚做过逐项真机验收，见 ADR-039）；其他修改需要你批准，由你或 Agent 在你批准的范围内执行。
-- **不替你付款、注册、登录、做 KYC 或 OAuth 授权。** 这些永远由你本人完成。
-- **不收集凭据。** 不需要你提交 IP、订阅链接、密码、UUID 或完整配置。
-- **不接触 Claude / Anthropic。** 接触前阶段（PC0）不启动客户端、不登录、不访问其服务。
-- **不是原样照搬就能跑的脚本集。** 作者在自己的 Mac、Windows、VM 和 VPS 上都用过、验证过这些教程和脚本（见[开发与验证](#开发与验证)），但每个人的系统版本、应用版本、网络和安装位置都不一样，所以需要按你的实际环境调整：由你的 Agent 先核对环境、按差异调整，失败就回滚并如实报告。
+- **钱和账号你来：**付款、注册、登录、KYC、OAuth 都由你本人完成。
+- **不要你的凭据：**不用交出 IP、订阅链接、密码、UUID 或完整配置。
+- **准备阶段不碰 Claude：**不启动客户端、不登录、不访问其服务。
+- **按你的环境调整：**这些教程和脚本作者在自己的 Mac、Windows、VM 和 VPS 上都用过。你的系统和应用版本可能不同，Agent 会先核对、按差异调整，出问题就回滚。
+- **没人能保证免封：**价格和准入变化快，购买前看一眼官方页面。
 
 ## 怎么工作
 
@@ -85,10 +83,9 @@ flowchart LR
     X --> V["验证与回滚"]
 ```
 
-- **Agent 主导：** 理解你的需求，选择资料，解释结果，决定下一步。同一个 Skill 对不同的人给出不同的做法。
-- **状态机兜底：** 上百个访谈问题按条件调度，只在你明确选了路线后才问路线相关的问题；评估结果会列出这次**必须附上的资料**；授权记录可追溯。
-- **脚本做有限的事：** VM 搭建、防火墙等脚本由你运行或经批准后运行，不由 Agent 临时改写。
-- **硬规则不由 Agent 决定：** 接触门禁、付款本人、不收集凭据、宿主策略优先。
+- **Agent 主导：**理解你的需求，挑资料，解释结果，决定下一步。同一个 Skill 对不同的人给出不同的做法。
+- **状态机兜底：**上百个访谈问题按条件调度，选定路线后才问路线相关的问题；每次评估都列出要附上的资料。
+- **脚本照文档跑：**VM 搭建、防火墙等脚本由你运行，或经你批准后由 Agent 运行。
 
 ## 分级授权：你不需要每一步都在场
 
@@ -100,7 +97,7 @@ flowchart LR
 | 🟡 **B 整个计划批准一次** | 批准一张计划，Agent 连续执行，失败自动撤销 | 装客户端、加允许规则、前台转发、临时切 BBR、装 TUN |
 | 🔴 **C 必须当场确认** | 到这一步 Agent 暂停，你什么时候看到什么时候回复 | 切默认出站为阻止、启用防火墙、改 SSH、持久化改内核、清理数据、账号与钱、凭据、组织设备、接触 Claude |
 
-范围确认、计划批准和确认单都会记录在访谈状态里，来源必须是你的明确回复；换路线或会话恢复后自动失效，Agent 无法替你批准。
+批准和确认都以你在对话里的明确回复为准，并记录在访谈状态里；换路线后需要重新确认。
 
 ## 快速开始
 
@@ -139,78 +136,36 @@ $claude-guardian
 我第一次准备订阅 Claude，使用 Mac。先帮我比较本机和 VM，再决定怎么检查。
 ```
 
-普通订阅准备会先确认订阅阶段，再按需了解系统、用途和目标。已有答案会复用；紧急故障和明确的清理任务走各自流程，不强行重做购买问卷。
+Agent 会先问你在哪个阶段、用什么系统、想达到什么目标，已经回答过的不再重复问；遇到紧急故障或清理任务会直接走对应流程。
 
-### 3. 确认路线，再开始检查
+### 3. 选路线，再检查
 
-**明确本轮任务 → 显式选择本机 / VM / VPS → 声明必要网络资源与配置状态 → 授权具体检查 → 执行检查 → 计划与分级授权**
+**说清这次要做什么 → 选本机 / VM / VPS → 说明手上有什么网络资源 → 确认检查范围 → 检查 → 按档位批准计划**
 
-路线选择只确定检查对象和深度，不等于允许联网、修改配置或保存资料。只想了解订阅或比较方案，可以停留在解释阶段。
+只想了解订阅或比较方案，停在解释阶段就行，不会动你的设备。
 
 ## 选择运行路线
 
-| 路线 | 适用方向 | 当前检查范围 |
+| 路线 | 适合谁 | 主要内容 |
 | --- | --- | --- |
-| **本机** `Clash Verge` `FlClash` `LuLu` `Windows Firewall` | 在自己的 Mac / Windows 上使用；默认建议，仍需明确接受 | 按目标和可用宿主能力做适用的详细检查；固定出口 IP 的来源（机场、自建梯、家宽拼车）见[出口来源](skills/claude-guardian/references/egress-ip-options.md) |
-| **VM** `Omarchy` `macOS` `FlClash TUN` `nftables` | 在虚拟机内建立独立工作环境 | 按适用范围深入检查；宿主和客机分别绑定，不能互相替代结论；客机系统首选 Omarchy（Mac 宿主首选 macOS），网卡选 LAN 独立网卡，搭建顺序和防火墙脚本见 [VM 指引](skills/claude-guardian/references/vm-guidance.md)；目标机无法直连时的反向隧道与崩溃自愈见[进阶路线](skills/claude-guardian/references/advanced-route.md) |
-| **VPS** `Ubuntu 24.04` `Xvfb + noVNC` `Remote-SSH` `tmux` | 明确选择远程服务器作为开发机（Claude Code 跑在 VPS 上） | 基础、非侵入检查；环境一致、远程桌面、防火墙和线路优化的指引见 [VPS 指引](skills/claude-guardian/references/vps-guidance.md)；用户买好服务器并给出 SSH 后，Agent 可按分级授权通过 shell／SSH 部署（Skill 无内置部署程序，脚本未真机实测），买服务器和付款由用户完成 |
+| **本机** `Clash Verge` `FlClash` `LuLu` `Windows Firewall` | 直接在自己的 Mac / Windows 上用（默认推荐） | Clash 的 TUN 与 DNS、Windows 系统防火墙、Mac 的 LuLu，见[本机的 Clash 与防火墙](skills/claude-guardian/references/local-firewall-prompts.md)；出口 IP 的来源见[出口来源](skills/claude-guardian/references/egress-ip-options.md) |
+| **VM** `Omarchy` `macOS` `FlClash TUN` `nftables` | 想在虚拟机里建一个独立的工作环境 | 客机首选 Omarchy（Mac 宿主首选 macOS），LAN 独立网卡，搭建顺序和 fail-closed 防火墙脚本见 [VM 指引](skills/claude-guardian/references/vm-guidance.md)；目标机无法直连时的反向隧道与崩溃自愈见[进阶路线](skills/claude-guardian/references/advanced-route.md) |
+| **VPS** `Ubuntu 24.04` `Xvfb + noVNC` `Remote-SSH` `tmux` | 把远程服务器当开发机（Claude Code 跑在 VPS 上） | 环境一致、远程桌面、防火墙和线路优化，见 [VPS 指引](skills/claude-guardian/references/vps-guidance.md)；你买好服务器、给出 SSH 后，Agent 可按分级授权帮你部署 |
 
-三条路线复用同一套入口与检测核心，差别在目标、范围和深度。原生采集取决于具体宿主支持；当前 `guardian.py check` 只支持本机 macOS / Windows，选择 VM 或 VPS 不会自动开放该命令的原生采集。它们是独立选择，不是升级顺序；已有 VPS、或把 VPS 用作网络出口，都不代表选择在 VPS 上运行。
+三条路线是并列的选择，不是升级顺序；把 VPS 当网络出口不等于选了 VPS 路线。还没买代理或服务器也没关系，可以先做离线预检。HTTP/mixed 入口和上游 SOCKS5 出口的区别见[环境入口与路线边界](docs/environment-entry-decision.md)。
 
-选定路线后，先确认网络资源是否已有、选中哪个资源别名、代理入口与最终出口类型、配置是否准备好。**不用提交 IP、订阅链接、密码、UUID 或完整配置。** 没有资源、不确定或选择直连，也可以在明确目标和授权下做离线预检，不必先购买。
-
-本地 HTTP/mixed 入口与上游 SOCKS5 出口是不同层，配置已导入也不等于已生效。详见[环境入口与路线边界](docs/environment-entry-decision.md)。
-
-路线未知、仅比较、拒绝、撤回、过期或冲突时，不继续检查目标，也不能沿用先前的路线确认。路线、目标、资源或配置变化后，相关绑定、确认和旧计划失效，须重新核实；已有恢复义务仍保留。
-
-## 核心场景
-
-| 适用场景 | 需要解决的问题 | 当前处理方式 |
-| --- | --- | --- |
-| **订阅前准备与渠道核对** | 不清楚本机、VM、VPS 的区别，或付款渠道与商店地区前提 | 先确认订阅阶段和用途；需要环境检查时先选路线。逐项核对渠道前提，缺少条件时保留未知，不催促购买 |
-| **代理与网络分流诊断** | 配置已导入但不确定生效，担心 DNS、IPv6 或 WebRTC 路径不符 | 在选定路线与具体授权下检查适用证据，按 Claude 目标流量 `IPv4_ONLY` 规划最小改动；主动端点探测另行授权 |
-| **客户端异常与报错分流** | 遇到 `403` / `429` / `529`、账单冲突或疑似凭据泄露 | 先暂停非必要重试、整理已有证据，区分传输、认证、额度、账单和账号状态，再提出下一步 |
-| **旧设备残留数据清理规划** | 需要整理 Claude 本地残留，同时保护项目源码、Git 历史和 Codex | 说明精确归属、保护项与隔离/恢复计划；清理接口默认无宿主适配器，不能据此宣称已可执行或已验收 |
-
-## 工作流与门禁机制
-
-```mermaid
-flowchart TD
-    A["PC0 接触前保护 / G1 明确本轮任务"] --> B["显式选择 local / VM / VPS"]
-    B --> C["声明必要网络资源与配置状态"]
-    C --> D["绑定目标并取得具体检查授权"]
-    D --> E["按路线范围检查；VPS 仅基础非侵入"]
-    E --> F["G2 计划：证据、未知项、差异与恢复条件"]
-    F --> G["G3 授权按档位（A 范围内 / B 计划批准 / C 当场确认）；按能力执行与复测"]
-    G --> H["另行满足 PC1 安装/基础测试、PC2 登录/支付前提与授权"]
-    B --> I["路线未知或撤回：停止检查，相关旧计划失效"]
-```
-
-- **PC0** 保持接触门禁关闭：不启动客户端、不执行 `claude --version`，不访问或解析 Claude / Anthropic 服务；诊断通过不会自动开启门禁。
-- **G1 → G2 → G3** 分别组织事实收集、方案和按档位的授权（A 范围内自行做、B 计划批准一次、C 当场确认）。选择路线或完成问卷只满足部分入口前提，不能代替检查、修改或联网授权。
-- **PC1 / PC2** 的客户端安装、基础测试、官方登录和支付有各自条件与授权；不是流程图走到末尾就可执行。VPS 采购和付款由用户本人完成；用户给出 SSH 访问后，Agent 可按分级授权通过 shell／SSH 执行文档里的命令和脚本来部署 VM 和 VPS（无内置部署程序，未真机实测）。
-
-清理 Claude 本机数据：macOS 有内置宿主，见[清理接口说明](docs/cleanup-cli-usage.md)；Windows 没有宿主，按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)。
-
-### 开始前要知道
-
-- **先确认，再接触服务**：PC0（接触前阶段）不启动 Claude 客户端、不登录、不访问其服务；阅读来源中的命令不构成执行授权
-- **改动按风险分档授权**：只读和预演在确认范围后自行做；可自行撤销且不切断访问的改动，整个计划批准一次；可能锁死、涉及账号和钱、凭据、删除或不可逆的步骤必须当场确认。你不需要每一步都在场，详见[分级授权](skills/claude-guardian/references/authorization-tiers.md)
-- **保护其他应用**：当前规划要求所选 Claude 目标流量仅用 IPv4、不回落 IPv6；这不是已生效声明，也不授权关闭整机 IPv6 或影响 Codex、VPN 和其他应用
-- **只保存必要信息**：报告与私有差异按明确请求保存；不把凭据、真实 IP、订阅链接、原始配置或个人报告提交仓库
+清理旧设备上的 Claude 数据：macOS 有内置宿主，见[清理接口说明](docs/cleanup-cli-usage.md)；Windows 按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)。
 
 完整规则见[接触与授权边界](skills/claude-guardian/references/contact-and-safety.md)及[网络证据说明](skills/claude-guardian/references/network-and-remedies.md)。
 
 ## 使用示例
 
-这些是向 Codex 发起任务的示例，不是已完成检查或修复的演示结果。
-
 | 你想做的事 | 可以这样说 |
 | --- | --- |
 | 第一次准备订阅 | “我用 Windows，第一次准备订阅。先说明需要确认什么，再决定运行路线。” |
-| 已选本机，想检查网络 | “这次在本机使用，代理配置已经导入。先确认资源和配置状态，只做我同意的检查。” |
-| 比较 VM 和 VPS | “帮我比较这两条路线的检查范围，先不要检查设备或部署服务。” |
-| 处理现有异常 | “当前 Claude Code 报错。先整理已有证据，区分已确认和未知项，再给最小修复建议。” |
+| 已选本机，想检查网络 | “这次在本机使用，代理配置已经导入。帮我确认配置是否生效。” |
+| 比较 VM 和 VPS | “帮我比较这两条路线，先不要检查设备或部署服务。” |
+| 处理现有异常 | “当前 Claude Code 报错。先整理已有证据，再给最小修复建议。” |
 
 <details>
 <summary><strong>开发者：命令行入口</strong></summary>
@@ -288,7 +243,7 @@ python3 skills/claude-guardian/scripts/diagnostic_session.py --target-ref laptop
 | [异常与清理](skills/claude-guardian/references/incidents-and-integrations.md) | 故障、保留范围、申诉和集成边界 |
 | [来源资料库](skills/claude-guardian/references/source-library.md) | 按主题查阅随包原文、章节与来源 |
 
-来源原文可以直接阅读，保留自身署名和许可。所有者提供的资料是本项目的依据，相关回答会附上对应来源；价格和准入变化快，购买前核对当前官方页面。
+资料原文保留自身署名和许可，相关回答会附上对应来源。
 
 ## 开发与验证
 
@@ -298,34 +253,30 @@ python3 -m compileall -q skills/claude-guardian/scripts
 python3 tools/package_skill.py --help
 ```
 
-打包时使用 `--output` 指定你自己的临时目录中的新 ZIP 路径。测试与发行检查使用合成数据，不应指向真实代理配置或用户资料。
+打包时用 `--output` 指定你自己临时目录里的新 ZIP 路径；测试只用合成数据。CI 在 Linux、macOS、Windows 上跑 2000 多个单测、回归与确定性打包检查。
 
-CI 在 Linux、macOS、Windows 上执行 2000 多个单测、回归与确定性打包检查，并另有面板预览检查。原生 smoke 与受控夹具只证明各自覆盖的范围，不能替代真实桌面、Clash、浏览器、写入或故障恢复验收。
-
-**验收台账与证据已于 2026-10-21 移出仓库**（见 [ADR-010](docs/decisions.md)）。原 218 项验收要求仍写在 `skills/claude-guardian/sources/design/` 的设计规格中，可在 git 历史里找回台账；当前进展以 [CHANGELOG](CHANGELOG.md) 和 [决策记录](docs/decisions.md) 为准，不用单测数量代表产品完成度。
+验收台账已于 2026-10-21 移出仓库（见 [ADR-010](docs/decisions.md)），当前进展看 [CHANGELOG](CHANGELOG.md) 和[决策记录](docs/decisions.md)：
 
 - [设计覆盖](docs/requirements.md)：已实现与未实现项
 - [开发状态](docs/rebuild-status.md)：当前交付顺序与剩余工作
 - [关键决策](docs/decisions.md)：设计取舍和确认条件
 - [来源清单](docs/source-manifest.json)：设计输入版本与哈希
 
-**验证与反馈。**作者在自己的 Mac、Windows、VM 和 VPS 上都验证过这些教程和脚本；其中 Mac 上的 Clash Verge 写入与回滚、整机出口判定等做过逐项真机验收，结果见 [ADR-039](docs/decisions.md)。**但每个人的环境不一样**（系统版本、应用版本、网络、安装位置、宿主限制），所以需要按你的实际情况调整：让你的 Agent 先核对你的环境、按差异调整，失败就回滚并如实报告；门禁一律 fail-closed，不会为了让命令通过而放松检查。你在自己环境里用了哪一项、结果如何，尤其是需要调整的地方，欢迎用 [真机使用反馈](https://github.com/DUNHKpcc/Claude-Guardian/issues/new?template=device-report.yml) 告诉我们，也可以到频道交流。
+**真机验证与反馈：**作者在自己的 Mac、Windows、VM 和 VPS 上验证过这些教程和脚本，Mac 上的 Clash Verge 写入与回滚、整机出口判定做过逐项真机验收（见 [ADR-039](docs/decisions.md)）。你在自己环境里用了哪一项、结果如何、哪里需要调整，欢迎用[真机使用反馈](https://github.com/DUNHKpcc/Claude-Guardian/issues/new?template=device-report.yml)告诉我们。
 
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=DUNHKpcc/Claude-Guardian&type=Date)](https://www.star-history.com/?repos=DUNHKpcc%2FClaude-Guardian&type=date)
-
-图表由 Star History 提供；加载受第三方服务可用性影响。
 
 ## 频道交流分享
 
 - Telegram 频道：[https://t.me/+q4D4_Qf_FIs5NDk1](https://t.me/+q4D4_Qf_FIs5NDk1)
 - QQ：1048450370
 
-交流经验、分享用法可以来频道；问题反馈和改进建议请用下面的 Issues，方便留档。在频道或群里也不要发真实账号、凭据、订阅链接、节点密码或完整代理配置。
+交流经验、分享用法来频道；问题反馈和改进建议请用 Issues，方便留档。
 
 ## 反馈与许可
 
-欢迎通过 [Issues](https://github.com/DUNHKpcc/Claude-Guardian/issues) 反馈问题，或提交文档、合成样例和回归测试。反馈时说明系统、版本、复现步骤及预期结果；不要上传真实账号、凭据、订阅链接、完整代理配置或个人报告。
+欢迎通过 [Issues](https://github.com/DUNHKpcc/Claude-Guardian/issues) 反馈问题，或提交文档、合成样例和回归测试。反馈时说明系统、版本、复现步骤及预期结果，账号、凭据、订阅链接和完整代理配置不要贴出来。
 
 代码采用 **[GPL-3.0-only](LICENSE)**。来源原文保留其已有署名与许可声明。
