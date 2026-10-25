@@ -199,6 +199,7 @@ The following are short prompts/field meanings, not a mandatory sequence. Preser
 | Q-V06 | Snapshot/backup and restore scope |
 | Q-V07 | VM guest OS: omarchy / macos / other (default Omarchy; macOS guest on a Mac host); see [vm-guidance.md](vm-guidance.md) |
 | Q-V08 | VM NIC mode: lan_bridged / shared_nat / other; the LAN independent NIC is preferred over host-shared NAT, chosen before the VM is created |
+| Q-V09 | VM reachability: direct / remote_unreachable; remote_unreachable (target behind another network or NAT, managed through a reverse tunnel) attaches the advanced route, see [advanced-route.md](advanced-route.md) |
 | Q-S01 | VPS as a development machine (Claude Code runs on it); a proxy-exit-only VPS belongs to the local route egress choice (egress-ip-options.md) |
 | Q-S02 | Existing/new server, region, OS, and resources |
 | Q-S03 | SSH access and independent rescue channel; no keys/passwords |
@@ -225,7 +226,7 @@ Categorical facts that make the route-specific guidance deterministic instead of
 | Q-T01 | Current line problem: none / evening_slow / drops / slow_transfer / desktop_lag / wrong_exit. Asked for an explicit VPS route, or after a self-built choice (Q-X01) on local or VM. | Anything but none attaches [line-optimization.md](line-optimization.md) and R02 (R01 for evening_slow or drops). |
 | Q-M01 | Whether registration, login or in-app purchase happens on a phone: ios / android / both / none. Asked for Apple or Google in-app purchase, or when the OS is mobile only. | Attach [mobile-guidance.md](mobile-guidance.md) and S03 page 4; Android includes the SIM note. |
 
-Q-V07 and Q-V08 (VM) and Q-S08 (VPS) in the tables above follow the same rules. Route-specific questions are asked only after the route is explicitly chosen, never from the default proposal.
+Q-V07, Q-V08 and Q-V09 (VM) and Q-S08 (VPS) in the tables above follow the same rules. Route-specific questions are asked only after the route is explicitly chosen, never from the default proposal.
 
 Tiered authorization records (scope, tier-B plan approvals, tier-C confirmations) live in an optional `authorization` section of the state, written only through the `record_*` and `*_critical_confirmation` functions with a `user:` source; see [authorization-tiers.md](authorization-tiers.md). Interview answers never create them, and `assessment()` only summarizes them.
 

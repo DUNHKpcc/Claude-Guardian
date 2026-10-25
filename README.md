@@ -148,7 +148,7 @@ $claude-guardian
 | 路线 | 适用方向 | 当前检查范围 |
 | --- | --- | --- |
 | **本机** `Clash Verge` `FlClash` `LuLu` `Windows Firewall` | 在自己的 Mac / Windows 上使用；默认建议，仍需明确接受 | 按目标和可用宿主能力做适用的详细检查；固定出口 IP 的来源（机场、自建梯、家宽拼车）见[出口来源](skills/claude-guardian/references/egress-ip-options.md) |
-| **VM** `Omarchy` `macOS` `FlClash TUN` `nftables` | 在虚拟机内建立独立工作环境 | 按适用范围深入检查；宿主和客机分别绑定，不能互相替代结论；客机系统首选 Omarchy（Mac 宿主首选 macOS），网卡选 LAN 独立网卡，搭建顺序和防火墙脚本见 [VM 指引](skills/claude-guardian/references/vm-guidance.md) |
+| **VM** `Omarchy` `macOS` `FlClash TUN` `nftables` | 在虚拟机内建立独立工作环境 | 按适用范围深入检查；宿主和客机分别绑定，不能互相替代结论；客机系统首选 Omarchy（Mac 宿主首选 macOS），网卡选 LAN 独立网卡，搭建顺序和防火墙脚本见 [VM 指引](skills/claude-guardian/references/vm-guidance.md)；目标机无法直连时的反向隧道与崩溃自愈见[进阶路线](skills/claude-guardian/references/advanced-route.md) |
 | **VPS** `Ubuntu 24.04` `Xvfb + noVNC` `Remote-SSH` `tmux` | 明确选择远程服务器作为开发机（Claude Code 跑在 VPS 上） | 基础、非侵入检查；环境一致、远程桌面、防火墙和线路优化的指引见 [VPS 指引](skills/claude-guardian/references/vps-guidance.md)；用户买好服务器并给出 SSH 后，Agent 可按分级授权通过 shell／SSH 部署（Skill 无内置部署程序，脚本未真机实测），买服务器和付款由用户完成 |
 
 三条路线复用同一套入口与检测核心，差别在目标、范围和深度。原生采集取决于具体宿主支持；当前 `guardian.py check` 只支持本机 macOS / Windows，选择 VM 或 VPS 不会自动开放该命令的原生采集。它们是独立选择，不是升级顺序；已有 VPS、或把 VPS 用作网络出口，都不代表选择在 VPS 上运行。

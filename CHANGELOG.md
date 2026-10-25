@@ -1,5 +1,15 @@
 # 版本记录
 
+## 进阶路线：远端 Linux 机器的出口钉死与反向隧道（2026-10-24）
+
+来源：所有者在 Omarchy 里的“FlClash + nftables killswitch + VPS 反向隧道”部署经验（本机管理端 + 本地 VM + 远端他人网络里的 Omarchy + 兼任出口和中转的 VPS）。经验原文和含真实地址、私钥的脚本留在所有者的 Omarchy，不进仓库，仓库只收脱敏后的做法。
+
+- **进阶路线（指引层，ADR-042）：**新增 `references/advanced-route.md`（架构、搭建顺序与档位、隧道专属的坑、崩溃自愈、验收与覆盖矩阵、盲区、运维手册、通用教训）和 `routes-and-platforms.md` 的 R-ADV 卡 A1 到 A4。它叠加在 VM／VPS 路线之上，不新增路线值，目标机仍按 vm_guest／vps 绑定，不动环境入口门禁。访谈新增 Q-V09（目标机能直连还是需要反向隧道），选 `remote_unreachable` 且为 Linux 客机时 `required_references` 附进阶路线文档和两个脚本，排在 killswitch 之前
+- **新增脱敏脚本（`assets/remote-hardening/`）：**`install-reverse-tunnel.sh`（systemd 常驻反向 SSH 隧道；所有者原脚本把私钥内嵌，这里改为用户传入 `KEY_PATH`，脚本不生成、不内嵌、不输出密钥，并 `chown`、`chmod 600`）、`flclash-crash-heal.sh`（FlClash 崩溃后清策略路由残留 + core 看门狗，`install` 生成 timer 和隧道 drop-in，`KillMode=process`、服务级桌面环境变量）
+- **共用的修复与完善（VM、VPS 路线同样受益）：**`install-flclash-killswitch.sh` 新增可选 `TUNNEL_UNIT`，从隧道 unit 解析 `user@IP`、`-p` 端口加入独立白名单，管理通道不再被自己的 killswitch 锁死（解析失败打印 WARN）；`install-flclash-tun.sh` 在非 0.9.1 版本自动加 helper 的 systemd drop-in（`FLCLASH_HELPER_OWNER_UID/GID`、`RuntimeDirectory=flclash`）；`vm-guidance.md` 补 GLOBAL 组含 DIRECT 的出口验证、priority 10 与 fake-ip 的坑、崩溃后路由黑洞、IPv6 实测（`inet` 家族 policy drop 已覆盖，换环境后用 `curl -6` 复测）、时区对齐出口地理位置与 NTP 被拦；`vps-guidance.md` 补作隧道中转时 sshd 保活和 `authorized_keys` 无引号写法（带字面引号会让 OpenSSH 8.9 静默拒绝转发）
+- **测试与打包：**新增守门测试（进阶路线卡、脚本无个人信息和私钥、共用修复落在 VM／VPS 指引）和 Q-V09 引用顺序测试；`acceptance-routes-rebuild.json` 的 VM 答案补 Q-V09；发行包 114 个成员（含 1 份文档和 2 个脚本）
+- **已知限制：**脚本的参数化与脱敏部分只做了 `bash -n` 和 killswitch 规则生成的离线检查（含与不含隧道 unit 两种），没有在真机整体重跑；`nft -c` 语法检查需要 root，本次未做。逻辑来自所有者在真机跑通的脚本。回滚：回退本提交即可，Q-V09 为新增问题，旧状态在该问题未答前评估为未完成
+
 ## 注册即要手机号或 KYC 的号（2026-10-24）
 
 - `account-onboarding.md` A0 第 6 条补充：注册时就提示手机号或 KYC 的号直接放弃，存活率不高，修好环境和邮箱后重新注册；已使用中才弹出的 KYC 仍按 A3 本人完成。仅文档改动

@@ -36,6 +36,7 @@
       {"question_id": "Q-V06", "value": {"backup": "private_project_backup_planned", "snapshot": "not_created", "restore": "not_tested"}},
       {"question_id": "Q-V07", "value": "omarchy"},
       {"question_id": "Q-V08", "value": "lan_bridged"},
+      {"question_id": "Q-V09", "value": "direct"},
       {"question_id": "Q-X01", "value": "existing_stable_exit"}
     ],
     "vps": [

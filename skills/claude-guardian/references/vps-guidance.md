@@ -79,7 +79,12 @@ S08 的结论是：像示例里这样的机房 IP 算好的，直接用没问题
 - **套家宽、VPS 上也跑 FlClash TUN：**直接用 [VM 的 install-flclash-killswitch.sh](../assets/vm-killswitch/install-flclash-killswitch.sh)，把 `LAN_NET` 设成你的管理来源网段，`NIC` 设成 VPS 的网卡，出站只走 TUN 或节点真实 IP 和端口，fail-closed。
 - 授权档位（见[分级授权](authorization-tiers.md)）：`render` 预演是 A 档；**启用防火墙是 C 档**（入站丢弃，可能锁死 SSH），用户当场确认，并在 180 秒保险丝内在另一个会话 `confirm`。
 - 用法与前置：`ADMIN_NET` 必填（固定公网 IP 加 /32，或 Tailscale 网段 100.64.0.0/10）；先 `render` 看规则；**运行前在云控制台确认有独立救援入口，先打快照，在另一个 SSH 会话里确认**，不要只靠一个会话。云厂商安全组和系统防火墙是两层，分别核对。
+- **套家宽、VPS 上跑 TUN 时，白名单要覆盖管理通道自身的出站**（SSH 入站走 `ADMIN_NET`，反向隧道等出站通道走 `TUNNEL_UNIT` 自动放行），详见 [vm-guidance.md 第 4 节](vm-guidance.md#4-客机防火墙fail-closed)。
 - 脚本的规则语法经 `nft -c` 在隔离环境检查过，应用和保险丝流程没有在真实服务器上实测，首次使用按上面的顺序小心进行。
+
+## 作为隧道中转的 VPS（进阶路线）
+
+VPS 同时当出口节点和反向隧道落点时，VPS 侧的 sshd 要这样设：`ClientAliveInterval 15`、`ClientAliveCountMax 2`，僵尸连接 30 秒内回收，否则旧连接占着回环端口，新隧道绑不上。`authorized_keys` 里给隧道密钥加限制时，选项值一律写**无引号**：`restrict,permitlisten=127.0.0.1:2222`。带字面反斜杠和引号的写法会让 OpenSSH 8.9 静默拒绝 `tcpip-forward`，服务端日志是干净的，客户端只报 `remote port forwarding failed`。完整排查顺序和整条路线见 [advanced-route.md](advanced-route.md)。
 
 ## 日常
 

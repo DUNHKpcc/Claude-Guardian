@@ -66,6 +66,23 @@ EOF
 echo 'Installing the privileged TUN helper...'
 sudo /opt/FlClash/FlClashHelperService install
 
+# 非 0.9.1 版本（所有者在 0.9.2 deb 上实测）helper 还需要两处补丁，缺一则 helper 起不来：
+#   1. 桌面用户不是默认 uid 时，helper 要显式知道属主：FLCLASH_HELPER_OWNER_UID/GID；
+#   2. helper 需要 /run/flclash 目录：RuntimeDirectory=flclash。
+# 用 systemd drop-in 加，不改包内的 unit 文件；重复运行结果相同。
+if [ "$version" != "0.9.1" ]; then
+  echo "Adding helper drop-in for FlClash ${version} (owner uid/gid, RuntimeDirectory)..."
+  sudo install -d /etc/systemd/system/flclash-helper.service.d
+  sudo tee /etc/systemd/system/flclash-helper.service.d/guardian.conf >/dev/null <<DROPIN
+[Service]
+Environment=FLCLASH_HELPER_OWNER_UID=$(id -u)
+Environment=FLCLASH_HELPER_OWNER_GID=$(id -g)
+RuntimeDirectory=flclash
+DROPIN
+  sudo systemctl daemon-reload
+  sudo systemctl restart flclash-helper.service
+fi
+
 systemctl is-active --quiet flclash-helper.service
 systemctl is-enabled --quiet flclash-helper.service
 printf '\nTUN helper installed and enabled: '

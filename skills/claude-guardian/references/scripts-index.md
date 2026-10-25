@@ -71,5 +71,7 @@ Windows 没有清理脚本，按 [windows-cleanup.md](windows-cleanup.md) 用 Po
 | `assets/vm-killswitch/install-flclash-killswitch.sh` | VM 客机 fail-closed 防火墙 | [vm-guidance.md](vm-guidance.md) |
 | `assets/vm-killswitch/install-flclash-tun.sh` | VM 客机安装 FlClash TUN | [vm-guidance.md](vm-guidance.md) |
 | `assets/vm-killswitch/enable-guest-ssh.sh` | 开客机 SSH（限管理来源） | [vm-guidance.md](vm-guidance.md) |
+| `assets/remote-hardening/install-reverse-tunnel.sh` | 进阶路线：目标机 systemd 常驻反向 SSH 隧道（密钥由用户传入） | [advanced-route.md](advanced-route.md) |
+| `assets/remote-hardening/flclash-crash-heal.sh` | FlClash 崩溃后清路由残留 + core 看门狗（含 `install`） | [advanced-route.md](advanced-route.md)、[vm-guidance.md](vm-guidance.md) |
 | `assets/vps-firewall/vps-guard.sh` | VPS 入站防火墙（带 180 秒保险丝） | [vps-guidance.md](vps-guidance.md) |
 | `assets/webrtc-probe.html` | 本地 WebRTC 探测页 | [SKILL.md](../SKILL.md) |

@@ -207,6 +207,26 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 **路线完成证据**：机器/用户绑定、成本和数据边界、SSH/救援、开发依赖、网络/PC-G1、PC1 授权、PC-G2 分段结果、登录/账单的用户确认、日常启动和恢复说明逐项标状态。不以“SSH 能连”宣布远端产品可用。
 
+## R-ADV 进阶路线卡（远端 Linux 机器的出口钉死与反向隧道）
+
+进阶路线不是第四种环境，也不新增路线值：它叠加在 R-VM / R-VPS 之上，用于目标 Linux 机器**管理者无法直连**（别人的网络、NAT 之后）且要整机出口钉死的场景。目标机仍按 vm_guest 或 vps 绑定，中转 VPS 按 vps 绑定，管理端按 local 绑定，三者证据分开记录，不能互相替代结论。完整说明见 [advanced-route.md](advanced-route.md)。本机或 VM 能直接连的，用 R-VM 即可。
+
+### A1 适用判断与前置（管理端规划，PC0）
+
+确认：目标机能不能直连；谁拥有网络和机器，是否同意加固；出口节点和隧道中转是否同一台 VPS（单点风险必须让用户知道）；目标机已按 V2a 做到 FlClash TUN 通、出口是预期 IP；独立救援入口是什么（本地终端、宿主机控制台）。任何一项没有就停在规划，不部署。**验收**项：出口 IP、救援入口、网络所有者同意，各标状态。
+
+### A2 反向隧道与崩溃自愈（目标机与 VPS 分别标注，B 档）
+
+按 [advanced-route.md 第 2 节](advanced-route.md#2-搭建顺序)的顺序：VPS 侧准备 → [install-reverse-tunnel.sh](../assets/remote-hardening/install-reverse-tunnel.sh) → [flclash-crash-heal.sh](../assets/remote-hardening/flclash-crash-heal.sh) `install`。隧道专用密钥由用户生成并传入路径，不内嵌、不输出。展示目标、差异、影响、备份和**恢复**方案后，整个计划**批准**一次。
+
+### A3 启用 killswitch 与验收（目标机，C 档）
+
+[install-flclash-killswitch.sh](../assets/vm-killswitch/install-flclash-killswitch.sh) 自动读取隧道 unit 放行管理通道。启用属 C 档，当场确认；管理端保持一个已登录会话，另有独立入口；180 秒保险丝内先探活再 `confirm`。验收按[覆盖矩阵](advanced-route.md#5-验收与覆盖矩阵)逐项，包括 `pkill -x FlClashCore` 的零泄漏与自愈时序、IPv6 实测。
+
+### A4 日常、更新与恢复（PC0 指引；接触 Claude 的 PC1/PC2 仍走 V3）
+
+日常体检、重连、故障**恢复**见 [advanced-route.md 第 6 节](advanced-route.md#6-日常运维)。节点或订阅更新后 `refresh`，换网络后重测 IPv6，更新 FlClash 后重测 helper 与 TUN。注册、订阅、养号与 V3 一致，目标机是接触 Claude 的唯一环境。
+
 ## 来源与维护定位
 
 本手册由 [D-SPEC §3–5、§9–10](../sources/design/D-SPEC-v0.1.10.md) 与 [D-ENV §8、§11、§18](../sources/design/D-ENV-v0.3.md) 展开。[S04 路线/FAQ](../sources/S04-claude-guide.md)、[S05 本地防护](../sources/S05-local-protection.md)、[S07 测试目录](../sources/S07-vps-script-catalog.md) 是背景材料，不授予执行权；[S08 VPS 教程](../sources/S08-vps-claude-tutorial.pdf)的命令，Agent 可在用户授权的 SSH 会话里按分级授权执行，详见 [vps-guidance.md](vps-guidance.md)。官方 OS/客户端入口沿用 D-SPEC 附录 A、D-ENV §14 的历史链接，使用前按阶段复核；本次没有实时核验厂商版本、费用或实际设备。

@@ -188,14 +188,14 @@ class InterviewTests(unittest.TestCase):
                 self.assertEqual(json.dumps(original, sort_keys=True), before)
 
     def test_complete_registry(self):
-        self.assertEqual(len(f.QUESTION_PROMPTS), 105)
+        self.assertEqual(len(f.QUESTION_PROMPTS), 106)
         original_ranges = {'J': 2, 'C': 12, 'OS': 12, 'H': 8, 'N': 6, 'P': 7,
                            'A': 10, 'G': 5, 'W': 4, 'I': 4, 'E': 2, 'L': 5,
                            'V': 6, 'S': 7, 'Z': 5, 'D': 2}
         original = {f"Q-{prefix}{i:02d}" for prefix, end in original_ranges.items()
                     for i in range(1, end + 1)}
-        # ADR-018 adds six categorical route, egress and mobile questions.
-        self.assertEqual(set(f.QUESTION_PROMPTS), original | {'Q-C13', 'Q-X01', 'Q-X02', 'Q-M01', 'Q-V07', 'Q-V08', 'Q-S08', 'Q-T01'})
+        # ADR-018 adds six categorical route, egress and mobile questions; Q-V09 (VM reachability) adds the advanced route.
+        self.assertEqual(set(f.QUESTION_PROMPTS), original | {'Q-C13', 'Q-X01', 'Q-X02', 'Q-M01', 'Q-V07', 'Q-V08', 'Q-V09', 'Q-S08', 'Q-T01'})
         self.assertIn("Q-C07", f.QUESTION_PROMPTS)
         self.assertNotIn("Q-C07", ids(state()))
         with self.assertRaises(f.InterviewError):

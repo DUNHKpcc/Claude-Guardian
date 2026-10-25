@@ -121,6 +121,47 @@ class GuidanceContracts(unittest.TestCase):
         for term in ("enable-guest-ssh.sh", "install-flclash-tun.sh", "3a. Linux 客机的搭建顺序", "再装防火墙"):
             self.assertIn(term, vm_doc)
 
+    def test_advanced_route_is_an_overlay_with_sanitized_scripts_and_shared_fixes(self):
+        skill_root = ROOT / "skills" / "claude-guardian"
+        adv = (REFS / "advanced-route.md").read_text(encoding="utf-8")
+        for term in ("反向隧道", "fail-closed", "KillMode=process", "permitlisten=127.0.0.1:2222", "不是第四种环境",
+                     "管理通道自身的出站", "table 2022", "VPS 单点", "C 档", "180 秒保险丝"):
+            self.assertIn(term, adv)
+        routes = (REFS / "routes-and-platforms.md").read_text(encoding="utf-8")
+        card = routes.split("## R-ADV 进阶路线卡", 1)[1].split("## 来源与维护", 1)[0]
+        for term in ("不新增路线值", "PC0", "PC1/PC2", "验收", "恢复", "批准", "C 档"):
+            self.assertIn(term, card)
+        for index in range(1, 5):
+            self.assertRegex(card, rf"(?m)^### A{index} ")
+        skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+        adv_row = [l for l in skill.splitlines() if l.startswith("| 进阶路线")][0]
+        for link in ("advanced-route.md", "install-reverse-tunnel.sh", "flclash-crash-heal.sh", "install-flclash-killswitch.sh"):
+            self.assertIn(link, adv_row)
+        for name in ("install-reverse-tunnel.sh", "flclash-crash-heal.sh"):
+            body = (skill_root / "assets" / "remote-hardening" / name).read_text(encoding="utf-8")
+            for personal in ("128.241", "dpccskisw", "omarchy_tunnel_key", "BEGIN OPENSSH", "LS0tLS1CRUdJTiBPUEVOU1NI"):
+                self.assertNotIn(personal, body, name)
+        tunnel = (skill_root / "assets" / "remote-hardening" / "install-reverse-tunnel.sh").read_text(encoding="utf-8")
+        for term in ("KEY_PATH", "chown", "600", "ExitOnForwardFailure=yes", "VPS_HOST 必须是 IPv4"):
+            self.assertIn(term, tunnel)
+        heal = (skill_root / "assets" / "remote-hardening" / "flclash-crash-heal.sh").read_text(encoding="utf-8")
+        for term in ("KillMode=process", "DBUS_SESSION_BUS_ADDRESS", "ExecStartPre=+", "TUN 不存在"):
+            self.assertIn(term, heal)
+        # Shared fixes live in the VM/VPS guidance and scripts, not only in the advanced route.
+        vm = (REFS / "vm-guidance.md").read_text(encoding="utf-8")
+        for term in ("GLOBAL", "TUNNEL_UNIT", "priority 用 10", "198.18.0.0/15", "ip rule show", "ip -6 addr show scope global",
+                     "NTP", "FLCLASH_HELPER_OWNER_UID", "libayatana-indicator"):
+            self.assertIn(term, vm)
+        ks = (skill_root / "assets" / "vm-killswitch" / "install-flclash-killswitch.sh").read_text(encoding="utf-8")
+        for term in ("TUNNEL_UNIT", "tunnel4", "tunnel_ports"):
+            self.assertIn(term, ks)
+        tun = (skill_root / "assets" / "vm-killswitch" / "install-flclash-tun.sh").read_text(encoding="utf-8")
+        for term in ("FLCLASH_HELPER_OWNER_UID", "RuntimeDirectory=flclash"):
+            self.assertIn(term, tun)
+        vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
+        for term in ("ClientAliveInterval 15", "permitlisten=127.0.0.1:2222", "advanced-route.md"):
+            self.assertIn(term, vps)
+
     def test_vps_route_is_a_dev_machine_with_consistent_environment(self):
         vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
         for term in ("开发机", "环境一致", "Ubuntu 24.04", "x86_64", "S08-vps-claude-tutorial.pdf",

@@ -31,6 +31,19 @@ M02/M03: accounts, subscription, and payment planning（18 节）
   - [B7 支付故障处理表](accounts-and-payments.md#b7-支付故障处理表)
 - [当前核验入口与来源边界](accounts-and-payments.md#当前核验入口与来源边界)
 
+## advanced-route.md
+
+进阶路线：远端 Linux 机器的出口钉死与反向隧道管理（8 节）
+
+- [1. 最终架构](advanced-route.md#1-最终架构)
+- [2. 搭建顺序](advanced-route.md#2-搭建顺序)
+- [3. 隧道专属的坑](advanced-route.md#3-隧道专属的坑)
+- [4. 崩溃自愈](advanced-route.md#4-崩溃自愈)
+- [5. 验收与覆盖矩阵](advanced-route.md#5-验收与覆盖矩阵)
+- [6. 日常运维](advanced-route.md#6-日常运维)
+- [7. 通用教训](advanced-route.md#7-通用教训)
+- [边界](advanced-route.md#边界)
+
 ## agent-remediation.md
 
 Agent 编排检测与修复（22 节）
@@ -231,7 +244,7 @@ M04/M05/M10: network evidence and offline remedies（7 节）
 
 ## routes-and-platforms.md
 
-M01/M06–M09: independent environment routes（26 节）
+M01/M06–M09: independent environment routes（31 节）
 
 - [Common concepts](routes-and-platforms.md#common-concepts)
 - [R-LOCAL / local (recommended, never silently selected)](routes-and-platforms.md#r-local--local-recommended-never-silently-selected)
@@ -258,6 +271,11 @@ M01/M06–M09: independent environment routes（26 节）
   - [P3 开发与可选额外出口（服务器，PC0）](routes-and-platforms.md#p3-开发与可选额外出口服务器pc0)
   - [P4 客户端、OAuth 与临时浏览器（服务器为目标，PC1/PC2）](routes-and-platforms.md#p4-客户端oauth-与临时浏览器服务器为目标pc1pc2)
   - [P5 日常、更新、备份与退出（本机入口 / 服务器任务）](routes-and-platforms.md#p5-日常更新备份与退出本机入口--服务器任务)
+- [R-ADV 进阶路线卡（远端 Linux 机器的出口钉死与反向隧道）](routes-and-platforms.md#r-adv-进阶路线卡远端-linux-机器的出口钉死与反向隧道)
+  - [A1 适用判断与前置（管理端规划，PC0）](routes-and-platforms.md#a1-适用判断与前置管理端规划pc0)
+  - [A2 反向隧道与崩溃自愈（目标机与 VPS 分别标注，B 档）](routes-and-platforms.md#a2-反向隧道与崩溃自愈目标机与-vps-分别标注b-档)
+  - [A3 启用 killswitch 与验收（目标机，C 档）](routes-and-platforms.md#a3-启用-killswitch-与验收目标机c-档)
+  - [A4 日常、更新与恢复（PC0 指引；接触 Claude 的 PC1/PC2 仍走 V3）](routes-and-platforms.md#a4-日常更新与恢复pc0-指引接触-claude-的-pc1pc2-仍走-v3)
 - [来源与维护定位](routes-and-platforms.md#来源与维护定位)
 
 ## scripts-index.md
@@ -307,7 +325,7 @@ VM 路线：客机系统、网卡、出口与防火墙（8 节）
 
 ## vps-guidance.md
 
-VPS 路线：开发机（环境一致）（12 节）
+VPS 路线：开发机（环境一致）（13 节）
 
 - [核心：环境一致](vps-guidance.md#核心环境一致)
 - [服务器怎么选](vps-guidance.md#服务器怎么选)
@@ -319,6 +337,7 @@ VPS 路线：开发机（环境一致）（12 节）
 - [临时远程浏览器（远程桌面）](vps-guidance.md#临时远程浏览器远程桌面)
 - [注册、养号、订阅、OAuth（与本机路线一致，但全在 VPS 浏览器里）](vps-guidance.md#注册养号订阅oauth与本机路线一致但全在-vps-浏览器里)
 - [防火墙](vps-guidance.md#防火墙)
+- [作为隧道中转的 VPS（进阶路线）](vps-guidance.md#作为隧道中转的-vps进阶路线)
 - [日常](vps-guidance.md#日常)
 - [边界](vps-guidance.md#边界)
 

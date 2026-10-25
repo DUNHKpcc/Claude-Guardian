@@ -26,8 +26,8 @@
 
 1. **创建 VM：**网卡选 LAN 独立网卡（第 2 节），记下客机网卡名（`ip link`）和局域网网段。
 2. **开启客机 SSH：**[enable-guest-ssh.sh](../assets/vm-killswitch/enable-guest-ssh.sh)，开启 sshd；ufw 已启用时只放行你设置的 `SSH_SRC`（管理机在局域网里的地址或网段）到 22 端口。原脚本按 shared NAT 写，已改为 LAN 独立网卡的做法。
-3. **安装 FlClash 和 TUN 助手：**[install-flclash-tun.sh](../assets/vm-killswitch/install-flclash-tun.sh)，用 pacman 装依赖，下载固定版本的 FlClash 并核对 SHA256（失败即中止），以 root 装到 `/opt/FlClash`，安装并启用 TUN 特权助手。版本和架构可用 `FLCLASH_VERSION`、`ARCH` 覆盖，默认 0.9.1 和 arm64，升级前到 Release 页面核对。
-4. **导入节点并开启 TUN：**打开 FlClash，导入用户自己的节点配置（来源见第 3 节），开启 TUN，确认出口 IP 是预期的那个（用 [S07 清单](../sources/S07-vps-script-catalog.md)里的检测）。
+3. **安装 FlClash 和 TUN 助手：**[install-flclash-tun.sh](../assets/vm-killswitch/install-flclash-tun.sh)，用 pacman 装依赖，下载固定版本的 FlClash 并核对 SHA256（失败即中止），以 root 装到 `/opt/FlClash`，安装并启用 TUN 特权助手。版本和架构可用 `FLCLASH_VERSION`、`ARCH` 覆盖，默认 0.9.1 和 arm64，升级前到 Release 页面核对。装 0.9.2 等非 0.9.1 版本时，脚本会自动加 helper 的 systemd drop-in（`FLCLASH_HELPER_OWNER_UID/GID`、`RuntimeDirectory=flclash`），缺这两项 helper 起不来；托盘库 `libayatana-indicator` 缺失会导致 GUI 起不来，脚本已用 pacman 装好。
+4. **导入节点并开启 TUN：**打开 FlClash，导入用户自己的节点配置（来源见第 3 节），开启 TUN，确认出口 IP 是预期的那个（用 [S07 清单](../sources/S07-vps-script-catalog.md)里的检测）。**同时确认 GLOBAL 组和实际使用的策略组都选中了目标节点，并用 `curl` 实测出口 IP**：GLOBAL 是 mihomo 内置组，永远包含 DIRECT 和 REJECT，没选中时全局模式和规则模式的出口可能不一样，甚至直连。
 5. **再装防火墙：**TUN 通了以后再装第 4 节的 killswitch，顺序反了会把自己锁在外网之外。
 
 ### macOS 客机（Mac 宿主首选）
@@ -61,6 +61,18 @@ bash install-flclash-killswitch.sh status
 bash install-flclash-killswitch.sh refresh      # 节点 IP 变了手动刷新（每小时也会自动刷新）
 bash install-flclash-killswitch.sh uninstall    # 卸载并删除规则
 ```
+
+**白名单必须覆盖管理通道自身的出站：**如果机器靠反向 SSH 隧道等通道被管理，脚本要把通道的目标 IP 和端口放进白名单，否则一启用就自己把管理通道锁死。脚本读取 `TUNNEL_UNIT` 指向的 systemd unit（默认 `/etc/systemd/system/guardian-reverse-tunnel.service`，文件不存在就忽略），从 `ExecStart` 解析 `user@IP` 和 `-p 端口` 自动放行；解析不出来会打印 WARN。进阶路线见 [advanced-route.md](advanced-route.md)。
+
+**两个实战坑：**
+- 规则链的 priority 用 10。priority 太靠前（如 raw -300）时 conntrack 还没建立，`ct state established` 不可靠，会把已有的 SSH 连接锁死。
+- fake-ip 段 `198.18.0.0/15` 永远不能进白名单。订阅里节点是域名时，系统解析可能拿到 fake-ip，脚本会改走 DoH 取真实 IP。
+
+**FlClash 崩溃后的路由黑洞：**`FlClashCore` 死后 TUN 消失，但 FlClash 写入的 `ip rule` 和策略路由表（如 2022）会残留，公网被黑洞，连白名单里的出站也出不去。排查时先看 `ip rule show` 和残留表；必要时用 [flclash-crash-heal.sh](../assets/remote-hardening/flclash-crash-heal.sh) 清残留并自动拉起 FlClash（systemd 的两个坑：oneshot 要 `KillMode=process`，否则会杀掉脚本拉起的 GUI；服务级 `Environment` 要写全 `DISPLAY`、`WAYLAND_DISPLAY`、`XDG_RUNTIME_DIR`、`DBUS_SESSION_BUS_ADDRESS`）。这个脚本对没有反向隧道的客机同样适用。
+
+**IPv6：**规则表是 `inet` 家族，OUTPUT 和 INPUT 都是 policy drop，所以 IPv6 除 DHCPv6、回环和 TUN 外不放行，不需要另写 ip6 规则。网络环境一变（换桥接、换宿主）就重测：`ip -6 addr show scope global` 看有没有全局 v6 地址，有就 `curl -6 --max-time 8 https://ipinfo.io`，应当失败。
+
+**时区、语言与 NTP：**出口对齐的是出口 IP 的地理位置，不是 VPS 的系统时钟（VPS 多是 UTC）：出口在美东就用 `America/New_York` 和 `en_US.UTF-8`，与浏览器 JS 时区一致。killswitch 默认拦截 NTP（UDP 123 不在白名单），`timedatectl` 会显示 unsynchronized；要么把 NTP 服务器加进白名单，要么接受虚拟机 RTC 的走时。
 
 **保险丝与验收：**应用规则后有 180 秒保险丝，没有执行 `confirm` 就自动回滚，避免锁死。装好后手动验收：出口 IP 是固定出口；浏览器打开 browserleaks.com/webrtc 和 dnsleaktest.com（WebRTC 也可用包内的[本地探测页](../assets/webrtc-probe.html)），确认没有真实 IP 和真实 DNS；`pkill FlClashCore` 后确认 curl 和 DNS 全部失败，重启 FlClash 后恢复。
 

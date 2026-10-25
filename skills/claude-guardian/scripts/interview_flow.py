@@ -167,6 +167,7 @@ ROUTE_EXIT_VALUES = {
     'Q-M01': frozenset({'ios', 'android', 'both', 'none'}),
     'Q-V07': frozenset({'omarchy', 'macos', 'other'}),
     'Q-V08': frozenset({'lan_bridged', 'shared_nat', 'other'}),
+    'Q-V09': frozenset({'direct', 'remote_unreachable'}),
     'Q-S08': frozenset({'vps_own_ip', 'residential_chain', 'undecided'}),
     'Q-T01': frozenset({'none', 'evening_slow', 'drops', 'slow_transfer', 'desktop_lag', 'wrong_exit'}),
 }
@@ -176,6 +177,7 @@ QUESTION_PROMPTS.update({
     'Q-M01': '注册、登录或内购会在手机上做吗？是 iPhone/iPad、Android、两种都有，还是都没有？',
     'Q-V07': '虚拟机的客机系统用 Omarchy、macOS，还是其他？',
     'Q-V08': '虚拟机的网卡是 LAN 独立网卡（桥接），还是与宿主机共用的 shared NAT？',
+    'Q-V09': '这台 Linux 机器你能直接连上管理，还是它在别人的网络或 NAT 之后、需要反向隧道才能管理（进阶路线）？',
     'Q-S08': 'VPS 的出口用 VPS 自己的 IP，还是在其上套一层家宽出口？',
     'Q-T01': '当前连接有没有问题：晚高峰慢、断流、大文件传输慢、远程桌面卡、出口 IP 不对，还是都没有？',
 })
@@ -1704,7 +1706,7 @@ def applicable_questions(state):
             if _value(state, "Q-X01") == "self_built":
                 add(route, "I5", ["Q-X02", "Q-T01"])
         elif route == "vm":
-            add(route, "I5", _ids("V", 1, 6) + ["Q-V07", "Q-V08", "Q-X01"])
+            add(route, "I5", _ids("V", 1, 6) + ["Q-V07", "Q-V08", "Q-V09", "Q-X01"])
             if _value(state, "Q-X01") == "self_built":
                 add(route, "I5", ["Q-X02", "Q-T01"])
         elif route == "vps":
@@ -1823,6 +1825,9 @@ REFERENCE_PATHS = {
     'egress': 'references/egress-ip-options.md', 'vm': 'references/vm-guidance.md',
     'vps': 'references/vps-guidance.md', 'line': 'references/line-optimization.md',
     'vm_firewall': 'assets/vm-killswitch/install-flclash-killswitch.sh',
+    'advanced': 'references/advanced-route.md',
+    'adv_tunnel': 'assets/remote-hardening/install-reverse-tunnel.sh',
+    'adv_heal': 'assets/remote-hardening/flclash-crash-heal.sh',
     'vps_firewall': 'assets/vps-firewall/vps-guard.sh',
     'vm_ssh': 'assets/vm-killswitch/enable-guest-ssh.sh',
     'vm_tun': 'assets/vm-killswitch/install-flclash-tun.sh',
@@ -1903,6 +1908,10 @@ def required_references(state):
         if _value(state, 'Q-V07') != 'macos':
             add('vm_ssh', 'vm')
             add('vm_tun', 'vm')
+            if _value(state, 'Q-V09') == 'remote_unreachable':
+                add('advanced', 'advanced_route')
+                add('adv_tunnel', 'advanced_route')
+                add('adv_heal', 'advanced_route')
             add('vm_firewall', 'vm')
     elif route == 'vps':
         add('vps', 'vps')

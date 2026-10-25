@@ -28,6 +28,9 @@ NFT_FILE="/etc/flclash-killswitch.nft"
 UNIT="/etc/systemd/system/flclash-killswitch.service"
 RUNIT="/etc/systemd/system/flclash-killswitch-refresh.service"
 RTIMER="/etc/systemd/system/flclash-killswitch-refresh.timer"
+# 反向隧道 systemd unit（进阶路线用；文件存在才生效）：解析其 ExecStart 里的 user@IP 和 -p 端口，
+# 加入独立白名单，保证隧道断线后能重连。不用反向隧道就保持默认，文件不存在则忽略。
+TUNNEL_UNIT="${TUNNEL_UNIT:-/etc/systemd/system/guardian-reverse-tunnel.service}"
 CONFIRM_FLAG="/tmp/ks-confirm"
 ARM_LOG="/tmp/ks-armed.log"
 
@@ -86,6 +89,19 @@ except Exception: pass' <<<"$doh")
   IP_LIST=$(IFS=,; echo "${ips[*]}")
   PORT_LIST=$(IFS=,; echo "${ports[*]}")
   echo "endpoints: ${#ips[@]} IPs / ports: ${PORT_LIST}" >&2
+
+  TUNNEL_IP_LIST=""; TUNNEL_PORT_LIST=""
+  if [ -f "$TUNNEL_UNIT" ]; then
+    local tip tport
+    tip=$(grep -oE '@[0-9]{1,3}(\.[0-9]{1,3}){3}\b' "$TUNNEL_UNIT" | head -1 | tr -d '@')
+    tport=$(grep -oE '\-p [0-9]+' "$TUNNEL_UNIT" | head -1 | awk '{print $2}')
+    if [ -n "$tip" ] && [ -n "$tport" ]; then
+      TUNNEL_IP_LIST="$tip"; TUNNEL_PORT_LIST="$tport"
+      echo "tunnel: $tip:$tport（加入白名单，保证反向隧道可重连）" >&2
+    else
+      echo "WARN: $TUNNEL_UNIT 存在但没解析出 user@IP 和 -p 端口；隧道不会进白名单，启用后可能失联" >&2
+    fi
+  fi
 }
 
 build_nft() {
@@ -93,6 +109,19 @@ build_nft() {
   local ip_elems port_elems
   ip_elems=$(echo "$IP_LIST" | sed 's/,/, /g')
   port_elems=$(echo "$PORT_LIST" | sed 's/,/, /g')
+  local tunnel_sets=""
+  [ -n "$TUNNEL_IP_LIST" ] && tunnel_sets="
+    set tunnel4 {
+        type ipv4_addr
+        elements = { $(echo "$TUNNEL_IP_LIST" | sed 's/,/, /g') }
+    }
+    set tunnel_ports {
+        type inet_service
+        elements = { $(echo "$TUNNEL_PORT_LIST" | sed 's/,/, /g') }
+    }"
+  local tunnel_rules=""
+  [ -n "$TUNNEL_IP_LIST" ] && tunnel_rules="
+        oifname \"$NIC\" ip daddr @tunnel4 tcp dport @tunnel_ports ct state new counter accept"
   cat <<EOF
 add table inet $TABLE
 delete table inet $TABLE
@@ -104,7 +133,7 @@ table inet $TABLE {
     set proxy_ports {
         type inet_service
         elements = { $port_elems }
-    }
+    }$tunnel_sets
     chain output {
         type filter hook output priority 10; policy drop;
         oifname "lo" counter accept
@@ -113,7 +142,7 @@ table inet $TABLE {
         oifname "$NIC" udp sport 68 udp dport 67 counter accept
         oifname "$NIC" udp sport 546 udp dport 547 counter accept
         oifname "$NIC" ip daddr @proxy4 tcp dport @proxy_ports counter accept
-        oifname "$NIC" ip daddr @proxy4 udp dport @proxy_ports counter accept
+        oifname "$NIC" ip daddr @proxy4 udp dport @proxy_ports counter accept$tunnel_rules
         counter
     }
     chain input {

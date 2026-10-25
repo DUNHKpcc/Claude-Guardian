@@ -9,7 +9,7 @@ SPEC = importlib.util.spec_from_file_location('route_exit_flow', ROOT / 'skills/
 f = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(f)
 
-NEW = ('Q-X01', 'Q-X02', 'Q-M01', 'Q-V07', 'Q-V08', 'Q-S08', 'Q-T01')
+NEW = ('Q-X01', 'Q-X02', 'Q-M01', 'Q-V07', 'Q-V08', 'Q-V09', 'Q-S08', 'Q-T01')
 
 
 def base(route='local', basis='explicit_choice', **context):
@@ -169,6 +169,23 @@ class RequiredReferenceTests(unittest.TestCase):
         self.assertIn('references/vm-guidance.md', refs(linux))
         mac = answer(base('vm'), 'Q-V07', 'macos')
         self.assertNotIn('assets/vm-killswitch/install-flclash-killswitch.sh', refs(mac))
+
+    def test_unreachable_linux_vm_gets_advanced_route_before_firewall(self):
+        direct = refs(answer(answer(base('vm'), 'Q-V07', 'omarchy'), 'Q-V09', 'direct'))
+        for path in ('references/advanced-route.md', 'assets/remote-hardening/install-reverse-tunnel.sh',
+                     'assets/remote-hardening/flclash-crash-heal.sh'):
+            self.assertNotIn(path, direct)
+        remote = refs(answer(answer(base('vm'), 'Q-V07', 'omarchy'), 'Q-V09', 'remote_unreachable'))
+        order = [remote.index(p) for p in ('assets/vm-killswitch/install-flclash-tun.sh',
+                                           'assets/remote-hardening/install-reverse-tunnel.sh',
+                                           'assets/remote-hardening/flclash-crash-heal.sh',
+                                           'assets/vm-killswitch/install-flclash-killswitch.sh')]
+        self.assertEqual(order, sorted(order))
+        self.assertIn('references/advanced-route.md', remote)
+        mac = refs(answer(answer(base('vm'), 'Q-V07', 'macos'), 'Q-V09', 'remote_unreachable'))
+        self.assertNotIn('references/advanced-route.md', mac)
+        with self.assertRaises(f.InterviewError):
+            answer(base('vm'), 'Q-V09', 'whatever')
 
     def test_vps_exit_kind_selects_firewall_and_relay_material(self):
         own = answer(base('vps'), 'Q-S08', 'vps_own_ip')
