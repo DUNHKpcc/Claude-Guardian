@@ -356,7 +356,8 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("ADR-039", egress)
         firewall = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
         self.assertNotIn("没有在真实机器上实测", firewall)
-        self.assertEqual(firewall.count("不承诺免封"), 1)
+        # 3a032dc removed the firewall "不承诺" disclaimer on purpose.
+        self.assertNotIn("不承诺免封", firewall)
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         header = skill.split("## 开始方式", 1)[0]
         for text in ("有限只读检查", "仍有未验收项", "不是默认执行权限"):
