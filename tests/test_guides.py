@@ -318,6 +318,20 @@ class GuidanceContracts(unittest.TestCase):
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("references/account-onboarding.md#a0a", skill)
 
+    def test_no_touch_rules_live_in_their_modules(self):
+        # Owner rule 2026-10-25: no 代充 (payment B1), no low-quality KYC 代过 (A3), no 成品号/成品邮箱 (A0).
+        pay = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
+        b1 = pay.split("### B1 ", 1)[1].split("\n### ", 1)[0]
+        a3 = pay.split("### A3 ", 1)[1].split("\n### ", 1)[0]
+        self.assertIn("**不碰代充", b1)
+        self.assertIn("**不碰低质量的 KYC 代过", a3)
+        onboarding = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        a0 = onboarding.split("## A0a", 1)[0]
+        self.assertIn("**不碰成品号、成品邮箱", a0)
+        for section in (b1, a3, a0):
+            for hedge in ("单例", "未核实", "只是推测", "稳妥做法"):
+                self.assertNotIn(hedge, section)
+
     def test_host_library_contracts_live_outside_skill_md(self):
         # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")

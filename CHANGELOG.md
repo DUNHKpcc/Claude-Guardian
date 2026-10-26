@@ -1,5 +1,9 @@
 # 版本记录
 
+## 不碰代充、低质量 KYC 代过、成品号与成品邮箱（2026-10-25）
+
+- 所有者要求：支付模块 `accounts-and-payments.md` B1 写明不碰代充；KYC 所在的 A3 写明不碰低质量的 KYC 代过；邮箱注册模块 `account-onboarding.md` A0 第 2 条写明不碰成品号、成品邮箱；新增守门测试。回滚：回退本提交
+
 ## KYC 与 IP 一致性（2026-10-25）
 
 - 所有者提供：KYC 会检查 IP，IP 与支付、使用环境不一致会增大风险；Pro 后期遇到 KYC 直接弃号。写入 `accounts-and-payments.md` A3 和 `account-onboarding.md` A0 第 6 条（做 KYC 前先用 `network_check.py` 确认出口和平时一致）；新增守门测试。回滚：回退本提交
