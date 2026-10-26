@@ -154,7 +154,7 @@ Agent 会先问你在哪个阶段、用什么系统、想达到什么目标，�
 
 三条路线是并列的选择，不是升级顺序；把 VPS 当网络出口不等于选了 VPS 路线。还没买代理或服务器也没关系，可以先做离线预检。HTTP/mixed 入口和上游 SOCKS5 出口的区别见[环境入口与路线边界](docs/environment-entry-decision.md)。
 
-清理旧设备上的 Claude 数据：macOS 有内置宿主，见[清理接口说明](skills/claude-guardian/references/cleanup-cli-usage.md)；Windows 按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)，Linux 见 [Linux 清理](skills/claude-guardian/references/linux-cleanup.md)。封号后换环境，代理客户端日志、VPN 日志和终端历史里查 IP 的命令见[环境痕迹清理](skills/claude-guardian/references/trace-cleanup.md)。
+清理旧设备上的 Claude 数据：macOS 有内置宿主，见[清理接口说明](skills/claude-guardian/references/cleanup-cli-usage.md)；Windows 按官方路径写成了 [PowerShell 提示词](skills/claude-guardian/references/windows-cleanup.md)，Linux 见 [Linux 清理](skills/claude-guardian/references/linux-cleanup.md)。封号后换环境，代理客户端日志、VPN 日志和终端历史里查 IP 的命令见[环境痕迹清理](skills/claude-guardian/references/trace-cleanup.md)；Claude 里装的破限、反代分发等非法工具见[非法工具清理](skills/claude-guardian/references/illegal-tools-cleanup.md)。
 
 完整规则见[接触与授权边界](skills/claude-guardian/references/contact-and-safety.md)及[网络证据说明](skills/claude-guardian/references/network-and-remedies.md)。
 

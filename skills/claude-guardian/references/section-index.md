@@ -146,6 +146,17 @@ M14：证据、来源与发布规则（5 节）
 - [已替换但回执未完成：精确文件恢复](host-libraries.md#已替换但回执未完成精确文件恢复)
 - [C5：限定清理宿主交接](host-libraries.md#c5限定清理宿主交接)
 
+## illegal-tools-cleanup.md
+
+非法工具清理：破限、反代分发等 MCP、插件、hooks（Agent 提示词）（6 节）
+
+- [1. 算非法工具的](illegal-tools-cleanup.md#1-算非法工具的)
+- [2. 去哪查](illegal-tools-cleanup.md#2-去哪查)
+- [3. 只读审计（A 档）](illegal-tools-cleanup.md#3-只读审计a-档)
+- [4. 清理（C 档，逐项确认）](illegal-tools-cleanup.md#4-清理c-档逐项确认)
+- [5. 复验](illegal-tools-cleanup.md#5-复验)
+- [6. 不做的事](illegal-tools-cleanup.md#6-不做的事)
+
 ## incidents-and-integrations.md
 
 M07/M10–M13: clients, incidents, integrations, and preservation（21 节）

@@ -394,6 +394,41 @@ class GuidanceContracts(unittest.TestCase):
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("references/ban-appeal.md", skill)
 
+    def test_illegal_tools_cleanup_module(self):
+        # Owner rule 2026-10-26: cleanup also finds and removes jailbreak / reverse-proxy-distribution tools.
+        doc = (REFS / "illegal-tools-cleanup.md").read_text(encoding="utf-8")
+        for term in ("**破限**", "**反代分发**", "`~/.claude.json`", "`.mcp.json`", "claude_desktop_config.json",
+                     "ANTHROPIC_BASE_URL", "C 档，逐项确认", "不打印令牌、密钥的值", "不运行 `claude` 命令"):
+            self.assertIn(term, doc)
+        # The always-protected lists stay, each with an explicit pointer to this exception.
+        for name in ("linux-cleanup.md", "windows-cleanup.md", "trace-cleanup.md", "incidents-and-integrations.md"):
+            self.assertIn("illegal-tools-cleanup.md", (REFS / name).read_text(encoding="utf-8"), name)
+        self.assertIn("illegal-tools-cleanup.md", (REFS / "cleanup-cli-usage.md").read_text(encoding="utf-8"))
+        self.assertIn("始终保护，不进入任何清理范围", (REFS / "linux-cleanup.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("references/illegal-tools-cleanup.md", skill)
+
+    def test_illegal_tools_audit_snippet_hides_secrets(self):
+        doc = (REFS / "illegal-tools-cleanup.md").read_text(encoding="utf-8")
+        code = doc.split("```python\n", 1)[1].split("```", 1)[0]
+        import json, os, subprocess, sys, tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = os.path.join(tmp, "settings.json")
+            with open(cfg, "w", encoding="utf-8") as fh:
+                json.dump({"mcpServers": {"relay": {"command": "npx", "args": ["claude-relay"],
+                                                    "env": {"RELAY_TOKEN": "sk-should-not-print"}}},
+                           "projects": {"/p": {"mcpServers": {"x": {"url": "https://relay.example.invalid"}}}},
+                           "env": {"ANTHROPIC_BASE_URL": "https://relay.example.invalid",
+                                   "ANTHROPIC_AUTH_TOKEN": "sk-hidden"},
+                           "hooks": {"Stop": []}}, fh)
+            out = subprocess.run([sys.executable, "-c", code, cfg], capture_output=True, text=True,
+                                 encoding="utf-8", check=True).stdout
+        self.assertIn("MCP relay: npx claude-relay", out)
+        self.assertIn("RELAY_TOKEN", out)
+        self.assertIn("relay.example.invalid", out)
+        self.assertIn("ANTHROPIC_AUTH_TOKEN = <已隐藏>", out)
+        self.assertNotIn("sk-", out)
+
     def test_host_library_contracts_live_outside_skill_md(self):
         # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")

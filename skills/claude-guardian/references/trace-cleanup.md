@@ -1,6 +1,6 @@
 # 环境痕迹清理：代理、VPN、终端历史里的旧 IP（Agent 提示词）
 
-适用：账号出过事、要换环境或重新注册前，把这台电脑上**记着旧出口、真实 IP 和直连记录**的本地痕迹清掉。macOS、Windows、Linux 都适用；手机端不在本文。Claude 自己的本地数据（缓存、日志、对话记录）见 [macOS 清理](cleanup-cli-usage.md)、[Windows 清理](windows-cleanup.md)、[Linux 清理](linux-cleanup.md)。
+适用：账号出过事、要换环境或重新注册前，把这台电脑上**记着旧出口、真实 IP 和直连记录**的本地痕迹清掉。macOS、Windows、Linux 都适用；手机端不在本文。Claude 里装的破限、反代分发等非法工具见[非法工具清理](illegal-tools-cleanup.md)。Claude 自己的本地数据（缓存、日志、对话记录）见 [macOS 清理](cleanup-cli-usage.md)、[Windows 清理](windows-cleanup.md)、[Linux 清理](linux-cleanup.md)。
 
 **为什么要清：**这些日志都在本地，不会自动上传。风险在于以后在这台机器上跑 Claude Code 时，Agent 读到这些文件，或者你把输出贴进对话，旧的真实 IP 和直连记录就进了对话、发到了服务器。所以在换环境、重新注册之前清掉。
 

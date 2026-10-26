@@ -38,6 +38,7 @@ PAGES = [
     ('Windows 清理', 'references/windows-cleanup.md', '清理'),
     ('Linux 清理', 'references/linux-cleanup.md', '清理'),
     ('环境痕迹清理 代理 VPN 终端历史', 'references/trace-cleanup.md', '清理'),
+    ('非法工具清理 破限 反代分发', 'references/illegal-tools-cleanup.md', '清理'),
     ('S01 服务器术语', 'sources/S01-server-glossary.md', '所有者提供的资料'),
     ('S02 AI 所有支付方式汇总', 'sources/S02-ai-payments.md', '所有者提供的资料'),
     ('S03 Claude 使用经验', 'sources/S03-source-text.md', '所有者提供的资料'),

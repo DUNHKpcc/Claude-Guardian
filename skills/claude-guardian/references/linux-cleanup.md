@@ -28,7 +28,7 @@
 
 **对话记录（先问用户，建议移走）：**`~/.claude/projects`（会话记录和自动记忆）和 `~/.claude/history.jsonl`（输入过的提示词）。会话记录里保存着 Claude Code 跑过的命令和输出，以前查过公网 IP、看过代理配置，真实 IP 和节点信息就在这里。Agent 单独问一句“要不要把对话记录也移走？保险起见建议移走”，用户同意才放进范围。后果：旧会话看不到、无法续接，自动记忆也一起移走；隔离可还原。
 
-**始终保护，不进入任何清理范围：**`~/.claude` 整个目录，以及里面的 `file-history`、`settings.json`、`settings.local.json`、`CLAUDE.md`、`skills`、`plugins`、`commands`、`agents`、`agent-memory`、`hooks`、`rules`、`output-styles`、`workflows`、`mcp-servers`、`keybindings.json`、`themes`、`plans`、`tasks`、`todos`、`uploads`、`session-env`、`sessions`、`backups`、`jobs`、`daemon`、`.credentials.json`；`~/.claude.json`。
+**始终保护，不进入任何清理范围：**`~/.claude` 整个目录，以及里面的 `file-history`、`settings.json`、`settings.local.json`、`CLAUDE.md`、`skills`、`plugins`、`commands`、`agents`、`agent-memory`、`hooks`、`rules`、`output-styles`、`workflows`、`mcp-servers`、`keybindings.json`、`themes`、`plans`、`tasks`、`todos`、`uploads`、`session-env`、`sessions`、`backups`、`jobs`、`daemon`、`.credentials.json`；`~/.claude.json`。例外：破限、反代分发等非法工具按[非法工具清理](illegal-tools-cleanup.md)逐项处理，只动查出来、用户确认的那几项。
 
 代理客户端、VPN 和终端历史里的旧 IP 痕迹见[环境痕迹清理](trace-cleanup.md)。
 
