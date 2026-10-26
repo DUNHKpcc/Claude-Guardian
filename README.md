@@ -4,7 +4,7 @@
 
 <img width="1920" height="1080" alt="claude-guardian-cover-16x9" src="https://github.com/user-attachments/assets/f5ed41fb-44ac-4f68-8acc-e2d0de76e921" />
 
-**Agent带着真实经验，陪你把 Claude 的使用环境准备好、查清楚、用着不烧心。不要碰代过kyc(定制除外) 成品号 代充 成品邮箱 ! ！!**
+**Agent带着真实经验，陪你把 Claude 的使用环境准备好、查清楚、用着不烧心。不要碰代过kyc(定制除外) 成品号 代充 成品邮箱 !!!**
 
 订阅前准备 · 账号注册与使用节奏 · 固定出口 IP · 本机 / VM / VPS 三条路线 · 防火墙与线路优化 · 分级授权
 
