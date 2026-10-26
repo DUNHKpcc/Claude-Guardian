@@ -23,8 +23,12 @@ class MinimumRuntimeWorkflowTests(unittest.TestCase):
     def test_minimum_runtime_is_additive_linux_job(self):
         self.assertEqual(self.job['runs-on'], 'ubuntu-latest')
         self.assertEqual(self.job['timeout-minutes'], '10')
+        # ADR-051: the matrix comes from tools/ci_scope.py; a full run is still all three platforms.
         self.assertEqual(self.workflow['jobs']['test']['strategy']['matrix']['os'],
-                         ['ubuntu-latest', 'macos-latest', 'windows-latest'])
+                         '${{ fromJSON(needs.scope.outputs.os) }}')
+        self.assertIn("FULL = {\"scope\": \"full\", \"os\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"]}",
+                      (ROOT / 'tools/ci_scope.py').read_text(encoding='utf-8'))
+        self.assertEqual(self.job['needs'], 'scope')
         self.assertEqual(self.workflow['permissions'], {'contents': 'read'})
 
     def test_official_immutable_setup_precedes_version_assertion_and_tests(self):
@@ -48,9 +52,12 @@ class MinimumRuntimeWorkflowTests(unittest.TestCase):
             self.assertIn(command, commands)
 
     def test_failures_are_not_masked_and_native_smoke_is_not_enabled(self):
+        # The only allowed condition is the ADR-051 scope gate on the job itself.
+        self.assertEqual(self.job['if'], "needs.scope.outputs.scope == 'full'")
         for item in (self.job, *self.steps):
             self.assertNotIn('continue-on-error', item)
-            self.assertNotIn('if', item)
+            if item is not self.job:
+                self.assertNotIn('if', item)
             self.assertNotIn('env', item)
         commands = '\n'.join(step.get('run', '') for step in self.steps)
         self.assertNotIn('||', commands)

@@ -403,3 +403,14 @@ ADR-048 留下的第二批：
 3. `environment_entry.py` 的 `guardian-environment-entry-input/0.2`、`probe_context` 以及 `active_probe`、`client_contact` 两个门只给已删的 HTTPS 探测库用；实际调用只有 `offline_precheck` 和 `configuration`。删除后 0.2 声明会被当作格式错误拒绝。
 
 测试：删除只测这些代码的测试；`test_traffic_policy.py` 只留集成检查（每份报告带同一份固定策略、伪造策略被拒、脱敏往返、按文件路径导入）；`test_environment_entry.py` 去掉对已删门的断言，三处补回对现有门的调用。
+
+## ADR-051：只改文档的推送只跑 Linux CI（2026-10-26 所有者确认）
+
+所有者认为 Actions 运行太多，同意优化。每次推送原来都跑 Linux、macOS、Windows 加 Python 3.10 共 4 个 job，包括只改一条规则的文档提交。
+
+做法：`tests.yml` 前加一个 `scope` job，用 `tools/ci_scope.py` 看本次推送（或 PR 相对基线）改了哪些文件。全部是 `.md`、`.pdf`、`.png` 且不在 `.github/` 下，就只跑 Linux 套件（文档守门测试都在里面，和平台无关）；改了任何其他文件，或者读不到改动范围（新分支、历史被改写），照旧跑三平台加 Python 3.10。AGENTS.md、CLAUDE.md 的三平台 CI 要求同步改成这条规则。
+
+没采用的：连续推送时取消旧运行（被取消的提交拿不到最终结果，和“每次推送核实到最终结果”冲突）。
+
+回滚：回退本提交，恢复每次三平台。
+

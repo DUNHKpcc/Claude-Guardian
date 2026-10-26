@@ -1,5 +1,9 @@
 # 版本记录
 
+## CI：只改文档时只跑 Linux（2026-10-26）
+
+- **ADR-051：**新增 `tools/ci_scope.py` 和 `tests.yml` 的 `scope` job：只改 `.md`、`.pdf`、`.png` 的推送只跑 Linux，其他改动或读不到改动范围时照旧三平台加 Python 3.10；AGENTS.md、CLAUDE.md 同步。新增 `tests/test_ci_scope.py`。回滚：回退本提交
+
 ## 接码只用实体卡（2026-10-26）
 
 - 所有者提供：接码不找共享号码、虚拟号码；遇到接码有条件用实体卡，没条件直接弃号。写入 `account-onboarding.md` A0 第 9 条；第 6 条原先“注册时要手机号验证的号可以直接放弃”与此冲突，改为按第 9 条处理（KYC 部分不变）；SKILL.md 同步；`mobile-guidance.md` 按所有者要求保持原样（曾加的一句已撤回）。新增守门测试。回滚：回退本提交

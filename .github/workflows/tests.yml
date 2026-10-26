@@ -5,12 +5,28 @@ on:
 permissions:
   contents: read
 jobs:
+  scope:
+    # Docs-only changes (.md/.pdf/.png) run Linux only; everything else runs all three platforms.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+      os: ${{ steps.scope.outputs.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: scope
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 tools/ci_scope.py --base "$BASE" --head "$GITHUB_SHA"
   test:
+    needs: scope
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(needs.scope.outputs.os) }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +80,8 @@ jobs:
           PY
   minimum-python:
     name: Python 3.10 Linux runtime (not native desktop acceptance)
+    needs: scope
+    if: needs.scope.outputs.scope == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
