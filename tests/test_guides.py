@@ -375,6 +375,25 @@ class GuidanceContracts(unittest.TestCase):
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("接码只用实体卡", skill)
 
+    def test_ban_appeal_module(self):
+        # Owner facts 2026-10-26: reply in 2-7 days, reinstated accounts weigh more but still die if pushed, template.
+        doc = (REFS / "ban-appeal.md").read_text(encoding="utf-8")
+        for term in ("**封号申诉的回复时间在 2 到 7 天左右，超过这个时间点基本就凉了。**",
+                     "**解封的号权重确实高，但是盲目跳脸还是死。**",
+                     "What do you use your account for?", "Anything else we should know?",
+                     "[这里填让你解释的异常行为内容，自己填写]",
+                     "Thank you for taking the time to review my appeal.", "祝大家都能顺利解封。"):
+            self.assertIn(term, doc)
+        # The closing wish is written after the template, not inside it.
+        self.assertGreater(doc.index("祝大家都能顺利解封。"), doc.rindex("```"))
+        for hedge in ("单例", "未核实", "只是推测", "稳妥做法"):
+            self.assertNotIn(hedge, doc)
+        incidents = (REFS / "incidents-and-integrations.md").read_text(encoding="utf-8")
+        self.assertIn("ban-appeal.md", incidents)
+        self.assertNotIn("不编造申诉成功率或回复时限", incidents)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("references/ban-appeal.md", skill)
+
     def test_host_library_contracts_live_outside_skill_md(self):
         # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")

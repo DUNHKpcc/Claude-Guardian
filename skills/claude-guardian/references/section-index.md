@@ -80,6 +80,14 @@ Agent 配合应用编辑：单条 rules 扩展任务（4 节）
 - [各路线里的动作分档](authorization-tiers.md#各路线里的动作分档)
 - [状态机里的可追溯记录（ADR-026）](authorization-tiers.md#状态机里的可追溯记录adr-026)
 
+## ban-appeal.md
+
+封号申诉（3 节）
+
+- [回复时间](ban-appeal.md#回复时间)
+- [解封以后](ban-appeal.md#解封以后)
+- [申诉模板](ban-appeal.md#申诉模板)
+
 ## cleanup-cli-usage.md
 
 C5 cleanup CLI usage and host boundary（5 节）

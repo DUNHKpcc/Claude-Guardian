@@ -27,6 +27,7 @@ FORBIDDEN = (r'165\.254\.188\.47', r'10\.72\.18\.', r'dpccskisw', r'DpccProject'
 PAGES = [
     ('账号注册与养号节奏', 'references/account-onboarding.md', '入门'),
     ('手机端防封要点', 'references/mobile-guidance.md', '入门'),
+    ('封号申诉', 'references/ban-appeal.md', '入门'),
     ('固定出口 IP 的来源', 'references/egress-ip-options.md', '出口 IP'),
     ('整机统一出口 只走 IPv4', 'references/whole-machine-ipv4.md', '出口 IP'),
     ('本机路线 Clash 与防火墙', 'references/local-firewall-prompts.md', '三条路线'),

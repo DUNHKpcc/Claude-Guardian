@@ -1,5 +1,10 @@
 # 版本记录
 
+## 封号申诉模块（2026-10-26）
+
+- 所有者提供：申诉回复在 2 到 7 天左右，超过基本凉了；解封号权重高，但盲目跳脸还是死；英文申诉模板。新增 `references/ban-appeal.md`（随包发布、上 Wiki“入门”分组），文末写“祝大家都能顺利解封”
+- 冲突处理：M12 的 K4 原写“不编造回复时限”“不写异常请求不是我”，改为封号申诉以 `ban-appeal.md` 为准；SKILL.md 封号那一行、README 同步。新增守门测试。回滚：回退本提交
+
 ## CI：只改文档时只跑 Linux（2026-10-26）
 
 - **ADR-051：**新增 `tools/ci_scope.py` 和 `tests.yml` 的 `scope` job：只改 `.md`、`.pdf`、`.png` 的推送只跑 Linux，其他改动或读不到改动范围时照旧三平台加 Python 3.10；AGENTS.md、CLAUDE.md 同步。新增 `tests/test_ci_scope.py`。回滚：回退本提交

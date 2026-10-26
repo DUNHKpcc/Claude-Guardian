@@ -16,7 +16,7 @@ Official SDK personal use, a third-party gateway, and a service built for other 
 2. Collect minimal sanitized error text, time/timezone, originating service, operation, device/path, preceding changes, and official case status; user reports suffice initially
 3. Separate transport/TLS/DNS from authentication, permission, usage limit/overload, billing, identity review, and explicit account restriction. A 403/429/529 alone is not a ban diagnosis (O06)
 4. Preserve relevant evidence and existing projects. Stop repeated login/charge attempts; do not reproduce a suspended account's request merely to gather evidence in PC0
-5. Draft factual appeal/support notes only from known events: event and impact, exact notice, relevant timeline, completed official instructions, remaining question. No invented innocence claims, causal certainty, success probability, or refund entitlement
+5. For a ban appeal use the owner's template and timing in [ban-appeal.md](ban-appeal.md) (reply in about 2–7 days). Other support notes come only from known events: event and impact, exact notice, relevant timeline, completed official instructions, remaining question. No causal certainty, success probability, or refund entitlement
 6. Current official support/refund/export instructions require permitted contact (O10/O11). Submitting is a separate action and unavailable in preview
 
 A credential exposure can require revocation through the official service, but do not copy the secret into the report or pretend revocation is reversible. Explain the authorized user-led step. Immediately withhold the assistant’s own unsent retries and new requests; stopping the user’s running dependent automation requires explicit approval after explaining the impact. A report about an old device is not evidence of a hardware blacklist.
@@ -161,14 +161,14 @@ State the concrete symptom, known versus unknown cause, evidence source/time/sco
 ### K4 官方申诉、导出与退款交接
 
 1. 获准接触后核验 O11 当前官方处理入口；确认对象是个人账号、组织 hold、身份核验还是账单问题。来源中的旧邮箱/链接不自动可用
-2. 先准备下方事实草稿，未知项明确标记，不写“系统误封”“我从未违规”或“异常请求不是我”除非有用户确认的事实支持
+2. **封号申诉用 [ban-appeal.md](ban-appeal.md) 的模板**，用户按实际情况删改；其他支持请求先准备下方事实草稿，未知项明确标记
 3. 展示发送到哪个官方入口、将分享哪些信息及希望对方采取什么动作；发送/上传需要具体授权，敏感材料由本人经官方页面提供
-4. 记录已提交/仅草稿、官方 case 引用和指示；不要在多个入口批量提交，不编造申诉成功率或回复时限
+4. 记录已提交/仅草稿、官方 case 引用和指示；不要在多个入口批量提交，不编造申诉成功率；封号申诉的回复时间在 2 到 7 天左右，超过就基本凉了（[ban-appeal.md](ban-appeal.md)）
 5. 数据导出：先核验当前账号状态下是否可用、范围/格式/有效期和可能包含的私人数据；由用户确认存放位置及访问权限，准备足够空间。不可用就请求官方说明，不承诺一定能导出
 6. 退款：核对原购买渠道、订单和官方资格；转 M03 的具体事实请求。申诉成功与退款资格独立，取消订阅不等于自动退款
 7. 后续仅按用户授权和官方指示跟进；没有答复时记录 pending，不自动再次登录测试、循环申请或替用户接受新的法律承诺
 
-**事实草稿模板（需本人审核，不自动发送）**
+**事实草稿模板（封号申诉以外的支持请求；需本人审核，不自动发送）**
 
 主题：请求核查 [产品/账号限制或账单问题]
 
