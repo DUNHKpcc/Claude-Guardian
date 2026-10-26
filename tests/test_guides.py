@@ -371,7 +371,7 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("**不要找共享号码、虚拟号码接码。**", a0)
         self.assertIn("**有条件就用实体手机卡接码；没有条件就直接弃号**", a0)
         self.assertNotIn("提示要手机号验证或 KYC 的号，可以直接放弃", a0)
-        self.assertIn("第 9 条", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
+        self.assertNotIn("第 9 条", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("接码只用实体卡", skill)
 
