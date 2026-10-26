@@ -42,7 +42,7 @@ Shell 历史只记**命令**，不记输出。要删的是查过公网 IP 的那
 匹配规则（查 IP 和测泄漏的常见站点与命令）：
 
 ```text
-ipinfo\.io|ip\.sb|ifconfig\.(me|co)|icanhazip|ipify|ip-api\.com|ipapi\.co|ip\.gs|cip\.cc|myip|ipecho|checkip|whatismyip|ping0\.cc|ip\.check\.place|ipleak|browserleaks|dnsleaktest
+ipinfo\.io|ip\.sb|ifconfig\.(me|co)|icanhazip|ipify|ip-api\.com|ipapi\.co|ip\.gs|cip\.cc|myip|ipecho|checkip|whatismyip|ping0\.cc|ip\.check\.place|ip\.net\.coffee|ipleak|browserleaks|dnsleaktest
 ```
 
 用户还记得用过别的查 IP 站点，加进去。
@@ -53,7 +53,7 @@ ipinfo\.io|ip\.sb|ifconfig\.(me|co)|icanhazip|ipify|ip-api\.com|ipapi\.co|ip\.gs
 # 1) 先关掉其他所有终端窗口；在这个窗口里不让历史写回
 unset HISTFILE
 H=~/.zsh_history          # bash 用 ~/.bash_history；以实际 $HISTFILE 为准
-P='ipinfo\.io|ip\.sb|ifconfig\.(me|co)|icanhazip|ipify|ip-api\.com|ipapi\.co|ip\.gs|cip\.cc|myip|ipecho|checkip|whatismyip|ping0\.cc|ip\.check\.place|ipleak|browserleaks|dnsleaktest'
+P='ipinfo\.io|ip\.sb|ifconfig\.(me|co)|icanhazip|ipify|ip-api\.com|ipapi\.co|ip\.gs|cip\.cc|myip|ipecho|checkip|whatismyip|ping0\.cc|ip\.check\.place|ip\.net\.coffee|ipleak|browserleaks|dnsleaktest'
 # 2) 只读：数一下、列出来给用户看
 grep -a -i -c -E "$P" "$H"
 grep -a -i -n -E "$P" "$H"
@@ -74,7 +74,7 @@ grep -a -i -c -E "$P" "$H"; wc -l "$B/$(basename "$H")" "$H"
 ```powershell
 # 1) 先关掉其他 PowerShell 和终端窗口
 $H = (Get-PSReadLineOption).HistorySavePath
-$P = 'ipinfo\.io|ip\.sb|ifconfig\.(me|co)|icanhazip|ipify|ip-api\.com|ipapi\.co|ip\.gs|cip\.cc|myip|ipecho|checkip|whatismyip|ping0\.cc|ip\.check\.place|ipleak|browserleaks|dnsleaktest'
+$P = 'ipinfo\.io|ip\.sb|ifconfig\.(me|co)|icanhazip|ipify|ip-api\.com|ipapi\.co|ip\.gs|cip\.cc|myip|ipecho|checkip|whatismyip|ping0\.cc|ip\.check\.place|ip\.net\.coffee|ipleak|browserleaks|dnsleaktest'
 # 2) 只读：列出来给用户看
 Select-String -LiteralPath $H -Pattern $P | Select-Object LineNumber, Line
 # 3) 备份整份

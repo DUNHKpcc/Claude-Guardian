@@ -74,7 +74,7 @@ bash install-flclash-killswitch.sh uninstall    # 卸载并删除规则
 
 **时区、语言与 NTP：**出口对齐的是出口 IP 的地理位置，不是 VPS 的系统时钟（VPS 多是 UTC）：出口在美东就用 `America/New_York` 和 `en_US.UTF-8`，与浏览器 JS 时区一致。killswitch 默认拦截 NTP（UDP 123 不在白名单），`timedatectl` 会显示 unsynchronized；要么把 NTP 服务器加进白名单，要么接受虚拟机 RTC 的走时。
 
-**保险丝与验收：**应用规则后有 180 秒保险丝，没有执行 `confirm` 就自动回滚，避免锁死。装好后手动验收：出口 IP 是固定出口；浏览器打开 browserleaks.com/webrtc 和 dnsleaktest.com（WebRTC 也可用包内的[本地探测页](../assets/webrtc-probe.html)），确认没有真实 IP 和真实 DNS；`pkill FlClashCore` 后确认 curl 和 DNS 全部失败，重启 FlClash 后恢复。
+**保险丝与验收：**应用规则后有 180 秒保险丝，没有执行 `confirm` 就自动回滚，避免锁死。装好后手动验收：出口 IP 是固定出口；浏览器打开 browserleaks.com/webrtc 和 dnsleaktest.com（WebRTC 也可用包内的[本地探测页](../assets/webrtc-probe.html)），确认没有真实 IP 和真实 DNS；`pkill FlClashCore` 后确认 curl 和 DNS 全部失败，重启 FlClash 后恢复。最后由用户在 VM 里的浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除时区和语言外必须全绿（[做法](whole-machine-ipv4.md#browser-acceptance)）。
 
 **macOS 客机：**没有对应脚本。按[本机路线 L2](routes-and-platforms.md) 的做法评估 LuLu 或系统防火墙，同样要求 TUN 掉线时不直连。
 

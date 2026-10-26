@@ -117,6 +117,18 @@ python scripts/egress_verifier.py check --input <证据文件.json>
 
 `persistence` 只有在 `established` 且重启、睡眠唤醒、换网都复验过时才是 `checked`，否则是 `not_established`，要如实告诉用户。`firewall` 和 `os_ipv6` 是建议项，不影响 `status`，会出现在 `advisories`。报告不回显任何 IP。
 
+<a id="browser-acceptance"></a>
+## 5a. 浏览器环境验收：[ip.net.coffee/claude](https://ip.net.coffee/claude/)
+
+所有者 2026-10-26 指定：**环境修复后，用户在实际要用 Claude 的那个浏览器里打开 https://ip.net.coffee/claude/ 做验收，除了“时区”和“语言”两项，其他必须全绿。**
+
+1. 先做完第 5 节判定（`established`），再打开这个页面；浏览器用平时用的那个配置文件，不换浏览器、不开无痕。
+2. 逐项看：出口 IP（中国出口 IPv4、Cloudflare 出口 IP、Claude AI 出口 IP 三个要一致，等于预期出口）、Claude AI 信任评分、Claude 支持地区、IP 属性、VPN／代理／Tor／机器人／滥用记录、claude.ai 与 anthropic.com 可用性、DNS 泄露检测、WebRTC UDP 泄露检测、设备信息。**时区、语言以外有任何一项不是绿色，验收不通过**，回到对应层修（出口不一致看第 2 节规则与 TUN，DNS 泄露看 DNS，WebRTC 看本地探测页和浏览器策略，IP 属性或信任评分不绿就换出口 IP，见[固定出口 IP 的来源](egress-ip-options.md)），修完重新跑第 5 节再打开这个页面。
+3. 页面出现“当前为 IPv6 环境”的提示也算不通过，按第 2 节关 IPv6。
+4. 时区和语言不要求绿色，不为了让它变绿去改系统时区、语言。
+5. 这个页面会从浏览器测 claude.ai、anthropic.com 的可用性，属于接触 Claude：由用户本人打开，Agent 不代开、不用浏览器自动化去打开；把每项的颜色告诉 Agent（截图前遮住 IP），Agent 据此判断通过与否。
+6. 用完按 [痕迹清理](trace-cleanup.md) 清浏览历史和 Shell 历史里的查 IP 记录。
+
 ## 6. 回滚
 
 恢复备份的合并文件和客户端设置，重启 Clash Verge；关过网卡 IPv6 的恢复 `networksetup -setv6automatic`（Windows 用对应的恢复命令）；回滚后清系统 DNS 缓存。默认出站阻止和 killswitch 的回滚见各自文档。

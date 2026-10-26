@@ -332,6 +332,26 @@ class GuidanceContracts(unittest.TestCase):
             for hedge in ("单例", "未核实", "只是推测", "稳妥做法"):
                 self.assertNotIn(hedge, section)
 
+    def test_browser_acceptance_site_is_required_after_repair(self):
+        # Owner rule 2026-10-26: ip.net.coffee/claude must be all green except timezone and language.
+        doc = (REFS / "whole-machine-ipv4.md").read_text(encoding="utf-8")
+        section = doc.split('<a id="browser-acceptance"></a>', 1)[1].split("\n## 6.", 1)[0]
+        for term in ("https://ip.net.coffee/claude/", "除了“时区”和“语言”两项，其他必须全绿", "验收不通过",
+                     "由用户本人打开", "IPv6 环境"):
+            self.assertIn(term, section)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("references/whole-machine-ipv4.md#browser-acceptance", skill)
+        for name in ("vm-guidance.md", "vps-guidance.md", "local-firewall-prompts.md", "mobile-guidance.md"):
+            body = (REFS / name).read_text(encoding="utf-8")
+            self.assertIn("https://ip.net.coffee/claude/", body, name)
+            self.assertIn("whole-machine-ipv4.md#browser-acceptance", body, name)
+        self.assertEqual((REFS / "trace-cleanup.md").read_text(encoding="utf-8").count("ip\\.net\\.coffee"), 3)
+
+    def test_bought_edu_email_is_the_exception(self):
+        doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        self.assertIn("**买来的教育邮箱是例外**", doc)
+        self.assertIn("教育邮箱可以免费注册", doc)
+
     def test_host_library_contracts_live_outside_skill_md(self):
         # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")

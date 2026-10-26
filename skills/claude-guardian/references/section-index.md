@@ -372,13 +372,14 @@ VPS 路线：开发机（环境一致）（13 节）
 
 ## whole-machine-ipv4.md
 
-整机统一出口：只走 IPv4，不走 IPv6（Clash Verge，Mac 与 Windows）（7 节）
+整机统一出口：只走 IPv4，不走 IPv6（Clash Verge，Mac 与 Windows）（8 节）
 
 - [1. 要达到什么](whole-machine-ipv4.md#1-要达到什么)
 - [2. 配置（Clash Verge）](whole-machine-ipv4.md#2-配置clash-verge)
 - [3. 怎么做（按档位）](whole-machine-ipv4.md#3-怎么做按档位)
 - [4. 取证（Agent 实际执行，不替用户编造）](whole-machine-ipv4.md#4-取证agent-实际执行不替用户编造)
 - [5. 判定](whole-machine-ipv4.md#5-判定)
+- [5a. 浏览器环境验收：[ip.net.coffee/claude](https://ip.net.coffee/claude/)](whole-machine-ipv4.md#5a-浏览器环境验收ipnetcoffeeclaude)
 - [6. 回滚](whole-machine-ipv4.md#6-回滚)
 - [7. 限制](whole-machine-ipv4.md#7-限制)
 

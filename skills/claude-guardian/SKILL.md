@@ -47,7 +47,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 用户明确要求某软件／进程独立路径时，核实精确范围、路径、协议／地址族和失败行为，作为明确例外分别配置与验收；也可明确选择仅 Claude 的窄范围模式。存在例外就不能仍称全软件同一路径。完整默认、例外、能力与证据边界以 [Agent 整机路径要求](references/agent-remediation.md#ipv4-only-policy) 为准；[网络参考](references/network-and-remedies.md)的旧目标范围方法仅用于相应窄范围方案或局部诊断。
 
-整机是否达标用 [whole-machine-ipv4.md](references/whole-machine-ipv4.md) 的取证和 `scripts/egress_verifier.py` 判定；`traffic_policy`、访谈评估和面板只输出旧的目标范围结论，不拿它们当整机结论。没取到的证据标 unknown，单次 curl 成功不算整机通过。不给无关任务强加网络修改。
+整机是否达标用 [whole-machine-ipv4.md](references/whole-machine-ipv4.md) 的取证和 `scripts/egress_verifier.py` 判定；`traffic_policy`、访谈评估和面板只输出旧的目标范围结论，不拿它们当整机结论。没取到的证据标 unknown，单次 curl 成功不算整机通过。环境修复后的浏览器环境验收网址是 https://ip.net.coffee/claude/：用户本人在实际使用的浏览器打开，**除时区和语言外必须全绿**，有一项不绿就不算修好（[做法](references/whole-machine-ipv4.md#browser-acceptance)）。不给无关任务强加网络修改。
 
 ## 完整访谈入口
 
