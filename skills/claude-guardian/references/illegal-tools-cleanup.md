@@ -34,6 +34,7 @@ JSON 配置用这段 Python 列出来（macOS、Linux 用 `python3`，Windows �
 
 ```python
 import json, sys
+sys.stdout.reconfigure(encoding="utf-8")  # Windows 控制台默认编码输出不了中文
 HIDE = ("TOKEN", "KEY", "SECRET", "PASSWORD", "AUTH", "COOKIE")
 def show(path):
     try:

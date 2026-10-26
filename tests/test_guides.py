@@ -421,8 +421,10 @@ class GuidanceContracts(unittest.TestCase):
                            "env": {"ANTHROPIC_BASE_URL": "https://relay.example.invalid",
                                    "ANTHROPIC_AUTH_TOKEN": "sk-hidden"},
                            "hooks": {"Stop": []}}, fh)
+            # cp1252 mirrors the default Windows console, which once made the Chinese output crash.
+            env = dict(os.environ, PYTHONIOENCODING="cp1252")
             out = subprocess.run([sys.executable, "-c", code, cfg], capture_output=True, text=True,
-                                 encoding="utf-8", check=True).stdout
+                                 encoding="utf-8", check=True, env=env).stdout
         self.assertIn("MCP relay: npx claude-relay", out)
         self.assertIn("RELAY_TOKEN", out)
         self.assertIn("relay.example.invalid", out)
