@@ -352,6 +352,18 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("**买来的教育邮箱是例外**", doc)
         self.assertIn("教育邮箱可以免费注册", doc)
 
+    def test_account_age_rule_and_old_gmail_is_open(self):
+        # Owner rule 2026-10-26: earlier Claude accounts weigh more, new ones get flagged; old Gmail is undecided.
+        doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        a0 = doc.split("## A0a", 1)[0]
+        self.assertIn("**Claude 账号注册得越早，权重越高；新号容易被风控。**", a0)
+        self.assertIn("**老 Gmail 邮箱目前没有定论**", a0)
+        self.assertIn("“gmail老号最好”不当作结论", a0)
+        self.assertNotIn("老号最好", a0.replace("“gmail老号最好”", ""))
+        self.assertIn("第 8 条", (REFS / "accounts-and-payments.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("老 Gmail 是否更稳目前没有定论", skill)
+
     def test_host_library_contracts_live_outside_skill_md(self):
         # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
