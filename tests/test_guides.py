@@ -364,6 +364,17 @@ class GuidanceContracts(unittest.TestCase):
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("老 Gmail 是否更稳目前没有定论", skill)
 
+    def test_phone_verification_uses_a_physical_sim_or_abandons(self):
+        # Owner rule 2026-10-26: no shared or virtual numbers; physical SIM if possible, else abandon.
+        doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        a0 = doc.split("## A0a", 1)[0]
+        self.assertIn("**不要找共享号码、虚拟号码接码。**", a0)
+        self.assertIn("**有条件就用实体手机卡接码；没有条件就直接弃号**", a0)
+        self.assertNotIn("提示要手机号验证或 KYC 的号，可以直接放弃", a0)
+        self.assertIn("第 9 条", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("接码只用实体卡", skill)
+
     def test_host_library_contracts_live_outside_skill_md(self):
         # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
