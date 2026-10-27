@@ -397,6 +397,11 @@ class GuidanceContracts(unittest.TestCase):
                      "礼品卡扣款不成功、卡在支付页面、会员不到账", "**联系 Apple 客服解决**", "不买成品 Apple ID"):
             self.assertIn(term, section)
         self.assertEqual(doc.count('<a id="b2a"></a>'), 1)
+        # Owner fact 2026-10-27: paying with gift card balance needs no billing address and no card.
+        self.assertEqual(doc.count("**用礼品卡支付不需要填账单地址，也不需要绑卡**"), 1)
+        self.assertEqual(doc.count("**用礼品卡余额支付不需要填账单地址，也不需要绑卡**"), 1)
+        self.assertNotIn("不能保证每笔订阅免绑卡", doc)
+        self.assertNotIn("账单信息按页面要求填写", doc)
         self.assertIn("先按 [B2a](#b2a) 在网页注册", doc)
         for name in ("account-onboarding.md", "mobile-guidance.md"):
             self.assertIn("accounts-and-payments.md#b2a", (REFS / name).read_text(encoding="utf-8"), name)
