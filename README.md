@@ -46,7 +46,7 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它把作者和社区的真实
 <p align="center">
   <a href="https://api.dpccgaming.xyz"><img src="docs/partners/dpcc-api.svg" alt="DPCC API" width="480" /></a>
   <br />
-  懒得自己配环境？试试 DPCC API，点击图片即可跳转
+  懒得自己配环境？试试 DPCC API，满血Claude，点击图片即可跳转
 </p>
 
 ## 它能干什么
