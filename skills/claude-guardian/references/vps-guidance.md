@@ -69,7 +69,7 @@ S08 的结论是：像示例里这样的机房 IP 算好的，直接用没问题
 
 ## 注册、养号、订阅、OAuth（与本机路线一致，但全在 VPS 浏览器里）
 
-1. **注册与养号：**按[账号注册与使用节奏](account-onboarding.md)：邮箱注册，Gmail 或 Outlook，Proton 防拦截；**OAuth 之前必须先从 Free 号养号**，Free 至少 3 天再升 Pro，Pro 至少 15 天再升 Max，新号额度不顶满，新号并发控制在 1 到 3 之间（子代理也算），新号不用 workflow 模式。
+1. **注册与养号：**Agent 先读[账号注册与使用节奏（A0）](account-onboarding.md)，邮箱、升级间隔、额度、并发、接码、KYC 都按 A0 给用户讲；VPS 路线另有一条：**OAuth 之前必须先从 Free 号养号**。
 2. **订阅：**在 VPS 的 Chrome 里打开 claude.ai，用自己的真实账号和支付资料，Settings → Billing 选套餐。支付方式按[支付说明](accounts-and-payments.md)，第一项参考 S02。选 Apple 或 Google 内购要在手机上完成，手机端先过[手机端防封要点](mobile-guidance.md)，并注意手机的出口也要和 VPS 一致。
 3. **OAuth：**VPS 终端里运行 `claude`，需要登录时执行 `/login`，把给出的授权 URL 复制到 **VPS Chrome**，登录并授权，回到终端。
 

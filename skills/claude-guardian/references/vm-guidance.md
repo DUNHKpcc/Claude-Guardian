@@ -85,7 +85,7 @@ Agent 的角色：解释脚本做什么、检查前置条件、核对参数，�
 客机环境就绪后，按本机路线的顺序继续：
 
 1. **接触前门禁**：PC0，不接触 Claude；登录、支付逐项批准（见 [V3](routes-and-platforms.md)）。
-2. **注册与养号**：邮箱注册、Gmail 或 Outlook、Proton，Free 至少 3 天再升 Pro，Pro 至少 15 天再升 Max，见[账号注册与使用节奏](account-onboarding.md)。
+2. **注册与养号**：Agent 先读[账号注册与使用节奏（A0）](account-onboarding.md)，邮箱、升级间隔、额度、并发、接码、KYC 都按 A0 给用户讲。
 3. **订阅与支付**：按[支付说明](accounts-and-payments.md)，第一项参考 S02；选 Apple 或 Google 内购时，手机端先过[手机端防封要点](mobile-guidance.md)。
 4. **日常**：宿主网络 → 启动 VM → 客机时钟与网络状态 → 选定客户端；宿主换网、VM 暂停恢复、更新后重测出口和防火墙。
 

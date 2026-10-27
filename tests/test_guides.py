@@ -359,6 +359,16 @@ class GuidanceContracts(unittest.TestCase):
         for rule in ("接码只用实体卡", "老 Gmail 是否更稳", "子代理也算", "workflow", "额度不顶满"):
             self.assertNotIn(rule, skill)
 
+    def test_route_guides_send_the_agent_to_a0_without_copying_rules(self):
+        # Owner decision 2026-10-27: VM/VPS steps load A0 instead of repeating its pacing rules.
+        for name in ("vm-guidance.md", "vps-guidance.md"):
+            body = (REFS / name).read_text(encoding="utf-8")
+            self.assertIn("Agent 先读[账号注册与使用节奏（A0）](account-onboarding.md)", body, name)
+            for rule in ("至少 3 天", "至少 15 天", "额度不顶满", "子代理也算", "workflow"):
+                self.assertNotIn(rule, body, (name, rule))
+        self.assertIn("**OAuth 之前必须先从 Free 号养号**", (REFS / "vps-guidance.md").read_text(encoding="utf-8"))
+        self.assertNotIn("子代理也算", (ROOT / "README.md").read_text(encoding="utf-8"))
+
     def test_account_age_rule_and_old_gmail_is_open(self):
         # Owner rule 2026-10-26: earlier Claude accounts weigh more, new ones get flagged; old Gmail is undecided.
         doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
