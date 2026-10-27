@@ -1,5 +1,10 @@
 # 版本记录
 
+## vps-guard：可选放行 mosh 的 UDP（2026-10-27）
+
+- 所有者同意：`vps-guard.sh` 新增 `MOSH=1` 开关（默认 0），只对 `ADMIN_NET` 放行 mosh 的 UDP 端口段（`MOSH_PORTS` 默认 60000-61000，只接受 1024–65535 且起点不大于终点，其他取值直接报错、不输出规则）。不开开关时生成的规则和原来逐字节一致。`vps-guidance.md` 防火墙一节写明 mosh 要加 `MOSH=1`、漫游范围限于 `ADMIN_NET`、改开关要重新 install 并 confirm
+- 测试：新增 `tests/test_vps_guard.py`（实际运行 `render`，检查默认无 UDP 规则、开启后只多一行、坏取值被拒；无 bash 的平台跳过）。本机用 `unshare -rn nft -c` 检查了开启后的规则语法；应用和保险丝流程仍没在真实服务器上实测。回滚：回退本提交
+
 ## VPS 服务器保活：防 OOM 失联（2026-10-27）
 
 - 所有者要求：Agent 操作 VPS 时优先按服务器配置保活，不能爆内存让 Agent 和用户连不上。`vps-guidance.md` 新增“服务器保活”一节：只读资源基线（PSI、OOM 日志）、按内存定预算并给系统和 sshd 留余量、swapfile 与 swappiness、earlyoom 避开 sshd/tmux 并优先结束临时远程浏览器、重任务用 `systemd-run` 的 `MemoryMax` 限制、按内存定编译并行度、tmux 与 `ServerAliveInterval`、带外控制台恢复预案和回滚；开头和“日常”一节指向这里。建 swap、改 swappiness、装 earlyoom 列入 B 档。新增守门测试

@@ -94,6 +94,7 @@ Agent 通过 SSH 操作 VPS 时，第一优先级是保住控制通道。内存�
 - **VPS 自己的 IP 是出口：**用 [vps-guard.sh](../assets/vps-firewall/vps-guard.sh)，参考 VM 的脚本结构：nftables，入站默认丢弃，只放行回环、已建立连接、来自管理来源（`ADMIN_NET`）的 SSH 和 ping、云 DHCP、IPv6 邻居发现；出站不限制。应用后有 **180 秒保险丝**，没有 `confirm` 就自动回滚。
 - **套家宽、VPS 上也跑 FlClash TUN：**直接用 [VM 的 install-flclash-killswitch.sh](../assets/vm-killswitch/install-flclash-killswitch.sh)，把 `LAN_NET` 设成你的管理来源网段，`NIC` 设成 VPS 的网卡，出站只走 TUN 或节点真实 IP 和端口，fail-closed。
 - 授权档位（见[分级授权](authorization-tiers.md)）：`render` 预演是 A 档；**启用防火墙是 C 档**（入站丢弃，可能锁死 SSH），用户当场确认，并在 180 秒保险丝内在另一个会话 `confirm`。
+- **用 mosh 要加 `MOSH=1`：**mosh 握手走 SSH，会话走 UDP 60000–61000；`vps-guard` 默认不放行这段 UDP，启用后 mosh 能握手但会话建不起来。安装时加 `MOSH=1`（例如 `sudo ADMIN_NET=203.0.113.7/32 MOSH=1 vps-guard.sh install`），只对 `ADMIN_NET` 放行这段 UDP；端口段可用 `MOSH_PORTS=60000-61000` 改，只接受 1024–65535。放行范围只到 `ADMIN_NET`，所以 mosh 漫游到管理来源以外的 IP 会断，管理来源用 Tailscale 网段就不受影响。规则是 install 时写进去的，之后改开关要重新 install 并 confirm。
 - 用法与前置：`ADMIN_NET` 必填（固定公网 IP 加 /32，或 Tailscale 网段 100.64.0.0/10）；先 `render` 看规则；**运行前在云控制台确认有独立救援入口，先打快照，在另一个 SSH 会话里确认**，不要只靠一个会话。云厂商安全组和系统防火墙是两层，分别核对。
 - **套家宽、VPS 上跑 TUN 时，白名单要覆盖管理通道自身的出站**（SSH 入站走 `ADMIN_NET`，反向隧道等出站通道走 `TUNNEL_UNIT` 自动放行），详见 [vm-guidance.md 第 4 节](vm-guidance.md#4-客机防火墙fail-closed)。
 - 脚本的规则语法经 `nft -c` 在隔离环境检查过，应用和保险丝流程没有在真实服务器上实测，首次使用按上面的顺序小心进行。

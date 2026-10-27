@@ -15,10 +15,14 @@
 #   vps-guard.sh confirm                            180 秒内确认，取消自动回滚
 #   vps-guard.sh status | uninstall
 # ADMIN_NET 必填：你的固定公网 IP/32，或 Tailscale 网段 100.64.0.0/10。SSH_PORT 默认 22。
+# MOSH=1 可选（默认 0 不放行）：只对 ADMIN_NET 放行 mosh 的 UDP 端口，MOSH_PORTS 默认 60000-61000。
+#   mosh 握手走 SSH，会话走这段 UDP；不开这个开关，启用 vps-guard 后 mosh 连不上。
 set -euo pipefail
 
 ADMIN_NET="${ADMIN_NET:-}"
 SSH_PORT="${SSH_PORT:-22}"
+MOSH="${MOSH:-0}"
+MOSH_PORTS="${MOSH_PORTS:-60000-61000}"
 TABLE="vps_guard"
 NFT_FILE="/etc/vps-guard.nft"
 UNIT="/etc/systemd/system/vps-guard.service"
@@ -30,6 +34,17 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 build_nft() {
   [ -n "$ADMIN_NET" ] || die "请先设置 ADMIN_NET（你的管理来源，如 203.0.113.7/32 或 100.64.0.0/10），例如: sudo ADMIN_NET=203.0.113.7/32 $0 install"
   [[ "$SSH_PORT" =~ ^[0-9]+$ ]] || die "SSH_PORT 必须是数字"
+  local mosh_rule=""
+  case "$MOSH" in
+    0) ;;
+    1)
+      [[ "$MOSH_PORTS" =~ ^([0-9]{1,5})-([0-9]{1,5})$ ]] || die "MOSH_PORTS 必须是 起-止 端口段，如 60000-61000"
+      local lo=$((10#${BASH_REMATCH[1]})) hi=$((10#${BASH_REMATCH[2]}))
+      { [ "$lo" -ge 1024 ] && [ "$hi" -le 65535 ] && [ "$lo" -le "$hi" ]; } || die "MOSH_PORTS 须在 1024-65535 之间且起点不大于终点"
+      mosh_rule="        ip saddr $ADMIN_NET udp dport $lo-$hi counter accept"
+      ;;
+    *) die "MOSH 只能是 0 或 1" ;;
+  esac
   cat <<NFT
 add table inet $TABLE
 delete table inet $TABLE
@@ -40,7 +55,8 @@ table inet $TABLE {
         ct state established,related counter accept
         ip saddr $ADMIN_NET tcp dport $SSH_PORT counter accept
         ip saddr $ADMIN_NET icmp type echo-request counter accept
-        udp sport 67 udp dport 68 counter accept
+${mosh_rule:+$mosh_rule
+}        udp sport 67 udp dport 68 counter accept
         ip6 nexthdr icmpv6 icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert, nd-router-advert } counter accept
         counter
     }
@@ -110,5 +126,5 @@ case "${1:-}" in
   confirm)   do_confirm ;;
   status)    do_status ;;
   uninstall) do_uninstall ;;
-  *) die "用法: ADMIN_NET=<管理来源> $0 [render|install|confirm|status|uninstall]" ;;
+  *) die "用法: ADMIN_NET=<管理来源> [MOSH=1] $0 [render|install|confirm|status|uninstall]" ;;
 esac
