@@ -2,7 +2,7 @@
 
 适用：用户已经选择 **VPS 路线**（见 [R-VPS](routes-and-platforms.md)）。VPS 路线是**开发机**：Claude Code 跑在 VPS 上，本机只用 VS Code Remote-SSH 连过去。VPS 当代理中转（自建梯）不属于本路线，那是**本机路线选 IP 出口**时的选项，见[固定出口 IP 的来源](egress-ip-options.md)，不要混为一谈。
 
-用户买好服务器并给出 SSH 登录方式后，**Agent 可以部署**（由宿主 Agent 通过 shell／SSH 执行本文的命令和脚本；Skill 没有内置自动部署程序，脚本还没在真实服务器上实测）：装系统包、建用户、配 SSH 密钥登录、装 Xvfb + noVNC + Chrome、tmux、swap、`vps-guard`、BBR 和线路优化等，按[分级授权](authorization-tiers.md)执行（B 档整个计划批准一次，锁死风险项当场确认）。买服务器、付款、注册、登录 Claude 和 OAuth 由用户本人完成。详细命令见 [S08：VPS Claude 教程（11 页）](../sources/S08-vps-claude-tutorial.pdf)，回答 VPS 路线问题时必附。
+用户买好服务器并给出 SSH 登录方式后，**Agent 可以部署**（由宿主 Agent 通过 shell／SSH 执行本文的命令和脚本；Skill 没有内置自动部署程序，脚本还没在真实服务器上实测）：装系统包、建用户、配 SSH 密钥登录、装 Xvfb + noVNC + Chrome、tmux、swap、`vps-guard`、BBR 和线路优化等，按[分级授权](authorization-tiers.md)执行（B 档整个计划批准一次，锁死风险项当场确认）。**Agent 操作服务器前，先按服务器配置做[服务器保活](#vps-liveness)**，不能因为爆内存让 Agent 和用户连不上 VPS。买服务器、付款、注册、登录 Claude 和 OAuth 由用户本人完成。详细命令见 [S08：VPS Claude 教程（11 页）](../sources/S08-vps-claude-tutorial.pdf)，回答 VPS 路线问题时必附。
 
 ## 核心：环境一致
 
@@ -54,6 +54,22 @@ S08 的结论是：像示例里这样的机房 IP 算好的，直接用没问题
 2. **SSH 安全（S08 的几种方案）：**公网加 SSH key（最简单）；Tailscale 加 SSH key（适合个人用户，注意备用出口）；改掉 22 端口；跳板机（门槛最高，适合商业化）。选哪种由用户决定，改动前先确认有云控制台的独立救援入口。
 3. **日常开发用户：**不用 root，新建 `dev` 用户并加入 sudo，把授权密钥复制过去，再用 `dev` 重新连接；有条件写 `~/.ssh/config`。
 
+<a id="vps-liveness"></a>
+## 服务器保活：按配置定内存预算，防 OOM 失联（Agent 操作前必做）
+
+Agent 通过 SSH 操作 VPS 时，第一优先级是保住控制通道。内存耗尽（OOM）时，内核 OOM killer 可能杀掉 sshd、tmux 或 Agent 会话；还没触发 OOM 时也可能先陷入 swap 抖动（thrashing），系统失去响应，Agent 和用户都连不上 VPS。所以每次部署、编译、装依赖或开远程浏览器之前，先按服务器规格做资源基线和保活配置，再动手。
+
+1. **资源基线（A 档，只读）：**`nproc`、`free -h`、`swapon --show`、`df -h /`、`cat /proc/pressure/memory`（PSI 内存压力）、`systemctl is-active earlyoom`，以及 `journalctl -k -b | grep -iE "out of memory|oom-kill"` 查本次开机有没有 OOM 记录。用 `free -h` 的 available 一列定内存预算：**至少给系统、sshd 和 tmux 留 512MB**，剩下的才是任务能用的。
+2. **Swap 兜底：**没有 swap 就建 swapfile，内存 2G 及以下建 2G，4G 建 2 到 4G，8G 建 4G；先确认磁盘剩余空间够。`sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile`，再在 `/etc/fstab` 加 `/swapfile none swap sw 0 0` 持久化；`/etc/sysctl.d/99-guardian-swap.conf` 写 `vm.swappiness=10`，`sudo sysctl --system` 生效。OpenVZ、LXC 这类容器型 VPS 通常不能开 swap，就只靠内存预算，并告诉用户。
+3. **用户态 OOM 守护（earlyoom）：**`sudo apt install earlyoom`，在 `/etc/default/earlyoom` 写 `EARLYOOM_ARGS="-m 10 -s 10 -r 3600 --avoid '^(sshd|systemd|systemd-journal|tmux: server)$' --prefer '^(chrome|Xvfb|x11vnc)$'"`，`sudo systemctl enable --now earlyoom`。可用内存和 swap 都低于 10% 时，它先于内核 OOM killer 动手，优先结束临时远程浏览器，避开 sshd 和 tmux。**不要给 sshd 设 `OOMScoreAdjust=-1000`**：子会话会继承这个值，失控的任务也杀不掉，反而更容易把整机拖死。
+4. **重任务加 cgroup 内存上限：**`npm install`、编译、`docker build`、批量测试这类峰值高的任务，用 `systemd-run --user --scope -p MemoryMax=<预算> -p MemorySwapMax=1G <命令>` 跑，超限只结束这一个任务，不拖垮整机。编译并行度按内存定：2G 机器 `make -j1`，4G 用 `-j2`，不直接用 `-j$(nproc)`。
+5. **控制常驻进程和并发：**远程浏览器（Chrome、Xvfb、x11vnc、noVNC）用完就关（见下文）；2G 机器不要让远程浏览器和编译同时跑；Claude Code 的并行子代理也会叠加内存占用，内存小就减少并行。
+6. **控制通道保活：**长任务一律放在 `tmux` 里跑，SSH 断开任务也不中断；本机 `~/.ssh/config` 给这台 Host 加 `ServerAliveInterval 30`、`ServerAliveCountMax 3`，及时发现断线。
+7. **失联恢复预案：**动手前在计划里写好服务商控制台的带外入口（VNC 或串口控制台）和实例重启方法。真失联了就从控制台登录或重启，恢复后用 `journalctl -k -b -1 | grep -iE "out of memory|oom-kill"` 查上次开机被杀的进程，调小预算再继续，不原样重试。
+8. **复验：**`swapon --show`、`systemctl is-active earlyoom`、`free -h` 读回；改完的配置写进回执，回滚是 `swapoff` 并删 fstab 那一行、`systemctl disable --now earlyoom`。
+
+分档：第 1 步只读是 A 档；建 swap、改 sysctl、装 earlyoom 是 B 档，和部署计划一起批准一次。
+
 ## 开发环境与 Claude Code
 
 装 Node、npm、git；习惯终端的可以装 nvim、mosh、tmux。用官方安装方式装 Claude Code（`curl -fsSL https://claude.ai/install.sh | bash`），`claude --version` 验证。本机装 VS Code 和 Remote-SSH 扩展，在 `~/.ssh/config` 里配 Host，之后项目直接放在服务器的 `~/workspace`。
@@ -88,7 +104,7 @@ VPS 同时当出口节点和反向隧道落点时，VPS 侧的 sshd 要这样设
 
 ## 日常
 
-打开 VS Code → Remote-SSH 到工作区 → 打开 `~/workspace/项目` → 终端里 `tmux new -A -s claude` → `claude`。SSH 断开后任务继续，重连后 `tmux attach -t claude`。只有 Claude 登录失效、订阅管理或重新 OAuth 时才启动远程浏览器。定期看 `free -h`、`df -h`；4C8G 建议留 4G swap。
+打开 VS Code → Remote-SSH 到工作区 → 打开 `~/workspace/项目` → 终端里 `tmux new -A -s claude` → `claude`。SSH 断开后任务继续，重连后 `tmux attach -t claude`。只有 Claude 登录失效、订阅管理或重新 OAuth 时才启动远程浏览器。定期看 `free -h`、`df -h`；swap、内存预算和 OOM 守护按[服务器保活](#vps-liveness)。
 
 ## 边界
 

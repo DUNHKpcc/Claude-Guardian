@@ -152,6 +152,19 @@ class GuidanceContracts(unittest.TestCase):
         for term in ("ClientAliveInterval 15", "permitlisten=127.0.0.1:2222", "advanced-route.md"):
             self.assertIn(term, vps)
 
+    def test_vps_liveness_comes_before_server_work(self):
+        # Owner rule 2026-10-27: keep the VPS alive by its specs first; OOM must not cut off the Agent and user.
+        vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
+        self.assertEqual(vps.count('<a id="vps-liveness"></a>'), 1)
+        self.assertIn("**Agent 操作服务器前，先按服务器配置做[服务器保活](#vps-liveness)**", vps)
+        section = vps.split('<a id="vps-liveness"></a>', 1)[1].split("\n## ", 2)[1]
+        for term in ("OOM killer", "thrashing", "/proc/pressure/memory", "至少给系统、sshd 和 tmux 留 512MB",
+                     "swapfile", "vm.swappiness=10", "earlyoom", "--avoid", "不要给 sshd 设 `OOMScoreAdjust=-1000`",
+                     "MemoryMax", "make -j1", "tmux", "ServerAliveInterval", "带外入口", "journalctl -k -b -1"):
+            self.assertIn(term, section)
+        tiers = (REFS / "authorization-tiers.md").read_text(encoding="utf-8")
+        self.assertIn("VPS 建 swap、改 swappiness、装 earlyoom | B |", tiers)
+
     def test_vps_route_is_a_dev_machine_with_consistent_environment(self):
         vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
         for term in ("开发机", "环境一致", "Ubuntu 24.04", "x86_64", "S08-vps-claude-tutorial.pdf",
@@ -710,7 +723,7 @@ class RemediationGuideContracts(unittest.TestCase):
         for name in ("whole-machine-ipv4.md", "local-firewall-prompts.md"):
             self.assertIn("agent-remediation.md#webrtc-block", (REFS / name).read_text(encoding="utf-8"), name)
         tiers = (REFS / "authorization-tiers.md").read_text(encoding="utf-8")
-        self.assertIn("装 Chrome WebRTC 插件或写浏览器 WebRTC 策略 | B |", tiers)
+        self.assertRegex(tiers, r"装 Chrome WebRTC 插件或写浏览器 WebRTC 策略[^|\n]*\| B \|")
 
     def test_windows_adapter_ipv6_is_off_by_default(self):
         section = self.section("windows-adapter-ipv6-hint")

@@ -375,7 +375,7 @@ VM 路线：客机系统、网卡、出口与防火墙（8 节）
 
 ## vps-guidance.md
 
-VPS 路线：开发机（环境一致）（13 节）
+VPS 路线：开发机（环境一致）（14 节）
 
 - [核心：环境一致](vps-guidance.md#核心环境一致)
 - [服务器怎么选](vps-guidance.md#服务器怎么选)
@@ -383,6 +383,7 @@ VPS 路线：开发机（环境一致）（13 节）
 - [出口：两种情况](vps-guidance.md#出口两种情况)
 - [线路优化](vps-guidance.md#线路优化)
 - [创建与连接](vps-guidance.md#创建与连接)
+- [服务器保活：按配置定内存预算，防 OOM 失联（Agent 操作前必做）](vps-guidance.md#服务器保活按配置定内存预算防-oom-失联agent-操作前必做)
 - [开发环境与 Claude Code](vps-guidance.md#开发环境与-claude-code)
 - [临时远程浏览器（远程桌面）](vps-guidance.md#临时远程浏览器远程桌面)
 - [注册、养号、订阅、OAuth（与本机路线一致，但全在 VPS 浏览器里）](vps-guidance.md#注册养号订阅oauth与本机路线一致但全在-vps-浏览器里)
