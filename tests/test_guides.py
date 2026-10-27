@@ -423,6 +423,22 @@ class GuidanceContracts(unittest.TestCase):
         for name in ("account-onboarding.md", "mobile-guidance.md"):
             self.assertIn("accounts-and-payments.md#b2a", (REFS / name).read_text(encoding="utf-8"), name)
 
+    def test_device_with_more_than_three_banned_accounts_is_retired(self):
+        # Owner rule 2026-10-27: a phone or computer with more than 3 banned accounts is not used again.
+        doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        a0 = doc.split("## A0a", 1)[0]
+        for term in ("**一台设备（手机和电脑都算）被封超过 3 个账号，就不要再用这台设备。超过 3 个，会标记 IP、设备 UUID、指纹等信息。**",
+                     "一共被封过几个账号", "出口 IP 也一起换", "**3 个以内**", "以本条为准"):
+            self.assertIn(term, a0)
+        self.assertNotIn("不确定", a0.split("11. **被封过号的设备", 1)[1])
+        incidents = (REFS / "incidents-and-integrations.md").read_text(encoding="utf-8")
+        self.assertNotIn("旧设备不等于黑名单", incidents)
+        self.assertIn("被封超过 3 个账号就不再使用", incidents)
+        self.assertIn("more than 3: stop using the device", (REFS / "intake.md").read_text(encoding="utf-8"))
+        self.assertIn("被封超过 3 个账号就不要再用它", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("按 Q-D01 问清楚被封过几个号，按 A0 判断", skill)
+
     def test_new_account_concurrency_rule(self):
         # Owner rule 2026-10-27: new accounts keep concurrency at 1-3, sub-agents count, no workflow mode.
         doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")

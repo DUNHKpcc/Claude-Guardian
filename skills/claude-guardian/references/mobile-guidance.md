@@ -26,6 +26,7 @@
 | 支付 | 使用本人或自己公司的正常支付方式，Billing Address 填真实且与银行信息一致 |
 | 登录 | 避免同一账号短时间从多个国家同时在线 |
 | 账号 | 不共享，不批量切换多个账号 |
+| 设备 | 这台手机被封超过 3 个账号就不要再用它（[A0 第 11 条](account-onboarding.md)） |
 
 改完网络后，用户在手机浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除时区和语言外必须全绿（[做法](whole-machine-ipv4.md#browser-acceptance)）。
 
