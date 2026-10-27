@@ -78,7 +78,7 @@ B 档计划结束后汇报：做了什么、原值→新值、验证结果、怎
 | 动作 | 档位 |
 | --- | --- |
 | 只读诊断、IP 质量检测报告、WebRTC 探测页、`render` 预演 | A |
-| 导出防火墙备份、布置回滚保险丝、加 `guardian-` 允许规则（默认仍放行）、装 Clash 客户端、装 FlClash TUN、开客机 SSH、前台 SSH 转发、noVNC 本地入口、Realm 中转（只放行用户自己的 IP）、临时切 BBR、关闭本机（Windows 默认）网卡 IPv6 | B |
+| 导出防火墙备份、布置回滚保险丝、加 `guardian-` 允许规则（默认仍放行）、装 Clash 客户端、装 FlClash TUN、开客机 SSH、前台 SSH 转发、noVNC 本地入口、Realm 中转（只放行用户自己的 IP）、临时切 BBR、关闭本机（Windows 默认）网卡 IPv6、装 Chrome WebRTC 插件或写浏览器 WebRTC 策略 | B |
 | 默认出站切成阻止、启用 killswitch 或 `vps-guard`、故障演练（目标是远程机器或唯一入口时）、改 SSH 配置、持久化 BBR、关远程机器网卡 IPv6、清理数据 | C |
 | 注册、登录、KYC、OAuth、付款、订阅、凭据 | C，由用户本人完成 |
 

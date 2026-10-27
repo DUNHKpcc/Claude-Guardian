@@ -47,12 +47,13 @@ M02/M03: accounts, subscription, and payment planning（18 节）
 
 ## agent-remediation.md
 
-Agent 编排检测与修复（7 节）
+Agent 编排检测与修复（8 节）
 
 - [一次任务的闭环](agent-remediation.md#一次任务的闭环)
 - [修复后的复验](agent-remediation.md#修复后的复验)
 - [整机只走 IPv4（所有者 2026-10-19 确认，2026-10-25 补充）](agent-remediation.md#整机只走-ipv4所有者-2026-10-19-确认2026-10-25-补充)
 - [Windows 网卡 IPv6：默认关闭（B 档）](agent-remediation.md#windows-网卡-ipv6默认关闭b-档)
+- [WebRTC：浏览器和系统分开堵（B 档）](agent-remediation.md#webrtc浏览器和系统分开堵b-档)
 - [选择器能做什么](agent-remediation.md#选择器能做什么)
 - [内置脚本修不了：Agent 继续负责](agent-remediation.md#内置脚本修不了agent-继续负责)
 - [Mac 修复链：Clash Verge Rev 2.5.8 的 rules 扩展](agent-remediation.md#mac-修复链clash-verge-rev-258-的-rules-扩展)

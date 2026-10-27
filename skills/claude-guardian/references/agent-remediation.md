@@ -45,6 +45,18 @@
 5. **影响：**依赖 IPv6 的局域网设备、公司 VPN 会受影响；组织管理的电脑不改，停下告诉用户。
 6. **复测：**读回绑定状态，再跑 `network_check.py run`，看“IPv6 是否堵住”一项。
 
+<a id="webrtc-block"></a>
+## WebRTC：浏览器和系统分开堵（B 档）
+
+**浏览器：**下面两种做法选一种，浏览器以外的程序都管不到。
+
+1. **装插件（Chrome）：**在 Chrome 应用商店装 Google 出品的 **WebRTC Network Limiter**（ID `npeicpdbkakmehahjeeohfdhnlpdklia`，[商店页](https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia)），认准开发者是 Google，不装来源不明的同名插件。装好后打开插件的“选项”：选“只走 Chrome 配置的代理”那一项，并勾上“Disable non-proxied UDP”。这一项默认不勾，不勾就没堵住。
+2. **写浏览器策略：**Chrome、Edge 用企业策略 `WebRtcIPHandling` = `disable_non_proxied_udp`（Windows 写注册表 `HKLM\SOFTWARE\Policies\Google\Chrome`，步骤见 [S05](../sources/S05-local-protection.md)）。写了策略后插件改不动这项设置，以策略为准。
+
+插件只对装了它的那个 Chrome 配置文件生效，用户平时用的每个配置文件都要装。音视频通话可能变卡或连不上，要先告诉用户。装好后用 `serve_webrtc.py` 在同一个配置文件里复测，再按[浏览器环境验收](whole-machine-ipv4.md#browser-acceptance)打开 ip.net.coffee/claude 看 WebRTC 一项。
+
+**系统：**操作系统里没有统一关 WebRTC 的开关。桌面客户端、Electron 应用、游戏、会议软件自己发 STUN/UDP，浏览器插件和浏览器策略都管不到。**只开系统代理时，非浏览器应用的 WebRTC/UDP 不受保护**：系统代理只对愿意读它的程序生效，而且只有 HTTP/SOCKS 的 TCP 流量走代理，UDP 照样直连，会暴露真实 IP。所以**必须开 TUN 严格路由**（Clash Verge 里的“虚拟网卡模式”加“严格路由”，mihomo 配置是 `tun.enable: true`、`strict-route: true`），并按[整机只走 IPv4](#ipv4-only-policy)关 IPv6。开好后跑 `network_check.py run`：“UDP”一项要显示 STUN 映射地址和 TCP 出口一致，“路由”一项要显示走 TUN。
+
 ## 选择器能做什么
 
 `agent_remediation.py` 只从报告里选动作，不执行。输入是 `guardian-report/0.1`、`env-inventory/0.2` 或 Agent 归一化的发现清单：
@@ -62,7 +74,7 @@
 | 代理配置不清楚 | `inventory_cli.py capabilities`，匹配版本再 `static-audit` | 运行时另测 |
 | 系统代理端口不对 | 记原值，批准后只改那个端口 | 重读设置 + `network_check.py --proxy` |
 | 出口、路由、IPv6、DNS 泄露、UDP | `network_check.py run`，按结果改对应层 | 同一命令复测 |
-| WebRTC 泄露 | 按浏览器版本和策略单项调整 | `serve_webrtc.py` |
+| WebRTC 泄露 | 浏览器装 WebRTC Network Limiter 插件或写策略，非浏览器程序靠 TUN 严格路由（见 [WebRTC](#webrtc-block)） | `serve_webrtc.py`、`network_check.py run` |
 | 规则 policy 错、要 prepend | `repair_cli.py`（见下文 Mac 修复链） | 重启客户端后复测 |
 | 程序不走代理 | 查启动入口和它支持的代理方式，最小改动 | 逐程序复测 |
 | 时区、语言 | 记原值，用户指定目标时改；macOS 可用 `native_claude_state_mac.py timezone`（C 档） | 读回 |

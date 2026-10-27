@@ -57,7 +57,8 @@ Mihomo 的 `fingerprint` 是证书指纹字段，`fingerprint: chrome` 属于字
 | Claude IPv4-only scope or enforcement evidence missing | Plan selected-scope IPv4-only even without an observed bypass; keep support unknown/unsupported and compliance not_established, preserve outer/control traffic and obtain exact approval before changes |
 | IPv6 bypass observed | Locate the actual target leg and repair its scoped IPv4-only enforcement under the current product policy; preserve IPv6-dependent outer proxy transport and unrelated traffic |
 | IPv4 works, IPv6 times out | Record unavailable/unknown IPv6; do not report a working kill switch or globally disable IPv6 |
-| Browser WebRTC bypass confirmed | Propose supported origin-scoped non-proxied-UDP restriction; disclose media effects and preserve other origins |
+| Browser WebRTC bypass confirmed | Install Google's WebRTC Network Limiter extension in Chrome with "Disable non-proxied UDP" ticked, or set the `WebRtcIPHandling` = `disable_non_proxied_udp` policy ([steps](agent-remediation.md#webrtc-block)); disclose media effects |
+| Non-browser app WebRTC/UDP with only the system proxy on | The system proxy does not cover UDP or apps that ignore it; turn on TUN with strict route ([steps](agent-remediation.md#webrtc-block)) and retest UDP with `network_check.py run` |
 | Policy exists but browser ignores it | Check key/type/version/profile/management precedence and refresh requirements; do not overwrite the entire policy tree |
 | HTTPS succeeds, STUN fails | Preserve the HTTPS finding and investigate STUN-specific path/endpoint uncertainty; no automatic account cleanup or node cycling |
 | TUN UDP route uses wrong rule/node | Propose a limited rule/node-capability correction; preserve Hysteria2/TUIC outer UDP and other applications |

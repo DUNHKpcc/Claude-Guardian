@@ -656,6 +656,22 @@ class RemediationGuideContracts(unittest.TestCase):
         self.assertIn("agent-remediation.md#ipv4-only-policy", self.network)
         self.assertIn("browser-only 不能豁免整机网络要求", self.routes)
 
+    def test_webrtc_browser_extension_and_system_tun(self):
+        # Owner rule 2026-10-26: Chrome can block WebRTC with an extension; system proxy alone
+        # leaves non-browser WebRTC/UDP unprotected, so TUN strict route is required.
+        section = self.section("webrtc-block")
+        for term in ("WebRTC Network Limiter", "npeicpdbkakmehahjeeohfdhnlpdklia", "Disable non-proxied UDP",
+                     "默认不勾", "每个配置文件", "WebRtcIPHandling", "disable_non_proxied_udp", "serve_webrtc.py",
+                     "只开系统代理时，非浏览器应用的 WebRTC/UDP 不受保护", "必须开 TUN 严格路由",
+                     "strict-route: true", "network_check.py run"):
+            self.assertIn(term, section)
+        self.assertEqual(self.guide.count('<a id="webrtc-block"></a>'), 1)
+        self.assertIn("agent-remediation.md#webrtc-block", self.network)
+        for name in ("whole-machine-ipv4.md", "local-firewall-prompts.md"):
+            self.assertIn("agent-remediation.md#webrtc-block", (REFS / name).read_text(encoding="utf-8"), name)
+        tiers = (REFS / "authorization-tiers.md").read_text(encoding="utf-8")
+        self.assertIn("装 Chrome WebRTC 插件或写浏览器 WebRTC 策略 | B |", tiers)
+
     def test_windows_adapter_ipv6_is_off_by_default(self):
         section = self.section("windows-adapter-ipv6-hint")
         for term in ("默认关闭", "B 档", "Get-NetAdapterBinding", "Disable-NetAdapterBinding",

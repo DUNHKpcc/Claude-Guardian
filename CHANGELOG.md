@@ -1,5 +1,10 @@
 # 版本记录
 
+## WebRTC：Chrome 插件与系统 TUN 严格路由（2026-10-26）
+
+- 所有者要求：浏览器这边可以在 Chrome 装 WebRTC 禁用插件；系统这边写明只开系统代理时，非浏览器应用的 WebRTC/UDP 不受保护，必须开 TUN 严格路由。`agent-remediation.md` 新增“WebRTC：浏览器和系统分开堵”一节：Google 出品的 WebRTC Network Limiter（要在选项里勾上默认不勾的“Disable non-proxied UDP”）或 `WebRtcIPHandling` 策略二选一；系统层开 TUN 严格路由，用 `network_check.py run` 的 UDP、路由两项复测。修复表、`network-and-remedies.md`、浏览器环境验收、本机防火墙验证步骤指向这一节；装插件、写浏览器策略列入 B 档。新增守门测试
+- 已知限制：插件选项名按商店页描述写，没有在真机 Chrome 上装过验证；插件只管装了它的那个配置文件。回滚：回退本提交
+
 ## 非法工具清理（2026-10-26）
 
 - 所有者要求：清理时查出用户给 Claude 装的破限、反代分发等非法 MCP、插件、skills、hooks、环境变量和后台服务，也清理掉。新增 `references/illegal-tools-cleanup.md`（审计只列名字和键名、不打印令牌；C 档逐项确认；备份后只删那一项，目录移到隔离区；涉及令牌的按凭据泄露处理），随包发布、上 Wiki“清理”分组
