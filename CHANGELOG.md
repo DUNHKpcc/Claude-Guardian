@@ -1,5 +1,9 @@
 # 版本记录
 
+## 新号并发 1 到 3、不用 workflow 模式（2026-10-27）
+
+- 所有者提供：A0 第 4 条“不要把额度顶满”限定为新号；新增第 10 条：新号并发尽量控制在 1 到 3 之间，不多用也不少用；并发不按 session 算，子代理也算并发；新号不要使用 workflow 模式；Agent 要把并发讲清楚。SKILL.md、VPS 养号步骤、README 同步；SKILL.md 有 32000 字节上限，同段和新手组合一句压短了措辞（意思不变）。新增守门测试。回滚：回退本提交
+
 ## README 合作伙伴位（2026-10-26）
 
 - 所有者要求：README 中英文版在“它能干什么”/“What it does”上方新增英文 Partners 栏，首个是 DPCC API（`docs/partners/dpcc-api.svg`，文字已转路径，点击跳转 https://api.dpccgaming.xyz）。回滚：回退本提交

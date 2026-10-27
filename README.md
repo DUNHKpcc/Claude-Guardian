@@ -55,7 +55,7 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它把作者和社区的真实
 | --- | --- | --- |
 | 🧭 | **选路线** | 帮你在本机、虚拟机（VM）、远程服务器（VPS）之间选，说清每条路线的范围、代价和适合谁 |
 | 🌐 | **固定出口 IP** | 介绍纯净机场、自建梯（可搭配家宽出口）、家宽拼车三种来源及优缺点；自建梯给 `3x-ui` + 优化线路 VPS 的简版提示；选 VPS 时附 17 份推荐报告 |
-| 📝 | **注册与养号节奏** | 新手试错推荐组合（苹果内购 + Gmail／Outlook + VPS 纯净个人 IP + VM 或本机 + Pro，退款成功率高、稳定率高）；邮箱注册、Gmail / Outlook / Proton、Free → Pro → Max 的间隔、额度使用、教育邮箱；手机端（iOS / Android）防封检查表 |
+| 📝 | **注册与养号节奏** | 新手试错推荐组合（苹果内购 + Gmail／Outlook + VPS 纯净个人 IP + VM 或本机 + Pro，退款成功率高、稳定率高）；邮箱注册、Gmail / Outlook / Proton、Free → Pro → Max 的间隔、额度使用、新号并发 1 到 3（子代理也算）、教育邮箱；手机端（iOS / Android）防封检查表 |
 | 💳 | **订阅与支付** | 按你的地区、设备、预算，从《AI 所有支付方式汇总》里挑候选并说明风险；付款始终由你本人完成 |
 | 🖥️ | **VM 路线** | 客机系统（Omarchy / macOS）、LAN 独立网卡、搭建顺序，以及 `FlClash TUN` + `nftables` 的 fail-closed 防火墙脚本 |
 | ☁️ | **VPS 路线** | 把 VPS 当开发机：Ubuntu 24.04、环境一致、`Xvfb + noVNC` 远程桌面、VS Code Remote-SSH、`tmux`、入站防火墙脚本 |

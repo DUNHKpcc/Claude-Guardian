@@ -375,6 +375,17 @@ class GuidanceContracts(unittest.TestCase):
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("接码只用实体卡", skill)
 
+    def test_new_account_concurrency_rule(self):
+        # Owner rule 2026-10-27: new accounts keep concurrency at 1-3, sub-agents count, no workflow mode.
+        doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        a0 = doc.split("## A0a", 1)[0]
+        self.assertIn("4. **额度使用**：新号不要把额度用到顶满", a0)
+        for term in ("**新号并发尽量控制在 1 到 3 之间，不多用也不少用。**", "一个 session 不代表一个并发",
+                     "**子代理也算一个并发**", "**新号不要使用 workflow 模式。**", "**Agent 要把并发讲清楚**"):
+            self.assertIn(term, a0)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("新号额度不顶满、新号并发 1–3（子代理也算）、新号不用 workflow", skill)
+
     def test_ban_appeal_module(self):
         # Owner facts 2026-10-26: reply in 2-7 days, reinstated accounts weigh more but still die if pushed, template.
         doc = (REFS / "ban-appeal.md").read_text(encoding="utf-8")
