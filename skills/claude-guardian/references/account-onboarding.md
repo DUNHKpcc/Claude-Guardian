@@ -32,7 +32,7 @@
 
 | 环节 | 选什么 | 对应指引 |
 | --- | --- | --- |
-| 付款 | **苹果内购（Apple App 内订阅）** | [accounts-and-payments.md 的 B2 Apple 分步卡](accounts-and-payments.md)（续费必须在 Claude App 内的订阅页，不走 App Store 订阅管理页）、[手机端防封要点](mobile-guidance.md) |
+| 付款 | **苹果内购（Apple App 内订阅）** | 没有美区 Apple ID 先按 [B2a 网页注册](accounts-and-payments.md#b2a)（注册后养 3 到 7 天再充值）；[accounts-and-payments.md 的 B2 Apple 分步卡](accounts-and-payments.md)（续费必须在 Claude App 内的订阅页，不走 App Store 订阅管理页）、[手机端防封要点](mobile-guidance.md) |
 | 邮箱 | **Gmail 或 Outlook**，邮箱注册 | 本文 A0 第 1、2 条 |
 | 出口 IP | **VPS 纯净个人 IP**（自建梯，出口是自己独占的 VPS IP） | [固定出口 IP 的来源](egress-ip-options.md)、[VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md) |
 | 运行环境 | **在自己电脑的 VM 或本机上使用** | [VM 指引](vm-guidance.md)、[本机的 Clash 与防火墙](local-firewall-prompts.md) |

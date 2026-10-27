@@ -11,7 +11,7 @@ A0: 新账号注册与使用节奏（2 节）
 
 ## accounts-and-payments.md
 
-M02/M03: accounts, subscription, and payment planning（18 节）
+M02/M03: accounts, subscription, and payment planning（19 节）
 
 - [PC0 versus checkout](accounts-and-payments.md#pc0-versus-checkout)
 - [Relevant old bills after expiry](accounts-and-payments.md#relevant-old-bills-after-expiry)
@@ -24,6 +24,7 @@ M02/M03: accounts, subscription, and payment planning（18 节）
   - [A3 真实身份核验、异常会话与凭据保护](accounts-and-payments.md#a3-真实身份核验异常会话与凭据保护)
 - [M03 从条件比较到付款的工作流](accounts-and-payments.md#m03-从条件比较到付款的工作流)
   - [B1 先选需要的权益，再比较渠道（G2）](accounts-and-payments.md#b1-先选需要的权益再比较渠道g2)
+  - [B2a 网页注册美区 Apple ID](accounts-and-payments.md#b2a-网页注册美区-apple-id)
   - [B2 Apple 分步卡（Q-A01–Q-A10）](accounts-and-payments.md#b2-apple-分步卡q-a01q-a10)
   - [B3 Google Play 分步卡（Q-G01–Q-G05）](accounts-and-payments.md#b3-google-play-分步卡q-g01q-g05)
   - [B4 网页卡 / API / 组织分步卡](accounts-and-payments.md#b4-网页卡--api--组织分步卡)

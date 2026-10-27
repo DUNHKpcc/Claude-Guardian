@@ -388,6 +388,19 @@ class GuidanceContracts(unittest.TestCase):
         self.assertNotIn("提示要手机号验证或 KYC 的号，可以直接放弃", a0)
         self.assertNotIn("第 9 条", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
 
+    def test_us_apple_id_web_signup_and_warmup(self):
+        # Owner rule 2026-10-27: web signup for a US Apple ID; charge only after 3-7 days or Apple payment risk control hits.
+        doc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
+        section = doc.split('<a id="b2a"></a>', 1)[1].split("### B2 Apple", 1)[0]
+        for term in ("https://account.apple.com", "United States（美国）", "付款方式选“无”（None）",
+                     "**新 Apple ID 注册后立马充值、没有养 3 到 7 天，容易遇到 Apple 支付风控**",
+                     "礼品卡扣款不成功、卡在支付页面、会员不到账", "**联系 Apple 客服解决**", "不买成品 Apple ID"):
+            self.assertIn(term, section)
+        self.assertEqual(doc.count('<a id="b2a"></a>'), 1)
+        self.assertIn("先按 [B2a](#b2a) 在网页注册", doc)
+        for name in ("account-onboarding.md", "mobile-guidance.md"):
+            self.assertIn("accounts-and-payments.md#b2a", (REFS / name).read_text(encoding="utf-8"), name)
+
     def test_new_account_concurrency_rule(self):
         # Owner rule 2026-10-27: new accounts keep concurrency at 1-3, sub-agents count, no workflow mode.
         doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")

@@ -36,6 +36,6 @@ Android 手机使用时要拔掉 SIM 卡，避免移动网络和运营商的地�
 ## 与本项目其他规则的关系
 
 - **IPv6：**手机和电脑一样只走 IPv4，在代理客户端里关闭 IPv6；见[整机只走 IPv4](agent-remediation.md#ipv4-only-policy)。
-- **支付：**付款由用户本人完成；Apple 账号地区、余额和礼品卡规则按[支付说明](accounts-and-payments.md)走，不用 IP 或语言代替商店地区。
+- **支付：**付款由用户本人完成；没有美区 Apple ID 先按 [B2a 网页注册](accounts-and-payments.md#b2a)，新 Apple ID 养 3 到 7 天再充值；Apple 账号地区、余额和礼品卡规则按[支付说明](accounts-and-payments.md)走，不用 IP 或语言代替商店地区。
 - **账号被停用：**转事故分诊，充值、换号都不是解除限制的办法。
 - 手机端的检查表不等于已通过；没有实际检查的项目写未知，不写通过。
