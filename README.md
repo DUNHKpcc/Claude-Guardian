@@ -41,6 +41,12 @@
 
 Claude-Guardian 是一个给 Agent 用的 Skill。它把作者和社区的真实经验、整理好的资料和一批脚本交给 Agent，让 Agent **按你的需求和环境**，陪你一步步把订阅、账号、网络出口和运行环境准备好。每个人的系统、网络、预算和目标都不一样，所以它先了解你，再给适合你的做法；风险高的步骤由你拍板。
 
+## Partners
+
+<p align="center">
+  <a href="https://api.dpccgaming.xyz"><img src="docs/partners/dpcc-api.svg" alt="DPCC API" width="480" /></a>
+</p>
+
 ## 它能干什么
 
 | | 能力 | 具体做什么 |

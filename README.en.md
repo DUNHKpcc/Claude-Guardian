@@ -20,6 +20,12 @@ Claude-Guardian is a Skill for Agents. It hands your Agent the author's and comm
 
 > The Chinese [README.md](README.md) is the source text; where the two differ, the Chinese version wins. The source library under `skills/` is in Chinese.
 
+## Partners
+
+<p align="center">
+  <a href="https://api.dpccgaming.xyz"><img src="docs/partners/dpcc-api.svg" alt="DPCC API" width="480" /></a>
+</p>
+
 ## What it does
 
 | | Capability | What it does |

@@ -1,5 +1,9 @@
 # 版本记录
 
+## README 合作伙伴位（2026-10-26）
+
+- 所有者要求：README 中英文版在“它能干什么”/“What it does”上方新增英文 Partners 栏，首个是 DPCC API（`docs/partners/dpcc-api.svg`，文字已转路径，点击跳转 https://api.dpccgaming.xyz）。回滚：回退本提交
+
 ## WebRTC：Chrome 插件与系统 TUN 严格路由（2026-10-26）
 
 - 所有者要求：浏览器这边可以在 Chrome 装 WebRTC 禁用插件；系统这边写明只开系统代理时，非浏览器应用的 WebRTC/UDP 不受保护，必须开 TUN 严格路由。`agent-remediation.md` 新增“WebRTC：浏览器和系统分开堵”一节：Google 出品的 WebRTC Network Limiter（要在选项里勾上默认不勾的“Disable non-proxied UDP”）或 `WebRtcIPHandling` 策略二选一；系统层开 TUN 严格路由，用 `network_check.py run` 的 UDP、路由两项复测。修复表、`network-and-remedies.md`、浏览器环境验收、本机防火墙验证步骤指向这一节；装插件、写浏览器策略列入 B 档。新增守门测试
