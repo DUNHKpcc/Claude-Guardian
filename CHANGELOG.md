@@ -3,6 +3,7 @@
 ## VPS 服务器保活：防 OOM 失联（2026-10-27）
 
 - 所有者要求：Agent 操作 VPS 时优先按服务器配置保活，不能爆内存让 Agent 和用户连不上。`vps-guidance.md` 新增“服务器保活”一节：只读资源基线（PSI、OOM 日志）、按内存定预算并给系统和 sshd 留余量、swapfile 与 swappiness、earlyoom 避开 sshd/tmux 并优先结束临时远程浏览器、重任务用 `systemd-run` 的 `MemoryMax` 限制、按内存定编译并行度、tmux 与 `ServerAliveInterval`、带外控制台恢复预案和回滚；开头和“日常”一节指向这里。建 swap、改 swappiness、装 earlyoom 列入 B 档。新增守门测试
+- 修正：earlyoom 参数原先带单引号和含空格的 `tmux: server`，systemd 读 `/etc/default/earlyoom` 时不处理引号、按空格拆参数，会传错；改为不加引号的正则，并加回归断言
 - 已知限制：命令按 Ubuntu 24.04 写，没有在真实 VPS 上跑过。回滚：回退本提交
 
 ## 礼品卡支付不填账单地址、不绑卡（2026-10-27）

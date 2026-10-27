@@ -159,9 +159,13 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("**Agent 操作服务器前，先按服务器配置做[服务器保活](#vps-liveness)**", vps)
         section = vps.split('<a id="vps-liveness"></a>', 1)[1].split("\n## ", 2)[1]
         for term in ("OOM killer", "thrashing", "/proc/pressure/memory", "至少给系统、sshd 和 tmux 留 512MB",
-                     "swapfile", "vm.swappiness=10", "earlyoom", "--avoid", "不要给 sshd 设 `OOMScoreAdjust=-1000`",
+                     "swapfile", "vm.swappiness=10", "earlyoom", "--avoid ^(sshd|systemd|tmux) --prefer", "不要给 sshd 设 `OOMScoreAdjust=-1000`",
                      "MemoryMax", "make -j1", "tmux", "ServerAliveInterval", "带外入口", "journalctl -k -b -1"):
             self.assertIn(term, section)
+        # Regression: systemd EnvironmentFile does not honour quotes and splits on spaces.
+        args = re.search(r'EARLYOOM_ARGS="([^"]*)"', section).group(1)
+        self.assertNotIn("'", args)
+        self.assertNotIn("tmux: server", args)
         tiers = (REFS / "authorization-tiers.md").read_text(encoding="utf-8")
         self.assertIn("VPS 建 swap、改 swappiness、装 earlyoom | B |", tiers)
 
