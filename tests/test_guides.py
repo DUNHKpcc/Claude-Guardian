@@ -352,6 +352,13 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("**买来的教育邮箱是例外**", doc)
         self.assertIn("教育邮箱可以免费注册", doc)
 
+    def test_account_pacing_rules_live_only_in_a0(self):
+        # Owner decision 2026-10-27: SKILL.md only points to A0; pacing rules are written once, in A0.
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("等节奏一律按 [account-onboarding.md](references/account-onboarding.md) 直接给，规则只写在那里", skill)
+        for rule in ("接码只用实体卡", "老 Gmail 是否更稳", "子代理也算", "workflow", "额度不顶满"):
+            self.assertNotIn(rule, skill)
+
     def test_account_age_rule_and_old_gmail_is_open(self):
         # Owner rule 2026-10-26: earlier Claude accounts weigh more, new ones get flagged; old Gmail is undecided.
         doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
@@ -361,8 +368,6 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("“gmail老号最好”不当作结论", a0)
         self.assertNotIn("老号最好", a0.replace("“gmail老号最好”", ""))
         self.assertIn("第 8 条", (REFS / "accounts-and-payments.md").read_text(encoding="utf-8"))
-        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("老 Gmail 是否更稳目前没有定论", skill)
 
     def test_phone_verification_uses_a_physical_sim_or_abandons(self):
         # Owner rule 2026-10-26: no shared or virtual numbers; physical SIM if possible, else abandon.
@@ -372,8 +377,6 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("**有条件就用实体手机卡接码；没有条件就直接弃号**", a0)
         self.assertNotIn("提示要手机号验证或 KYC 的号，可以直接放弃", a0)
         self.assertNotIn("第 9 条", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
-        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("接码只用实体卡", skill)
 
     def test_new_account_concurrency_rule(self):
         # Owner rule 2026-10-27: new accounts keep concurrency at 1-3, sub-agents count, no workflow mode.
@@ -383,8 +386,6 @@ class GuidanceContracts(unittest.TestCase):
         for term in ("**新号并发尽量控制在 1 到 3 之间，不多用也不少用。**", "一个 session 不代表一个并发",
                      "**子代理也算一个并发**", "**新号不要使用 workflow 模式。**", "**Agent 要把并发讲清楚**"):
             self.assertIn(term, a0)
-        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("新号额度不顶满、新号并发 1–3（子代理也算）、新号不用 workflow", skill)
 
     def test_ban_appeal_module(self):
         # Owner facts 2026-10-26: reply in 2-7 days, reinstated accounts weigh more but still die if pushed, template.
