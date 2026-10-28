@@ -120,7 +120,7 @@ python scripts/egress_verifier.py check --input <证据文件.json>
 <a id="browser-acceptance"></a>
 ## 5a. 浏览器环境验收：[ip.net.coffee/claude](https://ip.net.coffee/claude/)
 
-所有者 2026-10-26 指定：**环境修复后，用户在实际要用 Claude 的那个浏览器里打开 https://ip.net.coffee/claude/ 做验收，除了“语言”一项，其他必须全绿。**所有者 2026-10-28 补充：**本机也要求时区与出口一致**，时区一项同样要绿（VM、VPS 原本就这样要求）。
+所有者 2026-10-26 指定：**环境修复后，用户在实际要用 Claude 的那个浏览器里打开 https://ip.net.coffee/claude/ 做验收，除了“语言”一项，其他必须全绿。**所有者 2026-10-28 补充：**本机和手机也要求时区与出口一致**，时区一项同样要绿（VM、VPS 原本就这样要求）。
 
 1. 先做完第 5 节判定（`established`），再打开这个页面；浏览器用平时用的那个配置文件，不换浏览器、不开无痕。
 2. 逐项看：出口 IP（中国出口 IPv4、Cloudflare 出口 IP、Claude AI 出口 IP 三个要一致，等于预期出口）、Claude AI 信任评分、Claude 支持地区、IP 属性、VPN／代理／Tor／机器人／滥用记录、claude.ai 与 anthropic.com 可用性、DNS 泄露检测、WebRTC UDP 泄露检测、设备信息。**语言以外有任何一项不是绿色，验收不通过**，回到对应层修（出口不一致看第 2 节规则与 TUN，DNS 泄露看 DNS，WebRTC 按[浏览器插件或策略、TUN 严格路由](agent-remediation.md#webrtc-block)修，IP 属性或信任评分不绿就换出口 IP，见[固定出口 IP 的来源](egress-ip-options.md)），修完重新跑第 5 节再打开这个页面。
@@ -130,7 +130,7 @@ python scripts/egress_verifier.py check --input <证据文件.json>
    - Windows：设置 → 时间和语言 → 日期和时间，关掉“自动设置时区”；PowerShell 先 `Get-TimeZone` 记原值，再 `Set-TimeZone -Id "Eastern Standard Time"`（美西是 `Pacific Standard Time`，`tzutil /l` 列出全部 Id），恢复用 `Set-TimeZone -Id <原值>`。
    - Linux（VM、VPS）：`timedatectl set-timezone America/New_York`，见 [VM 指引](vm-guidance.md)。
    - 改完重启浏览器再打开验收页，时区一项变绿才算过。语言不要求绿色，不为了让它变绿去改系统语言。
-   - 手机按[手机端防封要点](mobile-guidance.md)：系统时区保持真实（S03 第 4 页），手机上验收时时区不要求绿。
+   - 手机：iOS 在设置 → 通用 → 日期与时间，关掉“自动设置”，选出口所在城市（美东选 New York）；Android 在设置 → 系统 → 日期和时间，关掉“自动设置时区”（各厂商叫法不同，也叫“使用网络提供的时区”），选出口所在时区。见[手机端防封要点](mobile-guidance.md)。
 5. 这个页面会从浏览器测 claude.ai、anthropic.com 的可用性，属于接触 Claude：由用户本人打开，Agent 不代开、不用浏览器自动化去打开；把每项的颜色告诉 Agent（截图前遮住 IP），Agent 据此判断通过与否。
 6. 用完按 [痕迹清理](trace-cleanup.md) 清浏览历史和 Shell 历史里的查 IP 记录。
 

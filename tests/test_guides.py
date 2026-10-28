@@ -355,7 +355,7 @@ class GuidanceContracts(unittest.TestCase):
         doc = (REFS / "whole-machine-ipv4.md").read_text(encoding="utf-8")
         section = doc.split('<a id="browser-acceptance"></a>', 1)[1].split("\n## 6.", 1)[0]
         for term in ("https://ip.net.coffee/claude/", "除了“语言”一项，其他必须全绿", "验收不通过",
-                     "由用户本人打开", "IPv6 环境", "本机也要求时区与出口一致", "Set-TimeZone",
+                     "由用户本人打开", "IPv6 环境", "本机和手机也要求时区与出口一致", "Set-TimeZone",
                      "native_claude_state_mac.py timezone", "timedatectl set-timezone", "自动设置时区"):
             self.assertIn(term, section)
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
@@ -372,14 +372,16 @@ class GuidanceContracts(unittest.TestCase):
         texts = {p.name: p.read_text(encoding="utf-8")
                  for p in [skill_root / "SKILL.md", *REFS.glob("*.md")]}
         for name, body in texts.items():
-            for stale in ("除时区和语言外必须全绿", "时区和语言不要求绿色", "改系统时区（Windows 不提供）"):
-                if name == "mobile-guidance.md" and stale == "除时区和语言外必须全绿":
-                    continue
+            for stale in ("除时区和语言外必须全绿", "时区和语言不要求绿色", "改系统时区（Windows 不提供）",
+                          "保持真实、正常使用即可，不建议人为频繁改", "时区不要求绿"):
                 self.assertNotIn(stale, body, name)
         self.assertIn("除语言外必须全绿", texts["SKILL.md"])
         for name in ("vm-guidance.md", "vps-guidance.md", "local-firewall-prompts.md"):
             self.assertIn("除语言外必须全绿（时区要和出口一致）", texts[name], name)
-        self.assertIn("手机的时区保持真实", texts["mobile-guidance.md"])
+        # Phones too (owner 2026-10-28): the S03 page 4 "keep it real" row is superseded.
+        self.assertIn("除语言外必须全绿（时区要和出口一致", texts["mobile-guidance.md"])
+        self.assertIn("| 系统时区 | **和出口 IP 所在地区一致**", texts["mobile-guidance.md"])
+        self.assertIn("本机和手机也要求时区与出口一致", texts["whole-machine-ipv4.md"])
         self.assertIn("whole-machine-ipv4.md#browser-acceptance", texts["agent-remediation.md"])
 
     def test_bundled_sources_yield_to_current_rules(self):

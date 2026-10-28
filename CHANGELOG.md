@@ -1,5 +1,10 @@
 # 版本记录
 
+## 手机时区也与出口一致（2026-10-28，Issue #15）
+
+- 所有者追加：手机的系统时区也要和出口 IP 所在地区一致，取代 S03 第 4 页“保持真实、正常使用即可”。`mobile-guidance.md` 检查表的时区一行改为对齐出口并写明 iOS、Android 的设置位置；手机验收同样是“除语言外必须全绿”。同步 `whole-machine-ipv4.md` 5a、`source-library.md` 对照表、`agent-remediation.md`、SKILL.md 和 ENV-08（手机由用户本人改，Agent 不代操作手机）
+- 测试：时区口径测试改为断言手机也对齐、旧的“保持真实”和“时区不要求绿”不再出现；ENV-08 断言同步。回滚：回退本提交
+
 ## 本机时区与出口一致；内购用户移动端每周活跃（2026-10-28，Issue #15）
 
 - Issue #15 指出时区口径冲突：S04、S05 要求时区和出口一致，`whole-machine-ipv4.md` 的验收规则却写“时区不要求绿色、不为变绿改时区”，VM 指引又要求对齐。所有者定口径：**本机也要求时区与出口一致**。浏览器验收改为“除语言外必须全绿”，`whole-machine-ipv4.md` 5a 第 4 条写明 macOS、Windows（`Set-TimeZone`）、Linux 的改法，先关“自动设置时区”、记原值，仍按 C 档当场确认。同步 SKILL.md、VM、VPS、本机防火墙、`agent-remediation.md` 的表格、`windows-cleanup.md` 的“不做的事”，以及 `agent_remediation.py` 的 ENV-08（原来写的是“不按出口地区改时区”）。手机按 S03 第 4 页保持真实时区，手机上验收时时区不要求绿；语言不变

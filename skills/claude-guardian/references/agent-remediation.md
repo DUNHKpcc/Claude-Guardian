@@ -77,7 +77,7 @@
 | WebRTC 泄露 | 浏览器装 WebRTC Network Limiter 插件或写策略，非浏览器程序靠 TUN 严格路由（见 [WebRTC](#webrtc-block)） | `serve_webrtc.py`、`network_check.py run` |
 | 规则 policy 错、要 prepend | `repair_cli.py`（见下文 Mac 修复链） | 重启客户端后复测 |
 | 程序不走代理 | 查启动入口和它支持的代理方式，最小改动 | 逐程序复测 |
-| 时区、语言 | 电脑的时区对齐出口 IP 所在地区（[做法](whole-machine-ipv4.md#browser-acceptance)第 4 条）：记原值、关自动设置时区，macOS 用 `native_claude_state_mac.py timezone`，Windows 用 `Set-TimeZone`（C 档）；语言只在用户指定目标时改 | 读回，验收页时区一项变绿 |
+| 时区、语言 | 电脑和手机的时区对齐出口 IP 所在地区（[做法](whole-machine-ipv4.md#browser-acceptance)第 4 条）：记原值、关自动设置时区，macOS 用 `native_claude_state_mac.py timezone`，Windows 用 `Set-TimeZone`（C 档）；语言只在用户指定目标时改 | 读回，验收页时区一项变绿 |
 | 清理 | 先确认目标和保护范围，C5 转清理宿主（见 [host-libraries.md](host-libraries.md#c5限定清理宿主交接)） | 核对保留项 |
 | 故障防直连 | 防火墙方案（[本机](local-firewall-prompts.md)、[VM](vm-guidance.md)、[VPS](vps-guidance.md)） | `network_check.py --failure-drill` |
 | 缺依赖、没权限、输入错 | 定位那一项，修好后重跑原检查 | 原检查 |
