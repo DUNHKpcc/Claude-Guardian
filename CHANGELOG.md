@@ -16,6 +16,7 @@
 
 - 所有者纠正冲突：S03 原文“如果被封过号，不要再用该设备”和正文“旧设备不等于黑名单”冲突，改为：一台设备（手机和电脑）被封超过 3 个账号就不要使用，超过 3 个会标记 IP、设备 UUID、指纹等信息。写入 `account-onboarding.md` A0 第 11 条（超过 3 个换设备并换出口 IP；3 个以内清理后可继续用；S03 原文以本条为准，原文与哈希不变；不写“不确定 Claude 会不会读”）。同步：`incidents-and-integrations.md` 摘要去掉“旧设备不等于黑名单”，`intake.md` 的 Q-D01 让 Agent 追问被封账号数并按 A0 判断，`mobile-guidance.md` 加“设备”一行，SKILL.md 那句改为按 A0 判断。不改设备标识的规则保留。新增守门测试
 - 已知限制：Q-D01 的取值没加“被封账号数”字段，数量由 Agent 在对话里追问。回滚：回退本提交
+- 2026-10-28 补充：A0 第 11 条“超过 3 个”下新增“换设备的同时换出口”子项：新设备用全新出口 IP、不沿用被封账号用过的出口，来源指向 `egress-ip-options.md`，装好后按 `whole-machine-ipv4.md#browser-acceptance` 验收（除“语言”外全绿）再注册，手机出口与电脑一致。`test_guides.py` 同步断言
 
 ## vps-guard：可选放行 mosh 的 UDP（2026-10-27）
 

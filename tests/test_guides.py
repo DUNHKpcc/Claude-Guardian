@@ -472,7 +472,7 @@ class GuidanceContracts(unittest.TestCase):
         doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
         a0 = doc.split("## A0a", 1)[0]
         for term in ("**一台设备（手机和电脑都算）被封超过 3 个账号，就不要再用这台设备。超过 3 个，会标记 IP、设备 UUID、指纹等信息。**",
-                     "一共被封过几个账号", "出口 IP 也一起换", "**3 个以内**", "以本条为准"):
+                     "一共被封过几个账号", "出口 IP 也一起换", "换设备的同时换出口", "whole-machine-ipv4.md#browser-acceptance", "**3 个以内**", "以本条为准"):
             self.assertIn(term, a0)
         self.assertNotIn("不确定", a0.split("11. **被封过号的设备", 1)[1])
         incidents = (REFS / "incidents-and-integrations.md").read_text(encoding="utf-8")
