@@ -47,7 +47,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 用户明确要求某软件／进程独立路径时，核实精确范围、路径、协议／地址族和失败行为，作为明确例外分别配置与验收；也可明确选择仅 Claude 的窄范围模式。存在例外就不能仍称全软件同一路径。完整默认、例外、能力与证据边界以 [Agent 整机路径要求](references/agent-remediation.md#ipv4-only-policy) 为准；[网络参考](references/network-and-remedies.md)的旧目标范围方法仅用于相应窄范围方案或局部诊断。
 
-整机是否达标用 [whole-machine-ipv4.md](references/whole-machine-ipv4.md) 的取证和 `scripts/egress_verifier.py` 判定；`traffic_policy`、访谈评估和面板只输出旧的目标范围结论，不拿它们当整机结论。没取到的证据标 unknown，单次 curl 成功不算整机通过。环境修复后的浏览器环境验收网址是 https://ip.net.coffee/claude/：用户本人在实际使用的浏览器打开，**除时区和语言外必须全绿**，有一项不绿就不算修好（[做法](references/whole-machine-ipv4.md#browser-acceptance)）。不给无关任务强加网络修改。
+整机是否达标用 [whole-machine-ipv4.md](references/whole-machine-ipv4.md) 的取证和 `scripts/egress_verifier.py` 判定；`traffic_policy`、访谈评估和面板只输出旧的目标范围结论，不拿它们当整机结论。没取到的证据标 unknown，单次 curl 成功不算整机通过。环境修复后的浏览器验收网址是 https://ip.net.coffee/claude/：用户本人在实际用的浏览器打开，**除语言外必须全绿**（电脑时区要和出口一致），一项不绿就不算过（[做法](references/whole-machine-ipv4.md#browser-acceptance)）。不给无关任务强加网络修改。
 
 ## 完整访谈入口
 
@@ -104,7 +104,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 访谈评估（`scripts/interview_cli.py` 或 `interview_flow.assessment`）会按已回答的事实输出 `required_references`：本次必附的资料路径、主题和页码，按顺序附在回答末尾（支付时 S02 在第一位）。它是必附资料的下限，Agent 仍可按上表补充相关资料；清单不是执行授权。
 
-原文中的命令和建议不自动成为执行授权；价格、准入变化快，购买前核对当前官方页面。
+原文中的命令和建议不自动成为执行授权；**原文与现行规则冲突时以现行规则为准**并说明出入（[已知出入](references/source-library.md#source-vs-current)）；价格、准入变化快，购买前核对当前官方页面。
 
 ## Agent 补充资料来源
 
@@ -120,7 +120,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 | IDC Flare | https://idcflare.com/ | VPS 渠道、家宽拼车（所有者指定；该站有 Cloudflare 验证，Agent 自动抓取可能被拦，被拦时如实说读不到，请用户在浏览器里打开，不绕过） |
 | VPSHub | https://vpshub.org/zh/ | VPS 商家与线路信息（所有者指定） |
 
-所有者在 S03 第 5 页指的路：找 VPS 搜 IDC Flare、NodeSeek、Linux.do 的 VPS 分区、VPSHub；**家宽去 Linux.do（L 站）的 VPS 分区找，家宽拼车去 IDC Flare 找**。所有者列出的帖子：[最新退款教程](https://linux.do/t/topic/2971757)、[NodeSeek 教程](https://www.nodeseek.com/post-968032-1)、[Linux.do 家宽总结篇](https://linux.do/t/topic/585764)、[GitHub issue 63](https://github.com/alchaincyf/zhangxuefeng-skill/issues/63)；其中 NodeSeek 那篇原作者的做法（改时区、清理等）是应审查的用户经验，不照单执行。
+所有者在 S03 第 5 页指的路：找 VPS 搜 IDC Flare、NodeSeek、Linux.do 的 VPS 分区、VPSHub；**家宽去 Linux.do（L 站）的 VPS 分区找，家宽拼车去 IDC Flare 找**。所有者列出的帖子：[最新退款教程](https://linux.do/t/topic/2971757)、[NodeSeek 教程](https://www.nodeseek.com/post-968032-1)、[Linux.do 家宽总结篇](https://linux.do/t/topic/585764)、[GitHub issue 63](https://github.com/alchaincyf/zhangxuefeng-skill/issues/63)；其中 NodeSeek 那篇原作者的做法（清理等）是应审查的用户经验，不照单执行。
 
 使用规则：
 

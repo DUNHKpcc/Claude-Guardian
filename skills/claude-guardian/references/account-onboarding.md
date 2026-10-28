@@ -27,6 +27,7 @@
     - **超过 3 个**：换一台没出过事的设备注册和使用，出口 IP 也一起换，这台设备不再登录 Claude；不靠清理、改设备标识或伪造硬件信息继续用它。
     - **3 个以内**：按清理流程（[macOS](cleanup-cli-usage.md)、[Windows](windows-cleanup.md)、[Linux](linux-cleanup.md)、[环境痕迹](trace-cleanup.md)）清掉本地残留后可以继续用。
     - S03 原文“如果被封过号，不要再用该设备”以本条为准（原文与哈希不变）。
+12. **内购用户保持移动端活跃（所有者 2026-10-28）**：**用 Apple 或 Google Play 内购订阅的，手机上的 Claude App 至少每周打开使用一次**，保持移动端活跃。手机的出口照[手机端防封要点](mobile-guidance.md)和电脑保持一致。Agent 在用户选定内购时就告诉用户这一条，续费时再提醒一次。
 
 与 A1/A2 的关系：本文只给注册和使用节奏的建议，不改变 PC0 的接触前门禁、不触发任何实际账号操作；账号被停用时仍走 [M12](incidents-and-integrations.md) 事故分诊，充值、换号不是解除限制的办法。
 
@@ -37,7 +38,7 @@
 
 | 环节 | 选什么 | 对应指引 |
 | --- | --- | --- |
-| 付款 | **苹果内购（Apple App 内订阅）** | 没有美区 Apple ID 先按 [B2a 网页注册](accounts-and-payments.md#b2a)（注册后养 3 到 7 天再充值）；[accounts-and-payments.md 的 B2 Apple 分步卡](accounts-and-payments.md)（续费必须在 Claude App 内的订阅页，不走 App Store 订阅管理页）、[手机端防封要点](mobile-guidance.md) |
+| 付款 | **苹果内购（Apple App 内订阅）** | 没有美区 Apple ID 先按 [B2a 网页注册](accounts-and-payments.md#b2a)（注册后养 3 到 7 天再充值）；[accounts-and-payments.md 的 B2 Apple 分步卡](accounts-and-payments.md)（续费必须在 Claude App 内的订阅页，不走 App Store 订阅管理页）；手机端 Claude App 至少每周用一次（A0 第 12 条）；[手机端防封要点](mobile-guidance.md) |
 | 邮箱 | **Gmail 或 Outlook**，邮箱注册 | 本文 A0 第 1、2 条 |
 | 出口 IP | **VPS 纯净个人 IP**（自建梯，出口是自己独占的 VPS IP） | [固定出口 IP 的来源](egress-ip-options.md)、[VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md) |
 | 运行环境 | **在自己电脑的 VM 或本机上使用** | [VM 指引](vm-guidance.md)、[本机的 Clash 与防火墙](local-firewall-prompts.md) |

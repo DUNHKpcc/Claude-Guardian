@@ -350,11 +350,13 @@ class GuidanceContracts(unittest.TestCase):
                 self.assertNotIn(hedge, section)
 
     def test_browser_acceptance_site_is_required_after_repair(self):
-        # Owner rule 2026-10-26: ip.net.coffee/claude must be all green except timezone and language.
+        # Owner rule 2026-10-26: ip.net.coffee/claude must be all green except language;
+        # 2026-10-28 (Issue #15): the computer's time zone must match the exit, so it must be green too.
         doc = (REFS / "whole-machine-ipv4.md").read_text(encoding="utf-8")
         section = doc.split('<a id="browser-acceptance"></a>', 1)[1].split("\n## 6.", 1)[0]
-        for term in ("https://ip.net.coffee/claude/", "除了“时区”和“语言”两项，其他必须全绿", "验收不通过",
-                     "由用户本人打开", "IPv6 环境"):
+        for term in ("https://ip.net.coffee/claude/", "除了“语言”一项，其他必须全绿", "验收不通过",
+                     "由用户本人打开", "IPv6 环境", "本机也要求时区与出口一致", "Set-TimeZone",
+                     "native_claude_state_mac.py timezone", "timedatectl set-timezone", "自动设置时区"):
             self.assertIn(term, section)
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("references/whole-machine-ipv4.md#browser-acceptance", skill)
@@ -363,6 +365,46 @@ class GuidanceContracts(unittest.TestCase):
             self.assertIn("https://ip.net.coffee/claude/", body, name)
             self.assertIn("whole-machine-ipv4.md#browser-acceptance", body, name)
         self.assertEqual((REFS / "trace-cleanup.md").read_text(encoding="utf-8").count("ip\\.net\\.coffee"), 3)
+
+    def test_timezone_rule_is_the_same_wherever_the_agent_reads(self):
+        # Issue #15: no file may still tell the agent to leave a computer's time zone alone.
+        skill_root = ROOT / "skills" / "claude-guardian"
+        texts = {p.name: p.read_text(encoding="utf-8")
+                 for p in [skill_root / "SKILL.md", *REFS.glob("*.md")]}
+        for name, body in texts.items():
+            for stale in ("除时区和语言外必须全绿", "时区和语言不要求绿色", "改系统时区（Windows 不提供）"):
+                if name == "mobile-guidance.md" and stale == "除时区和语言外必须全绿":
+                    continue
+                self.assertNotIn(stale, body, name)
+        self.assertIn("除语言外必须全绿", texts["SKILL.md"])
+        for name in ("vm-guidance.md", "vps-guidance.md", "local-firewall-prompts.md"):
+            self.assertIn("除语言外必须全绿（时区要和出口一致）", texts[name], name)
+        self.assertIn("手机的时区保持真实", texts["mobile-guidance.md"])
+        self.assertIn("whole-machine-ipv4.md#browser-acceptance", texts["agent-remediation.md"])
+
+    def test_bundled_sources_yield_to_current_rules(self):
+        # Issue #15: SKILL.md says which wins when a bundled source disagrees, and lists the known gaps.
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("**原文与现行规则冲突时以现行规则为准**", skill)
+        self.assertIn("references/source-library.md#source-vs-current", skill)
+        lib = (REFS / "source-library.md").read_text(encoding="utf-8")
+        table = lib.split('<a id="source-vs-current"></a>', 1)[1].split("\n## 八份阅读来源", 1)[0]
+        for term in ("S04-claude-guide.md", "S05-local-protection.md", "S03 第 1 页", "S03 第 4 页",
+                     "电脑的系统时区", "手机的系统时区", "系统语言", "所有者 2026-10-28"):
+            self.assertIn(term, table)
+
+    def test_in_app_purchase_keeps_mobile_active_weekly(self):
+        # Owner rule 2026-10-28: in-app purchase users open the mobile Claude App at least once a week.
+        onboarding = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
+        a0 = onboarding.split("## A0a", 1)[0]
+        self.assertIn("12. **内购用户保持移动端活跃（所有者 2026-10-28）**", a0)
+        self.assertIn("至少每周打开使用一次", a0)
+        self.assertIn("A0 第 12 条", onboarding.split('<a id="a0a"></a>', 1)[1].split('<a id="a0b"></a>', 1)[0])
+        self.assertIn("至少每周打开使用一次", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
+        pay = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
+        self.assertEqual(pay.count("见 [A0 第 12 条](account-onboarding.md)"), 2)
+        for hedge in ("单例", "未核实", "只是推测", "稳妥做法"):
+            self.assertNotIn(hedge, a0)
 
     def test_bought_edu_email_is_the_exception(self):
         doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")

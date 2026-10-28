@@ -332,10 +332,11 @@ M01/M06–M09: independent environment routes（31 节）
 
 ## source-library.md
 
-原始资料阅读库（14 节）
+原始资料阅读库（15 节）
 
 - [Agent 补充资料来源](source-library.md#agent-补充资料来源)
 - [对话中的使用方式](source-library.md#对话中的使用方式)
+- [来源与现行规则的对照](source-library.md#来源与现行规则的对照)
 - [八份阅读来源](source-library.md#八份阅读来源)
   - [S01：VPS 和服务器术语](source-library.md#s01vps-和服务器术语)
   - [S02：支付方式与订阅准备](source-library.md#s02支付方式与订阅准备)

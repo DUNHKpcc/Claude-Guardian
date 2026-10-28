@@ -112,7 +112,7 @@ Move-Item -LiteralPath (Join-Path $q 'root-0000') -Destination $orig
 
 ## 9. 不做的事
 
-永久删除；轮换设备标识；改系统时区（Windows 不提供）；动注册表；用 `Get-AppxPackage | Remove-AppxPackage` 卸载桌面端（单独确认，且官方提醒 Repair/Reset 会删本地应用数据）；读取凭据内容；清理浏览器站点数据；承诺解封。
+永久删除；轮换设备标识；改系统时区（属于环境对齐，不在清理里做，按[浏览器环境验收](whole-machine-ipv4.md#browser-acceptance)第 4 条改）；动注册表；用 `Get-AppxPackage | Remove-AppxPackage` 卸载桌面端（单独确认，且官方提醒 Repair/Reset 会删本地应用数据）；读取凭据内容；清理浏览器站点数据；承诺解封。
 
 ## 10. 限制
 

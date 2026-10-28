@@ -1,5 +1,12 @@
 # 版本记录
 
+## 本机时区与出口一致；内购用户移动端每周活跃（2026-10-28，Issue #15）
+
+- Issue #15 指出时区口径冲突：S04、S05 要求时区和出口一致，`whole-machine-ipv4.md` 的验收规则却写“时区不要求绿色、不为变绿改时区”，VM 指引又要求对齐。所有者定口径：**本机也要求时区与出口一致**。浏览器验收改为“除语言外必须全绿”，`whole-machine-ipv4.md` 5a 第 4 条写明 macOS、Windows（`Set-TimeZone`）、Linux 的改法，先关“自动设置时区”、记原值，仍按 C 档当场确认。同步 SKILL.md、VM、VPS、本机防火墙、`agent-remediation.md` 的表格、`windows-cleanup.md` 的“不做的事”，以及 `agent_remediation.py` 的 ENV-08（原来写的是“不按出口地区改时区”）。手机按 S03 第 4 页保持真实时区，手机上验收时时区不要求绿；语言不变
+- 来源优先级：SKILL.md 写明原文与现行规则冲突时以现行规则为准并说明出入；`source-library.md` 新增“来源与现行规则的对照”（电脑时区、手机时区、系统语言、被封过号的设备）。来源原文与哈希不变
+- 所有者要求：用 Apple 或 Google Play 内购订阅的，手机上的 Claude App 至少每周打开使用一次。写入 `account-onboarding.md` A0 第 12 条，A0a 付款一行、`mobile-guidance.md`、B2、B3 指向它
+- 测试：`test_guides.py` 更新验收断言，新增时区口径全文件一致、来源优先级与对照表、内购每周活跃三项；`test_agent_remediation.py` 新增 ENV-08 断言。SKILL.md 为留在 32000 字节预算内压缩了两句措辞。回滚：回退本提交
+
 ## 被封过号的设备：超过 3 个账号就不再使用（2026-10-27）
 
 - 所有者纠正冲突：S03 原文“如果被封过号，不要再用该设备”和正文“旧设备不等于黑名单”冲突，改为：一台设备（手机和电脑）被封超过 3 个账号就不要使用，超过 3 个会标记 IP、设备 UUID、指纹等信息。写入 `account-onboarding.md` A0 第 11 条（超过 3 个换设备并换出口 IP；3 个以内清理后可继续用；S03 原文以本条为准，原文与哈希不变；不写“不确定 Claude 会不会读”）。同步：`incidents-and-integrations.md` 摘要去掉“旧设备不等于黑名单”，`intake.md` 的 Q-D01 让 Agent 追问被封账号数并按 A0 判断，`mobile-guidance.md` 加“设备”一行，SKILL.md 那句改为按 A0 判断。不改设备标识的规则保留。新增守门测试

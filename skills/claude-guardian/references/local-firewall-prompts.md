@@ -25,7 +25,7 @@
 2. **导入节点配置：**由用户在客户端里导入自己的订阅或节点，Agent 不索取订阅链接、密码或 UUID。
 3. **TUN 模式：**在客户端设置里开启 TUN。macOS 上通常需要先安装“服务模式”来获得创建虚拟网卡的权限，会弹系统授权，由用户自己确认。说明影响：TUN 会接管整机流量，局域网、VPN、DNS 可能受影响。
 4. **DNS：**TUN 下的 DNS 解析和 Fake-IP 的边界按 [macOS DNS 经验](macos-dns-case-lessons.md) 逐层核对：系统实际解析器、核心配置、浏览器自带 DoH 分开看；Fake-IP 本身不泄漏，但 `fake-ip-filter` 里的域名会真实解析，要核对由谁应答。
-5. **验证出口：**浏览器和终端分别确认出口 IP 是预期的那个；WebRTC 用包内的[本地探测页](../assets/webrtc-probe.html)检查，有泄露按 [WebRTC 堵法](agent-remediation.md#webrtc-block)装插件或写策略；DNS 用检测页确认没有明显的本地运营商解析。最后由用户在浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除时区和语言外必须全绿（[做法](whole-machine-ipv4.md#browser-acceptance)）。
+5. **验证出口：**浏览器和终端分别确认出口 IP 是预期的那个；WebRTC 用包内的[本地探测页](../assets/webrtc-probe.html)检查，有泄露按 [WebRTC 堵法](agent-remediation.md#webrtc-block)装插件或写策略；DNS 用检测页确认没有明显的本地运营商解析。最后由用户在浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除语言外必须全绿（时区要和出口一致）（[做法](whole-machine-ipv4.md#browser-acceptance)）。
 6. **只读盘点：**需要看现有 Clash 配置和控制器时，用只读盘点（`inventory_cli.py`），不读订阅正文、控制器密钥或个人配置哈希。
 
 ### Mac 的防火墙：LuLu（第三方）

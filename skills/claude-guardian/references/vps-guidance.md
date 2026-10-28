@@ -42,7 +42,7 @@ S08 的结论是：像示例里这样的机房 IP 算好的，直接用没问题
 1. **VPS 自己的 IP 就是出口。**最简单，浏览器、Claude Code 都从 VPS 出去。
 2. **套一层家宽出口。**两台机器分工：A 是优化线路 VPS（连接稳定、跑浏览器和开发），B 是家宽出口 VPS（网站看到的 IP）。**浏览器运行在哪台机器，就在哪台机器上给浏览器配出站代理**（例如在 A 上用 SSH 动态转发建 SOCKS5 入口指向 B，再在 A 的浏览器里设置）；只转发桌面入口不等于改了浏览器的出口。详细做法见 [VPS 线路优化与家宽中转教程（R02）](../sources/R02-vps-line-optimization.md)，家宽 VPS 选型见推荐报告里的“高端家宽”类。
 
-不管哪种，登录后都要在远程桌面浏览器里确认出口 IP 是预期的那个（WebRTC 不泄漏真实 IP 可用包内的[本地探测页](../assets/webrtc-probe.html)），再由用户在远程桌面浏览器里打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除时区和语言外必须全绿（[做法](whole-machine-ipv4.md#browser-acceptance)），然后再继续注册和订阅。
+不管哪种，登录后都要在远程桌面浏览器里确认出口 IP 是预期的那个（WebRTC 不泄漏真实 IP 可用包内的[本地探测页](../assets/webrtc-probe.html)），再由用户在远程桌面浏览器里打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除语言外必须全绿（时区要和出口一致）（[做法](whole-machine-ipv4.md#browser-acceptance)），然后再继续注册和订阅。
 
 ## 线路优化
 

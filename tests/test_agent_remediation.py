@@ -37,6 +37,15 @@ class SelectionTests(unittest.TestCase):
         selected['actions'][0]['host_handoff']['execution_authorized'] = True
         self.assertFalse(ar.CATALOG['plan-prepend']['host_handoff']['execution_authorized'])
 
+    def test_clock_action_aligns_computer_timezone_with_exit(self):
+        # Owner rule 2026-10-28 (Issue #15): computer time zone follows the exit IP region; phones keep theirs.
+        clock = ar.CATALOG['clock']
+        text = ''.join([clock['summary'], *clock['steps'], *clock['verification']])
+        self.assertIn('出口IP所在地区为目标', text)
+        self.assertIn('关闭自动设置时区', text)
+        self.assertIn('手机时区保持真实', text)
+        self.assertNotIn('不按出口地区改时区', text)
+
     def test_implemented_guardian_findings_and_errors_are_mapped(self):
         tree = ast.parse((SCRIPTS / 'guardian.py').read_text(encoding='utf-8'))
         codes = set()

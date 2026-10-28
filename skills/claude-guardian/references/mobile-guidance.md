@@ -5,7 +5,7 @@
 ## 什么时候用
 
 1. **账号注册时：**用户要在手机上注册、登录 Claude，或手机是主要使用设备时（见[账号注册与使用节奏](account-onboarding.md)）。
-2. **选择内购支付时：**用户选了 Apple 或 Google Play 内购（见[支付说明](accounts-and-payments.md)的 Apple、Google 分步卡），内购基本都要在手机上完成，所以先过本页。
+2. **选择内购支付时：**用户选了 Apple 或 Google Play 内购（见[支付说明](accounts-and-payments.md)的 Apple、Google 分步卡），内购基本都要在手机上完成，所以先过本页。**内购订阅后，手机上的 Claude App 至少每周打开使用一次**（[A0 第 12 条](account-onboarding.md)）。
 3. **只有手机、没有电脑时：**见访谈 Q-OS12。
 
 只给指引，由用户在自己的手机上操作；Agent 不代操作手机、不代付款。出口 IP 怎么获得见[固定出口 IP 的来源](egress-ip-options.md)，本页不重复，手机和电脑应使用同一个出口。
@@ -28,7 +28,7 @@
 | 账号 | 不共享，不批量切换多个账号 |
 | 设备 | 这台手机被封超过 3 个账号就不要再用它（[A0 第 11 条](account-onboarding.md)） |
 
-改完网络后，用户在手机浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除时区和语言外必须全绿（[做法](whole-machine-ipv4.md#browser-acceptance)）。
+改完网络后，用户在手机浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除时区和语言外必须全绿（手机的时区保持真实；电脑的时区要和出口一致，见[做法](whole-machine-ipv4.md#browser-acceptance)）。
 
 ## Android 要拔掉 SIM 卡
 

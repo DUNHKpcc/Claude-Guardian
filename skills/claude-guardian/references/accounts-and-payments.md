@@ -18,7 +18,7 @@ A refund explanation does not require a new iPhone, App Store region, gift card,
 
 ## Channel prerequisite trees
 
-**Apple / Q-A01–Q-A10**（选择 Apple 内购时，手机端先过[手机端防封要点](mobile-guidance.md)）
+**Apple / Q-A01–Q-A10**（选择 Apple 内购时，手机端先过[手机端防封要点](mobile-guidance.md)；订阅后手机端 Claude App 至少每周用一次，见 [A0 第 12 条](account-onboarding.md)）
 
 1. Distinguish access to iPhone/iPad from Mac-only redemption and merely having an Apple account
 2. Establish account sign-in/verification availability and actual App Store storefront; system language, device sales region, iCloud UI, and proxy location are not substitutes
@@ -154,7 +154,7 @@ Every payment answer ends with the references block, S02 first (see B1, ADR-011)
 
 ### B3 Google Play 分步卡（Q-G01–Q-G05）
 
-选择 Google Play 内购时，手机端先过[手机端防封要点](mobile-guidance.md)（含 Android 拔 SIM 卡）。
+选择 Google Play 内购时，手机端先过[手机端防封要点](mobile-guidance.md)（含 Android 拔 SIM 卡）；订阅后手机端 Claude App 至少每周用一次，见 [A0 第 12 条](account-onboarding.md)。
 
 1. PC0 确认可用 Android 设备、用户可完成 Google 验证、Play 国家/付款类别；不收卡信息，不把语言或 IP 当 Play 国家
 2. PC1 获准后从官方入口核验 App、当前套餐及其地区/设备适用性；PC2 获准登录后确认目标 Claude 账号
