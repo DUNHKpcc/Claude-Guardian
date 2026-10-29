@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="140" viewBox="0 0 480 140">
+<rect x="-48" y="-14" width="576" height="168" fill="rgb(95.686275%, 95.294118%, 93.72549%)"/>
+<circle cx="81.2" cy="71.2" r="40" fill="rgb(6.666667%, 6.666667%, 6.666667%)"/>
+<path fill="rgb(95.686275%, 95.294118%, 93.72549%)" d="M 81.2 49 L 99 55.5 L 99 72 C 99 83 91.5 91.5 81.2 95 C 70.9 91.5 63.4 83 63.4 72 L 63.4 55.5 Z"/>
+<path fill="none" stroke="rgb(6.666667%, 6.666667%, 6.666667%)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M 73 72 L 79.2 78.4 L 90 65.6"/>
+<text x="155" y="76" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700" fill="rgb(6.666667%, 6.666667%, 6.666667%)">Claude-Guardian</text>
+<text x="156" y="100" font-family="-apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="rgb(6.666667%, 6.666667%, 6.666667%)">代搭建 · Skill 官网</text>
+</svg>

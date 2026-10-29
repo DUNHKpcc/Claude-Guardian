@@ -1,5 +1,9 @@
 # 版本记录
 
+## README 合作伙伴新增：代搭建与 Skill 官网（2026-10-28）
+
+- 所有者要求：中英文 README 的 Partners 一节在 DPCC API 下面新增一块，链接 https://api.dpccgaming.xyz/guardian（代搭建、Skill 官网），图片 `docs/partners/guardian-setup.svg` 为 480×140，和 `dpcc-api.svg` 同尺寸同底色。只改 README、一张 SVG 和本记录，无代码变更。回滚：回退本提交
+
 ## 明说：TUN 严格路由就是防 Claude Desktop WebRTC 泄漏（2026-10-28）
 
 - 所有者要求写明：本机防 Claude Desktop（Electron）WebRTC 泄漏靠 TUN 严格路由加关 IPv6。`agent-remediation.md#webrtc-block` 的“系统”段新增验收四条（Claude Desktop 运行且 TUN 开着时跑 `network_check.py run`；UDP 要能出去且规则不让 STUN 直连，ICE 701 只算无法判定；要有断线保护；不依赖 Chromium 启动参数），`network-and-remedies.md` 对应行点明这是 Claude Desktop 场景。`test_guides.py` 新增断言

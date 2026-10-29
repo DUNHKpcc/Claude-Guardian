@@ -28,6 +28,12 @@ Claude-Guardian is a Skill for Agents. It hands your Agent the author's and comm
   Don't want to set things up yourself? Try DPCC API — click the image.
 </p>
 
+<p align="center">
+  <a href="https://api.dpccgaming.xyz/guardian"><img src="docs/partners/guardian-setup.svg" alt="Claude-Guardian setup service and Skill website" width="480" /></a>
+  <br />
+  Prefer not to set it up yourself? Done-for-you setup and the Skill website are here — click the image.
+</p>
+
 ## What it does
 
 | | Capability | What it does |
