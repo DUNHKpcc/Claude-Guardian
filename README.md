@@ -43,17 +43,20 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它把作者和社区的真实
 
 ## Partners
 
-<p align="center">
-  <a href="https://api.dpccgaming.xyz"><img src="docs/partners/dpcc-api.svg" alt="DPCC API" width="480" /></a>
-  <br />
-  懒得自己配环境？试试 DPCC API，满血Claude，点击图片即可跳转
-</p>
-
-<p align="center">
-  <a href="https://api.dpccgaming.xyz/guardian"><img src="docs/partners/guardian-setup.svg" alt="Claude-Guardian 代搭建 · Skill 官网" width="480" /></a>
-  <br />
-  不想自己搭？可以找人代搭建，Skill 官网也在这里，点击图片即可跳转
-</p>
+<table align="center">
+  <tr>
+    <td align="center">
+      <a href="https://api.dpccgaming.xyz"><img src="docs/partners/dpcc-api.svg" alt="DPCC API" width="380" /></a>
+      <br />
+      懒得自己配环境？试试 DPCC API，满血Claude，点击图片即可跳转
+    </td>
+    <td align="center">
+      <a href="https://api.dpccgaming.xyz/guardian"><img src="docs/partners/guardian-setup.svg" alt="Claude-Guardian 代搭建 · Skill 官网" width="380" /></a>
+      <br />
+      不想自己搭？可以找人代搭建，Skill 官网也在这里，点击图片即可跳转
+    </td>
+  </tr>
+</table>
 
 ## 它能干什么
 

@@ -1,5 +1,9 @@
 # 版本记录
 
+## README 合作伙伴两块并排（2026-10-28）
+
+- 所有者要求两块并排、太大可缩小：中英文 README 的 Partners 改成一行两列的表格，两张图都缩到宽 380（两块 480 并排会超出 GitHub 正文宽度），各自带说明。只改 README 和本记录。回滚：回退本提交
+
 ## README 合作伙伴新增：代搭建与 Skill 官网（2026-10-28）
 
 - 所有者要求：中英文 README 的 Partners 一节在 DPCC API 下面新增一块，链接 https://api.dpccgaming.xyz/guardian（代搭建、Skill 官网），图片 `docs/partners/guardian-setup.svg` 为 480×140，和 `dpcc-api.svg` 同尺寸同底色。只改 README、一张 SVG 和本记录，无代码变更。回滚：回退本提交
