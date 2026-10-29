@@ -1,5 +1,10 @@
 # 版本记录
 
+## 明说：TUN 严格路由就是防 Claude Desktop WebRTC 泄漏（2026-10-28）
+
+- 所有者要求写明：本机防 Claude Desktop（Electron）WebRTC 泄漏靠 TUN 严格路由加关 IPv6。`agent-remediation.md#webrtc-block` 的“系统”段新增验收四条（Claude Desktop 运行且 TUN 开着时跑 `network_check.py run`；UDP 要能出去且规则不让 STUN 直连，ICE 701 只算无法判定；要有断线保护；不依赖 Chromium 启动参数），`network-and-remedies.md` 对应行点明这是 Claude Desktop 场景。`test_guides.py` 新增断言
+- 已知限制：只是指导文档，没有新增代码，也没有在真机上对 Claude Desktop 实测。回滚：回退本提交
+
 ## 手机时区也与出口一致（2026-10-28，Issue #15）
 
 - 所有者追加：手机的系统时区也要和出口 IP 所在地区一致，取代 S03 第 4 页“保持真实、正常使用即可”。`mobile-guidance.md` 检查表的时区一行改为对齐出口并写明 iOS、Android 的设置位置；手机验收同样是“除语言外必须全绿”。同步 `whole-machine-ipv4.md` 5a、`source-library.md` 对照表、`agent-remediation.md`、SKILL.md 和 ENV-08（手机由用户本人改，Agent 不代操作手机）

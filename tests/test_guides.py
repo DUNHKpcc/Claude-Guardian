@@ -782,6 +782,11 @@ class RemediationGuideContracts(unittest.TestCase):
                      "只开系统代理时，非浏览器应用的 WebRTC/UDP 不受保护", "必须开 TUN 严格路由",
                      "strict-route: true", "network_check.py run"):
             self.assertIn(term, section)
+        # Owner 2026-10-28: the system TUN step is explicitly the Claude Desktop (Electron) WebRTC defence.
+        for term in ("防止 Claude Desktop 的 WebRTC 泄漏", "Electron", "Claude Desktop 运行、TUN 开着",
+                     "ICE 701", "断线保护"):
+            self.assertIn(term, section)
+        self.assertIn("Claude Desktop WebRTC leak", self.network)
         self.assertEqual(self.guide.count('<a id="webrtc-block"></a>'), 1)
         self.assertIn("agent-remediation.md#webrtc-block", self.network)
         for name in ("whole-machine-ipv4.md", "local-firewall-prompts.md"):
