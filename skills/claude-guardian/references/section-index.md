@@ -234,9 +234,10 @@ Linux：Claude 本机数据清理（Agent 提示词，无内置宿主）（8 节
 
 ## local-firewall-prompts.md
 
-本机路线：Clash 与防火墙（Agent 提示词）（12 节）
+本机路线：Clash 与防火墙（Agent 提示词）（13 节）
 
 - [通用工作方式（两个系统相同）](local-firewall-prompts.md#通用工作方式两个系统相同)
+- [替别人交付：先说范围，按验收单交](local-firewall-prompts.md#替别人交付先说范围按验收单交)
 - [Mac](local-firewall-prompts.md#mac)
   - [Mac 上的 Clash（Clash Verge）怎么配](local-firewall-prompts.md#mac-上的-clashclash-verge怎么配)
   - [Mac 的防火墙：LuLu（第三方）](local-firewall-prompts.md#mac-的防火墙lulu第三方)

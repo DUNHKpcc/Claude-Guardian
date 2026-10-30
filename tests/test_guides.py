@@ -243,6 +243,23 @@ class GuidanceContracts(unittest.TestCase):
         self.assertLess(diagnosis.index("显式本地代理"), diagnosis.index("IPv4 字面地址经 TUN"))
         self.assertLess(diagnosis.index("IPv4 字面地址经 TUN"), diagnosis.index("Resolve-DnsName"))
 
+    def test_local_delivery_scope_and_acceptance_list(self):
+        # 2026-10-30 feedback: a deliverer built their own Windows executor instead of stating the
+        # Skill's scope up front, and went a day and a night without delivering.
+        doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
+        self.assertEqual(doc.count('<a id="delivery-scope"></a>'), 1)
+        section = doc.split("## 替别人交付：先说范围，按验收单交", 1)[1].split("\n## ", 1)[0]
+        for term in ("开工前一次说清 Skill 给什么", "没有 Windows 写入引擎、没有常驻程序、没有自动恢复服务",
+                     "常驻防泄漏不需要另写程序", "不自建服务", "agent-remediation.md#post-repair-stability",
+                     "停核心演练", "重启演练", "network_check.py run --failure-drill", "egress_verifier.py",
+                     "Claude Desktop 运行、TUN 开着", "https://ip.net.coffee/claude/", "除语言外全绿",
+                     "交付者不代登录", "超出 Skill 的部分先报工作量", "先手动交付", "它的测试数量不算验收",
+                     "回到安全状态", "不说“已交付”"):
+            self.assertIn(term, section)
+        self.assertLess(doc.index("## 替别人交付"), doc.index("## Mac"))
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("references/local-firewall-prompts.md#delivery-scope", skill)
+
     def test_readme_is_not_defensive(self):
         # The README states what the project does; boundaries live in one short list.
         for name, heading, dropped in (
