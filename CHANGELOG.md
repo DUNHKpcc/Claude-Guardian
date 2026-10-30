@@ -1,5 +1,9 @@
 # 版本记录
 
+## Windows 防火墙第 5 步用 --failure-drill 取证代替手动演练（2026-10-30）
+
+- 所有者确认：`local-firewall-prompts.md` Windows 防火墙第 5 步故障演练改为用 `network_check.py run --failure-drill` 那一次取证代替，不另外手动停核心再演一遍；“故障演练”一项显示没有直连即通过，同一次取证交给 `egress_verifier.py`，和交付验收单的“一次取证”是同一次。保险丝删除条件不变。Mac LuLu 按进程过滤，那一节仍要确认浏览器和常用应用，未改。`test_guides.py` 新增断言。回滚：回退本提交
+
 ## 交付验收单去重（2026-10-30）
 
 - 所有者要求查过度防御、过度耗时：上一条的八项验收单把出口、停核心演练、整机判定、Claude Desktop UDP 拆成四项，其实一次 `network_check.py run --failure-drill`（Claude Desktop 运行时）全测到；并成“一次取证”，五项验收。分层诊断改为上不了网时才用，不再是验收项。起因压成一句，去掉与全局规则重复的“不代登录、测试数量不算验收”等话。测试同步。回滚：回退本提交

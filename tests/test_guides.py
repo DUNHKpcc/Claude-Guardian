@@ -239,6 +239,10 @@ class GuidanceContracts(unittest.TestCase):
                      "不等于“没有阻断事件”", "auditpol /get", "### 宿主拒绝执行时", "blocked by policy",
                      "不换工具", "### 最小反馈清单"):
             self.assertIn(term, doc)
+        # Step 5 drill reuses the single --failure-drill evidence run instead of a separate manual drill.
+        step5 = doc.split("5. **故障演练：", 1)[1].split("\n6. ", 1)[0]
+        for term in ("network_check.py run --failure-drill", "不另外手动演一遍", "egress_verifier.py", "#delivery-scope"):
+            self.assertIn(term, step5)
         diagnosis = doc.split("### 切换后不通：分层诊断", 1)[1].split("\n### ", 1)[0]
         self.assertLess(diagnosis.index("显式本地代理"), diagnosis.index("IPv4 字面地址经 TUN"))
         self.assertLess(diagnosis.index("IPv4 字面地址经 TUN"), diagnosis.index("Resolve-DnsName"))

@@ -90,7 +90,7 @@ Mac 上不建议自己写 PF 规则：Apple 的技术说明不建议把 PF 当�
    - **回环用接口，不用 `::1`：**部分 Windows 版本（Issue #13 的 10.0.26200）拒绝 `-RemoteAddress ::1` 或 `::1/128`，报“已指定未指定的多播、广播或环回 IPv6 地址”。改用回环软件接口：先 `Get-NetIPInterface | Where-Object InterfaceAlias -like "Loopback*"` 核实本机唯一的回环接口别名（通常是 `Loopback Pseudo-Interface 1`），再 `New-NetFirewallRule -DisplayName "guardian-allow-loopback" -Direction Outbound -InterfaceAlias "<回环接口别名>" -Action Allow`。读回时 `(Get-NetFirewallRule -DisplayName "guardian-allow-loopback" | Get-NetFirewallInterfaceFilter).InterfaceAlias` 只有一个值时是字符串，不是数组，不要取 `[0]`（会只拿到第一个字符）。
    - **核心程序路径以正在运行的为准：**`Get-Process | Where-Object Name -like "*mihomo*" | Select-Object Name,Path`。Clash Verge 的服务模式下跑的是服务目录里的核心，不是安装目录里的那个；路径不对，第 4 步之后核心连不上节点，所有经 TUN 的连接都会超时。节点用域名的，按当前解析结果填全部 IP，并给核心解析节点域名所需的 DNS 单独放行。
 4. **最后切换默认出站为阻止（保险丝已就位）：**`Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultOutboundAction Block`。切换后立刻验证出口仍通、浏览器可用；不通就按下面“[切换后不通：分层诊断](#windows-fw-layered-diagnosis)”在保险丝时间内查，查不清就回滚，不扩大白名单碰运气。
-5. **故障演练：**第 4 步的正常代理通信确认通了才做。停掉代理核心，确认外网全部失败（没有直连）；再启动，确认恢复。通过后删除保险丝任务。未演练就不删。
+5. **故障演练：用 `network_check.py run --failure-drill` 那一次取证代替，不另外手动演一遍。**第 4 步的正常代理通信确认通了才做。工具会提示停一次代理核心、再打开；结果里“故障演练”一项是“停掉代理后连不出去，没有直连”就算通过，同一次取证交给 `egress_verifier.py` 判定（即[替别人交付](#delivery-scope)验收单的“一次取证”）。通过后删除保险丝任务，未通过或没跑就不删。
 6. **回滚：**`Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultOutboundAction Allow`，再 `Get-NetFirewallRule -DisplayName "guardian-*" | Remove-NetFirewallRule`；必要时 `netsh advfirewall import "<备份路径>\fw-backup.wfw"` 还原整体。
 7. **更新后复查：**换节点、改端口、更新客户端后，节点 IP 和核心路径可能变，规则要同步更新，否则会断网。
 
