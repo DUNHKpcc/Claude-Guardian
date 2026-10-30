@@ -249,13 +249,15 @@ class GuidanceContracts(unittest.TestCase):
         doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
         self.assertEqual(doc.count('<a id="delivery-scope"></a>'), 1)
         section = doc.split("## 替别人交付：先说范围，按验收单交", 1)[1].split("\n## ", 1)[0]
-        for term in ("开工前一次说清 Skill 给什么", "没有 Windows 写入引擎、没有常驻程序、没有自动恢复服务",
-                     "常驻防泄漏不需要另写程序", "不自建服务", "agent-remediation.md#post-repair-stability",
-                     "停核心演练", "重启演练", "network_check.py run --failure-drill", "egress_verifier.py",
-                     "Claude Desktop 运行、TUN 开着", "https://ip.net.coffee/claude/", "除语言外全绿",
-                     "交付者不代登录", "超出 Skill 的部分先报工作量", "先手动交付", "它的测试数量不算验收",
-                     "回到安全状态", "不说“已交付”"):
+        for term in ("开工前说清 Skill 给什么", "断线保护不用另写程序", "不自建服务",
+                     "agent-remediation.md#post-repair-stability", "network_check.py run --failure-drill",
+                     "egress_verifier.py", "Claude Desktop 运行", "不分开重测", "上不了网时才用分层诊断",
+                     "重启演练", "https://ip.net.coffee/claude/", "除语言外全绿", "客户本人登录 Claude",
+                     "先报工作量", "先手动交付", "回到安全状态"):
             self.assertIn(term, section)
+        # One evidence run covers exit, UDP and the stop-core drill; no separate checklist items for them.
+        self.assertEqual(section.count("停核心演练"), 1)
+        self.assertNotIn("分层诊断四步都通", section)
         self.assertLess(doc.index("## 替别人交付"), doc.index("## Mac"))
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("references/local-firewall-prompts.md#delivery-scope", skill)
