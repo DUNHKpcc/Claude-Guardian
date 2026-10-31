@@ -262,7 +262,7 @@ python3 tools/package_skill.py --help
 
 - Telegram 频道：[https://t.me/+q4D4_Qf_FIs5NDk1](https://t.me/+q4D4_Qf_FIs5NDk1)
 - QQ：1048450370 答案为DUNHKPcc
-- 这些看完还是不会，不想动手进Q群练习管理 1对1 定制方案 代部署
+- 这些看完还是不会，不想动手进Q群联系管理 1对1 定制方案 代部署
 
 交流经验、分享用法来频道；问题反馈和改进建议请用 Issues，方便留档。
 
