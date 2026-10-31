@@ -410,13 +410,15 @@ VPS 路线：开发机（环境一致）（14 节）
 
 ## windows-cleanup.md
 
-Windows：Claude 本机数据清理（Agent 提示词，无内置宿主）（10 节）
+Windows：Claude 本机数据清理（Agent 提示词，无内置宿主）（12 节）
 
 - [1. 官方文档给出的路径](windows-cleanup.md#1-官方文档给出的路径)
 - [2. 分档（沿用 macOS 宿主的划分）](windows-cleanup.md#2-分档沿用-macos-宿主的划分)
 - [3. 只读审计（A 档，范围确认后自行做）](windows-cleanup.md#3-只读审计a-档范围确认后自行做)
 - [4. 备份（B 档，整个计划批准一次）](windows-cleanup.md#4-备份b-档整个计划批准一次)
 - [5. 隔离（C 档，当场确认）](windows-cleanup.md#5-隔离c-档当场确认)
+  - [被宿主策略或权限拦截时](windows-cleanup.md#被宿主策略或权限拦截时)
+  - [交给用户自己操作时的交接单](windows-cleanup.md#交给用户自己操作时的交接单)
 - [6. 退出登录与凭据（C 档，单独确认）](windows-cleanup.md#6-退出登录与凭据c-档单独确认)
 - [7. 最小提示词模式（可选，C 档）](windows-cleanup.md#7-最小提示词模式可选c-档)
 - [8. 官方的项目级清理](windows-cleanup.md#8-官方的项目级清理)

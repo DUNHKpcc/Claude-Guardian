@@ -34,6 +34,25 @@ class WindowsCleanupGuide(unittest.TestCase):
         for forbidden in ('Remove-Item', 'userID', 'machineID', 'Set-TimeZone', 'reg ', 'Remove-AppxPackage -'):
             self.assertNotIn(forbidden, code)
 
+    def test_backup_compares_relative_path_size_and_hash(self):
+        # Regression (issue #16): comparing only the set of hashes passes a file copied to the wrong place.
+        code = '\n'.join(re.findall(r'```powershell\n(.*?)```', GUIDE, re.S))
+        self.assertIn('-Property Rel, Size, Hash', code)
+        self.assertNotIn('ForEach-Object { $_.Hash }', code)
+
+    def test_quarantine_stays_on_source_volume_and_copy_is_not_completion(self):
+        for term in ('隔离目录放在原件所在的同一个盘', '放的是备份', '副本建好不等于清理完成', '清理未完成',
+                     'stages.log', 'quarantined'):
+            self.assertIn(term, GUIDE)
+
+    def test_host_policy_block_stops_reports_and_hands_over(self):
+        section = GUIDE.split('### 被宿主策略或权限拦截时', 1)[1].split('## 6.', 1)[0]
+        for term in ('blocked by policy', '立即停止', '不换命令、不换工具', 'Agent 宿主策略', '本项目的门禁',
+                     'Windows 文件权限或占用', '原因不明就写不明', '只读核对现状', '脱敏', '单独确认',
+                     '交接单', '准确范围', '会话记录和自动记忆', '还原', '不要求用户上传', '只读核对'):
+            self.assertIn(term, section)
+        self.assertIn('issue #16', GUIDE)
+
     def test_routed_from_skill_and_readme(self):
         skill = (ROOT / 'skills/claude-guardian/SKILL.md').read_text(encoding='utf-8')
         self.assertIn('references/windows-cleanup.md', skill)

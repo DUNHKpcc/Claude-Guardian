@@ -66,28 +66,53 @@ $ref = "backup-$(Get-Date -Format yyyyMMdd-HHmmss)"
 $backup = "$env:USERPROFILE\.claude-guardian\backups\$ref"
 New-Item -ItemType Directory -Path $backup -Force | Out-Null
 icacls $backup /inheritance:r /grant:r "$($env:USERNAME):(OI)(CI)F" | Out-Null
-# 对每个要处理的目录：复制，再逐文件比对哈希
+# 逐文件清单：相对路径、大小、SHA-256 三项都要对上，只比哈希集合会漏掉放错位置的文件
+function Get-Manifest($root) {
+  $base = (Resolve-Path -LiteralPath $root).Path.TrimEnd('\') + '\'
+  Get-ChildItem -LiteralPath $root -Recurse -Force -File | ForEach-Object {
+    [pscustomobject]@{ Rel = $_.FullName.Substring($base.Length); Size = $_.Length
+                       Hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
+  } | Sort-Object Rel
+}
+# 对每个要处理的目录：复制，再按清单比对
 Copy-Item -LiteralPath $src -Destination (Join-Path $backup 'root-0000') -Recurse -Force
-$a = Get-ChildItem -LiteralPath $src -Recurse -Force -File | Get-FileHash -Algorithm SHA256
-$b = Get-ChildItem -LiteralPath (Join-Path $backup 'root-0000') -Recurse -Force -File | Get-FileHash -Algorithm SHA256
-(Compare-Object ($a | ForEach-Object { $_.Hash }) ($b | ForEach-Object { $_.Hash })) -eq $null   # 必须是 True
+$a = @(Get-Manifest $src)
+$b = @(Get-Manifest (Join-Path $backup 'root-0000'))
+($a.Count -eq $b.Count) -and ($a.Count -eq 0 -or -not (Compare-Object $a $b -Property Rel, Size, Hash))   # 必须是 True
 ```
 
 比对不一致就停止并报告，不继续。备份目录由你自己保管，用完自己删除。
 
+**备份可以放在另一个盘**（例如 D 盘，`$backup` 换成那个盘上只有你能访问的目录），但隔离目录不跟着换，见第 5 节。
+
 ## 5. 隔离（C 档，当场确认）
 
 确认页必须逐项写明：要移走的每个目录及档位、受保护内容、隔离目录、备份位置、后果（桌面端会像新安装一样启动，登录状态丢失）、恢复办法。**你在对话里明确回复后才执行。**Windows 没有 macOS 那样的终端确认短语，沉默和超时都不算同意，Agent 不能自己批准。
+
+**隔离目录放在原件所在的同一个盘。**同盘的 `Move-Item` 是重命名：一步完成，原件要么还在原处、要么已整体进了隔离目录，不会出现半套状态。跨盘的“移动”实际是复制、校验、再删原件三个阶段，最后一步是永久删除原件，本文不做（硬规则：不永久删除），而且 Agent 宿主常会拒绝这类删除命令。所以：
+
+- 需要把数据放到另一个盘时，**放的是备份**（第 4 节），原件仍在本盘隔离。
+- **副本建好不等于清理完成。**只要原件还在原路径，就只能报告“备份或副本已生成并校验，清理未完成”，不能说已清理。
+- C 盘空间不够放隔离目录时不需要额外空间：同盘重命名不占用新空间。
+- 本盘隔离目录里的内容，等你确认一切正常后由你自己决定是否删除（属于你自己的操作，见本节末尾的交接单）。
+
+每完成一个阶段，在隔离目录的阶段记录里追加一行，中途被打断也知道停在哪：
 
 ```powershell
 $q = "$env:USERPROFILE\.claude-guardian\quarantine\$ref"
 New-Item -ItemType Directory -Path $q -Force | Out-Null
 # 记下原路径，才能还原；然后移走（同一个盘内是重命名，不是复制再删除）
 "$src" | Out-File -LiteralPath (Join-Path $q 'root-0000.path') -Encoding utf8
+Add-Content -LiteralPath (Join-Path $q 'stages.log') "$(Get-Date -Format s) backup_verified root-0000 $backup"
 Move-Item -LiteralPath $src -Destination (Join-Path $q 'root-0000')
+Add-Content -LiteralPath (Join-Path $q 'stages.log') "$(Get-Date -Format s) quarantined root-0000"
+# 移完核对：原路径已不存在；隔离副本与备份清单一致
+(-not (Test-Path -LiteralPath $src)) -and
+  ($a.Count -eq @(Get-Manifest (Join-Path $q 'root-0000')).Count) -and
+  -not (Compare-Object $a @(Get-Manifest (Join-Path $q 'root-0000')) -Property Rel, Size, Hash)   # 必须是 True
 ```
 
-移完核对：受保护路径仍在；用户没选对话记录时 `history.jsonl` 和 `projects` 没动；隔离目录里的内容与备份一致。
+移完还要核对：受保护路径仍在；用户没选对话记录时 `history.jsonl` 和 `projects` 没动。阶段记录里有 `quarantined` 且上面的核对为 True，这一项才算清理完成。
 
 **还原（单独再确认一次）：**
 
@@ -95,6 +120,29 @@ Move-Item -LiteralPath $src -Destination (Join-Path $q 'root-0000')
 $orig = (Get-Content -LiteralPath (Join-Path $q 'root-0000.path') -Raw).Trim()
 Move-Item -LiteralPath (Join-Path $q 'root-0000') -Destination $orig
 ```
+
+### 被宿主策略或权限拦截时
+
+命令被拒绝时（例如工具调用返回 `blocked by policy`、`Access denied`、文件被占用），按下面做：
+
+1. **立即停止。**不换命令、不换工具、不换 shell 或渠道重试，不用别的写法绕开限制，也不自己把被拒的动作拆成小步再试。
+2. **分清拦截来自哪一层，原因不明就写不明：**
+   - **Agent 宿主策略**：命令在启动前就被宿主拒绝（如 `blocked by policy`），PowerShell 根本没执行。这是宿主的规则，本 Skill 和 Agent 都不能改，也不能推断具体是哪条规则。
+   - **本项目的门禁**：授权档位没满足（例如 C 档没有当场确认）。按[分级授权](authorization-tiers.md)补确认，不算故障。
+   - **Windows 文件权限或占用**：PowerShell 执行了但报 `Access denied`、`being used by another process`。先只读查有没有 Claude 进程（第 3 节）和目录权限，不提权、不改 ACL。
+3. **只读核对现状**，逐项报告：每个原路径是否还在；每个备份、隔离副本是否存在、清单是否一致；阶段记录停在哪一步；有没有 Claude 进程。
+4. **脱敏报告给用户**：哪一步、哪个命令被拒、返回原文（去掉用户名和完整路径）、属于哪一层（或“不明”）、现在的状态、**清理未完成**。用户说“我自己删可以”，只说明用户那边能做，不能用来判断这次拦截的原因。
+5. **给用户选择，任何一项都单独确认：**保持现状（原件和副本都留着，之后再做）；把这一步交给用户自己做（见下面的交接单）；或者撤回本次已做的部分（Agent 自己建的副本属于 Agent 的产物，是否移走同样要确认）。
+
+### 交给用户自己操作时的交接单
+
+用户愿意自己动手时，Agent 给出一张交接单，不要求用户上传对话历史、凭据或目录内容：
+
+- **准确范围**：只列这次确认过的目录，每个写完整的相对说明（如 `%USERPROFILE%\.claude\projects`），不扩大。
+- **影响**：会话记录和自动记忆会从 Claude Code 里消失；桌面端数据会像新安装一样，登录状态丢失。
+- **备份和副本在哪**：备份目录、隔离目录、阶段记录的位置，以及第 4 节比对已通过。
+- **推荐做法**：用本节上面的 `Move-Item` 移到同盘隔离目录，而不是直接删除；还原命令照抄本节的还原块。
+- **做完后告诉 Agent**：Agent 再只读核对一遍（原路径不在、受保护路径仍在、隔离副本与备份一致），然后才写“清理完成”。用户自己的操作结果由 Agent 核对后记录，不由 Agent 推测。
 
 ## 6. 退出登录与凭据（C 档，单独确认）
 
@@ -116,4 +164,4 @@ Move-Item -LiteralPath (Join-Path $q 'root-0000') -Destination $orig
 
 ## 10. 限制
 
-没有内置宿主，所以没有进程独占、没有模块自带的哈希清单，也没有终端确认短语，同意靠对话里的明确回复。命令是 PowerShell 的常规用法，**没有在真实 Windows 机器上跑过**；首次使用先用 `-WhatIf`（`Move-Item`、`Copy-Item` 支持）演练。桌面端的 MSIX 数据路径要在审计里看到实际结果后再用。
+没有内置宿主，所以没有进程独占、没有模块自带的哈希清单，也没有终端确认短语，同意靠对话里的明确回复。命令是 PowerShell 的常规用法，**没有在真实 Windows 机器上跑过**；首次使用先用 `-WhatIf`（`Move-Item`、`Copy-Item` 支持）演练。桌面端的 MSIX 数据路径要在审计里看到实际结果后再用。备份放另一个盘、阶段记录、宿主拦截后的停止与交接，来自用户在 Windows（Codex 桌面端，PowerShell 7）上的反馈（issue #16）：那次跨盘复制和校验做完了，删除原件那一步被宿主拒绝；本文改为同盘隔离、不删除原件之后的流程，尚未在真机上重跑。
