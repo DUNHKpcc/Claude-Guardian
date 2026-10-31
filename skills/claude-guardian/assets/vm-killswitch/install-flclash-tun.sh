@@ -63,6 +63,13 @@ X-GNOME-Autostart-enabled=true
 EOF
 
 # v0.9.1 accepts only: install (not install --owner-pid ...).
+# /dev/net/tun 节点存在不等于 tun 模块已加载；没加载时 GUI 开 TUN 会报错。加载并持久化，否则重启后复发
+if ! lsmod | grep -qw tun; then
+  echo 'Loading the tun kernel module...'
+  sudo modprobe tun
+fi
+echo tun | sudo tee /etc/modules-load.d/tun.conf >/dev/null
+
 echo 'Installing the privileged TUN helper...'
 sudo /opt/FlClash/FlClashHelperService install
 

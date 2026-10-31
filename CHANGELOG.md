@@ -1,5 +1,15 @@
 # 版本记录
 
+## 进阶路线第二轮实测：新 VPS + Omarchy#2（2026-10-31）
+
+来源：所有者 `真实经验/新VPS-Omarchy2-部署经验总结.md`（Ubuntu 24.04 中转 VPS + 全新 try-omarchy x86_64 目标机）。真实 VPS 地址、端口和端口表里的具体机器不进仓库。
+
+- **修正：**`authorized_keys` 的 `permitlisten` 结论改为“逐台实测”。OpenSSH 8.9 上引号转义导致静默失败、无引号可用；Ubuntu 24.04（sshd 9.6p1）上 `permitlisten` 本身让整行失效，`sshd -ddd` 报 `bad key options: unknown error`，升级无效。`advanced-route.md` §3 补对照实验定位法（指纹、同私钥直连、无 options 对照行、临时 `sshd -ddd`、单项二分，测前先删其他能过的行）和降级方案；`vps-guidance.md` 同步
+- **修复两个脚本缺陷（带回归测试）：**`install-flclash-killswitch.sh` 的 refresh.timer 只 enable 不 start，装完要到下次开机才生效，改为 `enable --now` 并打印 `list-timers`；`enable-guest-ssh.sh` 在全新 Omarchy 上因没有 sshd 而 `sshd -t` 直接失败，改为先 `pacman -S --needed openssh`
+- **共用完善：**`install-flclash-tun.sh` 加载 tun 模块并写 `/etc/modules-load.d/tun.conf`；`vm-guidance.md` 3a 补 AppImage 安装时 helper 的 root 属主修复、SSH 拉 GUI 用 `setsid`、TUN 开启前的泄漏窗口、timer enabled 不等于 active、`nftables.service` 保持 disabled 正常；`vps-guidance.md` 中转一节改为 sshd 初始化顺序（drop-in、`PubkeyAuthentication`、`Include` 检查、`sshd -t` 后重启并从另一会话验证、ufw／iptables／安全组三层）
+- **进阶路线补充：**全新目标机的 sshd 与 tun 前置及 `Connection reset` 判据、会断自己会话的命令放最后、VPS 临时下载站（token 命名、用完即关、`[h]ttp` 防自匹配、不传私钥）、Omarchy#2 崩溃时间线和约 3 分钟管理盲窗、UDP／STUN 判读并接到 `network_check.py run --failure-drill`、多目标的端口表、教训第 7 到 15 条
+- 测试：新增 `test_second_remote_run_fixes_timer_and_sshd_and_corrects_permitlisten`（旧脚本上失败，新脚本通过）。已知限制：脚本改动只做了 `bash -n`，未在真机重跑。回滚：回退本提交
+
 ## 注册阶段接码直接弃号，使用中才保留实体卡（2026-10-31）
 
 - 所有者纠正：用户反映注册还在被引导准备实体卡接码。`account-onboarding.md` A0 第 9 条改为：注册阶段出现接码或 KYC 直接弃号、不备实体卡；账号已在使用中才遇到手机号验证时，有条件用实体卡、没条件弃号；第 6 条同步。`test_guides.py` 对应断言更新。回滚：回退本提交

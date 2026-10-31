@@ -236,7 +236,10 @@ EOF
   s install -Dm644 "$RTIMER.tmp" "$RTIMER" && rm -f "$RTIMER.tmp"
 
   s systemctl daemon-reload
-  s systemctl enable flclash-killswitch.service flclash-killswitch-refresh.timer >/dev/null 2>&1
+  s systemctl enable flclash-killswitch.service >/dev/null 2>&1
+  # timer 只 enable 不 start 时处于 enabled-but-inactive，要到下次开机才生效；这里一并 start，并打印下次触发时间
+  s systemctl enable --now flclash-killswitch-refresh.timer >/dev/null 2>&1
+  systemctl list-timers flclash-killswitch-refresh.timer --no-pager 2>/dev/null || true
   apply_armed
 }
 

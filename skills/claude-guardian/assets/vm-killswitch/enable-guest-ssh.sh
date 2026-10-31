@@ -8,6 +8,8 @@ set -euo pipefail
 NIC="${NIC:-enp0s1}"          # 用 ip link 确认客机网卡名
 SSH_SRC="${SSH_SRC:-}"        # 必填（ufw 启用时）：例如 192.168.1.10 或 192.168.1.0/24
 
+# 全新 Omarchy 默认没有 sshd：先装 openssh，否则 sshd -t 直接失败，反向隧道的终点 127.0.0.1:22 也无人监听
+sudo pacman -S --needed --noconfirm openssh
 sudo sshd -t
 sudo systemctl enable --now sshd
 

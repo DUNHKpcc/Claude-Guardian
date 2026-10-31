@@ -169,6 +169,36 @@ class GuidanceContracts(unittest.TestCase):
         tiers = (REFS / "authorization-tiers.md").read_text(encoding="utf-8")
         self.assertIn("VPS 建 swap、改 swappiness、装 earlyoom | B |", tiers)
 
+    def test_second_remote_run_fixes_timer_and_sshd_and_corrects_permitlisten(self):
+        skill_root = ROOT / "skills" / "claude-guardian"
+        vk = skill_root / "assets" / "vm-killswitch"
+        ks = (vk / "install-flclash-killswitch.sh").read_text(encoding="utf-8")
+        # Regression: the refresh timer was only enabled, so it stayed inactive until the next boot.
+        self.assertIn("enable --now flclash-killswitch-refresh.timer", ks)
+        self.assertNotRegex(ks, r"systemctl enable (?!--now)[^\n]*flclash-killswitch-refresh\.timer")
+        self.assertIn("list-timers", ks)
+        # Regression: a fresh Omarchy has no sshd, so `sshd -t` failed before anything was installed.
+        ssh = (vk / "enable-guest-ssh.sh").read_text(encoding="utf-8")
+        self.assertLess(ssh.index("pacman -S --needed --noconfirm openssh"), ssh.index("sudo sshd -t"))
+        tun = (vk / "install-flclash-tun.sh").read_text(encoding="utf-8")
+        for term in ("modprobe tun", "/etc/modules-load.d/tun.conf"):
+            self.assertIn(term, tun)
+        vm = (REFS / "vm-guidance.md").read_text(encoding="utf-8")
+        for term in ("AppImage", "chown -R root:root /opt/FlClash", "setsid", "lsmod | grep tun", "list-timers",
+                     "泄漏窗口", "nftables.service` 保持 disabled"):
+            self.assertIn(term, vm)
+        adv = (REFS / "advanced-route.md").read_text(encoding="utf-8")
+        for term in ("9.6p1", "bad key options", "sshd -ddd", "先删掉其他能通过的行", "降级方案", "[h]ttp.server",
+                     "盲窗", "setsid", "STUN", "failure-drill", "端口表", "Connection reset"):
+            self.assertIn(term, adv)
+        vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
+        for term in ("sshd_config.d/99-tunnel.conf", "PubkeyAuthentication yes", "sshd -t", "iptables -S INPUT",
+                     "安全组", "9.6p1", "逐台实测"):
+            self.assertIn(term, vps)
+        for doc in (adv, vps, vm):
+            for personal in ("192.204.42", "8283", "大连理工"):
+                self.assertNotIn(personal, doc)
+
     def test_vps_route_is_a_dev_machine_with_consistent_environment(self):
         vps = (REFS / "vps-guidance.md").read_text(encoding="utf-8")
         for term in ("开发机", "环境一致", "Ubuntu 24.04", "x86_64", "S08-vps-claude-tutorial.pdf",

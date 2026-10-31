@@ -101,7 +101,14 @@ Agent 通过 SSH 操作 VPS 时，第一优先级是保住控制通道。内存�
 
 ## 作为隧道中转的 VPS（进阶路线）
 
-VPS 同时当出口节点和反向隧道落点时，VPS 侧的 sshd 要这样设：`ClientAliveInterval 15`、`ClientAliveCountMax 2`，僵尸连接 30 秒内回收，否则旧连接占着回环端口，新隧道绑不上。`authorized_keys` 里给隧道密钥加限制时，选项值一律写**无引号**：`restrict,permitlisten=127.0.0.1:2222`。带字面反斜杠和引号的写法会让 OpenSSH 8.9 静默拒绝 `tcpip-forward`，服务端日志是干净的，客户端只报 `remote port forwarding failed`。完整排查顺序和整条路线见 [advanced-route.md](advanced-route.md)。
+VPS 同时当出口节点和反向隧道落点时，按这个顺序初始化 sshd：
+
+1. `~/.ssh` 设 700、`authorized_keys` 设 600；管理端公钥和隧道公钥用 `grep -qF` 判断后再追加，重复运行不出重复行。
+2. 改 sshd 用 drop-in，不碰主配置：`/etc/ssh/sshd_config.d/99-tunnel.conf` 写 `PubkeyAuthentication yes`、`ClientAliveInterval 15`、`ClientAliveCountMax 2`。新版 Ubuntu 的 `PubkeyAuthentication` 可能没开；`ClientAlive` 让僵尸连接 30 秒内回收，否则旧连接占着回环端口，新隧道绑不上。主配置里没有 `Include /etc/ssh/sshd_config.d/*.conf` 时，先备份再加到第一行。
+3. **`sshd -t` 先验证再 `systemctl restart ssh`**，改完从另一个会话验证能登录，原会话不要先关。
+4. 防火墙分三层看：`ufw status`、`iptables -S INPUT`，以及云厂商安全组，放行 sshd 端口。
+
+**`authorized_keys` 的 options 要逐台实测。**OpenSSH 8.9 上，带字面反斜杠和引号的 `restrict,permitlisten=\"127.0.0.1:2222\"` 会静默拒绝 `tcpip-forward`，无引号的 `restrict,permitlisten=127.0.0.1:2222` 可用；Ubuntu 24.04（sshd 9.6p1）上，`permitlisten` 本身就让整行失效（无引号也一样，升级 openssh-server 也没用），表现是隧道 `activating` 循环、服务端日志只有 `[preauth]` 断开。实测不通就用无 options 的行，靠架构兜底：落点只绑回环、隧道密钥只放在目标机、`ClientAlive` 清僵尸。排查方法见 [advanced-route.md 第 3 节](advanced-route.md#3-隧道专属的坑)。
 
 ## 日常
 

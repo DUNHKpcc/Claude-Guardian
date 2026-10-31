@@ -35,10 +35,11 @@ M02/M03: accounts, subscription, and payment planning（19 节）
 
 ## advanced-route.md
 
-进阶路线：远端 Linux 机器的出口钉死与反向隧道管理（8 节）
+进阶路线：远端 Linux 机器的出口钉死与反向隧道管理（9 节）
 
 - [1. 最终架构](advanced-route.md#1-最终架构)
 - [2. 搭建顺序](advanced-route.md#2-搭建顺序)
+  - [把脚本送到目标机：VPS 临时下载站](advanced-route.md#把脚本送到目标机vps-临时下载站)
 - [3. 隧道专属的坑](advanced-route.md#3-隧道专属的坑)
 - [4. 崩溃自愈](advanced-route.md#4-崩溃自愈)
 - [5. 验收与覆盖矩阵](advanced-route.md#5-验收与覆盖矩阵)

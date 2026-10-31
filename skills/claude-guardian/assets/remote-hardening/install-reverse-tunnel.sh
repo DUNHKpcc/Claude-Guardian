@@ -66,7 +66,7 @@ UNIT_EOF
   sleep 5
   echo "隧道服务状态: $(systemctl is-active "$UNIT_NAME" || true)"
   echo "管理端连接: 先 ssh -p $VPS_SSH_PORT -N -L $REMOTE_BIND_PORT:127.0.0.1:$REMOTE_BIND_PORT $VPS_USER@$VPS_HOST，再 ssh -p $REMOTE_BIND_PORT $TARGET_USER@127.0.0.1"
-  echo "若状态不是 active: VPS 上 journalctl -u ssh 看连接记录；客户端加 -vvv；检查 authorized_keys 选项值是否无引号（见 advanced-route.md）"
+  echo "若状态不是 active: VPS 上 journalctl -u ssh 看连接记录；客户端加 -vvv；authorized_keys 带 options 的行先换成无 options 的同公钥对照，再用 sshd -ddd 二分（见 advanced-route.md）"
 }
 
 do_status() { systemctl status "$UNIT_NAME" --no-pager || true; }

@@ -25,10 +25,12 @@
 按下面顺序做；脚本由用户在客机里运行，或经[计划批准](authorization-tiers.md)后由 Agent 在获准的会话里运行，Agent 都先解释脚本、核对参数、帮读输出；先打快照。**第 2、3、4 步是 B 档**，可合成一张计划批准一次；**第 5 步装 killswitch 是 C 档**（默认出站丢弃，可能锁死），到这一步暂停，用户当场确认并在保险丝时限内 `confirm`：
 
 1. **创建 VM：**网卡选 LAN 独立网卡（第 2 节），记下客机网卡名（`ip link`）和局域网网段。
-2. **开启客机 SSH：**[enable-guest-ssh.sh](../assets/vm-killswitch/enable-guest-ssh.sh)，开启 sshd；ufw 已启用时只放行你设置的 `SSH_SRC`（管理机在局域网里的地址或网段）到 22 端口。原脚本按 shared NAT 写，已改为 LAN 独立网卡的做法。
-3. **安装 FlClash 和 TUN 助手：**[install-flclash-tun.sh](../assets/vm-killswitch/install-flclash-tun.sh)，用 pacman 装依赖，下载固定版本的 FlClash 并核对 SHA256（失败即中止），以 root 装到 `/opt/FlClash`，安装并启用 TUN 特权助手。版本和架构可用 `FLCLASH_VERSION`、`ARCH` 覆盖，默认 0.9.1 和 arm64，升级前到 Release 页面核对。装 0.9.2 等非 0.9.1 版本时，脚本会自动加 helper 的 systemd drop-in（`FLCLASH_HELPER_OWNER_UID/GID`、`RuntimeDirectory=flclash`），缺这两项 helper 起不来；托盘库 `libayatana-indicator` 缺失会导致 GUI 起不来，脚本已用 pacman 装好。
+2. **开启客机 SSH：**[enable-guest-ssh.sh](../assets/vm-killswitch/enable-guest-ssh.sh)，全新 Omarchy 默认没有 sshd，脚本先 `pacman -S --needed openssh` 再开启 sshd；ufw 已启用时只放行你设置的 `SSH_SRC`（管理机在局域网里的地址或网段）到 22 端口。原脚本按 shared NAT 写，已改为 LAN 独立网卡的做法。
+3. **安装 FlClash 和 TUN 助手：**[install-flclash-tun.sh](../assets/vm-killswitch/install-flclash-tun.sh)，用 pacman 装依赖，下载固定版本的 FlClash 并核对 SHA256（失败即中止），以 root 装到 `/opt/FlClash`，安装并启用 TUN 特权助手。版本和架构可用 `FLCLASH_VERSION`、`ARCH` 覆盖，默认 0.9.1 和 arm64，升级前到 Release 页面核对。装 0.9.2 等非 0.9.1 版本时，脚本会自动加 helper 的 systemd drop-in（`FLCLASH_HELPER_OWNER_UID/GID`、`RuntimeDirectory=flclash`），缺这两项 helper 起不来；托盘库 `libayatana-indicator` 缺失会导致 GUI 起不来，脚本已用 pacman 装好。`/dev/net/tun` 节点存在不等于 tun 模块已加载（`lsmod | grep tun` 为空即未加载，GUI 开 TUN 会报错），脚本会 `modprobe tun` 并写入 `/etc/modules-load.d/tun.conf`，否则重启后复发。
+   - **用 AppImage 安装时：**解包出的文件属主是执行用户，而 helper 要求 root 属主、组和其他用户不可写，否则 GUI 报 `couldn't authorized`。修法：`sudo chown -R root:root /opt/FlClash && sudo chmod -R go-w /opt/FlClash`，再重跑 `sudo /opt/FlClash/FlClashHelperService install`（官方 install 会重写 helper 单元，自带 owner UID/GID），然后 `systemctl restart flclash-helper`。deb 安装没有这个问题，本脚本走 deb。
+   - **通过 SSH 拉起 GUI 时用 `setsid`：**裸 `&` 的后台进程会随 SSH 会话退出被杀，要 `setsid` 加 `</dev/null` 脱离会话，命令见[进阶路线第 4 节](advanced-route.md#4-崩溃自愈)。
 4. **导入节点并开启 TUN：**打开 FlClash，导入用户自己的节点配置（来源见第 3 节），开启 TUN，确认出口 IP 是预期的那个（用 [S07 清单](../sources/S07-vps-script-catalog.md)里的检测）。**同时确认 GLOBAL 组和实际使用的策略组都选中了目标节点，并用 `curl` 实测出口 IP**：GLOBAL 是 mihomo 内置组，永远包含 DIRECT 和 REJECT，没选中时全局模式和规则模式的出口可能不一样，甚至直连。
-5. **再装防火墙：**TUN 通了以后再装第 4 节的 killswitch，顺序反了会把自己锁在外网之外。
+5. **再装防火墙：**TUN 通了以后再装第 4 节的 killswitch，顺序反了会把自己锁在外网之外。**TUN 开好立刻装**：TUN 没开时 core 起来了也是直连，从装好 FlClash 到装上 killswitch 之间是真实 IP 的泄漏窗口，这段时间不做任何多余的网络操作。脚本装完会 start 定时刷新的 timer 并打印下次触发时间；自己手动部署时注意 timer 只 enable 不 start 是 enabled-but-inactive，要到开机才生效，用 `systemctl list-timers` 确认。killswitch 用自己的 `flclash-killswitch.service` 开机加载规则，`nftables.service` 保持 disabled 是正常的。
 
 ### macOS 客机（Mac 宿主首选）
 
