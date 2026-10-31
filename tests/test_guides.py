@@ -468,7 +468,9 @@ class GuidanceContracts(unittest.TestCase):
         doc = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
         a0 = doc.split("## A0a", 1)[0]
         self.assertIn("**不要找共享号码、虚拟号码接码。**", a0)
-        self.assertIn("**有条件就用实体手机卡接码；没有条件就直接弃号**", a0)
+        self.assertIn("**注册阶段**出现接码或 KYC，这个号就死了，直接弃号，不用备实体卡", a0)
+        self.assertIn("**账号已经在使用中**才遇到手机号验证，**有条件就用实体手机卡接码；没有条件就直接弃号**", a0)
+        self.assertIn("不要备实体卡去接", a0)
         self.assertNotIn("提示要手机号验证或 KYC 的号，可以直接放弃", a0)
         self.assertNotIn("第 9 条", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
 
