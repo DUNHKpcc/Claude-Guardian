@@ -603,6 +603,17 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("ANTHROPIC_AUTH_TOKEN = <已隐藏>", out)
         self.assertNotIn("sk-", out)
 
+    def test_apple_gift_card_channel_follows_s02_without_us_card_gate(self):
+        # Owner correction 2026-11-01: an answer invented "need a US-issued card or US PayPal" and a fake-billing-address warning.
+        doc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
+        b1 = doc.split("### B1 ", 1)[1].split("\n### ", 1)[0]
+        for term in ("Apple 官方官网是首选", "国内卡有时会被拒", "Pockyt Shop", "闲鱼、淘宝低价卡商不推荐",
+                     "不要说官网必须美国发行的卡或美区 PayPal", "回答购卡渠道时不提账单地址的话题"):
+            self.assertIn(term, b1)
+        self.assertNotIn("伪造地区、住址", doc)
+        s02 = (ROOT / "skills" / "claude-guardian" / "sources" / "S02-ai-payments.md").read_text(encoding="utf-8")
+        self.assertIn("国内卡有时会被拒", s02)
+
     def test_exit_consistency_owner_facts_are_stated_directly_and_linked(self):
         # Owner facts 2026-11-01: TCP latency, TCP fingerprint matching the exit OS, keep the native UA.
         doc = (REFS / "exit-consistency.md").read_text(encoding="utf-8")
