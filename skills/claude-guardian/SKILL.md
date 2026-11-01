@@ -21,6 +21,8 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 ## 开始方式
 
+**每次使用前先查 Skill 更新：**运行 `scripts/update_check.py check`（只读，只连 GitHub），结果按 [skill-update.md](references/skill-update.md) 处理，没查成不阻塞。
+
 1. 优先由 **Codex** 编排。分别确认执行宿主与实际目标：云端 shell 看到的是云端，用户的 Mac 要在用户的 Mac 上查。没有结构化提问界面时用短问句。
 2. **默认用中文交流、提问、解释报告**，保留技术 ID/命令原文；用户明确选择其他语言时跟随。先复用已有事实，再补缺口。普通订阅准备的首个缺失业务问题是 **Q-J01：首次准备订阅、到期后重新订阅，还是当前已有订阅？** 随后询问 Mac/Windows 与用途。紧急事故优先。明确的清理任务直接进入目标和保护范围，跳过购买问卷；用户说过去被封过、但没说是哪台设备时，先问 Q-D01。
 3. 本机是默认建议，但要问用户接受本机、选择 VM/VPS，还是先比较。三者是并列方案。已明确的目标优先；用户有 VPS 时，问清是当开发机还是当出口。
@@ -83,7 +85,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 | --- | --- |
 | 支付、订阅渠道、礼品卡、虚拟卡、API 充值 | **第一项：[AI 所有支付方式汇总（核验版）](sources/S02-ai-payments.md)**，核心参考，Agent 可据此向用户推荐支付方式（规则见 accounts-and-payments.md 的 B1） |
 | 账号阶段、IP、设备、注册与养号节奏 | [S03 经验 PDF](sources/S03-claude-experience.pdf)（文字版 [S03-extracted-text.md](sources/S03-extracted-text.md)、[S03-source-text.md](sources/S03-source-text.md)；第 4、5 页是图片表格）、[S04 指南](sources/S04-claude-guide.md)、[account-onboarding.md](references/account-onboarding.md) |
-| 本地防护、代理、浏览器档案、WebRTC 检查 | [S05 本地防护](sources/S05-local-protection.md)；WebRTC 可用包内的[本地探测页](assets/webrtc-probe.html)（由 `scripts/serve_webrtc.py` 在本机回环临时提供，用户点击确认后才发起 STUN） |
+| 本地防护、代理、浏览器档案、WebRTC 检查 | [S05 本地防护](sources/S05-local-protection.md)；WebRTC 可用包内的[本地探测页](assets/webrtc-probe.html)（`scripts/serve_webrtc.py` 提供） |
 | macOS 清理 | [S06 清理教程](sources/S06-macos-cleanup-sanitized.md)、[cleanup-cli-usage.md](references/cleanup-cli-usage.md)（执行用 `native_cleanup_mac.py`，必附） |
 | 在用户的机器上做改动时的授权方式（路线选定后；A、B、C 档） | [authorization-tiers.md](references/authorization-tiers.md)（必附）；Agent 就在被改网络的机器上时加 [agent-on-target.md](references/agent-on-target.md) |
 | 手机端（注册、选择 Apple/Google 内购、仅手机） | [mobile-guidance.md](references/mobile-guidance.md)、[S03 经验 PDF 第 4 页](sources/S03-claude-experience.pdf)（必附） |
@@ -140,7 +142,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 - [accounts-and-payments.md](references/accounts-and-payments.md)：M02/M03；准入、目标套餐、Apple/Google/银行卡前提及支付交接
 - [incidents-and-integrations.md](references/incidents-and-integrations.md)：M07/M10–M13；异常、清理保留、申诉、SDK/MCP 与认证边界
 - [evidence-policy.md](references/evidence-policy.md)：M14；稳定来源 ID、历史证据限制和发布规则
-- [section-index.md](references/section-index.md)：`references/` 每个文件的每个二、三级小节和锚点链接（由 `tools/gen_section_index.py` 生成）；定位到文件后，在这里找具体小节，不要通读整份文件，也不要漏掉没有被资料表点到的小节
+- [section-index.md](references/section-index.md)：`references/` 每个文件的每个二、三级小节和锚点链接；定位到文件后在这里找小节，不通读整份，不漏掉资料表没点到的小节
 - [host-libraries.md](references/host-libraries.md)：内置入口和宿主库的输入格式、阻塞条件与边界（repair/recovery/inventory/诊断会话/面板/DNS/STUN/配置候选）；用到哪个读哪个小节
 - [scripts-index.md](references/scripts-index.md)：`scripts/` 和 `assets/` 里每个脚本的用途、入口还是库、对应说明；找不到该用哪个脚本时先看这里（访谈状态机 `interview_flow.py`、各 `native_*_mac.py`、`egress_verifier.py` 都列在里面）
 - [source-library.md](references/source-library.md)：全部来源资料的清单、哈希和使用限制；`sources/manifest.json` 是它的机器可读版；S08 文字版见 [S08-extracted-text.md](sources/S08-extracted-text.md)

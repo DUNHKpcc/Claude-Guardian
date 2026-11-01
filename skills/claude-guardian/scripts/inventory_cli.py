@@ -180,7 +180,8 @@ def run(argv=None, *, incoming=None, outgoing=None, prompt=None):
         args = parser.parse_args(argv)
         if args.command == 'capabilities':
             result['cli'] = {'static_audit': 'macos_terminal_only', 'mutations': 'unavailable',
-                             'network_check': 'scripts/network_check.py run'}
+                             'network_check': 'scripts/network_check.py run',
+                             'update_check': 'scripts/update_check.py check'}
         else:
             request = read_request(args.request)
             validate_request(request, args.target_ref)

@@ -140,6 +140,8 @@ git clone https://github.com/DUNHKpcc/Claude-Guardian.git
 
 最终应有 `~/.codex/skills/claude-guardian/SKILL.md`。该命令遇到已有目标（包括符号链接）会停止，避免嵌套复制或覆盖自定义内容；更新时先检查差异并备份，再手动迁移需要的文件。
 
+**更新：**每次使用时 Agent 会先运行 `scripts/update_check.py check`（只读，只连 GitHub）和仓库 main 分支逐个文件比较，有更新就告诉你最近更新了什么；你同意后，Agent 先把当前 Skill 备份到 Skill 目录之外，保留你自己改过的文件，再换成新版，步骤见 [Skill 更新](skills/claude-guardian/references/skill-update.md)。
+
 Windows 可手动下载或克隆仓库，在自己的 Codex Skill 目录（通常为 `%USERPROFILE%\.codex\skills`）中创建缺少的父目录，再复制完整的 `claude-guardian` 文件夹。确认最终为 `skills\claude-guardian\SKILL.md`；若同名目标已存在，先检查、备份并手动迁移，不直接合并或覆盖。
 
 ### 2. 在 Codex 中开始对话

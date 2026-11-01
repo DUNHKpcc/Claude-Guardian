@@ -1,5 +1,12 @@
 # 版本记录
 
+## 每次使用前检查 Skill 更新（2026-11-01，ADR-053）
+
+- 所有者要求：每次用户使用本 Skill 前检查最新更新。新增 `scripts/update_check.py check`：向 `api.github.com` 取 main 分支目录树和最近涉及 Skill 的提交，按 git blob 哈希逐个比较本地文件（接受 CRLF 转 LF 后的哈希），报告不同、远端新增、本地独有的文件和最近几条更新；只读、只用标准库、只连 GitHub；退出码 0 最新、1 有更新、2 没查成、130 取消；连不上、限流、目录树截断、回复过大或不是 JSON 都报 `check_failed`，不阻塞任务
+- 新增 `references/skill-update.md`：每个会话开始查一次；最新时不汇报，有更新列最近更新并问用户，没查成一句话带过继续；更新属 B 档：取最新版、备份到 Skill 目录之外（放在 `skills/` 里会被当成第二个 Skill）、用户改过或加的文件逐个问、替换、复查、开新会话、回滚
+- SKILL.md“开始方式”开头加一句（为留在 32000 字节内压缩了 WebRTC 探测页和 section-index 两处说明）；`scripts-index.md`、`inventory_cli.py capabilities`、`package_skill.py`、中英文 README 的安装一节同步
+- 测试：新增 `tests/test_update_check.py`（哈希与 `git hash-object` 一致、最新、有更新、仅本地多文件不算更新、CRLF、忽略缓存与 LICENSE、网络失败与异常回复、提交历史失败、请求只发往 GitHub 的 Skill 路径、HTTP 错误映射、过大和非 JSON 回复、CLI 退出码与取消、SKILL.md 与指引）。已在开发机上对真实仓库跑过一次 `check`；Windows 和 macOS 上的真实网络检查没跑过。回滚：回退本提交
+
 ## 软路由路线占位（2026-11-01）
 
 - 所有者确认：软路由先占位，未来补齐这条路线。`routes-and-platforms.md` 新增“R-ROUTER 软路由（占位，未来补齐）”（锚点 `r-router`）：补齐前直接告诉用户 Claude Desktop 最佳是软路由、现在先按本机路线做；Agent 不自行编写搭建步骤、不改用户路由器；不新增路线值。`exit-consistency.md`、`agent-remediation.md` 的两处提法指向这个占位；`section-index.md` 重新生成

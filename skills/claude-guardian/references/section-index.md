@@ -351,6 +351,14 @@ M01/M06–M09: independent environment routes（32 节）
 - [清理（C 档）](scripts-index.md#清理c-档)
 - [随包脚本资产（`assets/`）](scripts-index.md#随包脚本资产assets)
 
+## skill-update.md
+
+Skill 更新：每次使用前先查最新（3 节）
+
+- [1. 什么时候查](skill-update.md#1-什么时候查)
+- [2. 怎么告诉用户](skill-update.md#2-怎么告诉用户)
+- [3. 怎么更新](skill-update.md#3-怎么更新)
+
 ## source-library.md
 
 原始资料阅读库（15 节）

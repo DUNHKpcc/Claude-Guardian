@@ -119,6 +119,8 @@ git clone https://github.com/DUNHKpcc/Claude-Guardian.git
 
 You should end up with `~/.codex/skills/claude-guardian/SKILL.md`. The command stops on an existing target (including symlinks) to avoid nested copies or overwriting customizations; to update, inspect the diff, back up, and migrate the files you need by hand.
 
+**Updates:** at the start of each session the Agent runs `scripts/update_check.py check` (read-only, contacts only GitHub) to compare every file with the repository's main branch and tells you what changed recently. With your approval it backs up the current Skill outside the Skill directory, keeps the files you changed yourself, and switches to the new version; see [Skill updates](skills/claude-guardian/references/skill-update.md).
+
 On Windows, download or clone the repository, create any missing parent directories in your Codex Skill directory (usually `%USERPROFILE%\.codex\skills`), and copy the whole `claude-guardian` folder there. Confirm the result is `skills\claude-guardian\SKILL.md`; if a same-named target exists, inspect, back up and migrate by hand rather than merging or overwriting.
 
 ### 2. Start a conversation in Codex

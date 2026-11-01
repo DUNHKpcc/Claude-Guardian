@@ -19,6 +19,7 @@
 | `clash_inventory.py` | 库 | Clash 配置静态盘点 | [network-and-remedies.md](network-and-remedies.md) |
 | `status_dashboard.py` | 入口 | 把 `guardian.py` 报告做成离线 HTML 面板；`--network` 附上 `network_check.py` 的报告，网络卡片显示实测结果 | [agent-remediation.md](agent-remediation.md) |
 | `probe_evidence.py` | 库 | 把 `network_check.py` 报告投影到面板卡片 | 同上 |
+| `update_check.py` | 入口 | 每次使用前查 Skill 更新：按 git blob 哈希比较本地文件和 GitHub main 分支，列出不同、远端新增、本地独有的文件和最近几条更新；只读，只连 `api.github.com` | [skill-update.md](skill-update.md) |
 | `network_check.py` | 入口 | 网络基础检测：默认路由是否走 TUN、IPv4 出口（国家与 ASN，不回显 IP）、经本地代理端口的出口、IPv6、DNS 泄露（含 fake-ip）、UDP（STUN）、可选故障演练；macOS、Windows、Linux；`--evidence-output` 交给 `egress_verifier.py` | [whole-machine-ipv4.md](whole-machine-ipv4.md#4-取证agent-实际执行不替用户编造) |
 | `egress_verifier.py` | 入口 | 整机只走 IPv4 出口的判定（`check --input`），macOS、Windows、Linux | [whole-machine-ipv4.md](whole-machine-ipv4.md) |
 
