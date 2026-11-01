@@ -1,5 +1,11 @@
 # 版本记录
 
+## 今天新增文档去废话，修两处矛盾（2026-11-01）
+
+- 所有者要求检查今天的更新有没有废话。修了两处前后矛盾：`agent-on-target.md` 第 3 节原来先说“把 Agent 切到本机 TUN 并确认能用”、再说“开 TUN 放在最后”，TUN 还没开就要求 Agent 走 TUN，改为第 1 步开 TUN（B 档计划最后一步）、第 2 步装 killswitch 前把 Agent 切到 TUN；`skill-update.md` 说“整个过程不改 Skill 目录以外的东西”，可备份和临时克隆就在 Skill 目录之外，改为如实写明
+- 删掉重复和写给维护者的话：`agent-on-target.md` 的“各路线只链接过来，不另写一套”、第 4 节重复第 3 节的一句、“TUN 开关本来就是”；`exit-consistency.md` 开头与第 4 节重复的适用场景、“物理距离近，延迟天然低”、UA 一节与开头重复的解释和“换本机系统不是改 UA”一条；`skill-update.md` 开头的括号举例
+- 测试：`test_guides.py` 断言第 3 节顺序，`test_update_check.py` 断言不再出现那句不实的话（都在旧文档上失败）。回滚：回退本提交
+
 ## 每次使用前检查 Skill 更新（2026-11-01，ADR-053）
 
 - 所有者要求：每次用户使用本 Skill 前检查最新更新。新增 `scripts/update_check.py check`：向 `api.github.com` 取 main 分支目录树和最近涉及 Skill 的提交，按 git blob 哈希逐个比较本地文件（接受 CRLF 转 LF 后的哈希），报告不同、远端新增、本地独有的文件和最近几条更新；只读、只用标准库、只连 GitHub；退出码 0 最新、1 有更新、2 没查成、130 取消；连不上、限流、目录树截断、回复过大或不是 JSON 都报 `check_failed`，不阻塞任务

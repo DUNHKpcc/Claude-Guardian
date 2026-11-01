@@ -1,6 +1,6 @@
 # Agent 和被改的网络在同一台机器上
 
-适用：Agent（Codex 等）运行在**正被改网络的那台机器上**。常见三种：VM 客机里装 Agent，在客机里用本 Skill；本机路线中，Agent 在用户自己的电脑上直接改 Clash 和防火墙；VPS 上跑 Agent，同时在这台 VPS 上开 TUN 或装防火墙。VM、本机、VPS 三条路线都用本文，各路线文档只链接过来，不另写一套。
+适用：Agent（Codex 等）运行在**正被改网络的那台机器上**。常见三种：VM 客机里装 Agent，在客机里用本 Skill；本机路线中，Agent 在用户自己的电脑上直接改 Clash 和防火墙；VPS 上跑 Agent，同时在这台 VPS 上开 TUN 或装防火墙。
 
 Agent 在另一台机器上通过 SSH 或控制台操作目标机时，管理通道、保险丝和救援入口按各路线文档做（[VM](vm-guidance.md#4-客机防火墙fail-closed)、[进阶路线](advanced-route.md)、[VPS](vps-guidance.md)），本文不涉及。
 
@@ -35,8 +35,8 @@ A 档，只读。结果写进计划，记为“Agent 链路”：
 
 ## 3. 做法
 
-1. **先把 Agent 链路切到最终形态。**killswitch 或默认出站阻止生效后，能出去的只有 TUN，所以 Agent 也要改成走本机 TUN：去掉指向宿主或局域网代理的变量，重开 Agent，用一次正常请求确认 Agent 能经 TUN 工作，再往下做。**不在 killswitch 白名单里给宿主或局域网代理开口子**：那是一条绕开本机 TUN 的出站，TUN 掉了它照样能出去，fail-closed 就不成立了。
-2. **开 TUN 放在计划的最后一步。**开 TUN 前 Agent 先写好交接文件（第 4 步），告诉用户：“我这一轮会断，打开 TUN 后重新打开会话，说‘继续’就行。”FlClash 的 TUN 开关本来就是用户在 GUI 里点。
+1. **开 TUN 放在 B 档计划的最后一步。**开 TUN 前 Agent 先写好交接文件（第 4 步），告诉用户：“我这一轮会断，打开 TUN 后重新打开会话，说‘继续’就行。”TUN 开关由用户在客户端界面里点。
+2. **装 killswitch 之前，把 Agent 链路切到本机 TUN。**killswitch 或默认出站阻止生效后，能出去的只有 TUN：去掉指向宿主或局域网代理的变量，重开 Agent，用一次正常请求确认 Agent 经 TUN 能工作，再往下做。**不在 killswitch 白名单里给宿主或局域网代理开口子**：那是一条绕开本机 TUN 的出站，TUN 掉了它照样能出去，fail-closed 就不成立了。
 3. **会一直断开的步骤交给用户在终端执行。**装 killswitch、切默认出站为阻止、故障演练、重启演练，Agent 把完整命令写成一个脚本或一段可复制的命令，用户在这台机器的终端或虚拟机控制台里运行，`confirm` 也由用户在同一个终端执行。VM 路线也可以改由宿主机上的 Agent 通过 SSH 执行，这时就回到各路线文档的做法。故障演练用 `network_check.py run --failure-drill --evidence-output <新文件>`，用户在终端按提示停一次核心再打开，Agent 重连后读这个证据文件，交给 `egress_verifier.py` 判定（[整机统一出口](whole-machine-ipv4.md)）。
 4. **断开之前写交接文件。**放在用户同意的私有位置（如 `~/.guardian-handoff/`，权限 0600），不进项目仓库，不写密钥、节点链接和真实代理地址。内容：当前在第几步、已经做了哪些改动、保险丝的截止时间、用户要执行的命令、重连后先跑哪几条核对命令。
 5. **重连后先核对，再继续。**Codex 用 `codex resume` 接回原会话，或者新开会话后先读交接文件。先跑交接文件里的核对命令（killswitch 用 `install-flclash-killswitch.sh status`，Windows 用 `Get-NetFirewallProfile` 和 `Get-NetFirewallRule -DisplayName "guardian-*"`），确认规则在不在、保险丝有没有回滚、出口对不对。保险丝已经回滚的，先查清为什么没 `confirm`（多半是 Agent 链路被拦了），**不原样重试**。
@@ -44,4 +44,4 @@ A 档，只读。结果写进计划，记为“Agent 链路”：
 
 ## 4. 授权档位
 
-Agent 和被改的网络在同一台机器上时，第 2 节里会切断 Agent 链路的步骤，按[分级授权](authorization-tiers.md)的“可能锁死或切断访问”算 **C 档**：到这一步暂停，确认单里写明“这一步会断开 Agent 自己”、交接文件在哪、由谁在哪个终端执行、重连后先核对什么。开 TUN 这一步只是暂时断开、重连就恢复，仍放在 B 档计划里，按第 3 节第 2 步放在最后由用户打开。
+Agent 和被改的网络在同一台机器上时，第 2 节里会切断 Agent 链路的步骤，按[分级授权](authorization-tiers.md)的“可能锁死或切断访问”算 **C 档**：到这一步暂停，确认单里写明“这一步会断开 Agent 自己”、交接文件在哪、由谁在哪个终端执行、重连后先核对什么。开 TUN 只是暂时断开，仍在 B 档计划里（第 3 节第 1 步）。

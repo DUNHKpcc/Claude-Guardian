@@ -1,6 +1,6 @@
 # Skill 更新：每次使用前先查最新
 
-所有者 2026-11-01 要求：每次用户使用本 Skill 前，先检查有没有更新。本 Skill 更新频繁（经验、脚本修复、新路线），旧版本会带着已修正的错误继续干活。
+所有者 2026-11-01 要求：每次用户使用本 Skill 前，先检查有没有更新。旧版本会带着已经修正的错误继续干活。
 
 ## 1. 什么时候查
 
@@ -23,7 +23,7 @@ python3 scripts/update_check.py check
 
 ## 3. 怎么更新
 
-用户同意后由 Agent 执行，属于 B 档（有备份、Agent 自己能撤销）。整个过程不改 Skill 目录以外的东西。
+用户同意后由 Agent 执行，属于 B 档（有备份、Agent 自己能撤销）。除了临时克隆和备份目录，不改 Skill 目录以外的东西。
 
 1. **取最新版：**已有仓库克隆的，`git -C <克隆目录> pull --ff-only`；没有的，`git clone https://github.com/DUNHKpcc/Claude-Guardian.git` 到一个新的临时目录。
 2. **备份当前 Skill：**把整个已安装的 `claude-guardian` 目录复制到 **Skill 目录之外**（如 `~/.codex/skill-backups/claude-guardian-<日期>`）。不要备份在 `~/.codex/skills/` 里面，否则 Codex 会把备份当成第二个 Skill 加载。

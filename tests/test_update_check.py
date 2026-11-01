@@ -196,6 +196,8 @@ class UpdateCheck(unittest.TestCase):
         guide = (REPO / 'skills/claude-guardian/references/skill-update.md').read_text(encoding='utf-8')
         for term in ('每个会话开始时查一次', 'Skill 目录之外', '不阻塞任务', 'B 档', '开一个新会话', '回滚'):
             self.assertIn(term, guide)
+        # The backup and the temporary clone live outside the Skill directory; the guide must not deny it.
+        self.assertNotIn('整个过程不改 Skill 目录以外的东西', guide)
 
 
 if __name__ == '__main__':

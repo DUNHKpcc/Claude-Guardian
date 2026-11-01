@@ -636,8 +636,12 @@ class GuidanceContracts(unittest.TestCase):
         doc = (REFS / "agent-on-target.md").read_text(encoding="utf-8")
         for term in ("Agent 链路", "宿主或局域网代理", "codex resume", "交接文件", "不原样重试",
                      "不在 killswitch 白名单里给宿主或局域网代理开口子", "--failure-drill --evidence-output",
-                     "C 档", "开 TUN 放在计划的最后一步"):
+                     "C 档", "开 TUN 放在 B 档计划的最后一步"):
             self.assertIn(term, doc)
+        # TUN must be on before the agent can be moved onto it, and both come before the killswitch.
+        steps = doc.split("## 3. 做法", 1)[1]
+        self.assertLess(steps.index("1. **开 TUN 放在 B 档计划的最后一步"),
+                        steps.index("2. **装 killswitch 之前，把 Agent 链路切到本机 TUN"))
         for name in ("vm-guidance.md", "local-firewall-prompts.md", "vps-guidance.md", "authorization-tiers.md"):
             self.assertIn("(agent-on-target.md)", (REFS / name).read_text(encoding="utf-8"), name)
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
