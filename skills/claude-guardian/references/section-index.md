@@ -304,7 +304,7 @@ M04/M05/M10: network evidence and offline remedies（6 节）
 
 ## routes-and-platforms.md
 
-M01/M06–M09: independent environment routes（31 节）
+M01/M06–M09: independent environment routes（32 节）
 
 - [Common concepts](routes-and-platforms.md#common-concepts)
 - [R-LOCAL / local (recommended, never silently selected)](routes-and-platforms.md#r-local--local-recommended-never-silently-selected)
@@ -336,6 +336,7 @@ M01/M06–M09: independent environment routes（31 节）
   - [A2 反向隧道与崩溃自愈（目标机与 VPS 分别标注，B 档）](routes-and-platforms.md#a2-反向隧道与崩溃自愈目标机与-vps-分别标注b-档)
   - [A3 启用 killswitch 与验收（目标机，C 档）](routes-and-platforms.md#a3-启用-killswitch-与验收目标机c-档)
   - [A4 日常、更新与恢复（PC0 指引；接触 Claude 的 PC1/PC2 仍走 V3）](routes-and-platforms.md#a4-日常更新与恢复pc0-指引接触-claude-的-pc1pc2-仍走-v3)
+- [R-ROUTER 软路由（占位，未来补齐）](routes-and-platforms.md#r-router-软路由占位未来补齐)
 - [来源与维护定位](routes-and-platforms.md#来源与维护定位)
 
 ## scripts-index.md

@@ -1,5 +1,10 @@
 # 版本记录
 
+## 软路由路线占位（2026-11-01）
+
+- 所有者确认：软路由先占位，未来补齐这条路线。`routes-and-platforms.md` 新增“R-ROUTER 软路由（占位，未来补齐）”（锚点 `r-router`）：补齐前直接告诉用户 Claude Desktop 最佳是软路由、现在先按本机路线做；Agent 不自行编写搭建步骤、不改用户路由器；不新增路线值。`exit-consistency.md`、`agent-remediation.md` 的两处提法指向这个占位；`section-index.md` 重新生成
+- 测试：`test_exit_consistency_owner_facts_are_stated_directly_and_linked` 增加断言（旧文档上失败）。回滚：回退本提交
+
 ## Claude Desktop 最佳还是软路由（2026-11-01）
 
 - 所有者补充：延迟、TCP 指纹、UA 这几点主要涉及浏览器环境；Claude Desktop 最佳还是软路由。`exit-consistency.md` 开头标明主要针对浏览器环境并指向 Claude Desktop；`agent-remediation.md` 的 Claude Desktop WebRTC 一节写明最佳是软路由，没有软路由时按本机 TUN 严格路由做。软路由的搭建步骤待所有者提供后补

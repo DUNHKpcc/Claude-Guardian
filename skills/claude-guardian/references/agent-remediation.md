@@ -57,7 +57,7 @@
 
 **系统：**操作系统里没有统一关 WebRTC 的开关。桌面客户端、Electron 应用、游戏、会议软件自己发 STUN/UDP，浏览器插件和浏览器策略都管不到。**只开系统代理时，非浏览器应用的 WebRTC/UDP 不受保护**：系统代理只对愿意读它的程序生效，而且只有 HTTP/SOCKS 的 TCP 流量走代理，UDP 照样直连，会暴露真实 IP。所以**必须开 TUN 严格路由**（Clash Verge 里的“虚拟网卡模式”加“严格路由”，mihomo 配置是 `tun.enable: true`、`strict-route: true`），并按[整机只走 IPv4](#ipv4-only-policy)关 IPv6。开好后跑 `network_check.py run`：“UDP”一项要显示 STUN 映射地址和 TCP 出口一致，“路由”一项要显示走 TUN。
 
-**这一步就是为了防止 Claude Desktop 的 WebRTC 泄漏（所有者 2026-10-28）：**Claude Desktop 是 Electron 应用，自己发 STUN/UDP，Chrome 插件和浏览器策略管不到，所以本机防它的 WebRTC 泄漏靠 TUN 严格路由加关 IPv6，不靠应用内开关。**Claude Desktop 最佳还是软路由（所有者 2026-11-01）**；没有软路由时按本节在本机做。验收按下面做：
+**这一步就是为了防止 Claude Desktop 的 WebRTC 泄漏（所有者 2026-10-28）：**Claude Desktop 是 Electron 应用，自己发 STUN/UDP，Chrome 插件和浏览器策略管不到，所以本机防它的 WebRTC 泄漏靠 TUN 严格路由加关 IPv6，不靠应用内开关。**Claude Desktop 最佳还是软路由（所有者 2026-11-01）**，这条路线先[占位](routes-and-platforms.md#r-router)、未来补齐；现在按本节在本机做。验收按下面做：
 
 1. 在 **Claude Desktop 运行、TUN 开着** 的同一状态下跑 `network_check.py run`，UDP 项的 STUN 映射地址必须和 TCP 出口一致，路由项显示走 TUN。局域网和 mDNS 候选不算公网泄漏。
 2. UDP 要真能出去：节点和协议得支持 UDP 转发，规则里不能让 STUN 目标命中 `DIRECT`。ICE 701、无候选或超时只算无法判定，不算已防住。

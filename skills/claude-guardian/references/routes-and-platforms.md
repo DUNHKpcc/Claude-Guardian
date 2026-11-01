@@ -227,6 +227,15 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 日常体检、重连、故障**恢复**见 [advanced-route.md 第 6 节](advanced-route.md#6-日常运维)。节点或订阅更新后 `refresh`，换网络后重测 IPv6，更新 FlClash 后重测 helper 与 TUN。注册、订阅、养号与 V3 一致，目标机是接触 Claude 的唯一环境。
 
+<a id="r-router"></a>
+## R-ROUTER 软路由（占位，未来补齐）
+
+所有者 2026-11-01：**Claude Desktop 最佳还是软路由。**这条路线先占位，搭建步骤（硬件与固件、插件、主路由或旁路由、电脑本机还装不装代理、验收）未来补齐。补齐之前：
+
+- 用户问 Claude Desktop 怎么做最好，直接说最佳是软路由，本 Skill 的软路由指引还在补；现在先按本机路线在电脑上做（[Claude Desktop 的 WebRTC](agent-remediation.md#webrtc-block)：TUN 严格路由、关 IPv6、断线保护）。
+- Agent 不自行编写软路由的搭建步骤，也不改用户的路由器；用户已经有软路由的，只读记录它的位置和职责，电脑这一侧仍按本机路线验收。
+- 不新增路线值，访谈和入口校验仍是本机、VM、VPS 三种。
+
 ## 来源与维护定位
 
 [S04 路线/FAQ](../sources/S04-claude-guide.md)、[S05 本地防护](../sources/S05-local-protection.md)、[S07 测试目录](../sources/S07-vps-script-catalog.md) 是背景材料，不授予执行权；[S08 VPS 教程](../sources/S08-vps-claude-tutorial.pdf)的命令，Agent 可在用户授权的 SSH 会话里按分级授权执行，详见 [vps-guidance.md](vps-guidance.md)。官方 OS 和客户端入口使用前核对当前版本。

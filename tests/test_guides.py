@@ -613,6 +613,12 @@ class GuidanceContracts(unittest.TestCase):
             self.assertIn(term, doc)
         self.assertIn("**Claude Desktop 最佳还是软路由**", doc)
         self.assertIn("Claude Desktop 最佳还是软路由", (REFS / "agent-remediation.md").read_text(encoding="utf-8"))
+        # Soft router is a placeholder route: stated as best, no invented setup steps, no new route value.
+        router = self.routes.split('<a id="r-router"></a>', 1)[1].split("\n## ", 2)[1]
+        for term in ("占位，未来补齐", "Claude Desktop 最佳还是软路由", "不自行编写软路由的搭建步骤", "不新增路线值"):
+            self.assertIn(term, router)
+        for name in ("exit-consistency.md", "agent-remediation.md"):
+            self.assertIn("routes-and-platforms.md#r-router", (REFS / name).read_text(encoding="utf-8"), name)
         # Latency is not only the exit's: the client-to-exit leg is what the two remedies shorten.
         self.assertNotIn("TCP 层的特征（延迟、TTL、TCP 指纹）属于出口那台机器", doc)
         for hedge in ("单例", "未核实", "只是推测", "稳妥做法", "可能", "据说"):
