@@ -611,6 +611,8 @@ class GuidanceContracts(unittest.TestCase):
                      "内核就是 Linux，天生不用担心", "和 Linux 的 TTL 差异不大", "不要随意修改 UA",
                      "navigator.platform", "Sec-CH-UA-*", "反而制造了矛盾", "保持浏览器原生 UA 最安全"):
             self.assertIn(term, doc)
+        self.assertIn("**Claude Desktop 最佳还是软路由**", doc)
+        self.assertIn("Claude Desktop 最佳还是软路由", (REFS / "agent-remediation.md").read_text(encoding="utf-8"))
         # Latency is not only the exit's: the client-to-exit leg is what the two remedies shorten.
         self.assertNotIn("TCP 层的特征（延迟、TTL、TCP 指纹）属于出口那台机器", doc)
         for hedge in ("单例", "未核实", "只是推测", "稳妥做法", "可能", "据说"):

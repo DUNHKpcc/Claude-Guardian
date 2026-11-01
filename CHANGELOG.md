@@ -1,5 +1,10 @@
 # 版本记录
 
+## Claude Desktop 最佳还是软路由（2026-11-01）
+
+- 所有者补充：延迟、TCP 指纹、UA 这几点主要涉及浏览器环境；Claude Desktop 最佳还是软路由。`exit-consistency.md` 开头标明主要针对浏览器环境并指向 Claude Desktop；`agent-remediation.md` 的 Claude Desktop WebRTC 一节写明最佳是软路由，没有软路由时按本机 TUN 严格路由做。软路由的搭建步骤待所有者提供后补
+- 测试：`test_exit_consistency_owner_facts_are_stated_directly_and_linked` 增加断言（旧文档上失败）。回滚：回退本提交
+
 ## 出口一致性：写明对比原理，修正延迟与 TTL 的表述（2026-11-01）
 
 - 所有者补充：UA 声称的系统和浏览器，会被拿来和 TCP 指纹、TLS 指纹、JS 环境等对比，看是否自相矛盾。写进 `exit-consistency.md` 开头作为原理：TCP 指纹来自出口服务器，UA、TLS、JS 环境来自本机浏览器
