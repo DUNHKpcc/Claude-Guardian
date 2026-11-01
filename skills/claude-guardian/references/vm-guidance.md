@@ -1,6 +1,6 @@
 # VM 路线：客机系统、网卡、出口与防火墙
 
-适用：用户已经选择 **VM 路线**（见 [R-VM](routes-and-platforms.md)）。选本机或 VPS 路线时不触发。Agent 可以部署（由宿主 Agent 通过 shell 或客机控制台执行本文的命令和脚本；Skill 没有内置自动部署程序，脚本还没在真实客机上实测）：创建 VM、装客机系统、配网卡、装 FlClash TUN、启用 killswitch、开客机 SSH 等，按[分级授权](authorization-tiers.md)执行；操作前展示改动、先打快照。安装镜像的账号、付款、注册和登录由用户本人完成。
+适用：用户已经选择 **VM 路线**（见 [R-VM](routes-and-platforms.md)）。选本机或 VPS 路线时不触发。Agent 可以部署（由宿主 Agent 通过 shell 或客机控制台执行本文的命令和脚本；Skill 没有内置自动部署程序，脚本还没在真实客机上实测）：创建 VM、装客机系统、配网卡、装 FlClash TUN、启用 killswitch、开客机 SSH 等，按[分级授权](authorization-tiers.md)执行；操作前展示改动、先打快照。**Agent 装在客机里时**，开 TUN、装 killswitch、故障演练都会切断 Agent 自己调用模型的连接，先按 [Agent 和被改的网络在同一台机器上](agent-on-target.md) 查清 Agent 链路再做。安装镜像的账号、付款、注册和登录由用户本人完成。
 
 ## 1. 客机系统怎么选
 

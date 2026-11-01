@@ -47,6 +47,15 @@ M02/M03: accounts, subscription, and payment planning（19 节）
 - [7. 通用教训](advanced-route.md#7-通用教训)
 - [边界](advanced-route.md#边界)
 
+## agent-on-target.md
+
+Agent 和被改的网络在同一台机器上（4 节）
+
+- [1. 开工前先查清 Agent 自己的连接走哪条路](agent-on-target.md#1-开工前先查清-agent-自己的连接走哪条路)
+- [2. 哪些步骤会切断 Agent 自己](agent-on-target.md#2-哪些步骤会切断-agent-自己)
+- [3. 做法](agent-on-target.md#3-做法)
+- [4. 授权档位](agent-on-target.md#4-授权档位)
+
 ## agent-remediation.md
 
 Agent 编排检测与修复（8 节）

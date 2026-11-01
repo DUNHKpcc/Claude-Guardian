@@ -57,7 +57,7 @@ S08 的结论是：像示例里这样的机房 IP 算好的，直接用没问题
 <a id="vps-liveness"></a>
 ## 服务器保活：按配置定内存预算，防 OOM 失联（Agent 操作前必做）
 
-Agent 通过 SSH 操作 VPS 时，第一优先级是保住控制通道。内存耗尽（OOM）时，内核 OOM killer 可能杀掉 sshd、tmux 或 Agent 会话；还没触发 OOM 时也可能先陷入 swap 抖动（thrashing），系统失去响应，Agent 和用户都连不上 VPS。所以每次部署、编译、装依赖或开远程浏览器之前，先按服务器规格做资源基线和保活配置，再动手。
+Agent 通过 SSH 操作 VPS 时，第一优先级是保住控制通道。Agent 直接跑在这台 VPS 上、又要在上面开 TUN 或装防火墙时，另按 [Agent 和被改的网络在同一台机器上](agent-on-target.md) 做。内存耗尽（OOM）时，内核 OOM killer 可能杀掉 sshd、tmux 或 Agent 会话；还没触发 OOM 时也可能先陷入 swap 抖动（thrashing），系统失去响应，Agent 和用户都连不上 VPS。所以每次部署、编译、装依赖或开远程浏览器之前，先按服务器规格做资源基线和保活配置，再动手。
 
 1. **资源基线（A 档，只读）：**`nproc`、`free -h`、`swapon --show`、`df -h /`、`cat /proc/pressure/memory`（PSI 内存压力）、`systemctl is-active earlyoom`，以及 `journalctl -k -b | grep -iE "out of memory|oom-kill"` 查本次开机有没有 OOM 记录。用 `free -h` 的 available 一列定内存预算：**至少给系统、sshd 和 tmux 留 512MB**，剩下的才是任务能用的。
 2. **Swap 兜底：**没有 swap 就建 swapfile，内存 2G 及以下建 2G，4G 建 2 到 4G，8G 建 4G；先确认磁盘剩余空间够。`sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile`，再在 `/etc/fstab` 加 `/swapfile none swap sw 0 0` 持久化；`/etc/sysctl.d/99-guardian-swap.conf` 写 `vm.swappiness=10`，`sudo sysctl --system` 生效。OpenVZ、LXC 这类容器型 VPS 通常不能开 swap，就只靠内存预算，并告诉用户。

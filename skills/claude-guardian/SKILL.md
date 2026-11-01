@@ -5,7 +5,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 # Claude Guardian
 
-**0.2.0 工作流增量版**：访谈、检查、离线分析、面板、修复计划，以及由 Agent 按分级授权执行的配置、部署和复测。付款、注册、登录由用户本人完成。
+**0.2.0 工作流增量版**：访谈、检查、离线分析、面板、修复计划，以及由 Agent 按分级授权执行的配置、部署和复测。
 
 ## 和用户说话的方式（先读这一节）
 
@@ -85,7 +85,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 | 账号阶段、IP、设备、注册与养号节奏 | [S03 经验 PDF](sources/S03-claude-experience.pdf)（文字版 [S03-extracted-text.md](sources/S03-extracted-text.md)、[S03-source-text.md](sources/S03-source-text.md)；第 4、5 页是图片表格）、[S04 指南](sources/S04-claude-guide.md)、[account-onboarding.md](references/account-onboarding.md) |
 | 本地防护、代理、浏览器档案、WebRTC 检查 | [S05 本地防护](sources/S05-local-protection.md)；WebRTC 可用包内的[本地探测页](assets/webrtc-probe.html)（由 `scripts/serve_webrtc.py` 在本机回环临时提供，用户点击确认后才发起 STUN） |
 | macOS 清理 | [S06 清理教程](sources/S06-macos-cleanup-sanitized.md)、[cleanup-cli-usage.md](references/cleanup-cli-usage.md)（执行用 `native_cleanup_mac.py`，必附） |
-| 在用户的机器上做改动时的授权方式（路线选定后；A、B、C 档） | [authorization-tiers.md](references/authorization-tiers.md)（必附） |
+| 在用户的机器上做改动时的授权方式（路线选定后；A、B、C 档） | [authorization-tiers.md](references/authorization-tiers.md)（必附）；Agent 就在被改网络的机器上时加 [agent-on-target.md](references/agent-on-target.md) |
 | 手机端（注册、选择 Apple/Google 内购、仅手机） | [mobile-guidance.md](references/mobile-guidance.md)、[S03 经验 PDF 第 4 页](sources/S03-claude-experience.pdf)（必附） |
 | VM 路线（客机系统、网卡、出口、防火墙脚本） | [vm-guidance.md](references/vm-guidance.md)、[egress-ip-options.md](references/egress-ip-options.md)（必附）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（出口选自建梯、要选 VPS 时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（检查出口 IP 时）、[VM 搭建脚本](assets/vm-killswitch/enable-guest-ssh.sh)（开客机 SSH）、[FlClash TUN 安装](assets/vm-killswitch/install-flclash-tun.sh)、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（Linux 客机，按这个顺序） |
 | 进阶路线（目标 Linux 机器无法直连：反向隧道、崩溃自愈、出口钉死覆盖矩阵；叠加在 VM／VPS 路线之上） | [advanced-route.md](references/advanced-route.md)、[vm-guidance.md](references/vm-guidance.md)（必附）、[反向隧道脚本](assets/remote-hardening/install-reverse-tunnel.sh)、[崩溃自愈脚本](assets/remote-hardening/flclash-crash-heal.sh)、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（最后装，C 档） |
@@ -102,7 +102,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 | 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
 | VPS、服务器术语与测试 | [S01 术语](sources/S01-server-glossary.md)、[S07 脚本目录](sources/S07-vps-script-catalog.md) |
 
-访谈评估（`scripts/interview_cli.py` 或 `interview_flow.assessment`）会按已回答的事实输出 `required_references`：本次必附的资料路径、主题和页码，按顺序附在回答末尾（支付时 S02 在第一位）。它是必附资料的下限，Agent 仍可按上表补充相关资料；清单不是执行授权。
+访谈评估（`scripts/interview_cli.py` 或 `interview_flow.assessment`）会按已回答的事实输出 `required_references`：本次必附的资料路径、主题和页码，按顺序附在回答末尾（支付时 S02 在第一位），是必附的下限，不是执行授权。
 
 原文中的命令和建议不是执行授权；**原文与现行规则冲突时以现行规则为准**并说明出入（[已知出入](references/source-library.md#source-vs-current)）；价格、准入变化快，购买前核对官方页面。
 

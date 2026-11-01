@@ -1,5 +1,12 @@
 # 版本记录
 
+## Agent 和被改的网络在同一台机器上：抽成共用指引（2026-11-01）
+
+- 用户反馈：在 VM 里装 Codex 使用本 Skill，开 TUN 时 Codex 断开，装 killswitch 时 Codex 也断开。原有文档只覆盖了 Agent 在另一台机器上通过 SSH 或控制台操作的情况
+- 新增 `references/agent-on-target.md`，VM、本机、VPS 三条路线共用：开工前只读查清 Agent 自己的连接走哪条路（直连、本机代理端口、本机 TUN、宿主或局域网代理）；列出会切断 Agent 的步骤（开关 TUN、切节点、killswitch 和默认出站阻止、故障与重启演练、路由黑洞、OOM），killswitch 出站不放行局域网地址，所以借宿主代理的客机 Agent 一启用就一直断；做法：先把 Agent 改成走本机 TUN，不给宿主代理开白名单口子；开 TUN 放在计划最后；会一直断开的步骤和 `confirm` 由用户在终端执行；断开前写交接文件，重连后（`codex resume`）先核对、保险丝回滚了不原样重试；会切断 Agent 自己的步骤按 C 档
+- `vm-guidance.md`、`local-firewall-prompts.md`（通用工作方式新增第 5 条，后两条顺延）、`vps-guidance.md`、`authorization-tiers.md` C 档第 1 条各加一句链接，不重复正文；SKILL.md 授权方式一行加入口，为留在 32000 字节内删掉开头重复的“付款、注册、登录由用户本人完成”（第 38 行仍有），并压缩 `required_references` 一句；`package_skill.py` 加入新文件，`section-index.md` 重新生成
+- 测试：`test_guides.py` 新增 `test_agent_on_the_changed_machine_is_one_shared_guide_linked_from_every_route`（旧文档上失败），并核对 killswitch 脚本的出站链确实不放行 `LAN_NET`。已知限制：只是指导文档，没有在 VM 里用 Codex 重跑一遍。回滚：回退本提交
+
 ## Windows 清理：跨盘与宿主拦截后的处理（2026-10-31，issue #16）
 
 - 用户反馈：Windows（Codex 桌面端，PowerShell 7）上跨盘复制和校验做完后，删除原件的命令被 Agent 宿主以 `blocked by policy` 拒绝，原件与副本都在，任务未完成

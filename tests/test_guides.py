@@ -603,6 +603,25 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("ANTHROPIC_AUTH_TOKEN = <已隐藏>", out)
         self.assertNotIn("sk-", out)
 
+    def test_agent_on_the_changed_machine_is_one_shared_guide_linked_from_every_route(self):
+        # 2026-11-01 feedback: Codex installed inside the VM cut itself off when TUN and the killswitch went on.
+        doc = (REFS / "agent-on-target.md").read_text(encoding="utf-8")
+        for term in ("Agent 链路", "宿主或局域网代理", "codex resume", "交接文件", "不原样重试",
+                     "不在 killswitch 白名单里给宿主或局域网代理开口子", "--failure-drill --evidence-output",
+                     "C 档", "开 TUN 放在计划的最后一步"):
+            self.assertIn(term, doc)
+        for name in ("vm-guidance.md", "local-firewall-prompts.md", "vps-guidance.md", "authorization-tiers.md"):
+            self.assertIn("(agent-on-target.md)", (REFS / name).read_text(encoding="utf-8"), name)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        auth_row = next(line for line in skill.splitlines() if line.startswith("| 在用户的机器上做改动时的授权方式"))
+        self.assertIn("references/agent-on-target.md", auth_row)
+        # The guide says LAN outbound is dropped by the killswitch; keep that true of the script.
+        script = (ROOT / "skills" / "claude-guardian" / "assets" / "vm-killswitch" /
+                  "install-flclash-killswitch.sh").read_text(encoding="utf-8")
+        output_chain = script.split("hook output priority 10; policy drop;", 1)[1].split("}", 1)[0]
+        self.assertNotIn("LAN_NET", output_chain)
+        self.assertIn('oifname "$TUN" counter accept', output_chain)
+
     def test_host_library_contracts_live_outside_skill_md(self):
         # ADR-044: SKILL.md is loaded on every run; the library contracts are read on demand.
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
