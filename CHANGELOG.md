@@ -1,5 +1,11 @@
 # 版本记录
 
+## 出口一致性：写明对比原理，修正延迟与 TTL 的表述（2026-11-01）
+
+- 所有者补充：UA 声称的系统和浏览器，会被拿来和 TCP 指纹、TLS 指纹、JS 环境等对比，看是否自相矛盾。写进 `exit-consistency.md` 开头作为原理：TCP 指纹来自出口服务器，UA、TLS、JS 环境来自本机浏览器
+- 修正上一版两处表述：开头把延迟也算作“属于出口那台机器”，和第 1 节缩短本机到出口的办法对不上，改为“TCP 握手延迟只是出口到网站一段，浏览器请求延迟还要加本机到出口一段，差得越多越像代理”；Windows 一条改为“UA 说是 Windows，网站预期 TTL 128 左右，经 Linux 出口看到的是 64 左右”，本机 TTL 网站本身看不到
+- 测试：`test_exit_consistency_owner_facts_are_stated_directly_and_linked` 增加断言（旧文档上失败）。回滚：回退本提交
+
 ## 出口与本机环境一致：TCP 延迟、TCP 指纹、UA（2026-11-01）
 
 - 所有者提供：TCP 延迟选线路优秀的美国 VPS 做出口，或选物理距离近的出口（如日本）；代理端（自建出口、机场）用 Linux 时本机也要用同系统或接近的系统，Android 内核是 Linux 天生不用担心，Mac 和 iOS 的 TTL 差异也不大；不要随意修改 UA，UA 插件只改请求头，`navigator.platform`、Client Hints（`Sec-CH-UA-*`）、TLS 和 TCP 指纹都没变，反而制造矛盾，保持浏览器原生 UA 最安全
