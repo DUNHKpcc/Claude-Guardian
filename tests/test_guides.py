@@ -603,6 +603,23 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("ANTHROPIC_AUTH_TOKEN = <已隐藏>", out)
         self.assertNotIn("sk-", out)
 
+    def test_exit_consistency_owner_facts_are_stated_directly_and_linked(self):
+        # Owner facts 2026-11-01: TCP latency, TCP fingerprint matching the exit OS, keep the native UA.
+        doc = (REFS / "exit-consistency.md").read_text(encoding="utf-8")
+        for term in ("线路优秀的美国 VPS", "物理距离近的出口，例如日本", "本机也要用同系统，至少是接近的系统",
+                     "内核就是 Linux，天生不用担心", "和 Linux 的 TTL 差异不大", "不要随意修改 UA",
+                     "navigator.platform", "Sec-CH-UA-*", "反而制造了矛盾", "保持浏览器原生 UA 最安全"):
+            self.assertIn(term, doc)
+        for hedge in ("单例", "未核实", "只是推测", "稳妥做法", "可能", "据说"):
+            self.assertNotIn(hedge, doc)
+        for name in ("egress-ip-options.md", "whole-machine-ipv4.md", "vm-guidance.md", "mobile-guidance.md"):
+            self.assertIn("(exit-consistency.md", (REFS / name).read_text(encoding="utf-8"), name)
+        skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
+        row = next(line for line in skill.splitlines() if line.startswith("| 本机路线固定出口"))
+        self.assertIn("references/exit-consistency.md", row)
+        wiki = (ROOT / "tools" / "export_wiki.py").read_text(encoding="utf-8")
+        self.assertIn("'references/exit-consistency.md', '出口 IP'", wiki)
+
     def test_agent_on_the_changed_machine_is_one_shared_guide_linked_from_every_route(self):
         # 2026-11-01 feedback: Codex installed inside the VM cut itself off when TUN and the killswitch went on.
         doc = (REFS / "agent-on-target.md").read_text(encoding="utf-8")

@@ -35,7 +35,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 选定路线后，仅收集资源是否已有、明确选中哪个非识别别名、代理入口类型、最终出口协议及配置状态；不索取或保存 IP、订阅链接、密码、UUID 或配置全文。HTTP/mixed 本地入口和 SOCKS5 最终出口是不同层；Claude Code 要用 HTTP 或 mixed 入口。配置导入后要实测确认生效。
 
-本机与 VM 做适用的详细检查，VM 宿主和客机分别绑定；VPS 路线是开发机，指引见 [vps-guidance.md](references/vps-guidance.md)；本阶段只做基础非侵入检查；用户给出 VM／VPS 访问方式后，Agent 可按分级授权部署，买服务器、付款、注册、登录由用户本人完成。选定路线但没有代理资源、不清楚资源或选择直连，仍可在具体目标和原授权下做离线预检，不要求先购买。
+本机与 VM 做适用的详细检查，VM 宿主和客机分别绑定；VPS 路线是开发机，指引见 [vps-guidance.md](references/vps-guidance.md)；本阶段只做基础非侵入检查；用户给出 VM／VPS 访问方式后，Agent 可按分级授权部署，买服务器、付款、注册、登录由用户本人完成。没有代理资源、不清楚或选直连，仍可在原授权下做离线预检，不要求先购买。
 
 入口由 `scripts/environment_entry.py` 的 `assess_entry` / `require_entry` 校验（细节见 [host-libraries.md](references/host-libraries.md)）。路线或资源变了，旧检查结论和计划作废，重新核实；已有的恢复义务照旧完成。
 
@@ -71,7 +71,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 “这次先在 Codex 中做环境准备。你是第一次准备订阅、以前订阅过现在准备重订，还是目前已有订阅来处理问题？”
 
-第一次订阅、拿不定主意的新手，直接推荐 [A0a 新手试错推荐组合](references/account-onboarding.md#a0a)：苹果内购、Gmail／Outlook 邮箱、VPS 纯净个人 IP、在 VM 或本机上使用、Pro 订阅（所有者 2026-10-25：退款成功率高、稳定率高）。注册时弹手机号验证、24 小时内又要 KYC 的号基本宣判死刑，直接放弃重来。
+第一次订阅、拿不定主意的新手，直接推荐 [A0a 新手试错推荐组合](references/account-onboarding.md#a0a)：苹果内购、Gmail／Outlook 邮箱、VPS 纯净个人 IP、在 VM 或本机上使用、Pro 订阅（所有者 2026-10-25：退款成功率高、稳定率高）。
 
 已回答就跳过。每轮一个主要决策，可合并少量同主题事实；不整页展示问题库。报告摘要使用“已确认／尚未核实／建议下一步”，不报虚假的完成百分比。
 
@@ -99,7 +99,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 | 整机统一出口：只走 IPv4、不走 IPv6（TUN、DNS、规则兜底、泄漏与故障演练；判定用 `scripts/egress_verifier.py`） | [whole-machine-ipv4.md](references/whole-machine-ipv4.md)（必附）、[agent-remediation.md 整机统一路径](references/agent-remediation.md#ipv4-only-policy) |
 | 线路优化（晚高峰慢、断流、卡顿、出口不对、中转、BBR；VPS 路线和自建梯节点；访谈 Q-T01） | [line-optimization.md](references/line-optimization.md)、[R02 线路优化与家宽中转教程](sources/R02-vps-line-optimization.md)（必附）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（要换线路或选机时） |
 | VPS 路线（开发机：系统、环境一致、远程桌面、防火墙） | [vps-guidance.md](references/vps-guidance.md)、[S08 VPS 教程](sources/S08-vps-claude-tutorial.pdf)（必附）、[R02 家宽中转教程](sources/R02-vps-line-optimization.md)（套家宽出口时）、[VPS 推荐报告索引 R01](sources/vps-recommendations/INDEX.md)（选服务器时）、[S07 IP 质量清单](sources/S07-vps-script-catalog.md)（创建后检查 IP 时）、[VPS 防火墙脚本](assets/vps-firewall/vps-guard.sh)（出口是 VPS 自己的 IP 时）、[VM 防火墙脚本](assets/vm-killswitch/install-flclash-killswitch.sh)（套家宽、VPS 上跑 TUN 时） |
-| 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
+| 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、TCP 延迟与指纹、改 UA 见 [exit-consistency.md](references/exit-consistency.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
 | VPS、服务器术语与测试 | [S01 术语](sources/S01-server-glossary.md)、[S07 脚本目录](sources/S07-vps-script-catalog.md) |
 
 访谈评估（`scripts/interview_cli.py` 或 `interview_flow.assessment`）会按已回答的事实输出 `required_references`：本次必附的资料路径、主题和页码，按顺序附在回答末尾（支付时 S02 在第一位），是必附的下限，不是执行授权。

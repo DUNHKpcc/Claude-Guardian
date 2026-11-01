@@ -131,8 +131,9 @@ python scripts/egress_verifier.py check --input <证据文件.json>
    - Linux（VM、VPS）：`timedatectl set-timezone America/New_York`，见 [VM 指引](vm-guidance.md)。
    - 改完重启浏览器再打开验收页，时区一项变绿才算过。语言不要求绿色，不为了让它变绿去改系统语言。
    - 手机：iOS 在设置 → 通用 → 日期与时间，关掉“自动设置”，选出口所在城市（美东选 New York）；Android 在设置 → 系统 → 日期和时间，关掉“自动设置时区”（各厂商叫法不同，也叫“使用网络提供的时区”），选出口所在时区。见[手机端防封要点](mobile-guidance.md)。
-5. 这个页面会从浏览器测 claude.ai、anthropic.com 的可用性，属于接触 Claude：由用户本人打开，Agent 不代开、不用浏览器自动化去打开；把每项的颜色告诉 Agent（截图前遮住 IP），Agent 据此判断通过与否。
-6. 用完按 [痕迹清理](trace-cleanup.md) 清浏览历史和 Shell 历史里的查 IP 记录。
+5. **UA 保持浏览器原生：**不装改 UA 的插件、不开 UA 覆盖；设备信息一项不绿，先查这个。原因和 TCP 指纹、延迟的做法见[出口与本机环境一致](exit-consistency.md)。
+6. 这个页面会从浏览器测 claude.ai、anthropic.com 的可用性，属于接触 Claude：由用户本人打开，Agent 不代开、不用浏览器自动化去打开；把每项的颜色告诉 Agent（截图前遮住 IP），Agent 据此判断通过与否。
+7. 用完按 [痕迹清理](trace-cleanup.md) 清浏览历史和 Shell 历史里的查 IP 记录。
 
 ## 6. 回滚
 

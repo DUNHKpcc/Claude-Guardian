@@ -56,6 +56,7 @@ Agent 说明方向和需要注意的点；用户买好 VPS 并给出访问方式
 1. 出口入口按[网络与解决方法](network-and-remedies.md)的口径：Claude Code 不直接使用 SOCKS 入口，本地要有 HTTP 或 mixed 入口；配置已导入不等于已生效。
 2. 用 [IP 质量与网络测试清单](../sources/S07-vps-script-catalog.md)自行检查出口 IP，由用户在自己的 VPS 上运行，结果只描述当时的观测，不能推出免封概率。
 3. 同一台电脑的出口保持稳定：不要频繁切换节点和地区，节点失效时报告不可用，不静默换出口。
-4. 支付、注册、使用节奏见[账号注册与使用节奏](account-onboarding.md)和[支付说明](accounts-and-payments.md)。
+4. **出口和本机环境要一致：**TCP 延迟选线路优秀的美国 VPS 或物理距离近的出口（如日本）；出口是 Linux，本机也用同系统或接近的系统；不改 UA。见[出口与本机环境一致](exit-consistency.md)。
+5. 支付、注册、使用节奏见[账号注册与使用节奏](account-onboarding.md)和[支付说明](accounts-and-payments.md)。
 
 不承诺免封，也不承诺任何 IP 一定稳定或纯净。

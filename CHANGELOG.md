@@ -1,5 +1,11 @@
 # 版本记录
 
+## 出口与本机环境一致：TCP 延迟、TCP 指纹、UA（2026-11-01）
+
+- 所有者提供：TCP 延迟选线路优秀的美国 VPS 做出口，或选物理距离近的出口（如日本）；代理端（自建出口、机场）用 Linux 时本机也要用同系统或接近的系统，Android 内核是 Linux 天生不用担心，Mac 和 iOS 的 TTL 差异也不大；不要随意修改 UA，UA 插件只改请求头，`navigator.platform`、Client Hints（`Sec-CH-UA-*`）、TLS 和 TCP 指纹都没变，反而制造矛盾，保持浏览器原生 UA 最安全
+- 新增 `references/exit-consistency.md` 写这三点，并补 Windows 默认 TTL 128 与 Linux 等系统的 64 不同，Windows 用户用 Linux 客机或 VPS 路线；`egress-ip-options.md` 选好之后、`whole-machine-ipv4.md` 5a 浏览器验收（新增第 5 条，后两条顺延）、`vm-guidance.md` 客机系统、`mobile-guidance.md` 各加一句链接；SKILL.md 出口一行加入口，为留在 32000 字节内压缩离线预检一句、删掉首问示例里与“和用户说话的方式”第 6 条重复的 KYC 一句（A0a 和第 6 条仍在）；wiki 在“出口 IP”组新增一页，`package_skill.py` 加入新文件，`section-index.md` 重新生成
+- 测试：`test_guides.py` 新增 `test_exit_consistency_owner_facts_are_stated_directly_and_linked`（旧文档上失败）。已知限制：只是指导文档。回滚：回退本提交
+
 ## Agent 和被改的网络在同一台机器上：抽成共用指引（2026-11-01）
 
 - 用户反馈：在 VM 里装 Codex 使用本 Skill，开 TUN 时 Codex 断开，装 killswitch 时 Codex 也断开。原有文档只覆盖了 Agent 在另一台机器上通过 SSH 或控制台操作的情况

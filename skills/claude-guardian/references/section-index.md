@@ -141,6 +141,15 @@ M14：证据、来源与发布规则（5 节）
 - [发布与更新](evidence-policy.md#发布与更新)
 - [官方与技术入口（历史索引）](evidence-policy.md#官方与技术入口历史索引)
 
+## exit-consistency.md
+
+出口与本机环境一致：TCP 延迟、TCP 指纹、UA（4 节）
+
+- [1. TCP 延迟](exit-consistency.md#1-tcp-延迟)
+- [2. TCP 指纹](exit-consistency.md#2-tcp-指纹)
+- [3. UA 与环境一致性](exit-consistency.md#3-ua-与环境一致性)
+- [4. Agent 什么时候用本文](exit-consistency.md#4-agent-什么时候用本文)
+
 ## host-libraries.md
 
 内置脚本与宿主库的契约说明（12 节）
