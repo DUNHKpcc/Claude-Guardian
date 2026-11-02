@@ -1,5 +1,11 @@
 # 版本记录
 
+## Mac PF 测试单补泄漏复查（2026-11-01）
+
+- 所有者要求：WebRTC、DNS、IPv6 已做到的证据只有 ADR-039 那一台 Mac、TUN 正常运行时；重启、睡眠唤醒、换网之后没复测。`docs/mac-pf-killswitch-test.md` 新增“R 泄漏复查”：一次 `network_check.py run`（路由、IPv6、DNS、UDP 四项）加 WebRTC 探测页和浏览器验收，平时用 Claude Desktop 的要它开着测；在加 PF 后（R1）、睡眠唤醒后（R2）、换网后（R3）、重启后（R4）各做一次，反馈表同步加行
+- 修正 T5 命令漏了 `network_check.py run` 必填的 `--target-ref`，补上 `--proxy` 和 `--evidence-output`
+- 只改文档，无代码改动。回滚：回退本提交
+
 ## Mac 本机 kill switch 改用 PF 脚本（2026-11-01，ADR-054，Issue #17）
 
 - Issue #17 实测：LuLu 默认拒绝时，经透明 TUN 的连接被按发起进程拦掉；LuLu 判断早于路由、没有按网卡的条件，原文档“只给核心放行”的设计不成立。所有者确认改用 PF

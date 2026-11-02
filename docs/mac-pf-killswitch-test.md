@@ -121,14 +121,49 @@ sudo bash guardian-pf-killswitch.sh confirm
 TUN 开着、规则已确认时，按 `whole-machine-ipv4.md` 跑一次：
 
 ```bash
-python3 <仓库路径>/skills/claude-guardian/scripts/network_check.py run --failure-drill
+python3 <仓库路径>/skills/claude-guardian/scripts/network_check.py run --target-ref mac-test \
+  --proxy http://127.0.0.1:<mixed 端口> --failure-drill --evidence-output <私有目录>/evidence-T5.json
 ```
 
-按提示停核心再打开，把结果交给 `egress_verifier.py` 判定。记录判定结论，以及“故障演练”一项的结果。
+按提示停核心再打开，把 `evidence-T5.json` 交给 `egress_verifier.py` 判定（`--evidence-output` 每次要用新文件名，里面有出口 IP，不要外传）。记录判定结论，以及“故障演练”一项的结果。
 
 ## T6 浏览器验收
 
 浏览器打开 https://ip.net.coffee/claude/，除语言外全绿；WebRTC 用包内的 `assets/webrtc-probe.html` 再查一次。记录结果。
+
+## R 泄漏复查：WebRTC、DNS、IPv6（多次使用）
+
+ADR-039 只证明了一台 Mac 在 TUN 正常时这三项不泄漏；重启、睡眠唤醒、换网之后还没复测过。这一节定义一次复查，下面 R1 到 R4 四个时间点各做一次。
+
+前提：TUN 开着、规则已确认；平时用 Claude Desktop 的，让它**开着**再测（它自己发 STUN/UDP，要在它运行时证明 UDP 也走代理）。
+
+1. **一次取证：**
+   ```bash
+   python3 <仓库路径>/skills/claude-guardian/scripts/network_check.py run --target-ref mac-test \
+     --proxy http://127.0.0.1:<mixed 端口> --output <私有目录>/R<编号>.json
+   ```
+   `--output` 每次换新文件名。看报告里四项：
+
+   | 项 | 通过的样子 |
+   | --- | --- |
+   | 路由 | 走 TUN（utun） |
+   | IPv6 | 不可达（返回的是 IPv4 字符串也算不可达，见 `whole-machine-ipv4.md`） |
+   | DNS | 没有解析服务器在中国（不是 fail） |
+   | UDP | STUN 映射地址和 TCP 出口一致。显示 UDP 被拦或无法判定时记“无法判定”，不算通过 |
+
+2. **浏览器 WebRTC：**
+   ```bash
+   python3 <仓库路径>/skills/claude-guardian/scripts/serve_webrtc.py
+   ```
+   在你平时用的那个浏览器（和那个配置文件）里打开它打印的本机地址，按页面提示点开始。通过：没有出口以外的公网 IP 候选（局域网、mDNS 候选不算）。
+3. **浏览器 DNS 和 IPv6 复核：**打开 https://ip.net.coffee/claude/，除语言外全绿。
+
+| 编号 | 时间点 | 做法 |
+| --- | --- | --- |
+| R1 | 加了 PF 之后的基线 | T3 confirm 之后、T4 之前 |
+| R2 | 睡眠唤醒之后 | T7 合盖 5 分钟、打开、等 TUN 恢复后 |
+| R3 | 换网络之后 | T7 换到另一个 Wi-Fi、等 TUN 恢复后 |
+| R4 | 重启之后 | T8 重启、打开 Clash Verge 开 TUN 之后 |
 
 ## T7 换网络、睡眠唤醒
 
@@ -137,6 +172,8 @@ python3 <仓库路径>/skills/claude-guardian/scripts/network_check.py run --fai
 | 换 Wi-Fi | 连到另一个 Wi-Fi | TUN 恢复后正常；`status` 没有“不在规则里”的 WARN |
 | 插有线或 USB 网卡 | 插上新网卡 | `status` 可能出现 WARN（新网卡不在规则里）；重新 apply 后 WARN 消失。记录插上后、apply 前，拔掉 Wi-Fi 时能不能直连（能直连就是没保护，正是 WARN 的意思） |
 | 睡眠唤醒 | 合盖 5 分钟再打开 | 规则还在（`status` 有规则），上网正常 |
+
+换 Wi-Fi 后做一次 **R3**，睡眠唤醒后做一次 **R2**。
 
 ## T8 开机自动加载
 
@@ -150,7 +187,7 @@ python3 <仓库路径>/skills/claude-guardian/scripts/network_check.py run --fai
 | 基线第 1、2 条 | 失败（没有 TUN，被规则拦住） |
 | `cat /var/log/claude-guardian-pf.log` | 没有报错 |
 
-4. 打开 Clash Verge 开 TUN：基线恢复。恢复 Clash Verge 的开机自启。
+4. 打开 Clash Verge 开 TUN：基线恢复。然后做一次 **R4**。最后恢复 Clash Verge 的开机自启。
 
 如果重启后规则不在（`status` 显示空），说明系统开机时加载 `/etc/pf.conf` 把我们的规则冲掉了，或者开机项比系统先跑。这是本方案最需要真机确认的一点，请务必记录。
 
@@ -173,6 +210,11 @@ python3 <仓库路径>/skills/claude-guardian/scripts/network_check.py run --fai
 | T4 节点域名时核心能否重连（是否用了 BOOTSTRAP_DNS） | | |
 | T5 一次取证判定 | | |
 | T6 浏览器验收 | | |
+| R1 基线复查（路由／IPv6／DNS／UDP／WebRTC 各一项） | | |
+| R2 睡眠唤醒后复查（同上五项） | | |
+| R3 换网后复查（同上五项） | | |
+| R4 重启后复查（同上五项） | | |
+| R 时 Claude Desktop 是否开着 | | |
 | T7 换网络、新网卡、睡眠 | | |
 | T8 开机加载 | | |
 | T9 回滚、卸载、PF 恢复原状 | | |
