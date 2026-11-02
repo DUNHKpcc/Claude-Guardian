@@ -603,6 +603,14 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("ANTHROPIC_AUTH_TOKEN = <已隐藏>", out)
         self.assertNotIn("sk-", out)
 
+    def test_web_card_billing_address_matches_card_region(self):
+        # Owner fact 2026-11-02: billing address follows the card's region; a random tax-free state triggers risk control.
+        doc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
+        b4 = doc.split("### B4 ", 1)[1].split("\n### ", 1)[0]
+        for term in ("**账单地址要和卡的地区一致（所有者 2026-11-02）：**", "国家、州、邮编都和卡的发行地区一致",
+                     "不要为了省税随意填免税州", "会触发风控", "支付 IP、支付币种也要对齐"):
+            self.assertIn(term, b4)
+
     def test_apple_gift_card_channel_follows_s02_without_us_card_gate(self):
         # Owner correction 2026-11-01: an answer invented "need a US-issued card or US PayPal" and a fake-billing-address warning.
         doc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
