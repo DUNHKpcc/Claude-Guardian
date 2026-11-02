@@ -1,6 +1,6 @@
 # Mac PF killswitch 真机测试单
 
-对应 ADR-054 和脚本 [`guardian-pf-killswitch.sh`](../skills/claude-guardian/assets/mac-killswitch/guardian-pf-killswitch.sh)。目的：在真 Mac 上证明两件事——**TUN 正常时一切照常能用**，**核心或 TUN 停掉后什么都直连不出去**——以及保险丝、回滚、开机加载都按设计工作。全部测完之前，Skill 里这条路线写的是“未在真机验证”。
+对应 ADR-054 和脚本 [`guardian-pf-killswitch.sh`](../skills/claude-guardian/assets/mac-killswitch/guardian-pf-killswitch.sh)。目的：在真 Mac 上证明两件事——**TUN 正常时一切照常能用**，**核心或 TUN 停掉后什么都直连不出去**——以及保险丝、回滚、开机加载都按设计工作。2026-11-02 已有[单台 Mac 最终验收报告](../reports/mac-pf-isolated-acceptance-2026-11-02.md)：关键保护和回滚取得通过样本，换网与 UDP 仍未全通过，不能宣布整条路线验收通过。本轮按所有者要求排除时间/时区，不改变以下通用测试项。
 
 ## 先读：安全和救援
 
