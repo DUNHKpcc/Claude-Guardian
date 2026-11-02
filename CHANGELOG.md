@@ -1,5 +1,9 @@
 # 版本记录
 
+## README 加 Trendshift 徽章（2026-11-02）
+
+- 项目上了 Trendshift 日榜，中英文 README 标题下方加两枚徽章（Python 分类和总榜）。只改文档。回滚：回退本提交
+
 ## Mac PF 测试单补泄漏复查（2026-11-01）
 
 - 所有者要求：WebRTC、DNS、IPv6 已做到的证据只有 ADR-039 那一台 Mac、TUN 正常运行时；重启、睡眠唤醒、换网之后没复测。`docs/mac-pf-killswitch-test.md` 新增“R 泄漏复查”：一次 `network_check.py run`（路由、IPv6、DNS、UDP 四项）加 WebRTC 探测页和浏览器验收，平时用 Claude Desktop 的要它开着测；在加 PF 后（R1）、睡眠唤醒后（R2）、换网后（R3）、重启后（R4）各做一次，反馈表同步加行
