@@ -1,5 +1,13 @@
 # 版本记录
 
+## Mac 本机 kill switch 改用 PF 脚本（2026-11-01，ADR-054，Issue #17）
+
+- Issue #17 实测：LuLu 默认拒绝时，经透明 TUN 的连接被按发起进程拦掉；LuLu 判断早于路由、没有按网卡的条件，原文档“只给核心放行”的设计不成立。所有者确认改用 PF
+- 新增 `assets/mac-killswitch/guardian-pf-killswitch.sh`（render／apply／confirm／status／rollback／persist／unpersist／uninstall）：物理网卡只放行到节点真实 IPv4 和端口、DHCP，可选 `BOOTSTRAP_DNS`、`LAN_NET`，其余出站丢弃，utun 和回环不受影响；规则在 `com.apple/claude-guardian` 子 anchor，不改 `/etc/pf.conf`；`pfctl -E`/`-X` 引用计数；180 秒保险丝，确认后的规则才在开机加载；兼容系统 bash 3.2
+- `local-firewall-prompts.md` 的 Mac 防火墙一节重写（删掉“Block Mode”和“允许规则加在核心身上”），`vm-guidance.md`、`routes-and-platforms.md` L2、`agent-on-target.md`、`scripts-index.md`、SKILL.md、中英文 README 同步；`section-index.md` 重新生成；打包清单加入脚本
+- 新增真机测试单 `docs/mac-pf-killswitch-test.md`（T0–T9：基线、render、保险丝、正常使用、停核心演练、一次取证、浏览器验收、换网和睡眠、开机加载、回滚卸载），交给所有者在真机 Mac 上执行
+- 测试：新增 `tests/test_mac_pf_killswitch.py`（用 bash 实际运行 render：只读 proxies 段、块写法和行内写法、规则只针对物理网卡、可选例外、fake-ip 和非法输入被拒、特权命令要 root；脚本不写 `/etc/pf.conf`、不清全局状态、不用 `pfctl -d`、不用 bash 4 语法）；`test_guides.py` 两处断言从旧设计改为新设计。**没有在真机 Mac 上验证**，加载规则、保险丝、开机项、停核心演练都未跑过。回滚：回退本提交
+
 ## Apple 礼品卡购买渠道只按 S02 答，删账单地址话题（2026-11-01）
 
 - 所有者纠正：有用户问支付方式，AI 回答“有美国发行的卡或美区 PayPal 才能在官网买，否则两条路”，并提到“不要伪造美国账单地址”。S02 的 Apple礼品卡表写的是官网首选、国内卡有时会被拒、成功率波动，没有美国卡或 PayPal 门槛；账单地址一句来自 A3 第 2 条的“不伪造地区、住址”联想。原因是 B1 没规定礼品卡购买渠道，AI 自行补全

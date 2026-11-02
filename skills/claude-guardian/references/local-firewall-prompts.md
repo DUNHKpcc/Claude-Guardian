@@ -1,9 +1,9 @@
 # 本机路线：Clash 与防火墙（Agent 提示词）
 
-适用：用户已选**本机路线**（Mac 或 Windows），出口 IP 已经定了来源（见[固定出口 IP 的来源](egress-ip-options.md)），现在要在自己的电脑上让**所有公网流量只走同一个代理出口**，代理掉线时不直连（fail-closed）。本机路线不提供脚本，**全部用提示词引导**：Agent 一步一步问、说明、出变更卡，用户在自己的电脑上操作，或经逐项批准后由 Agent 在获准的会话里执行。
+适用：用户已选**本机路线**（Mac 或 Windows），出口 IP 已经定了来源（见[固定出口 IP 的来源](egress-ip-options.md)），现在要在自己的电脑上让**所有公网流量只走同一个代理出口**，代理掉线时不直连（fail-closed）。Windows 不提供脚本，**全部用提示词引导**；Mac 用一个 PF 脚本加提示词：Agent 一步一步问、说明、出变更卡，用户在自己的电脑上操作，或经逐项批准后由 Agent 在获准的会话里执行。
 
 - **Windows：**用系统自带的 Windows 防火墙（Windows Defender 防火墙）。
-- **Mac：**依赖第三方软件 LuLu（Objective-See 的免费开源出站防火墙）。
+- **Mac：**用系统自带的 PF，经 [guardian-pf-killswitch.sh](../assets/mac-killswitch/guardian-pf-killswitch.sh) 按网卡拦（ADR-054）。不再用 LuLu 做 kill switch，原因见下面 Mac 一节。
 - 整机统一出口只走 IPv4 的配置、取证和判定见[整机统一出口](whole-machine-ipv4.md)；整机统一路径、明确例外、IPv4_ONLY 的要求见[现行整机统一路径](agent-remediation.md#ipv4-only-policy)；DNS、IPv6、WebRTC 的证据解释见[网络与修复建议](network-and-remedies.md)。
 
 ## 通用工作方式（两个系统相同）
@@ -21,7 +21,7 @@
 
 替客户、同事、家人做本机路线（Mac 和 Windows 都适用）时按下面做。起因（2026-10-30 反馈）：有人给客户做 Windows 时另写防火墙执行器和恢复程序，执行器反复出错，一天一夜没交付。
 
-1. **开工前说清 Skill 给什么：**本机路线是提示词引导（Windows 按本文第 1 到 7 步，Mac 按 LuLu 一节），检测和判定用 `network_check.py run` 和 `egress_verifier.py`；没有 Windows 写入引擎、常驻程序或自动恢复服务。客户要“一键全自动”时当场说。
+1. **开工前说清 Skill 给什么：**本机路线是提示词引导（Windows 按本文第 1 到 7 步，Mac 按 PF 一节），检测和判定用 `network_check.py run` 和 `egress_verifier.py`；没有 Windows 写入引擎、常驻程序或自动恢复服务。客户要“一键全自动”时当场说。
 2. **断线保护不用另写程序：**默认出站阻止和 `guardian-*` 规则是系统防火墙的持久配置，核心崩溃、TUN 掉线、重启后都照样生效。TUN 恢复交给客户端的服务模式和开机自启；恢复之前只断网、不直连。客户端没有受支持的自启入口就告诉客户，不自建服务（[修复后的复验](agent-remediation.md#post-repair-stability)）。
 3. **验收单，每项报通过／未通过／未做：**
    1. **一次取证：**TUN 开着、Claude Desktop 运行时跑一次 `network_check.py run --failure-drill`，交给 `egress_verifier.py` 判定（[整机统一出口](whole-machine-ipv4.md)）。出口、DNS、IPv6、UDP（STUN 映射和 TCP 出口一致，见 [WebRTC 堵法](agent-remediation.md#webrtc-block)）、停核心演练都在这一次里，不分开重测。
@@ -45,21 +45,23 @@
 5. **验证出口：**浏览器和终端分别确认出口 IP 是预期的那个；WebRTC 用包内的[本地探测页](../assets/webrtc-probe.html)检查，有泄露按 [WebRTC 堵法](agent-remediation.md#webrtc-block)装插件或写策略；DNS 用检测页确认没有明显的本地运营商解析。最后由用户在浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除语言外必须全绿（时区要和出口一致）（[做法](whole-machine-ipv4.md#browser-acceptance)）。
 6. **只读盘点：**需要看现有 Clash 配置和控制器时，用只读盘点（`inventory_cli.py`），不读订阅正文、控制器密钥或个人配置哈希。
 
-### Mac 的防火墙：LuLu（第三方）
+### Mac 的防火墙：PF 脚本（未在真机验证）
 
-LuLu 是按进程和目的地过滤出站连接的应用防火墙，**不是系统自带**。Agent 要先把这一点和影响讲清楚，用户同意才继续。
+**为什么不用 LuLu（Issue #17 实测）：**LuLu 按“哪个进程发起连接”过滤，判断发生在路由之前，分不出流量是进 TUN 还是直连。只给代理核心放行时，正常经 TUN 的连接（比如 curl 连 1.1.1.1）照样被按 curl 进程拦掉；反过来给每个应用都放行，TUN 一掉它们又能直连。所以 LuLu 做不了“走 TUN 放行、直连拦截”。已经装了 LuLu 的，用 PF 前把它的默认拒绝关掉（切回放行或退出），否则会和 PF 叠加，把 TUN 流量拦掉。
 
-1. **来源与权限：**只从 Objective-See 官方渠道获取；安装需要在“系统设置 → 隐私与安全性”里批准系统扩展，由用户自己点。核实当前版本的许可和兼容性、卸载方法。
-2. **想要的效果：**除代理核心之外，其他进程不能直接出站；代理核心只能连节点的真实 IP 和端口；本地回环和必要的局域网例外逐项确认。
-3. **配置思路（界面名称以当前版本为准）：**
-   - 把 LuLu 设成阻止未匹配规则的连接的模式（Block Mode），或在首次弹窗时对不认识的进程选择阻止。
-   - 给**代理核心进程**建一条允许规则，目的地限定为节点的真实 IP 和端口；进程名和路径在活动监视器和 LuLu 弹窗里核对，不凭名字猜。
-   - TUN 虚拟网卡上的流量由系统路由到核心，核心再经物理网卡出站，所以允许规则要加在**核心**身上，不是每个应用。
-   - Apple 系统进程是否默认放行取决于 LuLu 的设置，要查看当前选项并告知用户影响。
-4. **覆盖范围必须实测：**LuLu 对部分系统进程和某些连接类型的过滤有限，**不能假设全覆盖**。用故障演练验证：退出 Clash Verge 并停掉服务模式的核心，确认浏览器、终端、其他常用应用都连不出去；再启动恢复。
-5. **回滚：**在 LuLu 里删除自己加的规则或切回放行模式；必要时按官方方法卸载。
+**PF 怎么拦：**按网卡，不按进程。物理网卡（Wi-Fi、有线、雷雳网桥等）只放行发往节点真实 IP 和端口的连接，加 DHCP，可选核心解析节点用的 DNS（`BOOTSTRAP_DNS`）和局域网例外（`LAN_NET`）；其余出站一律丢弃。TUN（utun）和回环不受影响。核心或 TUN 停掉后，应用流量落到物理网卡，被拦，不会直连。规则放在 `com.apple/claude-guardian` 子 anchor 里，不改 `/etc/pf.conf`；Apple 的 TN3165 说 PF 不是稳定接口，所以系统大版本更新后要重做故障演练（ADR-054）。
 
-Mac 上不建议自己写 PF 规则：Apple 的技术说明不建议把 PF 当稳定接口使用，规则和系统的交互难以预测（见 ADR-006）。
+步骤（授权档位见 [authorization-tiers.md](authorization-tiers.md)）：
+
+1. **前提：**先按上一节让 TUN 跑通并确认出口；LuLu 的默认拒绝已关；节点用 IPv4（IPv6 节点会被跳过）。
+2. **看规则（A 档，不改系统）：**`bash guardian-pf-killswitch.sh render`，核对网卡列表包含实际在用的网卡、节点是真实 IP（不是 198.18.x.x）、端口齐全。节点在 proxy-providers 里或解析不出时，用 `NODE_IPS`、`NODE_PORTS` 指定。
+3. **加载（C 档，当场确认）：**`sudo bash guardian-pf-killswitch.sh apply`，默认 180 秒保险丝，不确认就自动撤销。保险丝时间内跑通透明 TUN、域名、显式代理三条检查，再 `sudo ... confirm`。
+4. **故障演练：**用 `network_check.py run --failure-drill` 那一次取证，停核心后确认路由已回到物理网卡、外网全部失败，再恢复。没演练就不能说 kill switch 成功。节点是域名、核心重启后连不上节点的，把核心的 `proxy-server-nameserver` 填进 `BOOTSTRAP_DNS` 重新加载。
+5. **开机加载（C 档）：**`sudo ... persist` 装 LaunchDaemon，只加载已确认的那一版规则。
+6. **日常：**`sudo ... status` 看命中计数和网卡覆盖；换节点、换网卡（出现“不在规则里”的提示）后重新 `apply` 和 `confirm`。系统 DNS 是路由器局域网地址时，加规则后域名会解析失败：把系统 DNS 改成公网地址（进 TUN 被劫持），或加 `LAN_NET`。
+7. **回滚：**`sudo ... rollback` 撤销运行中的规则；`sudo ... uninstall` 连开机项和生成的文件一起删。脚本不在时用 `sudo pfctl -a com.apple/claude-guardian -F rules`。规则只拦网络，本机终端随时能回滚。
+
+**验证状态：**脚本只做过离线测试（规则生成和输入校验），**还没有在真机 Mac 上验证**，真机测试单见仓库 `docs/mac-pf-killswitch-test.md`。验证结果出来之前，Agent 要把这一点告诉用户。
 
 ## Windows
 
@@ -146,5 +148,5 @@ Agent 的执行工具返回 `blocked by policy` 之类的拒绝，是**宿主的
 - 不在没有备份、没有保险丝、没有第二个入口时切换默认出站为阻止。
 - 不在组织管理的设备上改防火墙；不绕过策略。
 - 不假定回环、局域网、系统进程默认放行；不把“规则配置完成”说成“kill switch 成功”。
-- 不自动安装 LuLu、不自动批准系统扩展、不替用户点系统授权弹窗。
+- 不自动批准系统扩展、不替用户点系统授权弹窗；Mac 的 PF 规则不写进 `/etc/pf.conf`。
 - 不索取订阅链接、节点密码、UUID，不把它们写进规则说明或报告。

@@ -24,7 +24,7 @@
   <img alt="3x-ui" src="https://img.shields.io/badge/3x--ui-F59E0B?style=flat-square" />
   <img alt="nftables" src="https://img.shields.io/badge/nftables-DC2626?style=flat-square&logo=linux&logoColor=white" />
   <img alt="Windows Firewall" src="https://img.shields.io/badge/Windows%20Firewall-0078D4?style=flat-square" />
-  <img alt="LuLu" src="https://img.shields.io/badge/LuLu-475569?style=flat-square" />
+  <img alt="PF" src="https://img.shields.io/badge/macOS%20PF-475569?style=flat-square" />
   <img alt="TUN" src="https://img.shields.io/badge/TUN-fail--closed-16A34A?style=flat-square" />
   <img alt="IPv4 only" src="https://img.shields.io/badge/IPv4__ONLY-policy-16A34A?style=flat-square" />
 </p>
@@ -68,7 +68,7 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它把作者和社区的真实
 | 💳 | **订阅与支付** | 按你的地区、设备、预算，从《AI 所有支付方式汇总》里挑候选并说明风险；付款始终由你本人完成 |
 | 🖥️ | **VM 路线** | 客机系统（Omarchy / macOS）、LAN 独立网卡、搭建顺序，以及 `FlClash TUN` + `nftables` 的 fail-closed 防火墙脚本 |
 | ☁️ | **VPS 路线** | 把 VPS 当开发机：Ubuntu 24.04、环境一致、`Xvfb + noVNC` 远程桌面、VS Code Remote-SSH、`tmux`、入站防火墙脚本 |
-| 💻 | **本机路线** | Clash Verge / FlClash 的 TUN 与 DNS 引导，Windows 系统防火墙、Mac 的 LuLu，用提示词一步步带你配 |
+| 💻 | **本机路线** | Clash Verge / FlClash 的 TUN 与 DNS 引导，Windows 系统防火墙用提示词一步步带你配，Mac 用 PF 脚本（未在真机验证） |
 | 🔒 | **整机统一出口** | 整机只走 IPv4、不走 IPv6：`TUN` 严格路由、DNS、规则兜底、泄漏与故障演练的取证清单（Mac、Windows），`egress_verifier.py` 按你实际观察到的证据判定 `established / violated / incomplete`，不回显 IP |
 | 📈 | **线路优化** | Agent 逐项诊断并优化线路：SSH 动态转发、Realm 中转、BBR，每项都有原值记录和回滚 |
 | 🩺 | **故障分流** | `403` / `429` / `529`、账单冲突、疑似凭据泄露：先暂停重试、整理证据，再给下一步 |
@@ -163,7 +163,7 @@ Agent 会先问你在哪个阶段、用什么系统、想达到什么目标，�
 
 | 路线 | 适合谁 | 主要内容 |
 | --- | --- | --- |
-| **本机** `Clash Verge` `FlClash` `LuLu` `Windows Firewall` | 直接在自己的 Mac / Windows 上用（默认推荐） | Clash 的 TUN 与 DNS、Windows 系统防火墙、Mac 的 LuLu，见[本机的 Clash 与防火墙](skills/claude-guardian/references/local-firewall-prompts.md)；出口 IP 的来源见[出口来源](skills/claude-guardian/references/egress-ip-options.md) |
+| **本机** `Clash Verge` `FlClash` `macOS PF` `Windows Firewall` | 直接在自己的 Mac / Windows 上用（默认推荐） | Clash 的 TUN 与 DNS、Windows 系统防火墙、Mac 的 PF，见[本机的 Clash 与防火墙](skills/claude-guardian/references/local-firewall-prompts.md)；出口 IP 的来源见[出口来源](skills/claude-guardian/references/egress-ip-options.md) |
 | **VM** `Omarchy` `macOS` `FlClash TUN` `nftables` | 想在虚拟机里建一个独立的工作环境 | 客机首选 Omarchy（Mac 宿主首选 macOS），LAN 独立网卡，搭建顺序和 fail-closed 防火墙脚本见 [VM 指引](skills/claude-guardian/references/vm-guidance.md)；目标机无法直连时的反向隧道与崩溃自愈见[进阶路线](skills/claude-guardian/references/advanced-route.md) |
 | **VPS** `Ubuntu 24.04` `Xvfb + noVNC` `Remote-SSH` `tmux` | 把远程服务器当开发机（Claude Code 跑在 VPS 上） | 环境一致、远程桌面、防火墙和线路优化，见 [VPS 指引](skills/claude-guardian/references/vps-guidance.md)；你买好服务器、给出 SSH 后，Agent 可按分级授权帮你部署 |
 
@@ -232,7 +232,7 @@ Windows 用户使用环境中实际可用的 Python 3 启动命令，例如 `py 
 | [手机端防封要点](skills/claude-guardian/references/mobile-guidance.md) | iOS / Android 检查表，Android 拔 SIM 卡 |
 | [封号申诉](skills/claude-guardian/references/ban-appeal.md) | 申诉模板、2 到 7 天回复时间、解封后的使用 |
 | [固定出口 IP 的来源](skills/claude-guardian/references/egress-ip-options.md) | 机场、自建梯、家宽拼车，推荐与自建梯简版提示 |
-| [本机的 Clash 与防火墙](skills/claude-guardian/references/local-firewall-prompts.md) | Windows 系统防火墙、Mac 用 LuLu，提示词引导 |
+| [本机的 Clash 与防火墙](skills/claude-guardian/references/local-firewall-prompts.md) | Windows 系统防火墙（提示词引导）、Mac 用 PF 脚本 |
 | [VM 指引](skills/claude-guardian/references/vm-guidance.md) | 客机系统、LAN 独立网卡、搭建顺序、fail-closed 防火墙 |
 | [VPS 指引](skills/claude-guardian/references/vps-guidance.md) | 开发机、环境一致、远程桌面、防火墙 |
 | [线路优化](skills/claude-guardian/references/line-optimization.md) | Agent 逐项诊断与优化线路，变更卡与回滚 |

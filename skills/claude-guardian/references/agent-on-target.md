@@ -26,7 +26,7 @@ A 档，只读。结果写进计划，记为“Agent 链路”：
 | --- | --- | --- |
 | 开启或关闭 TUN、切 TUN 栈、重启代理核心 | 路由在一瞬间切换，切换前建立的 TCP 连接被重置或卡死 | Agent 正在接收的回复中断，这一轮失败；Agent 重新发起请求后通常能恢复 |
 | 切换节点、更新订阅 | 客户端会断开旧连接 | 同上 |
-| 装 killswitch（[install-flclash-killswitch.sh](../assets/vm-killswitch/install-flclash-killswitch.sh)）、Windows 默认出站切成阻止、LuLu 默认拒绝 | killswitch 出站只放行回环、TUN、DHCP 和节点真实 IP；局域网地址只放行**入站**的 SSH 和 ping，到局域网的新出站一律丢弃 | **宿主或局域网代理、直连：**一启用就断，而且一直断。**本机 TUN、本机代理端口：**不受影响 |
+| 装 killswitch（[install-flclash-killswitch.sh](../assets/vm-killswitch/install-flclash-killswitch.sh)）、Windows 默认出站切成阻止、Mac 加载 PF 规则（[guardian-pf-killswitch.sh](../assets/mac-killswitch/guardian-pf-killswitch.sh)） | killswitch 出站只放行回环、TUN、DHCP 和节点真实 IP；局域网地址只放行**入站**的 SSH 和 ping，到局域网的新出站一律丢弃 | **宿主或局域网代理、直连：**一启用就断，而且一直断。**本机 TUN、本机代理端口：**不受影响 |
 | 故障演练（`pkill FlClashCore`、`network_check.py run --failure-drill`）、重启演练 | 演练的目的就是让外网全断 | 全部断开，直到客户端或 [flclash-crash-heal.sh](../assets/remote-hardening/flclash-crash-heal.sh) 把 TUN 拉回来 |
 | FlClash 崩溃后的路由黑洞 | `ip rule` 和策略路由表残留（见 [VM 防火墙](vm-guidance.md#4-客机防火墙fail-closed)） | 全部断开，清掉残留才恢复 |
 | 内存不够 | Agent、代理客户端、浏览器同时跑在小内存机器上，被 OOM 结束 | Agent 进程本身没了 |

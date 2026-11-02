@@ -247,7 +247,7 @@ class GuidanceContracts(unittest.TestCase):
 
     def test_local_firewall_is_prompt_only_and_wired(self):
         doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
-        for term in ("本机路线不提供脚本", "全部用提示词引导", "LuLu", "第三方", "Windows 防火墙", "netsh advfirewall export",
+        for term in ("Windows 不提供脚本", "全部用提示词引导", "LuLu", "guardian-pf-killswitch.sh", "Windows 防火墙", "netsh advfirewall export",
                      "Set-NetFirewallProfile", "DefaultOutboundAction", "New-NetFirewallRule", "InterfaceAlias", "guardian-",
                      "schtasks /Create", "故障演练", "Issue #13）上跑过", "第 5 步故障演练还没在真机上跑通", "Clash Verge", "服务模式", "Agent 不做的事"):
             self.assertIn(term, doc)
@@ -705,7 +705,7 @@ class GuidanceContracts(unittest.TestCase):
         for term in ("## 怎么读 IP 检测报告", "风险评分", "风险因子", "邮局连通性及黑名单", "不推导免封概率"):
             self.assertIn(term, vps)
         vm = (REFS / "vm-guidance.md").read_text(encoding="utf-8")
-        for term in ("### macOS 客机", "远程登录", "local-firewall-prompts.md#mac", "不自己写 PF 规则"):
+        for term in ("### macOS 客机", "远程登录", "local-firewall-prompts.md#mac", "guardian-pf-killswitch.sh"):
             self.assertIn(term, vm)
         for path in (ROOT / "README.md",):
             body = path.read_text(encoding="utf-8")

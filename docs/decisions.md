@@ -441,3 +441,17 @@ Issue #15 指出：用户问“要不要改时区”，Agent 读到的文件不�
 没采用的：在 Skill 里写版本号文件（理由同上）；后台常驻或定时检查（项目不装常驻服务）；读取 `GITHUB_TOKEN` 提高限额（不碰凭据；未认证限额每小时 60 次，每会话两次足够）。
 
 回滚：回退本提交。
+
+## ADR-054：Mac 本机 kill switch 从 LuLu 改为 PF（2026-11-01 所有者确认，Issue #17）
+
+起因：Issue #17 在 macOS 26.6.2、Clash Verge Rev 2.5.8、LuLu 4.5.3 上实测，LuLu 默认拒绝时，经透明 TUN 访问 1.1.1.1 的 curl 失败（exit 7），显式走本地代理成功，临时放行 curl 进程后透明 TUN 也成功。LuLu 按发起连接的进程过滤，判断早于路由，没有“按网卡”的条件；原文档“只给核心放行，TUN 流量经核心出去”的设计在 LuLu 上不成立，而给每个应用放行又会在 TUN 掉线后放过直连。所以单靠 LuLu 做不到“走 TUN 放行、直连拦截”。
+
+比较过三个方案：一，Mac 改用显式代理加 LuLu（Issue 已实测可用，但不认代理的应用、UDP/WebRTC 不受保护，和整机 TUN 的要求冲突）；二，TUN + Fake-IP，LuLu 只放行 198.18.0.0/15（依赖 LuLu 的网段匹配和域名匹配细节，未知点多）；三，PF 按网卡拦。所有者确认走方案三。
+
+做法：新增 `assets/mac-killswitch/guardian-pf-killswitch.sh`。物理网卡只放行发往节点真实 IPv4 和端口的连接，加 DHCP，可选 `BOOTSTRAP_DNS`（核心解析节点域名用）和 `LAN_NET`；其余出站丢弃；utun、lo0 不写进规则，不受影响。规则放在 `com.apple/claude-guardian` 子 anchor（主规则集已有 `anchor "com.apple/*"`），不改 `/etc/pf.conf`；用 `pfctl -E`/`-X` 的引用计数开关 PF，不用 `pfctl -d`，回滚只清本 anchor 的规则和表，不清全局状态。`apply` 带 180 秒保险丝，`confirm` 后的规则才作为开机版本；`persist` 装 LaunchDaemon，开机时等系统规则集挂好再加载。和 Windows（放行 TUN 网卡 + 核心到节点 + 默认出站阻止）、VM 的 nftables killswitch 同一思路。
+
+代价与取舍：这一条推翻 ADR-006 里“Mac 不写 PF”的部分。Apple TN3165 说 PF 不是给发行软件用的稳定接口，所以只用子 anchor、不碰系统文件，系统大版本更新后要重做故障演练。按网卡列表拦，新插的网卡不在规则里，`status` 会提示，要重新 `apply`。规则里核心只能连节点，配置里走 DIRECT 的流量会失败，和 Windows 的做法一致。Hysteria2 端口跳跃（`ports:` 范围）这一版不支持。加载、开机项都是 C 档。
+
+验证状态：只有离线测试（规则生成、配置解析、输入校验、非 root 拒绝，`tests/test_mac_pf_killswitch.py`，macOS CI 上用系统 bash 3.2 跑）。没有在真机 Mac 上验证；真机测试单 `docs/mac-pf-killswitch-test.md` 交给所有者执行，重点是停核心演练和开机后规则是否还在。结果出来前，Skill 里写“未在真机验证”。
+
+回滚：回退本提交。

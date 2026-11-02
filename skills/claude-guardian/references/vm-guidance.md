@@ -39,7 +39,7 @@ macOS 客机不需要这三个脚本，全部用提示词，做法和本机路�
 
 1. **开客机 SSH：**在客机“系统设置 → 通用 → 共享”里打开“远程登录”，只允许自己的管理账户；这是图形界面操作，由用户自己点。
 2. **Clash 客户端：**Clash Verge 按[本机路线的 Mac 提示词](local-firewall-prompts.md#mac)安装、导入节点、开 TUN（服务模式）、核对 DNS 和出口。
-3. **防火墙：**用第三方 LuLu，规则思路、覆盖范围实测和回滚都在同一份提示词里；不自己写 PF 规则。
+3. **防火墙：**用 PF 脚本 [guardian-pf-killswitch.sh](../assets/mac-killswitch/guardian-pf-killswitch.sh)，做法、故障演练和回滚见[本机路线的 Mac 一节](local-firewall-prompts.md#mac)；不用 LuLu（按进程拦，会拦掉正常 TUN 流量）。
 4. 顺序同样是先让 TUN 跑通再加防火墙，最后做故障演练。
 
 ## 4. 客机防火墙（fail-closed）
@@ -79,7 +79,7 @@ bash install-flclash-killswitch.sh uninstall    # 卸载并删除规则
 
 **保险丝与验收：**应用规则后有 180 秒保险丝，没有执行 `confirm` 就自动回滚，避免锁死。装好后手动验收：出口 IP 是固定出口；浏览器打开 browserleaks.com/webrtc 和 dnsleaktest.com（WebRTC 也可用包内的[本地探测页](../assets/webrtc-probe.html)），确认没有真实 IP 和真实 DNS；`pkill FlClashCore` 后确认 curl 和 DNS 全部失败，重启 FlClash 后恢复。最后由用户在 VM 里的浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除语言外必须全绿（时区要和出口一致）（[做法](whole-machine-ipv4.md#browser-acceptance)）。
 
-**macOS 客机：**没有对应脚本。按[本机路线 L2](routes-and-platforms.md) 的做法评估 LuLu 或系统防火墙，同样要求 TUN 掉线时不直连。
+**macOS 客机：**用 [guardian-pf-killswitch.sh](../assets/mac-killswitch/guardian-pf-killswitch.sh)，同样要求 TUN 掉线时不直连（未在真机验证）。
 
 Agent 的角色：解释脚本做什么、检查前置条件、核对参数，帮用户读 test 和 status 的输出；运行和卸载都由用户或经逐动作授权后进行。
 

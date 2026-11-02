@@ -63,6 +63,7 @@ Windows、Linux 没有清理脚本，按 [windows-cleanup.md](windows-cleanup.md
 
 | 文件 | 用途 | 说明 |
 | --- | --- | --- |
+| `assets/mac-killswitch/guardian-pf-killswitch.sh` | Mac 本机／客机 PF fail-closed 防火墙（未在真机验证） | [local-firewall-prompts.md](local-firewall-prompts.md) |
 | `assets/vm-killswitch/install-flclash-killswitch.sh` | VM 客机 fail-closed 防火墙 | [vm-guidance.md](vm-guidance.md) |
 | `assets/vm-killswitch/install-flclash-tun.sh` | VM 客机安装 FlClash TUN | [vm-guidance.md](vm-guidance.md) |
 | `assets/vm-killswitch/enable-guest-ssh.sh` | 开客机 SSH（限管理来源） | [vm-guidance.md](vm-guidance.md) |

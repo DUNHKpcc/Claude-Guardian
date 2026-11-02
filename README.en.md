@@ -47,7 +47,7 @@ Claude-Guardian is a Skill for Agents. It hands your Agent the author's and comm
 | 💳 | **Subscription and payment** | Picks candidates from the "all AI payment methods" summary by your region, device and budget and explains the risks; you always pay yourself |
 | 🖥️ | **VM route** | Guest OS (Omarchy / macOS), dedicated LAN NIC, build order, and a fail-closed `FlClash TUN` + `nftables` firewall script |
 | ☁️ | **VPS route** | Use a VPS as the dev machine: Ubuntu 24.04, consistent environment, `Xvfb + noVNC` remote desktop, VS Code Remote-SSH, `tmux`, inbound firewall script |
-| 💻 | **Local route** | Clash Verge / FlClash TUN and DNS setup, Windows firewall, LuLu on Mac, guided step by step with prompts |
+| 💻 | **Local route** | Clash Verge / FlClash TUN and DNS setup, Windows firewall guided step by step with prompts, PF script on Mac (not yet verified on a real Mac) |
 | 🔒 | **Whole-machine uniform egress** | IPv4 only, no IPv6: strict TUN routing, DNS, fallback rules, and evidence checklists for leak and failure drills (Mac, Windows). `egress_verifier.py` rules `established / violated / incomplete` from the evidence you actually observed, without echoing the IP |
 | 📈 | **Route optimization** | The Agent diagnoses and tunes the route item by item: SSH dynamic forwarding, Realm relay, BBR, each with a recorded original value and a rollback |
 | 🩺 | **Failure triage** | `403` / `429` / `529`, billing conflicts, suspected credential leaks: pause retries, gather evidence, then propose the next step |
@@ -142,7 +142,7 @@ If you only want to understand the subscription or compare options, stop at the 
 
 | Route | For | Main content |
 | --- | --- | --- |
-| **Local** `Clash Verge` `FlClash` `LuLu` `Windows Firewall` | Using your own Mac / Windows directly (the default suggestion) | Clash TUN and DNS, Windows firewall, LuLu on Mac; see [local Clash and firewall](skills/claude-guardian/references/local-firewall-prompts.md); egress IP sources in [egress sources](skills/claude-guardian/references/egress-ip-options.md) |
+| **Local** `Clash Verge` `FlClash` `macOS PF` `Windows Firewall` | Using your own Mac / Windows directly (the default suggestion) | Clash TUN and DNS, Windows firewall, PF on Mac; see [local Clash and firewall](skills/claude-guardian/references/local-firewall-prompts.md); egress IP sources in [egress sources](skills/claude-guardian/references/egress-ip-options.md) |
 | **VM** `Omarchy` `macOS` `FlClash TUN` `nftables` | A separate working environment inside a virtual machine | Guest OS preferably Omarchy (macOS on a Mac host), dedicated LAN NIC, build order and fail-closed firewall scripts in the [VM guide](skills/claude-guardian/references/vm-guidance.md); reverse tunnel and crash self-healing for a target you cannot reach directly in the [advanced route](skills/claude-guardian/references/advanced-route.md) |
 | **VPS** `Ubuntu 24.04` `Xvfb + noVNC` `Remote-SSH` `tmux` | A remote server as the dev machine (Claude Code runs on the VPS) | Consistent environment, remote desktop, firewall and route optimization in the [VPS guide](skills/claude-guardian/references/vps-guidance.md); once you buy a server and give SSH access, the Agent can deploy it under tiered authorization |
 
@@ -211,7 +211,7 @@ Output files (`--output`, `--evidence-output`, dashboard HTML) are always new fi
 | [Mobile anti-ban notes](skills/claude-guardian/references/mobile-guidance.md) | iOS / Android checklist, removing the SIM on Android |
 | [Ban appeal](skills/claude-guardian/references/ban-appeal.md) | Appeal template, 2–7 day reply window, use after reinstatement |
 | [Fixed egress IP sources](skills/claude-guardian/references/egress-ip-options.md) | Airport, self-built proxy, shared residential; recommendations and the short self-build prompt |
-| [Local Clash and firewall](skills/claude-guardian/references/local-firewall-prompts.md) | Windows firewall, LuLu on Mac, prompt-guided |
+| [Local Clash and firewall](skills/claude-guardian/references/local-firewall-prompts.md) | Windows firewall (prompt-guided), PF script on Mac |
 | [VM guide](skills/claude-guardian/references/vm-guidance.md) | Guest OS, dedicated LAN NIC, build order, fail-closed firewall |
 | [VPS guide](skills/claude-guardian/references/vps-guidance.md) | Dev machine, consistent environment, remote desktop, firewall |
 | [Route optimization](skills/claude-guardian/references/line-optimization.md) | Item-by-item diagnosis and tuning, change cards and rollback |
