@@ -23,7 +23,7 @@
 | 节点类型、节点写的是 IP 还是域名 | 客户端代理页 | |
 | 节点是否在 proxy-providers 里 | 订阅配置 | |
 | PF 原始状态 | `sudo pfctl -s info \| head -1`（Enabled 或 Disabled） | |
-| 系统 DNS | `scutil --dns \| grep nameserver \| sort -u` | |
+| 系统 DNS | `bash guardian-pf-killswitch.sh dns`（每个网络服务是手动还是自动、走哪张网卡；只记类别） | |
 | 物理网卡 | `networksetup -listallhardwareports` | |
 
 准备：
@@ -38,7 +38,7 @@
    curl -sS -m 10 -o /dev/null -w "%{http_code}\n" -x http://127.0.0.1:<mixed 端口> https://www.cloudflare.com/cdn-cgi/trace; echo "exit $?"
    ```
 
-> 系统 DNS 如果是路由器的局域网地址（比如 192.168.x.1），加规则后 DNS 查询会走物理网卡被拦，域名全部解析失败。遇到时有两种处理：把系统 DNS 改成一个公网地址（流量会进 TUN 被劫持），或者在 apply 时加 `LAN_NET`。T3 会暴露这个问题，记下你用了哪种。
+> `dns` 有 WARN（网络服务是“自动”，或当前 DNS 走物理网卡）时，按它给的命令把**每个网络服务**的 DNS 设成手动公网地址，再往下测。2026-11-02 第一轮 R3 的域名解析失败，最可能就是这个原因：换网后用了 DHCP 下发的路由器 DNS。不要用 `LAN_NET` 放行系统 DNS，那样查询会绕过代理。
 
 ## T1 生成规则（不改系统）
 
@@ -87,7 +87,7 @@ sudo bash guardian-pf-killswitch.sh apply
 | 透明 TUN、域名 | 基线第 2 条 | 200，exit 0 |
 | 显式代理 | 基线第 3 条 | 200，exit 0 |
 | 浏览器 | 随便开两个网站 | 正常 |
-| 规则命中 | `sudo bash guardian-pf-killswitch.sh status` 里 `block drop out` 那条的 Packets | 很小或 0 |
+| 规则命中 | `sudo bash guardian-pf-killswitch.sh blocked 60`，这 60 秒里正常上网 | 只有组播/广播、链路本地、IPv6 这类；没有公网 TCP/443、公网 UDP/STUN。出现公网 UDP/53 的，记下来（可能是核心自己的上游 DNS） |
 
 全部通过才执行：
 
@@ -165,6 +165,24 @@ ADR-039 只证明了一台 Mac 在 TUN 正常时这三项不泄漏；重启、�
 | R3 | 换网络之后 | T7 换到另一个 Wi-Fi、等 TUN 恢复后 |
 | R4 | 重启之后 | T8 重启、打开 Clash Verge 开 TUN 之后 |
 
+## R3+ 换网定向复测（2026-11-02 第一轮 R3 和 UDP 没通过）
+
+用新版脚本（规则带日志）重新 apply、confirm 之后做。
+
+1. **换网前：**`bash guardian-pf-killswitch.sh dns`，确认没有 WARN（没改 DNS 就先按 T0 的提示改）。
+2. 另开一个终端先跑 `sudo bash guardian-pf-killswitch.sh blocked 180`，然后在这 3 分钟里：换到另一个网络，等 TUN 恢复，再跑基线三条和 `network_check.py run`（R 那一节的命令）。
+3. **换网后：**再跑一次 `dns`。
+4. 记录：
+
+| 项 | 记录 |
+| --- | --- |
+| 换网前后 `dns` 有没有 WARN，各网络服务是手动还是自动 | |
+| 基线三条（尤其域名那条是否 exit 6） | |
+| `network_check.py` 的路由、DNS、UDP 三项 | |
+| `blocked` 汇总（整段贴，里面没有 IP） | |
+
+5. UDP：换网前后各跑 3 次 `network_check.py run`，记 UDP 一项每次的结果。不通过的那几次，`blocked` 里有没有公网 UDP 或公网 UDP/53。
+
 ## T7 换网络、睡眠唤醒
 
 | 场景 | 做法 | 期望 |
@@ -213,6 +231,7 @@ ADR-039 只证明了一台 Mac 在 TUN 正常时这三项不泄漏；重启、�
 | R1 基线复查（路由／IPv6／DNS／UDP／WebRTC 各一项） | | |
 | R2 睡眠唤醒后复查（同上五项） | | |
 | R3 换网后复查（同上五项） | | |
+| R3+ 换网定向复测（dns 前后、域名是否 exit 6、blocked 汇总、UDP 6 次） | | |
 | R4 重启后复查（同上五项） | | |
 | R 时 Claude Desktop 是否开着 | | |
 | T7 换网络、新网卡、睡眠 | | |

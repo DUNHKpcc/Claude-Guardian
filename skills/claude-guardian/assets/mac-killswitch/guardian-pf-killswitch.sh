@@ -9,7 +9,9 @@
 #   render                只打印将要加载的规则，不改系统
 #   apply                 加载规则并布置保险丝（默认 180 秒），不 confirm 就自动撤销；节点或网卡变了也用它重载
 #   confirm               确认本次规则：取消保险丝，并作为开机加载的版本
-#   status                PF 状态、本 anchor 规则与命中计数、网卡覆盖检查、最近事件
+#   status                PF 状态、本 anchor 规则与命中计数、网卡覆盖检查、DNS 路径、最近事件
+#   dns                   各网络服务的 DNS 设置、当前 DNS 走哪张网卡（不需要 sudo，不改系统）
+#   blocked [秒数]         抓一段时间被拦的包，按目的地类别和端口汇总，不输出 IP（默认 60 秒）
 #   rollback              立即撤销运行中的规则（不删开机项）
 #   persist | unpersist   安装／移除开机自动加载（LaunchDaemon）
 #   uninstall             rollback + unpersist + 删除本脚本生成的文件
@@ -166,7 +168,122 @@ render_rules() {
   echo 'pass out quick on $cg_nics inet proto { tcp udp } to <cg_nodes> port $cg_node_ports keep state'
   [ -n "$DNS_LIST" ] && echo 'pass out quick on $cg_nics inet proto { tcp udp } to <cg_dns> port 53 keep state'
   [ -n "$LAN_LIST" ] && echo 'pass out quick on $cg_nics inet to <cg_lan> keep state'
-  echo 'block drop out quick on $cg_nics all'
+  echo 'block drop out log quick on $cg_nics all'
+}
+
+ip_class() {
+  local ip="$1" a b
+  is_ipv4 "$ip" || { echo "IPv6 地址"; return 0; }
+  a=${ip%%.*}; b=${ip#*.}; b=${b%%.*}
+  if [ "$a" -eq 10 ] || { [ "$a" -eq 172 ] && [ "$b" -ge 16 ] && [ "$b" -le 31 ]; } \
+     || { [ "$a" -eq 192 ] && [ "$b" -eq 168 ]; }; then echo "局域网地址"
+  elif [ "$a" -eq 100 ] && [ "$b" -ge 64 ] && [ "$b" -le 127 ]; then echo "运营商内网地址"
+  elif [ "$a" -eq 198 ] && { [ "$b" -eq 18 ] || [ "$b" -eq 19 ]; }; then echo "fake-ip 地址"
+  elif [ "$a" -eq 127 ]; then echo "本机回环"
+  else echo "公网地址"; fi
+}
+
+# 2026-11-02 真机验收 R3：换网后域名解析失败，IP 和显式代理正常。macOS 不会把发往局域网的 DNS
+# 劫持进 TUN（Mihomo 文档），DHCP 下发的路由器 DNS 走物理网卡，被本规则丢弃。这里只读检查，不改设置。
+do_dns() {
+  need_mac
+  local svc out ns ifc cls warned=0 allowed=""
+  [ -f "$RULES_PENDING" ] && allowed=$(sed -n 's/^table <cg_dns> const { \(.*\) }$/\1/p' "$RULES_PENDING")
+  [ -z "$allowed" ] && [ -f "$RULES_CONFIRMED" ] && allowed=$(sed -n 's/^table <cg_dns> const { \(.*\) }$/\1/p' "$RULES_CONFIRMED")
+  allowed="$allowed $(csv_words "${BOOTSTRAP_DNS:-}")"
+  echo "== 各网络服务的 DNS 设置 =="
+  while IFS= read -r svc; do
+    svc="${svc#\*}"
+    [ -n "$svc" ] || continue
+    out=$(networksetup -getdnsservers "$svc" 2>/dev/null || true)
+    if echo "$out" | grep -qi "aren't any"; then
+      echo "WARN: $svc：自动（DHCP 下发）。换网后会用新网络下发的 DNS，常见是路由器地址，会被拦"
+      warned=1
+    else
+      cls=""
+      for ns in $out; do
+        { is_ipv4 "$ns" || [[ "$ns" == *:* ]]; } && cls="$cls $(ip_class "$ns")"
+      done
+      echo "  $svc：手动（$(uniq_words $cls)）"
+    fi
+  done < <(networksetup -listallnetworkservices 2>/dev/null | tail -n +2)
+  echo "== 当前生效的 DNS 走哪张网卡 =="
+  for ns in $(scutil --dns 2>/dev/null | awk '/nameserver\[[0-9]+\]/{print $3}' | sort -u); do
+    cls=$(ip_class "$ns")
+    if ! is_ipv4 "$ns"; then
+      echo "WARN: 有一个 IPv6 DNS：走物理网卡会被拦（本路线只走 IPv4），关掉网卡 IPv6 后会消失"; warned=1; continue
+    fi
+    ifc=$(route -n get "$ns" 2>/dev/null | awk '/interface:/{print $2}' || true)
+    case "$ifc" in
+      utun*|lo*) echo "  一个$cls 走 $ifc：会进 TUN，正常" ;;
+      *) echo "WARN: 一个$cls 走 ${ifc:-未知网卡}：不进 TUN。加了 PF 会解析失败；放进 LAN_NET 能解析，但查询绕过代理（DNS 泄漏）"; warned=1 ;;
+    esac
+    case " $allowed " in *" $ns "*)
+      echo "WARN: 这个$cls 也在 BOOTSTRAP_DNS 里：核心停掉后系统 DNS 查询能直接发出去（DNS 泄漏），系统 DNS 换一个不在 BOOTSTRAP_DNS 里的公网地址"; warned=1 ;;
+    esac
+  done
+  if [ "$warned" -eq 1 ]; then
+    echo "改法（B 档）：每个网络服务都把 DNS 设成手动的公网 IPv4，查询会进 TUN 被核心接管："
+    echo "  sudo networksetup -setdnsservers \"<服务名>\" 1.1.1.1"
+    echo "  恢复自动：sudo networksetup -setdnsservers \"<服务名>\" empty"
+  fi
+  return 0
+}
+
+# 汇总 tcpdump -n -q -e -i pflog0 的输出：只留网卡、目的地类别、协议、端口，不留 IP
+summarize_blocked() {
+  awk '
+    function cls(ip,  a) {
+      split(ip, a, ".")
+      if (a[1] == 10 || (a[1] == 172 && a[2] >= 16 && a[2] <= 31) || (a[1] == 192 && a[2] == 168)) return "局域网"
+      if (a[1] == 100 && a[2] >= 64 && a[2] <= 127) return "运营商内网"
+      if (a[1] == 169 && a[2] == 254) return "链路本地"
+      if (a[1] >= 224 || ip == "255.255.255.255") return "组播/广播"
+      if (a[1] == 198 && (a[2] == 18 || a[2] == 19)) return "fake-ip段"
+      return "公网"
+    }
+    {
+      nic = "?"
+      if (match($0, / on [a-z]+[0-9]+:/)) nic = substr($0, RSTART + 4, RLENGTH - 5)
+      if ($0 ~ /IP6 /) { n[nic " IPv6"]++; total++; next }
+      if (!match($0, /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)? > [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?:/)) next
+      pair = substr($0, RSTART, RLENGTH - 1); rest = substr($0, RSTART + RLENGTH)
+      split(pair, ends, " > "); m = split(ends[2], o, ".")
+      ip = o[1] "." o[2] "." o[3] "." o[4]; port = (m == 5) ? o[5] : "-"
+      proto = (rest ~ /tcp/) ? "TCP" : (rest ~ /UDP|udp/) ? "UDP" : (rest ~ /ICMP/) ? "ICMP" : "其他"
+      n[nic " " cls(ip) " " proto "/" port]++; total++
+    }
+    END {
+      printf "共 %d 个被拦的包\n", total
+      for (k in n) printf "%6d  %s\n", n[k], k
+    }' | { IFS= read -r head; echo "$head"; sort -rn; }
+  cat <<'EOF'
+怎么读：
+  局域网 UDP/53、TCP/53      系统 DNS 指向局域网，见 dns 命令
+  公网 UDP/53、TCP/53        多半是核心自己的上游 DNS（nameserver 等），或有程序绕过系统 DNS 直连
+  组播/广播、链路本地、IPv6    mDNS、AirDrop、局域网发现等，被拦一般无害
+  公网 UDP/3478、19302 等     STUN 直连：有程序的 UDP 没进 TUN
+  公网 TCP/443 等             有连接没进 TUN（看是哪个程序：TUN 是否开着、程序是否绑了物理网卡）
+  运营商内网、局域网其他端口    局域网设备访问；需要时用 LAN_NET 放行
+EOF
+}
+
+do_blocked() {
+  need_root blocked; need_mac
+  local secs="${1:-60}" raw pid
+  { [[ "$secs" =~ ^[0-9]+$ ]] && [ "$secs" -ge 5 ] && [ "$secs" -le 600 ]; } || die "秒数要在 5 到 600 之间"
+  pfctl -a "$ANCHOR" -sr 2>/dev/null | grep -q 'block drop out log' \
+    || die "当前规则不带日志（没加载，或是旧版脚本加载的），先用本脚本重新 apply"
+  ifconfig pflog0 >/dev/null 2>&1 || ifconfig pflog0 create || die "建不了 pflog0"
+  raw=$(mktemp)
+  tcpdump -n -q -l -e -i pflog0 > "$raw" 2>/dev/null &
+  pid=$!
+  echo "抓 ${secs} 秒被拦的包；这段时间请正常使用，或者复现问题（比如换网、访问打不开的网站）……"
+  sleep "$secs"
+  kill "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+  summarize_blocked < "$raw"
+  rm -f "$raw"
 }
 
 main_ruleset_ready() { pfctl -sr 2>/dev/null | grep -q 'anchor "com.apple/\*"'; }
@@ -209,6 +326,7 @@ do_apply() {
   tmp=$(mktemp)
   render_rules > "$tmp"
   pfctl -n -a "$ANCHOR" -f "$tmp" || { rm -f "$tmp"; die "规则语法检查没过，未加载"; }
+  do_dns
   mkdir -p "$STATE_DIR"; chmod 700 "$STATE_DIR"
   mv "$tmp" "$RULES_PENDING"; chmod 600 "$RULES_PENDING"
   ensure_main_ruleset
@@ -325,6 +443,7 @@ do_status() {
     ifconfig "$n" 2>/dev/null | grep -q 'inet ' || continue
     case " $covered " in *" $n "*) ;; *) echo "WARN: $n 有 IPv4 地址但不在规则里，经它出去的流量不受保护，重新 apply" ;; esac
   done
+  do_dns
   echo "== 最近事件 =="; tail -5 "$LOG" 2>/dev/null || echo "(无)"
 }
 
@@ -346,6 +465,10 @@ case "${1:-}" in
   unpersist) do_unpersist ;;
   uninstall) do_uninstall ;;
   boot)      do_boot ;;
+  dns)       do_dns ;;
+  blocked)   do_blocked "${2:-60}" ;;
   _fuse)     do_fuse ;;
-  *) die "用法: $0 render|apply|confirm|status|rollback|persist|unpersist|uninstall" ;;
+  _summarize) summarize_blocked ;;
+  _class)    ip_class "${2:-}" ;;
+  *) die "用法: $0 render|apply|confirm|status|dns|blocked [秒数]|rollback|persist|unpersist|uninstall" ;;
 esac

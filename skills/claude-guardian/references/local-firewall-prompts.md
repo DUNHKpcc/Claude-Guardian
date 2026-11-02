@@ -58,7 +58,9 @@
 3. **加载（C 档，当场确认）：**`sudo bash guardian-pf-killswitch.sh apply`，默认 180 秒保险丝，不确认就自动撤销。保险丝时间内跑通透明 TUN、域名、显式代理三条检查，再 `sudo ... confirm`。
 4. **故障演练：**用 `network_check.py run --failure-drill` 那一次取证，停核心后确认路由已回到物理网卡、外网全部失败，再恢复。没演练就不能说 kill switch 成功。节点是域名、核心重启后连不上节点的，把核心的 `proxy-server-nameserver` 填进 `BOOTSTRAP_DNS` 重新加载。
 5. **开机加载（C 档）：**`sudo ... persist` 装 LaunchDaemon，只加载已确认的那一版规则。
-6. **日常：**`sudo ... status` 看命中计数和网卡覆盖；换节点、换网卡（出现“不在规则里”的提示）后重新 `apply` 和 `confirm`。系统 DNS 是路由器局域网地址时，加规则后域名会解析失败：把系统 DNS 改成公网地址（进 TUN 被劫持），或加 `LAN_NET`。
+6. **日常：**`sudo ... status` 看命中计数、网卡覆盖和 DNS 路径；换节点、换网卡（出现“不在规则里”的提示）后重新 `apply` 和 `confirm`。
+   - **系统 DNS 必须手动设成公网 IPv4（2026-11-02 真机验收 R3）：**macOS 不会把发往局域网的 DNS 劫持进 TUN。网络服务的 DNS 是“自动”时，换网后会用新网络 DHCP 下发的 DNS，常见是路由器地址，查询走物理网卡被 PF 丢掉，表现是 IP 能通、域名解析失败（curl exit 6）。`bash guardian-pf-killswitch.sh dns` 只读列出每个网络服务是手动还是自动、当前 DNS 走哪张网卡。改法（B 档）：每个网络服务 `sudo networksetup -setdnsservers "<服务名>" 1.1.1.1`，恢复自动用 `empty`。不要把系统 DNS 放进 `LAN_NET`：能解析，但查询绕过代理；也不要和 `BOOTSTRAP_DNS` 用同一个地址，否则核心停掉后查询能直接发出去。
+   - **拦了什么看 `blocked`：**`sudo bash guardian-pf-killswitch.sh blocked 60` 抓 60 秒被拦的包，按网卡、目的地类别（局域网、公网、组播等）和端口汇总，不输出 IP。正常使用时组播、链路本地、IPv6 被拦一般无害；出现公网 TCP/443、UDP/STUN 说明有流量没进 TUN，出现公网 UDP/53 多半是核心自己的上游 DNS 被拦。
 7. **回滚：**`sudo ... rollback` 撤销运行中的规则；`sudo ... uninstall` 连开机项和生成的文件一起删。脚本不在时用 `sudo pfctl -a com.apple/claude-guardian -F rules`。规则只拦网络，本机终端随时能回滚。
 
 **验证状态：**脚本只做过离线测试（规则生成和输入校验），**还没有在真机 Mac 上验证**，真机测试单见仓库 `docs/mac-pf-killswitch-test.md`。验证结果出来之前，Agent 要把这一点告诉用户。

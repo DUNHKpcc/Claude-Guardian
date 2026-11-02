@@ -58,7 +58,7 @@ class RenderRules(unittest.TestCase):
         for port in ("7890", "7897", "1053"):
             self.assertNotIn(port, rules)
         lines = [l for l in rules.splitlines() if l and not l.startswith("#")]
-        self.assertEqual(lines[-1], "block drop out quick on $cg_nics all")
+        self.assertEqual(lines[-1], "block drop out log quick on $cg_nics all")
         passes = [l for l in lines if l.startswith("pass ")]
         self.assertTrue(passes and all(l.startswith("pass out quick on $cg_nics ") for l in passes))
         # utun and lo0 are never named, so TUN and loopback traffic is left alone
@@ -90,10 +90,38 @@ class RenderRules(unittest.TestCase):
             self.assertIn("ERROR", out.stderr, env)
             self.assertNotIn("block drop", out.stdout, env)
 
+    def test_blocked_summary_keeps_categories_and_drops_addresses(self):
+        # pflog lines as tcpdump -n -q -e prints them; the summary is what the owner pastes back
+        log = "\n".join((
+            "rule 4/0(match): block out on en0: 192.168.1.20.53211 > 192.168.1.1.53: UDP, length 32",
+            "rule 4/0(match): block out on en0: 192.168.1.20.53212 > 192.168.1.1.53: UDP, length 32",
+            "rule 4/0(match): block out on en0: 192.168.1.20.5353 > 224.0.0.251.5353: UDP, length 40",
+            "rule 4/0(match): block out on en0: 192.168.1.20.61000 > 203.0.113.53.53: UDP, length 30",
+            "rule 4/0(match): block out on en0: 192.168.1.20.50000 > 198.51.100.80.443: tcp 0",
+            "rule 4/0(match): block out on en0: 192.168.1.20 > 203.0.113.1: ICMP echo request, id 1",
+            "rule 4/0(match): block out on en7: IP6 fe80::1.5353 > ff02::fb.5353: UDP, length 40",
+            "not a packet line",
+        )) + "\n"
+        out = subprocess.run([BASH, str(SCRIPT), "_summarize"], input=log, capture_output=True, text=True, timeout=30)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        lines = out.stdout.splitlines()
+        self.assertEqual(lines[0], "共 7 个被拦的包")
+        self.assertRegex(lines[1], r"^\s+2  en0 局域网 UDP/53$")
+        for row in ("en0 组播/广播 UDP/5353", "en0 公网 UDP/53", "en0 公网 TCP/443", "en0 公网 ICMP/-", "en7 IPv6"):
+            self.assertIn(row, out.stdout)
+        self.assertNotRegex(out.stdout, r"\d+\.\d+\.\d+\.\d+|fe80|ff02")
+
+    def test_address_classes(self):
+        for ip, expected in (("192.168.1.1", "局域网地址"), ("10.0.0.1", "局域网地址"), ("172.31.0.1", "局域网地址"),
+                             ("172.32.0.1", "公网地址"), ("100.64.0.1", "运营商内网地址"), ("198.18.0.2", "fake-ip 地址"),
+                             ("127.0.0.1", "本机回环"), ("1.1.1.1", "公网地址"), ("fe80::1", "IPv6 地址")):
+            out = subprocess.run([BASH, str(SCRIPT), "_class", ip], capture_output=True, text=True, timeout=30)
+            self.assertEqual(out.stdout.strip(), expected, ip)
+
     def test_privileged_commands_need_root(self):
         if os.geteuid() == 0:
             self.skipTest("running as root")
-        for cmd in ("apply", "confirm", "rollback", "persist", "uninstall"):
+        for cmd in ("apply", "confirm", "rollback", "persist", "uninstall", "blocked"):
             out = subprocess.run([BASH, str(SCRIPT), cmd], capture_output=True, text=True, timeout=30)
             self.assertNotEqual(out.returncode, 0, cmd)
 
@@ -102,7 +130,8 @@ class ScriptContract(unittest.TestCase):
     def test_design_and_wiring(self):
         text = SCRIPT.read_text(encoding="utf-8")
         for term in ('ANCHOR="com.apple/claude-guardian"', "pfctl -E", "pfctl -X", "FUSE_SECONDS:-180",
-                     "RULES_PENDING", "RULES_CONFIRMED", "launchctl bootstrap system", "-F rules"):
+                     "RULES_PENDING", "RULES_CONFIRMED", "launchctl bootstrap system", "-F rules",
+                     "do_dns", "networksetup -getdnsservers", "aren't any", "tcpdump -n -q -l -e -i pflog0"):
             self.assertIn(term, text)
         # never edits the system pf.conf, never flushes global state or disables PF outright
         self.assertNotRegex(text, r">\s*/etc/pf\.conf")

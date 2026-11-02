@@ -64,7 +64,7 @@ python3 scripts/network_check.py run --target-ref <别名> --proxy http://127.0.
 
 | 要证明的 | Mac | Windows |
 | --- | --- | --- |
-| TUN 开启、默认路由经 TUN | `route -n get default` 看接口是 `utun*`；`ifconfig | grep utun` | `Get-NetRoute -DestinationPrefix 0.0.0.0/0 | Sort-Object RouteMetric`；`Get-NetAdapter` 找 TUN 网卡 |
+| TUN 开启、去往外网的路由经 TUN | `route -n get 1.1.1.1` 看接口是 `utun*`（不要看 `get default`：TUN 加的是更具体的路由，默认路由可能仍在物理网卡）；`ifconfig | grep utun` | `Get-NetRoute -DestinationPrefix 0.0.0.0/0 | Sort-Object RouteMetric`；`Get-NetAdapter` 找 TUN 网卡 |
 | IPv4 出口（浏览器、终端、其他应用、后台各取一次） | 终端 `curl -4 -sS --max-time 10 https://ifconfig.me`；浏览器打开检测页 | `curl.exe -4 -sS --max-time 10 https://ifconfig.me`；浏览器同上 |
 | IPv6 不可达 | `curl -6 -sS --max-time 10 https://ifconfig.me`，应失败 | `curl.exe -6 -sS --max-time 10 https://ifconfig.me`，应失败 |
 | WebRTC | 包内[本地探测页](../assets/webrtc-probe.html) | 同左 |

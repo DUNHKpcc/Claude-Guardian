@@ -1,5 +1,12 @@
 # 版本记录
 
+## 按 Mac PF 真机验收修复（2026-11-02，ADR-054）
+
+- `network_check.py`：macOS 的路由检查从 `route -n get default` 改为查去往 1.1.1.1 的路由（TUN 加的是更具体的路由，默认路由留在物理网卡，验收中误报“没走 TUN”），报告里该项改名“去往外网的路由”；`whole-machine-ipv4.md` 的手动取证表同步
+- `guardian-pf-killswitch.sh`：新增 `dns`（只读：各网络服务 DNS 手动还是自动、当前 DNS 走哪张网卡、是否和 `BOOTSTRAP_DNS` 重合；apply 和 status 会顺带跑）和 `blocked [秒数]`（拦截规则加 `log`，抓 pflog0 按网卡、目的地类别、协议、端口汇总，不输出 IP）。R3 换网后域名解析失败最可能是 DHCP 下发的路由器 DNS 被拦（推断，第一轮无 DNS 记录）；T3 计数偏高、UDP 不稳定待 `blocked` 取证
+- `local-firewall-prompts.md` 写明系统 DNS 必须手动设成公网 IPv4、不用 `LAN_NET` 放行系统 DNS、怎么读 `blocked`；测试单 T0、T3 改用新命令，新增“R3+ 换网定向复测”
+- 测试：`test_network_check` 新增 macOS 路由回归（旧代码上失败）；`test_mac_pf_killswitch` 新增 pflog 汇总不含 IP、地址分类、`blocked` 要 root。真机未复测；pflog 输出格式按 tcpdump 通常格式解析，待真机确认。回滚：回退本提交
+
 ## Mac PF 真机验收报告（2026-11-02，ADR-054 / Issue #17）
 
 - 新增[最终验收报告](reports/mac-pf-isolated-acceptance-2026-11-02.md)：单台 macOS 样本中，目标 TUN 路由、停核心阻断、T5 重测、真实重启的关键保护检查及回滚卸载通过；R3 换网后域名解析失败、UDP 不稳定仍未解决。新网卡等未测项目及浏览器人工报告与工具结果分别记录，不宣布整单通过

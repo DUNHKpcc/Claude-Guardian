@@ -104,7 +104,7 @@ def _run(command, timeout=10):
 
 # -- checks ---------------------------------------------------------------------
 def parse_route(system, text):
-    """Interface name of the default route from the platform's route command output."""
+    """Interface name of the route to an outside address from the platform's route command output."""
     if system == 'macos':
         match = re.search(r'interface:\s*(\S+)', text)
     elif system == 'linux':
@@ -115,9 +115,11 @@ def parse_route(system, text):
 
 
 def check_route(system):
+    # Ask for the route to a real outside address on every platform: TUN usually adds more specific
+    # routes and leaves the default route on the physical NIC (macOS 2026-11-02 acceptance).
     try:
         if system == 'macos':
-            name = parse_route(system, _run(['/sbin/route', '-n', 'get', 'default']))
+            name = parse_route(system, _run(['/sbin/route', '-n', 'get', '1.1.1.1']))
         elif system == 'linux':
             name = parse_route(system, _run(['ip', 'route', 'get', '1.1.1.1']))
         else:
@@ -329,7 +331,7 @@ def describe(report):
         rows.append((key, label, r[key]['status'], detail))
 
     route = r['route']
-    add('route', '默认路由', ('走 TUN（%s）' % route['interface']) if route['via_tun'] == 'yes'
+    add('route', '去往外网的路由', ('走 TUN（%s）' % route['interface']) if route['via_tun'] == 'yes'
         else ('没走 TUN（%s）' % route['interface']) if route.get('interface') else '读不到')
     exit4 = r['exit_ipv4']
     add('exit_ipv4', 'IPv4 出口', '%s · %s' % ((exit4.get('country') or '?').upper(), exit4.get('asn') or '?')

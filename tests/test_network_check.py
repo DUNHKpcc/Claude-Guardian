@@ -80,6 +80,14 @@ class NetworkCheckTests(unittest.TestCase):
         with patch('sys.stdout', io.StringIO()):
             self.assertEqual(nc.main(['endpoints']), 0)
 
+    def test_macos_route_asks_for_an_outside_address_not_default(self):
+        # 2026-11-02 Mac acceptance: TUN adds specific routes, the default route stays on en0.
+        answers = {('/sbin/route', '-n', 'get', 'default'): '  route to: default\n  interface: en0\n',
+                   ('/sbin/route', '-n', 'get', '1.1.1.1'): '  route to: 1.1.1.1\n  interface: utun4\n'}
+        with patch.object(nc, '_run', side_effect=lambda command, timeout=10: answers.get(tuple(command), '')):
+            result = nc.check_route('macos')
+        self.assertEqual(result, {'status': 'pass', 'via_tun': 'yes', 'interface': 'utun4'})
+
     def test_route_parsing_per_platform(self):
         self.assertEqual(nc.parse_route('macos', '   route to: default\n  interface: utun4\n'), 'utun4')
         self.assertEqual(nc.parse_route('linux', '1.1.1.1 dev FlClash table 2022 src 172.19.0.1 uid 1000'), 'FlClash')
