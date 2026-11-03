@@ -37,6 +37,8 @@
 
 Agent 说明方向和需要注意的点；用户买好 VPS 并给出访问方式后，Agent 可按最新教程部署，不代买、不代付款。部署前走备份、差异展示和分级授权。
 
+所有者的 [S10 第七节：3x-ui、REALITY、Hysteria2、证书与订阅实战](../sources/S10-windows-deployment-sanitized.md#vps-protocols)保留了完整排障过程；客户端 UDP 和配置是否加载接着看[第八节](../sources/S10-windows-deployment-sanitized.md#verge-runtime)。这是历史版本组合的案例，先核对当前版本与实际客户端，不把“全系不兼容”等原作者判断当通则；安装、订阅和证书操作仍按原有授权执行。
+
 ## 自建梯怎么选 VPS
 
 所有者提供了三类 VPS 推荐报告，见 [VPS 推荐报告索引](../sources/vps-recommendations/INDEX.md)：

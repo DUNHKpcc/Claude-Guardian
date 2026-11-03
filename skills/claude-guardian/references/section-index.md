@@ -361,12 +361,12 @@ Skill 更新：每次使用前先查最新（3 节）
 
 ## source-library.md
 
-原始资料阅读库（15 节）
+原始资料阅读库（16 节）
 
 - [Agent 补充资料来源](source-library.md#agent-补充资料来源)
 - [对话中的使用方式](source-library.md#对话中的使用方式)
 - [来源与现行规则的对照](source-library.md#来源与现行规则的对照)
-- [八份阅读来源](source-library.md#八份阅读来源)
+- [九份阅读来源](source-library.md#九份阅读来源)
   - [S01：VPS 和服务器术语](source-library.md#s01vps-和服务器术语)
   - [S02：支付方式与订阅准备](source-library.md#s02支付方式与订阅准备)
   - [S03：IP、设备、手机与账号阶段的经验材料](source-library.md#s03ip设备手机与账号阶段的经验材料)
@@ -375,6 +375,7 @@ Skill 更新：每次使用前先查最新（3 节）
   - [S06：macOS 清理，同时保留 CLI](source-library.md#s06macos-清理同时保留-cli)
   - [S07：VPS IP 质量与网络测试清单（精简版）](source-library.md#s07vps-ip-质量与网络测试清单精简版)
   - [S08：VPS Claude 教程（极低的封号风险）](source-library.md#s08vps-claude-教程极低的封号风险)
+  - [S10：Windows 本机路线、Killswitch 与自建 VPS 部署经验（完整脱敏版）](source-library.md#s10windows-本机路线killswitch-与自建-vps-部署经验完整脱敏版)
 - [补充资料集合：R01 VPS 推荐报告集（业务／性价比／高端家宽）](source-library.md#补充资料集合r01-vps-推荐报告集业务性价比高端家宽)
 - [补充资料集合：R02 VPS 线路优化与家宽中转教程](source-library.md#补充资料集合r02-vps-线路优化与家宽中转教程)
 - [版本、来源与分发记录](source-library.md#版本来源与分发记录)

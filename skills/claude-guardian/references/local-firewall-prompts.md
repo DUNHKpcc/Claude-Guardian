@@ -22,13 +22,14 @@
 替客户、同事、家人做本机路线（Mac 和 Windows 都适用）时按下面做。起因（2026-10-30 反馈）：有人给客户做 Windows 时另写防火墙执行器和恢复程序，执行器反复出错，一天一夜没交付。
 
 1. **开工前说清 Skill 给什么：**本机路线是提示词引导（Windows 按本文第 1 到 7 步，Mac 按 PF 一节），检测和判定用 `network_check.py run` 和 `egress_verifier.py`；没有 Windows 写入引擎、常驻程序或自动恢复服务。客户要“一键全自动”时当场说。
-2. **断线保护不用另写程序：**默认出站阻止和 `guardian-*` 规则是系统防火墙的持久配置，核心崩溃、TUN 掉线、重启后都照样生效。TUN 恢复交给客户端的服务模式和开机自启；恢复之前只断网、不直连。客户端没有受支持的自启入口就告诉客户，不自建服务（[修复后的复验](agent-remediation.md#post-repair-stability)）。
+2. **断线保护不用另写程序：**默认出站阻止和 `guardian-*` 规则是系统防火墙的持久配置，但配置保留不等于保护已验证：现有宽放行、未启用的配置文件、TUN 重建后的接口变化都要核对（[S10 第三节](../sources/S10-windows-deployment-sanitized.md#windows-firewall)、[第九节](../sources/S10-windows-deployment-sanitized.md#tun-firewall-lifecycle)）。TUN 恢复交给客户端的服务模式和开机自启；验收须证明恢复之前只断网、不直连。客户端没有受支持的自启入口就告诉客户，不自建服务（[修复后的复验](agent-remediation.md#post-repair-stability)）。
 3. **验收单，每项报通过／未通过／未做：**
    1. **一次取证：**TUN 开着、Claude Desktop 运行时跑一次 `network_check.py run --failure-drill`，交给 `egress_verifier.py` 判定（[整机统一出口](whole-machine-ipv4.md)）。出口、DNS、IPv6、UDP（STUN 映射和 TCP 出口一致，见 [WebRTC 堵法](agent-remediation.md#webrtc-block)）、停核心演练都在这一次里，不分开重测。
-   2. **防火墙读回：**三个配置文件默认出站都是 Block，`guardian-*` 规则齐全。上不了网时才用分层诊断。
+   2. **防火墙读回：**三个配置文件都启用且默认出站都是 Block，`guardian-*` 规则齐全，并核对其他 Allow 规则是否仍放过直连。上不了网时才用分层诊断。
    3. **重启演练：**重启后、客户端起来之前外网不通；自启、TUN 恢复后正常；默认出站仍是 Block。客户本人在场的本机按 B 档，远程按 C 档（重启后可能连不回来）。
    4. **浏览器验收：**客户本人在实际用的浏览器打开 https://ip.net.coffee/claude/，除语言外全绿（[做法](whole-machine-ipv4.md#browser-acceptance)）。
-   5. **前四项都过，客户本人登录 Claude。**
+   5. **若另行交付桌面开关：**按客户的实际入口验收“双击 → UAC → 三档状态读回 → 联网/阻断行为”，不能用 SSH、SYSTEM 任务或手输带 Bypass 的调试命令代替。完整事故复盘和快捷方式配方见 [S10 晚间复盘](../sources/S10-windows-deployment-sanitized.md#desktop-launcher)，不要求所有交付都开发开关。
+   6. **前四项及实际交付的开关都过，客户本人登录 Claude。**
 4. **超出 Skill 的自动化先报工作量：**一键脚本、自写执行器、常驻守护这类，先说要额外开发什么、大概多久，客户同意再做；能按第 1 到 7 步手动做完的先手动交付。
 5. **每过一项就告诉客户：**某一步重试一次仍失败，先回到安全状态（保险丝还在，或默认出站已恢复为允许），再说清卡在哪一项、下一步谁做。没全过就报哪几项过了、哪几项没过。
 
@@ -74,6 +75,8 @@
 3. **网卡 IPv6：**默认关闭，和 TUN 放在同一张计划里批准（B 档），步骤见 [Windows 网卡 IPv6](agent-remediation.md#windows-adapter-ipv6-hint)；节点用 IPv4 地址。
 4. 验证出口、WebRTC、DNS 的方法同 Mac。
 
+**完整实战按需读：**[S10](../sources/S10-windows-deployment-sanitized.md)保留了全部十一节和晚间事故复盘：远程接入看[第一节](../sources/S10-windows-deployment-sanitized.md#windows-ssh)，PowerShell 编码与脚本传输看[第五节](../sources/S10-windows-deployment-sanitized.md#powershell-tools)，配置与会话看[第八节](../sources/S10-windows-deployment-sanitized.md#verge-runtime)，防火墙与 DNS、接口重建看[第九节](../sources/S10-windows-deployment-sanitized.md#tun-firewall-lifecycle)。远程演练可能切断 SSH，独立任务与恢复方法见[第三节](../sources/S10-windows-deployment-sanitized.md#windows-firewall)；后台演练任务和桌面 GUI 的运行身份不能混用。
+
 ### Windows 的防火墙：系统自带
 
 **先决条件：**用管理员 PowerShell；电脑不是组织管理（组策略或 MDM 管理的防火墙，停下，不由用户决定）；TUN 已跑通并确认出口；**节点真实 IP 和端口**已知（从 profile 里读，域名解析成真实 IP 时要排除 Fake-IP 的 198.18.0.0/15）。
@@ -99,7 +102,7 @@
 6. **回滚：**`Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultOutboundAction Allow`，再 `Get-NetFirewallRule -DisplayName "guardian-*" | Remove-NetFirewallRule`；必要时 `netsh advfirewall import "<备份路径>\fw-backup.wfw"` 还原整体。
 7. **更新后复查：**换节点、改端口、更新客户端后，节点 IP 和核心路径可能变，规则要同步更新，否则会断网。
 
-第 1 到 4 步在一台 Windows（10.0.26200，Clash Verge Rev 2.5.2，Issue #13）上跑过，备份、保险丝、加规则、切换和回滚都正常，碰到的 `::1` 被拒和切换后超时已补进上面和下面的诊断；第 5 步故障演练还没在真机上跑通。Windows 版本差异大，Agent 首次使用前先在 `-WhatIf` 或只读命令里确认参数和别名。
+第 1 到 4 步在一台 Windows（10.0.26200，Clash Verge Rev 2.5.2，Issue #13）上跑过，备份、保险丝、加规则、切换和回滚都正常，碰到的 `::1` 被拒和切换后超时已补进上面和下面的诊断；该 Issue 的第 5 步故障演练还没在真机上跑通。后续 [S10](../sources/S10-windows-deployment-sanitized.md)报告了 Win10/Win11 样本的故障阻断结果及新的断网事故；这些是原作者历史实测报告，本次入库未独立复验，浏览器、严格路由和生命周期待办仍按各机器原记录保留。Windows 版本差异大，Agent 首次使用前先在 `-WhatIf` 或只读命令里确认参数和别名。
 
 <a id="windows-fw-layered-diagnosis"></a>
 ### 切换后不通：分层诊断

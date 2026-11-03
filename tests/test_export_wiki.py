@@ -35,7 +35,7 @@ class ExportWiki(unittest.TestCase):
                        'sources/S04-claude-guide.md', 'sources/S05-local-protection.md',
                        'sources/S06-macos-cleanup-sanitized.md', 'sources/S07-vps-script-catalog.md',
                        'sources/S08-extracted-text.md', 'sources/vps-recommendations/INDEX.md',
-                       'sources/R02-vps-line-optimization.md'):
+                       'sources/R02-vps-line-optimization.md', 'sources/S10-windows-deployment-sanitized.md'):
             self.assertIn(source, sources)
         payments = self.files[w.page_name('S02 AI 所有支付方式汇总') + '.md']
         self.assertNotIn('1124987353', payments)

@@ -14,7 +14,7 @@ SKILL = ROOT / 'skills/claude-guardian'
 class SourceBundleTests(unittest.TestCase):
     def test_exact_manifest_and_hashes(self):
         manifest = json.loads((SKILL / 'sources/manifest.json').read_text(encoding='utf-8'))
-        self.assertEqual({s['id'] for s in manifest['sources']}, {'S01','S02','S03','S04','S05','S06','S07','S08'})
+        self.assertEqual({s['id'] for s in manifest['sources']}, {'S01','S02','S03','S04','S05','S06','S07','S08','S10'})
         for source in manifest['sources']:
             records=[(source['path'],source['distributed_sha256'])]
             records.extend((c['path'],c['sha256']) for c in source.get('companions',[]))
@@ -43,6 +43,8 @@ class SourceBundleTests(unittest.TestCase):
                 names=archive.namelist()
                 self.assertTrue(all(info.create_system == 3 for info in archive.infolist()))
                 self.assertIn('claude-guardian/sources/S03-claude-experience.pdf',names)
+                case = 'sources/S10-windows-deployment-sanitized.md'
+                self.assertEqual(archive.read('claude-guardian/' + case), (SKILL / case).read_bytes())
                 self.assertIn('claude-guardian/scripts/status_dashboard.py',names)
                 self.assertIn('claude-guardian/scripts/config_edit_plan.py',names)
                 self.assertIn('claude-guardian/scripts/probe_evidence.py',names)

@@ -74,7 +74,7 @@ flowchart LR
     U["You: needs and environment"] --> A["Agent<br/>understand, judge, explain"]
     S["Skill<br/>experience · sources · rules"] --> A
     A --> Q["Interview state machine<br/>what to ask · which sources to attach · authorization record"]
-    A --> R["Source library<br/>S01–S08 · R01 · R02"]
+    A --> R["Source library<br/>S01–S08 · S10 · R01 · R02"]
     A --> X["Scripts and prompts<br/>run by you or after approval"]
     Q --> A
     X --> V["Verification and rollback"]

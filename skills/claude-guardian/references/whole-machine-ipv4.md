@@ -30,6 +30,8 @@ rules:
 
 客户端设置里对应：TUN 模式开启，严格路由（strict-route）开启；DNS 开启、IPv6 关闭、增强模式 fake-ip；`dns-hijack` 接管 53 端口。Fake-IP 的边界和回滚后清 DNS 缓存见 [macOS DNS 经验](macos-dns-case-lessons.md) 和 [agent-remediation 第 10 条](agent-remediation.md#post-repair-stability)。
 
+**Windows 实战补充：**[S10 第八节](../sources/S10-windows-deployment-sanitized.md#verge-runtime)记录了订阅与 DNS 覆写冲突、GUI 旧状态回写、singleton 和用户/SYSTEM 会话造成配置未加载的案例。先确定当前配置由谁生成，再选一个维护入口；配置文件写入成功不等于核心已加载，以实际运行配置读回为准。DNS 通不代表 UDP 通，节点 UDP 能力与 STUN 结果分开检查；工具 STUN 通过也不能替代浏览器 WebRTC 取证，见[第十节与编者注](../sources/S10-windows-deployment-sanitized.md#network-evidence)。
+
 规则里**不要保留** `GEOIP,CN,DIRECT` 之类的直连规则，除非用户明确要这个例外；例外要逐条列出（目的范围、协议、原因），判定里 `direct_exceptions` 填 `listed`，没列清楚的填 `unlisted`，会判失败。
 
 ## 3. 怎么做（按档位）

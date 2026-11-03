@@ -1,5 +1,13 @@
 # 版本记录
 
+## Windows/VPS 实战全文脱敏入库（2026-11-03，ADR-055 / SRC-WIN-20261103）
+
+- 所有者要求整份收录：新增 `sources/S10-windows-deployment-sanitized.md`，保留十一节、全部代码示例、两次部署的状态与待办，以及桌面开关事故、方法学复盘和快捷方式配方；真实主机、用户、路径、地址、密码与出口短哈希替换，原始文件不提交
+- 放置权衡：全文只存 `sources/` 一份，SKILL.md 给 Windows 场景入口，Windows 防火墙、整机出口和自建梯指引按主题链接具体章节；来源库、manifest 原始/分发哈希、证据规则、中英文 README 和 Wiki 导出登记同步。保留 S09 原义，新增 S10，不重复堆进常驻提示或改成执行器
+- 修正交付指引：配置持久化不等于保护经过验证；读回三档启用状态、默认出站和其他 Allow 规则，另行交付开关时覆盖真实双击入口。编者注区分单次版本判断、STUN 与浏览器 WebRTC、Restricted 与组织策略、用户目录与权限保护，以及未完成的生命周期验收
+- 风险与限制：本文是原作者历史实战报告，本次没有连接设备、修改系统或独立复验；REALITY/UDP 默认值/接口 GUID 判断不泛化，新增依赖和实际操作仍走原授权。不新增 Windows 写入引擎、桌面脚本资产或常驻服务，保留工作区原有 `.gitignore` 修改
+- 验证：macOS / Python 3.13.3 / PyYAML 6.0.3，`python -m unittest discover -s tests -v` 共 1523 项，1514 通过、9 项按环境跳过；初次缺依赖和沙箱剥离 setuid 的失败分别经临时虚拟环境安装锁定依赖、沙箱外运行原套件解决，未改测试断言。`node tests/webrtc-lifecycle.cjs` 28 场景通过，`python -m compileall -q skills/claude-guardian/scripts` 通过；两次 `python tools/package_skill.py --output <临时ZIP>` 字节一致（SHA256 `fbd7c751cce18893250956de9cf59a733d63e85ef6bcdee7c588cdb509837192`），S10 原样入包；`python tools/export_wiki.py --output <临时目录>` 导出 27 页，完整章节保留。全文逐行顺序比对、脱敏增量检查、章节链接和原指引失败的路由回归均通过；三平台 CI 与远端精确提交在推送后另核实。回滚：普通 revert 本提交并重新导出 Wiki，不改原始私人笔记
+
 ## 网页卡付账单地址和卡地区一致（2026-11-02）
 
 - 所有者提供：网页卡付等要填账单地址的地方，地址要和卡的地区一致，不要随意填免税州，会触发风控。写入 `accounts-and-payments.md` B4 网页卡：填发卡方登记的地址，国家、州、邮编和发行地区一致，不为省税填俄勒冈、特拉华等免税州，账单地址、支付 IP、币种对齐（S03）。B1 第 7 条“礼品卡渠道回答不提账单地址”不变，礼品卡支付本来就不填地址

@@ -443,7 +443,7 @@ class GuidanceContracts(unittest.TestCase):
         self.assertIn("**原文与现行规则冲突时以现行规则为准**", skill)
         self.assertIn("references/source-library.md#source-vs-current", skill)
         lib = (REFS / "source-library.md").read_text(encoding="utf-8")
-        table = lib.split('<a id="source-vs-current"></a>', 1)[1].split("\n## 八份阅读来源", 1)[0]
+        table = lib.split('<a id="source-vs-current"></a>', 1)[1].split("\n## 九份阅读来源", 1)[0]
         for term in ("S04-claude-guide.md", "S05-local-protection.md", "S03 第 1 页", "S03 第 4 页",
                      "电脑的系统时区", "手机的系统时区", "系统语言", "所有者 2026-10-28"):
             self.assertIn(term, table)

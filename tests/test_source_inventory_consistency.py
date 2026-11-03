@@ -20,9 +20,9 @@ class SourceInventoryConsistencyTests(unittest.TestCase):
     def test_reading_count_and_sections_match_the_packaged_inventory(self):
         reading_ids = {source['id'] for source in self.current['sources']
                        if source['category'] == 'reading'}
-        self.assertEqual(reading_ids, {'S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08'})
+        self.assertEqual(reading_ids, {'S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S10'})
         self.assertFalse(any(source['category'] == 'design' for source in self.current['sources']))
-        self.assertIn('## 八份阅读来源', self.library)
+        self.assertIn('## 九份阅读来源', self.library)
         self.assertNotIn('六份阅读来源', self.library)
         self.assertNotIn('六个阅读来源', self.library)
         sections = re.findall(r'^### (S\d+)：', self.library, flags=re.MULTILINE)

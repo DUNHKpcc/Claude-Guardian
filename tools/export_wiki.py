@@ -47,6 +47,7 @@ PAGES = [
     ('S05 Claude 本地防护实战', 'sources/S05-local-protection.md', '所有者提供的资料'),
     ('S07 IP 质量与网络测试清单', 'sources/S07-vps-script-catalog.md', '所有者提供的资料'),
     ('VPS Claude 教程 文字版', 'sources/S08-extracted-text.md', '所有者提供的资料'),
+    ('S10 Windows 部署经验与桌面开关复盘', 'sources/S10-windows-deployment-sanitized.md', '所有者提供的资料'),
     ('VPS 推荐报告', 'sources/vps-recommendations/INDEX.md', '所有者提供的资料'),
     ('VPS 线路优化与家宽中转教程', 'sources/R02-vps-line-optimization.md', '所有者提供的资料'),
 ]
