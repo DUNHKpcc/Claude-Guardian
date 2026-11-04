@@ -47,6 +47,7 @@
 4. **DNS：**TUN 下的 DNS 解析和 Fake-IP 的边界按 [macOS DNS 经验](macos-dns-case-lessons.md) 逐层核对：系统实际解析器、核心配置、浏览器自带 DoH 分开看；Fake-IP 本身不泄漏，但 `fake-ip-filter` 里的域名会真实解析，要核对由谁应答。
 5. **验证出口：**浏览器和终端分别确认出口 IP 是预期的那个；WebRTC 用包内的[本地探测页](../assets/webrtc-probe.html)检查，有泄露按 [WebRTC 堵法](agent-remediation.md#webrtc-block)装插件或写策略；DNS 用检测页确认没有明显的本地运营商解析。最后由用户在浏览器打开 https://ip.net.coffee/claude/ 做浏览器环境验收，除语言外必须全绿（时区要和出口一致）（[做法](whole-machine-ipv4.md#browser-acceptance)）。
 6. **只读盘点：**需要看现有 Clash 配置和控制器时，用只读盘点（`inventory_cli.py`），不读订阅正文、控制器密钥或个人配置哈希。
+7. **需要异机协助时：**按[本机高级扩展的 Mac 步骤](local-advanced-route.md#mac-access)接入和准备恢复；目标机已有 Agent 时直接在本机做，不把远程接入变成前置。
 
 ### Mac 的防火墙：PF 脚本（未在真机验证）
 

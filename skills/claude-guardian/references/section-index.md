@@ -253,11 +253,15 @@ Linux：Claude 本机数据清理（Agent 提示词，无内置宿主）（8 节
 
 ## local-advanced-route.md
 
-本机路线高级扩展：异机远程协助（4 节）
+本机路线高级扩展：异机远程协助（8 节）
 
 - [1. 先确定是否需要远程](local-advanced-route.md#1-先确定是否需要远程)
 - [2. 远程接入与传文件](local-advanced-route.md#2-远程接入与传文件)
+  - [Windows：沿用 S10 的接入经验](local-advanced-route.md#windows沿用-s10-的接入经验)
+  - [Mac：远程登录与桌面会话](local-advanced-route.md#mac远程登录与桌面会话)
 - [3. 远程故障演练](local-advanced-route.md#3-远程故障演练)
+  - [Windows：独立计划任务](local-advanced-route.md#windows独立计划任务)
+  - [Mac：PF 与独立恢复](local-advanced-route.md#macpf-与独立恢复)
 - [4. 交付与回滚](local-advanced-route.md#4-交付与回滚)
 
 ## local-firewall-prompts.md

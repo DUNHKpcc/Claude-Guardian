@@ -1,5 +1,13 @@
 # 版本记录
 
+## Mac 远程协助按共同原则直接给步骤（2026-11-04，ADR-057 / ROUTE-MAC-REMOTE-20261104）
+
+- 所有者确认：Mac 直接按共同原则提供远程协助指引，由 Agent 按目标机环境适配；不把 Mac 单列为预案状态
+- `local-advanced-route.md` 保留共同入口，接入与故障演练各分 Windows/Mac：Mac 用系统自带 SSH/SFTP、仅指定用户、按需 Tailscale、实际登录桌面与用户授权；PF 复用现有脚本和 180 秒保险丝，远程演练用独立单次恢复任务、私有结果与状态读回，补重启、FileVault、睡眠和换网的交接要求
+- Mac 主指引直接链接到本机高级扩展的 Mac 章节，自动章节索引重新生成；目标机已有 Agent 时仍默认本机操作，仅按明确的异机协助需求进入扩展。Windows 来源与完整 S10 不改，不新增执行器或常驻服务
+- 验证：新增 Mac 回归在旧指引上失败，修改后通过；Mac 原生步骤、与 Windows 命令区分、可选入口、锚点及 Wiki 导出检查通过。macOS / Python 3.13.3 / PyYAML 6.0.3，`python -m unittest discover -s tests -v` 共 1526 项，1517 通过、9 项环境跳过；`node tests/webrtc-lifecycle.cjs` 28 场景通过，`python -m compileall -q skills/claude-guardian/scripts` 通过；两次 `python tools/package_skill.py --output <临时ZIP>` 字节一致（SHA256 `60b95fa3193646d0e657da450779b74d6c33a20431fe36876c22eb65f2cfc493`），Mac 章节原样入包；`python tools/export_wiki.py --output <临时目录>` 导出 28 页。远端提交和 CI 在推送后另核实
+- 范围与回滚：本次是指引补充，没有操作真实远程设备、权限或 PF；原有授权与逐设备验收保留。回滚：普通 revert 本提交并重新导出相关 Wiki 页面
+
 ## 本机远程协助归入高级扩展（2026-11-04，ADR-056 / ROUTE-LOCAL-ADV-20261104）
 
 - 所有者明确：目标机已有 Agent 时直接在本机操作；OpenSSH、Tailscale、内网穿透、跨机传文件和远程故障演练是本机路线的高级扩展，不作为核心流程或前置要求
