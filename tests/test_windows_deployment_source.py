@@ -50,10 +50,11 @@ class WindowsDeploymentSourceTests(unittest.TestCase):
 
     def test_guides_route_to_the_relevant_case_sections(self):
         text = (ROOT / 'SKILL.md').read_text(encoding='utf-8')
-        self.assertIn('(' + CASE + ')', text)
+        self.assertIn('(' + CASE + '#windows-baseline)', text)
         for guide, anchors in (
-                ('local-firewall-prompts.md', ('windows-ssh', 'powershell-tools',
+                ('local-firewall-prompts.md', ('windows-baseline', 'powershell-tools',
                                                'windows-firewall', 'tun-firewall-lifecycle', 'desktop-launcher')),
+                ('local-advanced-route.md', ('windows-ssh', 'powershell-tools', 'windows-firewall')),
                 ('whole-machine-ipv4.md', ('verge-runtime', 'network-evidence')),
                 ('egress-ip-options.md', ('vps-protocols', 'verge-runtime'))):
             body = (ROOT / 'references' / guide).read_text(encoding='utf-8')
@@ -63,6 +64,26 @@ class WindowsDeploymentSourceTests(unittest.TestCase):
         for term in ('三个配置文件都启用', '其他 Allow 规则', '双击 → UAC → 三档状态读回',
                      '不要求所有交付都开发开关'):
             self.assertIn(term, delivery)
+
+    def test_remote_management_is_a_local_route_extension_not_a_local_prerequisite(self):
+        skill = (ROOT / 'SKILL.md').read_text(encoding='utf-8')
+        row = next(line for line in skill.splitlines() if line.startswith('| 本机高级扩展'))
+        self.assertIn('references/local-advanced-route.md', row)
+        self.assertIn('异机协助', row)
+        main = (ROOT / 'references/local-firewall-prompts.md').read_text(encoding='utf-8')
+        self.assertIn('目标机已有 Agent', main)
+        self.assertIn('不需要 OpenSSH、Tailscale 或内网穿透', main)
+        self.assertNotIn(CASE + '#windows-ssh', main)
+        extension = (ROOT / 'references/local-advanced-route.md').read_text(encoding='utf-8')
+        for term in ('目标机没有可用 Agent', '用户明确选择远程协助', '不新增路线值',
+                     'OpenSSH', 'Tailscale', '内网穿透', 'SYSTEM', 'C 档', '回滚'):
+            self.assertIn(term, extension)
+        routes = (ROOT / 'references/routes-and-platforms.md').read_text(encoding='utf-8')
+        local = routes.split('## R-LOCAL 独立操作卡', 1)[1].split('\n## ', 1)[0]
+        self.assertIn('local-advanced-route.md', local)
+        source = (ROOT / CASE).read_text(encoding='utf-8')
+        self.assertIn('本机路线的高级扩展', source)
+        self.assertIn('../references/local-advanced-route.md', source)
 
 
 if __name__ == '__main__':

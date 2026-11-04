@@ -150,11 +150,12 @@
       "original_filename": "Claude-Guardian-Windows部署经验记录.md",
       "original_sha256": "f9f61642cd72607045bc61dca1d5903717ebf4c463735d9762670005f650dddf",
       "path": "sources/S10-windows-deployment-sanitized.md",
-      "distributed_sha256": "67bc7925ce82ec801cb4c5db8921272b073b84cdeb830f1cec9bfbbdee11d378",
+      "distributed_sha256": "4193e4a1ff0194f6f8d82ad3b9f15af2ee413b3bdf93221fe4a15cdebf7f6bb1",
       "changes": [
         "2026-11-03 所有者授权整份脱敏收录；保留全部章节、代码示例、部署结果、待办和晚间桌面开关事故复盘",
         "替换真实主机名、用户名、用户路径、Tailnet/路由器/出口地址、密码与出口短哈希；不随包提供原始机器记录",
-        "新增按主题的章节导航和稳定锚点；编者注区分原作者观察、版本相关判断、工具实际能力与未验证状态"
+        "新增按主题的章节导航和稳定锚点；编者注区分原作者观察、版本相关判断、工具实际能力与未验证状态",
+        "2026-11-04 按所有者归类，在编者注和导航中将远程操作指向本机高级扩展；本机从第二节开始，完整案例正文与顺序不变"
       ],
       "attribution": "项目所有者 DUNHKPcc 提供的 2026-11-02～11-03 实战记录；新增说明标为编者注",
       "redistribution": "所有者 2026-11-03 明确授权全文脱敏后收录项目；保留原文第三方项目名称与链接，不重新许可第三方组件",

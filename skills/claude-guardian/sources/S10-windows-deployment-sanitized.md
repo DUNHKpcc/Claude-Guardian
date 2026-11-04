@@ -4,13 +4,14 @@
 >
 > **阅读口径：**这是 2026-11-02～11-03 的用户实战记录，状态勾选是原作者当时的报告，本次入库没有重新连接设备或独立复验。命令是阅读示例，不是执行授权；执行仍按 [分级授权](../references/authorization-tiers.md)，组织设备或宿主拒绝时不得绕过。不同机器和版本按实际环境核对。
 
+> **编者注（2026-11-04，所有者明确归类）：**OpenSSH、Tailscale、内网穿透、跨机传文件和远程故障演练属于[本机路线的高级扩展](../references/local-advanced-route.md)，不是 Skill 核心流程或本机前置。目标机已有 Agent 时，直接从[第二节本机检查](#windows-baseline)和[本机指引](../references/local-firewall-prompts.md)开始；仅在用户明确需要异机协助时才读远程部分。原案例全文和顺序保留，不代表部署时必须照第一节先建立远程接入。
+
 ## 按问题阅读
 
 | 主题 | 原稿位置 |
 | --- | --- |
-| Tailscale、Windows 管理员 SSH 公钥 | [第一节](#windows-ssh) |
 | TUN、DNS、IPv6 与出口检查 | [第二节](#windows-baseline) |
-| 防火墙宽放行、DNS 缓存、远程演练 | [第三节](#windows-firewall) |
+| 防火墙宽放行、DNS 缓存（远程演练仅高级扩展） | [第三节](#windows-firewall) |
 | 桌面开关初版与第一台机器待办 | [第四节](#desktop-switch-initial)、[第六节](#windows-a-status) |
 | PowerShell 编码、别名、远程脚本、哈希口径 | [第五节](#powershell-tools)、[第十节](#network-evidence) |
 | 3x-ui、REALITY、Hysteria2、证书和订阅 | [第七节](#vps-protocols) |
@@ -18,6 +19,7 @@
 | TUN 重建、防火墙接口、核心 DNS 的相互影响 | [第九节](#tun-firewall-lifecycle) |
 | 工具判定与第二台机器待办 | [第十节](#network-evidence)、[第十一节](#windows-b-status) |
 | 桌面启动事故、方法学复盘、完整快捷方式配方与验收 | [晚间复盘](#desktop-launcher) |
+| 本机高级扩展：Tailscale、Windows 管理员 SSH 公钥、跨机协助 | [高级扩展入口](../references/local-advanced-route.md)、[第一节](#windows-ssh) |
 
 ---
 

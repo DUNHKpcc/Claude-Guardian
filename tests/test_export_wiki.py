@@ -31,6 +31,7 @@ class ExportWiki(unittest.TestCase):
     def test_every_owner_source_is_on_the_wiki(self):
         # Owner 2026-10-25: all owner-provided materials, the payment summary included, go to the wiki.
         sources = {source for _, source, _ in w.PAGES}
+        self.assertIn('references/local-advanced-route.md', sources)
         for source in ('sources/S01-server-glossary.md', 'sources/S02-ai-payments.md', 'sources/S03-source-text.md',
                        'sources/S04-claude-guide.md', 'sources/S05-local-protection.md',
                        'sources/S06-macos-cleanup-sanitized.md', 'sources/S07-vps-script-catalog.md',

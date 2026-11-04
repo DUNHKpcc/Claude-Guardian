@@ -251,6 +251,15 @@ Linux：Claude 本机数据清理（Agent 提示词，无内置宿主）（8 节
 - [7. 官方的项目级清理](linux-cleanup.md#7-官方的项目级清理)
 - [8. 不做的事](linux-cleanup.md#8-不做的事)
 
+## local-advanced-route.md
+
+本机路线高级扩展：异机远程协助（4 节）
+
+- [1. 先确定是否需要远程](local-advanced-route.md#1-先确定是否需要远程)
+- [2. 远程接入与传文件](local-advanced-route.md#2-远程接入与传文件)
+- [3. 远程故障演练](local-advanced-route.md#3-远程故障演练)
+- [4. 交付与回滚](local-advanced-route.md#4-交付与回滚)
+
 ## local-firewall-prompts.md
 
 本机路线：Clash 与防火墙（Agent 提示词）（13 节）
@@ -304,7 +313,7 @@ M04/M05/M10: network evidence and offline remedies（6 节）
 
 ## routes-and-platforms.md
 
-M01/M06–M09: independent environment routes（32 节）
+M01/M06–M09: independent environment routes（33 节）
 
 - [Common concepts](routes-and-platforms.md#common-concepts)
 - [R-LOCAL / local (recommended, never silently selected)](routes-and-platforms.md#r-local--local-recommended-never-silently-selected)
@@ -318,6 +327,7 @@ M01/M06–M09: independent environment routes（32 节）
   - [L2 网络、浏览器与可选防护（本机，PC0）](routes-and-platforms.md#l2-网络浏览器与可选防护本机pc0)
   - [L2a 固定出口 IP 的来源（本机，PC0 指引）](routes-and-platforms.md#l2a-固定出口-ip-的来源本机pc0-指引)
   - [L3 安装、使用与更新（本机，PC1/PC2）](routes-and-platforms.md#l3-安装使用与更新本机pc1pc2)
+  - [L4 本机高级扩展：异机远程协助（按需）](routes-and-platforms.md#l4-本机高级扩展异机远程协助按需)
 - [R-VM 独立操作卡（M08）](routes-and-platforms.md#r-vm-独立操作卡m08)
   - [V1 新建或接入（宿主与客机分别操作，PC0）](routes-and-platforms.md#v1-新建或接入宿主与客机分别操作pc0)
   - [V2 网络与快照（宿主配置和客机测试分开，PC0）](routes-and-platforms.md#v2-网络与快照宿主配置和客机测试分开pc0)

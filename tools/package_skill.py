@@ -21,7 +21,7 @@ def main():
         "references/cleanup-cli-usage.md", "references/agent-remediation.md", "references/agent-rules-task.md", "references/whole-machine-ipv4.md", "references/windows-cleanup.md", "references/linux-cleanup.md", "references/trace-cleanup.md", "references/illegal-tools-cleanup.md", "references/scripts-index.md", "references/host-libraries.md", "references/section-index.md", "references/intake.md", "references/contact-and-safety.md",
         "references/routes-and-platforms.md", "references/network-and-remedies.md", "references/macos-dns-case-lessons.md",
         "references/accounts-and-payments.md", "references/account-onboarding.md", "references/ban-appeal.md", "references/egress-ip-options.md", "references/exit-consistency.md", "references/mobile-guidance.md", "references/vm-guidance.md", "references/skill-update.md", "references/agent-on-target.md", "references/advanced-route.md", "references/vps-guidance.md", "references/line-optimization.md", "references/local-firewall-prompts.md", "references/authorization-tiers.md", "references/incidents-and-integrations.md",
-        "references/evidence-policy.md", "references/source-library.md", "sources/manifest.json",
+        "references/local-advanced-route.md", "references/evidence-policy.md", "references/source-library.md", "sources/manifest.json",
     ]
     manifest = json.loads((skill / 'sources/manifest.json').read_text(encoding='utf-8'))
     for source in manifest['sources'] + manifest.get('collections', []):

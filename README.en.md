@@ -145,6 +145,8 @@ If you only want to understand the subscription or compare options, stop at the 
 
 ## Choosing a route
 
+**If the target machine already has an Agent, work directly on that machine.** OpenSSH, Tailscale, NAT traversal and remote failure drills belong to the optional [local-route extension for remote assistance](skills/claude-guardian/references/local-advanced-route.md). They are not prerequisites for the local route.
+
 | Route | For | Main content |
 | --- | --- | --- |
 | **Local** `Clash Verge` `FlClash` `macOS PF` `Windows Firewall` | Using your own Mac / Windows directly (the default suggestion) | Clash TUN and DNS, Windows firewall, PF on Mac; see [local Clash and firewall](skills/claude-guardian/references/local-firewall-prompts.md); egress IP sources in [egress sources](skills/claude-guardian/references/egress-ip-options.md) |

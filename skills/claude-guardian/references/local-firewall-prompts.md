@@ -6,6 +6,8 @@
 - **Mac：**用系统自带的 PF，经 [guardian-pf-killswitch.sh](../assets/mac-killswitch/guardian-pf-killswitch.sh) 按网卡拦（ADR-054）。不再用 LuLu 做 kill switch，原因见下面 Mac 一节。
 - 整机统一出口只走 IPv4 的配置、取证和判定见[整机统一出口](whole-machine-ipv4.md)；整机统一路径、明确例外、IPv4_ONLY 的要求见[现行整机统一路径](agent-remediation.md#ipv4-only-policy)；DNS、IPv6、WebRTC 的证据解释见[网络与修复建议](network-and-remedies.md)。
 
+**目标机已有 Agent：**默认直接在该机完成本机流程，不需要 OpenSSH、Tailscale 或内网穿透。只有用户明确需要异机协助时，才进入[本机高级扩展](local-advanced-route.md)。远程接入不作为本机部署的前置步骤。
+
 ## 通用工作方式（两个系统相同）
 
 1. **先问清楚，再动手：**系统版本、用的 Clash 客户端（Clash Verge 或 FlClash）、是否已导入节点配置、是否开了 TUN、电脑是不是公司或学校管理、有没有别的 VPN 或局域网必须保留（NAS、打印机、内网）。组织管理的设备先停下，防火墙策略可能不归用户管。
@@ -14,7 +16,7 @@
 4. **顺序固定：**先让 Clash 的 TUN 跑通并确认出口，再加防火墙。顺序反了会把自己锁在外网之外。
 5. **Agent 就在这台电脑上时：**开 TUN、切默认出站为阻止、故障演练都会切断 Agent 自己调用模型的连接，先按 [Agent 和被改的网络在同一台机器上](agent-on-target.md) 查清 Agent 链路，会一直断开的步骤交给用户在终端执行。
 6. **必须做故障演练：**防火墙装好后，停掉代理核心，确认外网全部失败（没有直连），再启动代理确认恢复。没演练就不能说 kill switch 成功，只能说"规则已配置，未验证"。
-7. **保留回滚路径：**动手前导出现有规则，备好撤销命令；有第二个会话或另一台设备可以操作，不要只有一个入口。
+7. **保留回滚路径：**动手前导出现有规则，备好撤销命令；有第二个会话或另一台设备可以操作，不要只有一个入口。本机可用的人工终端和离线恢复属于恢复入口，不因此要求安装远程管理工具。
 
 <a id="delivery-scope"></a>
 ## 替别人交付：先说范围，按验收单交
@@ -75,7 +77,7 @@
 3. **网卡 IPv6：**默认关闭，和 TUN 放在同一张计划里批准（B 档），步骤见 [Windows 网卡 IPv6](agent-remediation.md#windows-adapter-ipv6-hint)；节点用 IPv4 地址。
 4. 验证出口、WebRTC、DNS 的方法同 Mac。
 
-**完整实战按需读：**[S10](../sources/S10-windows-deployment-sanitized.md)保留了全部十一节和晚间事故复盘：远程接入看[第一节](../sources/S10-windows-deployment-sanitized.md#windows-ssh)，PowerShell 编码与脚本传输看[第五节](../sources/S10-windows-deployment-sanitized.md#powershell-tools)，配置与会话看[第八节](../sources/S10-windows-deployment-sanitized.md#verge-runtime)，防火墙与 DNS、接口重建看[第九节](../sources/S10-windows-deployment-sanitized.md#tun-firewall-lifecycle)。远程演练可能切断 SSH，独立任务与恢复方法见[第三节](../sources/S10-windows-deployment-sanitized.md#windows-firewall)；后台演练任务和桌面 GUI 的运行身份不能混用。
+**本机实战按需读：**从 [S10 第二节](../sources/S10-windows-deployment-sanitized.md#windows-baseline)的检查基线开始；PowerShell 编码看[第五节](../sources/S10-windows-deployment-sanitized.md#powershell-tools)，配置加载与 GUI 会话看[第八节](../sources/S10-windows-deployment-sanitized.md#verge-runtime)，防火墙与 DNS、接口重建看[第九节](../sources/S10-windows-deployment-sanitized.md#tun-firewall-lifecycle)。S10 完整正文保留，远程接入、跨机传文件和远程故障演练统一从[本机高级扩展](local-advanced-route.md)进入，不沿原案例顺序要求本机用户先搭远程通道。
 
 ### Windows 的防火墙：系统自带
 

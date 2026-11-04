@@ -45,6 +45,8 @@ class SourceBundleTests(unittest.TestCase):
                 self.assertIn('claude-guardian/sources/S03-claude-experience.pdf',names)
                 case = 'sources/S10-windows-deployment-sanitized.md'
                 self.assertEqual(archive.read('claude-guardian/' + case), (SKILL / case).read_bytes())
+                extension = 'references/local-advanced-route.md'
+                self.assertEqual(archive.read('claude-guardian/' + extension), (SKILL / extension).read_bytes())
                 self.assertIn('claude-guardian/scripts/status_dashboard.py',names)
                 self.assertIn('claude-guardian/scripts/config_edit_plan.py',names)
                 self.assertIn('claude-guardian/scripts/probe_evidence.py',names)

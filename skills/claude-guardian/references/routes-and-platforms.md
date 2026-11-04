@@ -77,6 +77,8 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 
 ## R-LOCAL 独立操作卡
 
+目标机已有 Agent 时，默认直接在本机走 L1–L3，不需要 OpenSSH、Tailscale 或内网穿透。异机协助是本机高级扩展，不是本机主流程的前置。
+
 ### L1 准备与已有环境接入（本机，PC0）
 
 1. 用户确认 Mac/Windows 的实际目标和日常使用者；从已有报告复用版本/架构/Edition，不把远程沙箱当本机
@@ -112,6 +114,10 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 6. 浏览器/Code/Desktop/代理更新后只复测受影响路径、程序位置、规则、子进程及故障行为。更新失败保留旧状态与错误，不禁用安全校验
 
 **恢复**：先判别网络、客户端、认证、支付或服务异常，再到 [故障分流](incidents-and-integrations.md)。恢复设置不等于撤销服务端操作；卸载/清理另行精确授权。
+
+### L4 本机高级扩展：异机远程协助（按需）
+
+仅在用户明确选择远程协助时进入 [local-advanced-route.md](local-advanced-route.md)：OpenSSH/Tailscale 接入、必要的内网穿透、跨机传文件和独立于 SSH 会话的故障演练。仍属于 R-LOCAL，不新增路线值；目标机的 TUN、防火墙与网络验收继续按 L2 和本机指引。远程通道的规划不等于安装或系统操作授权。
 
 ## R-VM 独立操作卡（M08）
 

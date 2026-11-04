@@ -1,5 +1,13 @@
 # 版本记录
 
+## 本机远程协助归入高级扩展（2026-11-04，ADR-056 / ROUTE-LOCAL-ADV-20261104）
+
+- 所有者明确：目标机已有 Agent 时直接在本机操作；OpenSSH、Tailscale、内网穿透、跨机传文件和远程故障演练是本机路线的高级扩展，不作为核心流程或前置要求
+- 新增 `references/local-advanced-route.md`，仅按用户明确的异机协助需求进入；仍属于 R-LOCAL，不新增路线值。VM／VPS 的原进阶路线保留，补明目标机已有 Agent 时按主流程处理
+- SKILL.md 的普通本机入口改指 S10 第二节，远程内容从独立高级扩展入口进入；本机操作卡、防火墙主指引、来源库、中英文 README、章节索引、打包清单与 Wiki 同步。S10 只新增归类编者注和调整导航，完整案例正文、章节顺序、示例和复盘保持不变，来源分发哈希更新
+- 验证：新增分类回归在旧指引上失败，修改后通过；可发现性、锚点、现有指引和 Wiki 导出检查通过。macOS / Python 3.13.3 / PyYAML 6.0.3，`python -m unittest discover -s tests -v` 共 1524 项，1515 通过、9 项环境跳过；`node tests/webrtc-lifecycle.cjs` 28 场景通过，`python -m compileall -q skills/claude-guardian/scripts` 通过；两次 `python tools/package_skill.py --output <临时ZIP>` 字节一致（SHA256 `695a270bbba96cd35d6fbe40bc1efb5033118a7b0c675fd9fd0c5031a867f915`），新扩展原样入包；`python tools/export_wiki.py --output <临时目录>` 导出 28 页。推送后另核实精确提交和 CI
+- 风险与限制：仅调整资料分类与按需入口，不安装远程工具、不访问设备、不改网络或凭据；原有授权、故障演练和验收要求不变。回滚：普通 revert 本提交并重新导出本次相关 Wiki 页面
+
 ## Windows/VPS 实战全文脱敏入库（2026-11-03，ADR-055 / SRC-WIN-20261103）
 
 - 所有者要求整份收录：新增 `sources/S10-windows-deployment-sanitized.md`，保留十一节、全部代码示例、两次部署的状态与待办，以及桌面开关事故、方法学复盘和快捷方式配方；真实主机、用户、路径、地址、密码与出口短哈希替换，原始文件不提交
