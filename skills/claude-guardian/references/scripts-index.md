@@ -7,7 +7,7 @@
 | 脚本 | 类型 | 用途 | 说明 |
 | --- | --- | --- | --- |
 | `interview_cli.py` | 入口 | 离线访谈：保存、续接、评估，不联网 | [intake.md](intake.md) |
-| `interview_flow.py` | 库 | 访谈状态机、问题集、`assessment` 和 `required_references`（本次必附资料）、`authorization` 分级授权记录函数 | [intake.md](intake.md)、[authorization-tiers.md](authorization-tiers.md) |
+| `interview_flow.py` | 库 | 访谈状态机、主题路由 `references_for_topics`、交接待办、目标能力记录、`assessment` 和 `required_references`（本次必附资料）、`authorization` 分级授权记录函数 | [intake.md](intake.md)、[authorization-tiers.md](authorization-tiers.md) |
 | `environment_entry.py` | 库 | 环境入口资格（路线选定、PC0） | [agent-remediation.md](host-libraries.md#environment-entry) |
 
 ## 检查与报告（只读）
@@ -20,7 +20,7 @@
 | `status_dashboard.py` | 入口 | 把 `guardian.py` 报告做成离线 HTML 面板；`--network` 附上 `network_check.py` 的报告，网络卡片显示实测结果 | [agent-remediation.md](agent-remediation.md) |
 | `probe_evidence.py` | 库 | 把 `network_check.py` 报告投影到面板卡片 | 同上 |
 | `update_check.py` | 入口 | 每次使用前查 Skill 更新：按 git blob 哈希比较本地文件和 GitHub main 分支，列出不同、远端新增、本地独有的文件和最近几条更新；只读，只连 `api.github.com` | [skill-update.md](skill-update.md) |
-| `network_check.py` | 入口 | 网络基础检测：默认路由是否走 TUN、IPv4 出口（国家与 ASN，不回显 IP）、经本地代理端口的出口、IPv6、DNS 泄露（含 fake-ip）、UDP（STUN）、可选故障演练；macOS、Windows、Linux；`--evidence-output` 交给 `egress_verifier.py` | [whole-machine-ipv4.md](whole-machine-ipv4.md#4-取证agent-实际执行不替用户编造) |
+| `network_check.py` | 入口 | Windows 缺 Python 必须先补齐（[S10 第十节](../sources/S10-windows-deployment-sanitized.md#network-evidence)、[能力核实](agent-remediation.md#capability-checkpoint)），统一用本工具；网络基础检测：默认路由是否走 TUN、IPv4 出口（国家与 ASN，不回显 IP）、经本地代理端口的出口、IPv6、DNS 泄露（含 fake-ip）、UDP（STUN）、可选故障演练；macOS、Windows、Linux；`--evidence-output` 交给 `egress_verifier.py` | [whole-machine-ipv4.md](whole-machine-ipv4.md#4-取证agent-实际执行不替用户编造) |
 | `egress_verifier.py` | 入口 | 整机只走 IPv4 出口的判定（`check --input`），macOS、Windows、Linux | [whole-machine-ipv4.md](whole-machine-ipv4.md) |
 
 ## 网络检测的其他部分

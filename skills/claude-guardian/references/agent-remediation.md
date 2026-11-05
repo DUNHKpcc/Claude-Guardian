@@ -5,12 +5,28 @@
 ## 一次任务的闭环
 
 1. 复用访谈事实，确认本轮路线（本机、VM、VPS）和目标设备。
-2. 检测：`guardian.py check` 采系统和代理设置，`network_check.py run` 测网络（B 档批准检测计划后跑）。已有新鲜报告就直接用。
+2. 先完成下面的能力核实，再检测：`guardian.py check` 采系统和代理设置，`network_check.py run` 测网络（B 档批准检测计划后跑）。已有新鲜报告就直接用。
 3. 选动作：`python scripts/agent_remediation.py select --input <报告.json> --target-ref <别名>`，`catalog` 列出全部动作。清单是建议，Agent 审阅后替换成核实过的参数再调用固定脚本，不拼接任意 shell。
 4. 要改东西时，给用户看：改哪里、原值→新值、影响、保留什么、备份和恢复办法，按档位取得批准。
 5. 改完先读回，再用 `network_check.py run` 对同一目标复测。
 6. 汇报：改了什么、复测结果、还没测的项、怎么恢复。已改未验的不自动重复写入；恢复只撤回本次改动，不覆盖用户后来的修改。
-7. 涉及网络修复或用户要求稳定性检查时，按下一节复验。
+7. 网络修复或稳定性检查按“修复后的复验”节执行。
+
+<a id="capability-checkpoint"></a>
+## 选定路线后的能力核实
+
+在目标机核实 Python 3.10+，运行 `inventory_cli.py capabilities`、`network_check.py --help`、`egress_verifier.py --help`，记录目标绑定的 `capabilities`（[格式](intake.md#workflow-record-formats-and-dependency-preparation)）。网络检测支持三平台。
+
+**缺 Python 必须补齐，统一用我们的脚本，不能手写替代验收。**先说明官方来源、架构、安装范围、权限、PATH 影响和卸载恢复，按档授权；未获准或失败就记检测未完成。Windows 历史经验见 [S10 第十节](../sources/S10-windows-deployment-sanitized.md#network-evidence)，不照搬旧镜像、全机安装或 SYSTEM 方案。
+
+<a id="handoff-and-follow-up"></a>
+## 手动交接与遗留验收
+
+任何手动交接都写**准确范围、影响、前置依赖、完成后回传什么**及备份恢复。前置依赖由 Agent 在转手前完成，做不了先报阻塞；如卸载代理前先按 [trace-cleanup.md](trace-cleanup.md)检查旧出口痕迹，避免卸载后补不了。
+
+手动待办和事故、降级、跳过留下的验收／演练，用 `--work-item-file` 记入私有状态 `work_items`（[字段与示例](intake.md#workflow-record-formats-and-dependency-preparation)）。未完成验收自动标 `blocking_next_session`；收尾列未做原因、恢复办法和所需证据。开局或续接先看 `assessment.follow_up`，提示并优先处理，完成才更新 completed；用户不做就保留并说明验收未完成。实际操作仍按档授权，不挡无关任务。
+
+保存仍须明确同意并用 `--output`；未获准保存就给用户待办摘要，无旧记录不能声称自动恢复。
 
 <a id="post-repair-stability"></a>
 ## 修复后的复验

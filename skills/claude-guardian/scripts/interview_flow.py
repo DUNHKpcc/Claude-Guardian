@@ -1,7 +1,8 @@
 """Offline adaptive interview; no network, subprocess, file writes or implicit consent.
 
 Public API: new_state, record_fact, record_facts, set_context, next_question, assessment,
-required_references, record_scope_confirmation, record_plan_approval, record_plan_result,
+required_references, references_for_topics, record_capabilities, record_work_item,
+record_scope_confirmation, record_plan_approval, record_plan_result,
 request_critical_confirmation, resolve_critical_confirmation, use_critical_confirmation,
 authorization_check, authorization_summary,
 mark_asked, defer_branch, resume_branch, complete_purchase, dumps_state,
@@ -325,9 +326,11 @@ def validate_state(state):
     required = {"schema_version", "task_id", "target_alias", "account_alias", "facts", "context",
                 "asked_question_ids", "deferred_branches", "current_subscription", "payment_intent",
                 "purchase_intent", "persistence_consent"}
-    if set(state) - required - {'resume_review', 'purchase_completion', 'subscription_review', 'authorization'} or required - set(state):
+    if set(state) - required - {'resume_review', 'purchase_completion', 'subscription_review', 'authorization',
+                                'capabilities', 'work_items', 'reference_topics'} or required - set(state):
         raise InterviewError("Unexpected or missing state fields")
     _safe(state)
+    _validate_workflow_records(state)
     if 'authorization' in state:
         _validate_authorization(state)
     for name in ("task_id", "target_alias", "account_alias"):
@@ -1842,8 +1845,66 @@ REFERENCE_PATHS = {
     'win_cleanup': 'references/windows-cleanup.md',
     'routes': 'references/routes-and-platforms.md',
     'network': 'references/network-and-remedies.md',
+    'trace': 'references/trace-cleanup.md',
+    'linux_cleanup': 'references/linux-cleanup.md',
+    'illegal_tools': 'references/illegal-tools-cleanup.md',
+    'remote': 'references/local-advanced-route.md',
 }
 PAYMENT_REFERENCE_TASKS = {"subscription_preparation", "renew", "upgrade", "change_channel", "billing_issue", "compare"}
+REFERENCE_TOPICS = ('payment', 'registration', 'suspension', 'identity_review', 'cleanup',
+                    'trace_cleanup', 'ip_quality', 'local_protection', 'whole_machine_egress',
+                    'line_optimization', 'vps', 'vm', 'mobile', 'egress', 'remote_assistance', 'illegal_tools')
+
+
+def references_for_topics(topics, *, os_name='unknown'):
+    """Route normalized conversation topics without interview state or execution."""
+    if (not isinstance(topics, list) or any(not isinstance(t, str) or t not in REFERENCE_TOPICS for t in topics)
+            or os_name not in ('unknown', 'macos', 'windows', 'linux', 'mobile_only')):
+        raise InterviewError('Invalid reference topics or platform')
+    out = []
+    routes = {
+        'payment': ('S02',), 'registration': ('onboarding', 'S03', 'S04'),
+        'suspension': ('onboarding', 'S03', 'S04', 'incidents'),
+        'identity_review': ('onboarding', 'S03', 'S04', 'incidents', 'identity_review'),
+        'trace_cleanup': ('trace',), 'ip_quality': ('S07',),
+        'local_protection': ('S05', 'local_fw'), 'whole_machine_egress': ('whole_ipv4', 'win_ipv6'),
+        'line_optimization': ('line', 'R02'), 'vps': ('vps', 'S08', 'R01', 'S07'),
+        'vm': ('vm', 'egress'), 'mobile': ('mobile', 'S03'), 'egress': ('egress', 'R01'),
+        'remote_assistance': ('remote',), 'illegal_tools': ('illegal_tools',),
+    }
+    ordered = (['payment'] if 'payment' in topics else []) + [t for t in topics if t != 'payment']
+    for topic in ordered:
+        keys = list(routes.get(topic, ()))
+        if topic in {'cleanup', 'trace_cleanup'}:
+            if os_name in {'macos', 'unknown'}:
+                keys += ['S06', 'cleanup_cli']
+            if os_name in {'windows', 'unknown'}:
+                keys += ['win_cleanup']
+            if os_name in {'linux', 'unknown'}:
+                keys += ['linux_cleanup']
+        for key in keys:
+            item = {'path': REFERENCE_PATHS[key], 'topic': topic}
+            if topic == 'mobile' and key == 'S03':
+                item['locator'] = 'p.4'
+            if topic in {'suspension', 'identity_review'}:
+                if key == 'onboarding':
+                    item['locator'] = '#a0b'
+                elif key == 'S03':
+                    item['locator'] = 'p.5'
+                elif key == 'identity_review':
+                    item['locator'] = '#a3-真实身份核验异常会话与凭据保护'
+            _merge_reference(out, item)
+    return out
+
+
+def _merge_reference(out, item):
+    if item['path'] in {REFERENCE_PATHS['S07'], REFERENCE_PATHS['trace']}:
+        item.update(type='checklist', execution_report_required=True)
+    existing = next((r for r in out if r['path'] == item['path']), None)
+    if existing is None:
+        out.append(item)
+    elif item.get('locator') and item['locator'] not in existing.get('locator', '').split(', '):
+        existing['locator'] = ', '.join(filter(None, (existing.get('locator'), item['locator'])))
 
 
 def required_references(state):
@@ -1857,18 +1918,10 @@ def required_references(state):
     out = []
 
     def add(key, topic, locator=None):
-        existing = next((item for item in out if item['path'] == REFERENCE_PATHS[key]), None)
-        if existing is not None:
-            # Keep the first topic but never drop a page another topic needs.
-            if locator and 'locator' not in existing:
-                existing['locator'] = locator
-            elif locator and locator not in existing['locator'].split(', '):
-                existing['locator'] += ', ' + locator
-            return
         item = {'path': REFERENCE_PATHS[key], 'topic': topic}
         if locator:
             item['locator'] = locator
-        out.append(item)
+        _merge_reference(out, item)
 
     os_value = _value(state, 'Q-C02')
     mobile = _value(state, 'Q-M01')
@@ -1952,6 +2005,12 @@ def required_references(state):
             add('cleanup_cli', 'cleanup')
         if os_value in {'windows', None, 'unknown'}:
             add('win_cleanup', 'cleanup')
+    if state.get('reference_topics'):
+        platform = os_value if os_value in ('macos', 'windows', 'linux', 'mobile_only') else 'unknown'
+        for item in references_for_topics(state['reference_topics'], os_name=platform):
+            _merge_reference(out, item)
+    if any(item['path'] == REFERENCE_PATHS['S02'] for item in out):
+        out.sort(key=lambda item: item['path'] != REFERENCE_PATHS['S02'])
     return out
 
 
@@ -2043,6 +2102,14 @@ def assessment(state):
         result['required_references'] = references
     if state.get('authorization'):
         result['authorization'] = authorization_summary(state)
+    if 'capabilities' in state:
+        result['capabilities'] = {k: v for k, v in state['capabilities'].items() if k not in {'source', 'target_ref'}}
+    if 'work_items' in state:
+        pending = [item for item in state['work_items'] if item['status'] == 'pending']
+        pending.sort(key=lambda item: not item['blocking_next_session'])
+        result['follow_up'] = {
+            'blocking_next_session': any(item['blocking_next_session'] for item in pending),
+            'items': [{k: item[k] for k in ('id', 'kind', 'status', 'blocking_next_session')} for item in pending]}
     if review is not None:
         result["resume_review"] = {key: deepcopy(review[key]) for key in
                                    ("event_id", "status", "response", "scope_keys", "changed_keys", "reported_at")}
@@ -2051,6 +2118,69 @@ def assessment(state):
                                       else "resume_review_required" if review["status"] == "pending"
                                       else "resume_review_unresolved")
     return result
+
+
+def record_capabilities(state, capabilities):
+    """Retain target observations, never infer them from the controller platform."""
+    result = deepcopy(state)
+    result['capabilities'] = deepcopy(capabilities)
+    validate_state(result)
+    return result
+
+
+def record_work_item(state, item):
+    """Upsert a private handoff or acceptance obligation; unfinished acceptance persists."""
+    validate_state(state)
+    if not isinstance(item, dict):
+        raise InterviewError('Invalid work item')
+    item = deepcopy(item)
+    item['blocking_next_session'] = item.get('kind') == 'acceptance' and item.get('status') == 'pending'
+    result = deepcopy(state)
+    items = result.setdefault('work_items', [])
+    items[:] = [old for old in items if old['id'] != item.get('id')]
+    items.append(item)
+    validate_state(result)
+    return result
+
+
+def _validate_workflow_records(state):
+    if 'reference_topics' in state:
+        references_for_topics(state['reference_topics'])
+    if 'capabilities' in state:
+        c = state['capabilities']
+        if (not isinstance(c, dict) or set(c) != {'target_ref', 'platform', 'python', 'network_check', 'egress_verifier', 'source'}
+                or c['target_ref'] != state['target_alias']
+                or c['platform'] not in ('macos', 'windows', 'linux', 'unknown')
+                or any(c[k] not in ('available', 'missing', 'unknown') for k in ('python', 'network_check', 'egress_verifier'))
+                or not isinstance(c['source'], str) or not c['source'].strip()):
+            raise InterviewError('Invalid target capability observations')
+    if 'work_items' not in state:
+        return
+    items = state['work_items']
+    if not isinstance(items, list):
+        raise InterviewError('Invalid work items')
+    seen = set()
+    fields = {'id', 'target_ref', 'kind', 'status', 'scope', 'impact', 'prerequisites',
+              'return_evidence', 'reason', 'blocking_next_session'}
+    for item in items:
+        if (not isinstance(item, dict) or set(item) != fields
+                or not isinstance(item['id'], str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', item['id'])
+                or item['id'] in seen or item['target_ref'] != state['target_alias']
+                or item['kind'] not in ('manual_action', 'acceptance') or item['status'] not in ('pending', 'completed')
+                or any(not isinstance(item[k], str) or not item[k].strip() for k in ('scope', 'impact', 'reason'))
+                or type(item['blocking_next_session']) is not bool
+                or item['blocking_next_session'] != (item['kind'] == 'acceptance' and item['status'] == 'pending')
+                or not isinstance(item['prerequisites'], list)
+                or not isinstance(item['return_evidence'], list) or not item['return_evidence']
+                or any(not isinstance(e, str) or not e.strip() for e in item['return_evidence'])):
+            raise InterviewError('Invalid target work item')
+        seen.add(item['id'])
+        for prerequisite in item['prerequisites']:
+            if (not isinstance(prerequisite, dict) or set(prerequisite) != {'check', 'status'}
+                    or not isinstance(prerequisite['check'], str) or not prerequisite['check'].strip()
+                    or prerequisite['status'] not in ('pass', 'not_run', 'blocked')
+                    or item['status'] == 'completed' and prerequisite['status'] != 'pass'):
+                raise InterviewError('Unfinished or invalid prerequisite')
 
 
 

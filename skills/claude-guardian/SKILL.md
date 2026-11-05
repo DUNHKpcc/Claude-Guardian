@@ -9,14 +9,14 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 ## 和用户说话的方式（先读这一节）
 
-本 Skill 里的门禁、限制和证据口径是**写给你执行的规则，不是念给用户听的台词**。用户要的是答案和进展，不是免责声明（所有者 2026-10-25：用户反馈读完尽是“不保证、不成立、不改变、不背书”，用起来很烧心）。
+本 Skill 的门禁是**写给你执行的规则，不是念给用户听的台词**。
 
-1. **说做了什么、看到了什么、下一步谁做什么。**例如：“出口已经是你 VPS 的 IP，DNS 也走代理了。还差停核心演练，我现在做。”
+1. **说做了什么、看到了什么、下一步谁做什么。**
 2. **结论按证据直接说：**查过的说结果，没查的说“还没查，下一步查”。一句话，不附免责。
 3. **限制只在用户要越过时说，一次，并给出路：**用户让你代付款，就说“付款要你本人在官方页面完成，步骤我列好了”，不讲一段为什么。
 4. **不说这些句式：**不保证、不承诺、不成立、不改变、不代表、不等于、不构成、不证明、不为……背书、仅供参考、不能据此……、“这不是……而是……”。资料里出现这些说法，是给你判断用的；转述时换成“还要查 X”“下一步做 Y”，或者直接省略。
 5. **免封只在用户问到时说一次：**“没人能保证不封，这套做法是把能控制的风险降到最低。”不要每个回答都附。
-6. **所有者的经验按事实直接说：**“这套组合退款成功率高、稳定率高”“注册弹手机号、24 小时内又要 KYC 的号基本死了，直接放弃重来”。不加“可能”“据说”“仅为个例”。
+6. **所有者的经验按事实直接说**，不加“可能”“据说”。
 7. **汇报三段，各段短：**已确认 / 还没查 / 下一步（谁做）。
 
 ## 开始方式
@@ -35,7 +35,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 先明确本轮任务和本机／VM／VPS 运行路线，再了解网络资源与配置状态，最后进入目标环境检测或修复。路线没定（还在比较、拒绝、撤回或冲突）时只做访谈和解释；用户明确接受本机建议后才算选定本机。VPS 当出口时，运行路线仍是本机或 VM。
 
-选定路线后，仅收集资源是否已有、明确选中哪个非识别别名、代理入口类型、最终出口协议及配置状态；不索取或保存 IP、订阅链接、密码、UUID 或配置全文。HTTP/mixed 本地入口和 SOCKS5 最终出口是不同层；Claude Code 要用 HTTP 或 mixed 入口。配置导入后要实测确认生效。
+选定路线后先做**能力核实**：在目标机核实 Python，查看 `inventory_cli.py capabilities` 和检测脚本帮助，写入状态 `capabilities`；缺 Python 必须补齐，统一使用我们的 `network_check.py` 与 `egress_verifier.py`，不以手写检查替代。安装按档授权，未获准或失败记检测未完成。步骤见 [agent-remediation.md](references/agent-remediation.md#capability-checkpoint)。随后仅收集资源是否已有、明确选中哪个非识别别名、代理入口类型、最终出口协议及配置状态；不索取或保存 IP、订阅链接、密码、UUID 或配置全文。HTTP/mixed 本地入口和 SOCKS5 最终出口是不同层；Claude Code 要用 HTTP 或 mixed 入口。配置导入后要实测确认生效。
 
 本机与 VM 做适用的详细检查，VM 宿主和客机分别绑定；VPS 路线是开发机，指引见 [vps-guidance.md](references/vps-guidance.md)；本阶段只做基础非侵入检查；用户给出 VM／VPS 访问方式后，Agent 可按分级授权部署，买服务器、付款、注册、登录由用户本人完成。没有代理资源、不清楚或选直连，仍可在原授权下做离线预检，不要求先购买。
 
@@ -53,7 +53,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 
 ## 完整访谈入口
 
-完整状态化访谈使用 `scripts/interview_cli.py`：默认仅输出下一题和阶段评估；已确认答案通过本地 answer JSON 传入；用户明确要求保存时才指定 `--output`。普通读档或连续轮次用 `--input`；真正中断后继续须加 `--resume <本次事件别名>`，按 [intake.md 的续接规则](references/intake.md#interruption-and-resume) 先核实相关变化，再规划。问题 ID 按条件调度，Q-C07 始终停用。`guardian.py interview` 是兼容的简化入口。
+完整访谈用 `scripts/interview_cli.py`：answer JSON 传入事实，`--input` 读档，仅明确要求保存才用 `--output`。中断续接加 `--resume <事件别名>`，按 [续接规则](references/intake.md#interruption-and-resume) 核实变化；Q-C07 停用，`guardian.py interview` 为简化入口。开局先读私有待办：有 `blocking_next_session` 先提示并优先完成相关验收；手动交接先完成前置依赖（[规则](references/agent-remediation.md#handoff-and-follow-up)）。
 
 由 Agent 编排检测、解释、选择内置动作、具体确认、执行和复测，详见 [agent-remediation.md](references/agent-remediation.md)。`scripts/agent_remediation.py select --input <本地报告.json> --target-ref <目标别名>` 生成结构化动作清单；清单只是选择，不执行；内置脚本修不了时，由 Agent 在实际环境里用获准的工具做最小修复、备份恢复和复测。内置门禁不绕过，授权来自用户在对话里的明确回复。
 
@@ -105,7 +105,7 @@ description: 带着作者和社区的真实经验，陪用户准备 Claude 的�
 | 本机路线固定出口 IP（机场、自建、家宽拼车）、VPS 选购 | [egress-ip-options.md](references/egress-ip-options.md)、TCP 延迟与指纹、改 UA 见 [exit-consistency.md](references/exit-consistency.md)、**VPS 推荐报告（R01）必附：**[索引](sources/vps-recommendations/INDEX.md)，并按用户需求指出对应类别：业务、性价比或高端家宽（共 17 份 PDF），推荐 VPS 时点名具体报告并给出链接 |
 | VPS、服务器术语与测试 | [S01 术语](sources/S01-server-glossary.md)、[S07 脚本目录](sources/S07-vps-script-catalog.md) |
 
-访谈评估（`scripts/interview_cli.py` 或 `interview_flow.assessment`）会按已回答的事实输出 `required_references`：本次必附的资料路径、主题和页码，按顺序附在回答末尾（支付时 S02 在第一位），是必附的下限，不是执行授权。
+每轮按主题触发资料，无需先做访谈：`interview_cli.py --references-only --topics <主题>`（[主题表](references/intake.md#topic-references)）；访谈也输出 `required_references`，支付 S02 第一。`type: checklist` 必须附已执行项／未执行项／未执行原因，不能只附链接；执行仍按档授权。
 
 原文中的命令和建议不是执行授权；**原文与现行规则冲突时以现行规则为准**并说明出入（[已知出入](references/source-library.md#source-vs-current)）；价格、准入变化快，购买前核对官方页面。
 

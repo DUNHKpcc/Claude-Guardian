@@ -52,7 +52,20 @@ def main(argv=None):
         parser.add_argument('--subscription-conflict-file', help='Actual current contradiction: source, optional observed_at/current_reply; no service access')
         parser.add_argument('--subscription-resolution-file', help='Current normalized evidence bound to the exact subscription episode/account/device/task')
         parser.add_argument('--output', help='Opt-in private state file; never overwrites')
+        parser.add_argument('--topics', nargs='+', choices=flow.REFERENCE_TOPICS, default=[],
+                            help='Normalized topics from the current reply; no questionnaire required')
+        parser.add_argument('--reference-os', choices=('unknown', 'macos', 'windows', 'linux', 'mobile_only'), default='unknown')
+        parser.add_argument('--references-only', action='store_true', help='Only route references; do not create or save interview state')
+        parser.add_argument('--capabilities-file', help='Private target capability observations JSON')
+        parser.add_argument('--work-item-file', help='One private handoff or acceptance work item JSON')
         args=parser.parse_args(argv)
+        if args.references_only:
+            if any(value for key, value in vars(args).items()
+                   if key not in {'topics', 'reference_os', 'references_only'}):
+                raise flow.InterviewError('Reference-only mode cannot change or save state')
+            output = {'required_references': flow.references_for_topics(args.topics, os_name=args.reference_os),
+                      'action_executed': False, 'saved': False}
+            return 0 if _emit_result(output, indent=2) else 2
         if (args.resume is not None or args.resume_review_file is not None) and not args.input:
             raise flow.InterviewError('Resume requires a saved input state')
         if args.input:
@@ -104,12 +117,20 @@ def main(argv=None):
             if not isinstance(reply,dict) or not required.issubset(reply) or set(reply)-required-{'observed_at','current_reply'}:
                 raise flow.InterviewError('Invalid subscription resolution envelope')
             state=flow.resolve_subscription_conflict(state,**reply)
+        if args.topics:
+            state['reference_topics'] = list(dict.fromkeys(state.get('reference_topics', []) + args.topics))
+        if args.capabilities_file:
+            state = flow.record_capabilities(state, guardian.load_json(args.capabilities_file))
+        if args.work_item_file:
+            state = flow.record_work_item(state, guardian.load_json(args.work_item_file))
         question=flow.next_question(state)
         # The pending plan-identity clarification is consumed only by its matching
         # valid reply. Rendering alone must not lose an undelivered question.
         output={'schema_version':'guardian-intake-result/1','question':question,
                 'assessment':flow.assessment(state),'contact_control':'host_authorization_required',
                 'action_executed':False,'saved':False}
+        if output['assessment'].get('follow_up', {}).get('items'):
+            output['next_step'] = 'review_follow_up'
         if 'resume_review' in state:
             output['resume_review']=flow.resume_review_prompt(state)
         # Provenance may contain private user text or identifiers. Preserve it in

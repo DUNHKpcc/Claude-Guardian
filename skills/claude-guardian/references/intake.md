@@ -245,3 +245,54 @@ A cleanup-only task asks only relevant target/client/OS, goal, preservation and 
 ### Device-only triage resolution
 
 When D01 truthfully says this device used another account that is currently restricted, retain that category and the selected account's independent C04 status. After bounded clarification, the host may explicitly report `set_context(state, device_incident_resolved=True)`. This closes only device-episode triage; it is bound to the current D01 fact's target/provenance/time/category, and grants no action permission. New device/route/namespace or actual episode evidence invalidates it. A task-only change retains informational resolution for the unchanged bound episode, clears obsolete cleanup intent and suppresses re-offering that same episode; fresh history or an explicit cleanup request can reactivate planning. Account suspension, credential exposure and data-risk incidents remain governed by their separate existing resolution state. Exact old-evidence replay cannot reopen the episode; a fresh report can. Do not tell the user to falsify D01 as past merely to proceed.
+
+<a id="topic-references"></a>
+## Conversation topics without the questionnaire (#21)
+
+For each new user reply, the host maps the actual subject to normalized topics and calls `references_for_topics(topics, os_name="windows")`, or runs:
+
+```sh
+python scripts/interview_cli.py --references-only --topics suspension trace_cleanup ip_quality --reference-os windows
+```
+
+This pure route needs no interview state, answers or network; reference-only mode never saves. Topics are payment, registration, suspension (封号), identity_review (KYC), cleanup (清理), trace_cleanup (旧 IP 痕迹), ip_quality (IP 质量), local_protection, whole_machine_egress, line_optimization, vps, vm, mobile, egress, remote_assistance and illegal_tools. The host identifies meaning, not blind substring matches. New topics trigger in emergencies and long conversations too. Payment stays first, duplicate paths and locators merge. Checklist references require an execution report; see [source-library.md](source-library.md).
+
+With an existing interview, `--topics` retains normalized topics in optional `reference_topics`; `required_references` combines these with interview facts. The conversation router is independent of question scheduling, and remains usable when interview questions are skipped. Platform-specific cleanup follows the target OS; unknown OS lists candidates until clarified.
+
+Optional target `capabilities` and `work_items` records, JSON fields and private persistence rules are documented in [agent-remediation.md](agent-remediation.md#handoff-and-follow-up). `assessment.follow_up` shows unfinished handoffs; the CLI sets `next_step: review_follow_up` before further planning and prioritizes `blocking_next_session` acceptance items whenever state is read or resumed. These are obligations to revisit, not permission to execute.
+
+## Workflow record formats and dependency preparation
+
+### Target capability observations
+
+在目标机核对系统、架构、Python 版本及随包脚本是否齐全，不能用管理机结果代替。先读 [scripts-index.md](scripts-index.md)，有 Python 后运行：
+
+```sh
+python scripts/inventory_cli.py capabilities
+python scripts/network_check.py --help
+python scripts/egress_verifier.py --help
+```
+
+`inventory_cli.py capabilities` 主要报告配置盘点支持范围，不能据此断言 Windows 不支持网络检测。网络检测和判定脚本支持三平台。Python 要 3.10+；Windows 用 `py -3` 或已核实的解释器路径，确认不是仅打开商店的命令别名。
+
+**目标机缺 Python 必须补齐，然后使用我们的脚本。**先说明官方安装来源、目标用户或全机安装范围、权限、磁盘与 PATH 影响、卸载恢复方法，按分级授权安装；未获准、安装失败或权限不足就记录检测未完成，解决依赖后重跑，不用手写 PowerShell/curl 替代验收。历史安装命令见 [S10 第十节](../sources/S10-windows-deployment-sanitized.md#network-evidence)，其中旧版本、第三方镜像、全机安装与 SYSTEM 不是默认方案；当前步骤核实 Python 官方安装方式和实际架构，不照搬历史命令。
+
+能力结果用 `interview_cli.py --capabilities-file <私有JSON>` 写入可选 `capabilities` 段，即使跳过问卷也可新建仅用于记录的状态。字段为 `target_ref`、`platform`（macos/windows/linux/unknown）、`python`、`network_check`、`egress_verifier`（各 available/missing/unknown）、`source`（脱敏观察来源）。记录实际目标机观察；可用不表示检测已通过。路线、设备或依赖变化后重查。
+
+检测固定链路为：目标机 `network_check.py run --evidence-output <私有证据JSON>` → 按 [whole-machine-ipv4.md](whole-machine-ipv4.md)补配置读回和浏览器证据 → `egress_verifier.py check --input <证据JSON>`。故障演练仍先核实授权与独立恢复，缺项保留 unknown/not_run。
+
+### Handoff and acceptance records
+
+任何动作交给用户手动执行前都给交接单：**准确范围、影响、前置依赖、完成后回传什么**，并带备份与恢复办法。前置依赖必须由 Agent 在转手前按原授权完成；做不了先说明阻塞，不让用户先卸载或删除导致检查机会丢失。例：卸载代理客户端前，先按 [trace-cleanup.md](trace-cleanup.md)核对旧出口痕迹，再交接卸载；原清理场景的备份和隔离要求继续见 [windows-cleanup.md](windows-cleanup.md)。
+
+私有访谈状态新增可选 `work_items`，通过 `interview_cli.py --work-item-file <私有JSON>` 新增或以同一 ID 更新：
+
+```json
+{"id":"client-uninstall","target_ref":"device-a","kind":"manual_action","status":"pending","scope":"selected-client","impact":"remove selected client","prerequisites":[{"check":"inspect old exit traces","status":"pass"}],"return_evidence":["uninstall result"],"reason":"user handoff","blocking_next_session":false}
+```
+
+`kind` 为 manual_action/acceptance，`status` 为 pending/completed；前置项为 pass/not_run/blocked。只有实际完成才记 completed，前置项没通过不能记完成。完整交接内容只保存在用户批准的私有状态中，CLI 摘要只给 ID、类型、状态和提醒标志。
+
+会话中事故、验收降级或跳过留下的验收／演练，收尾必须登记 acceptance 待办，写清范围、未做原因、恢复办法（写入 impact）和下一步需要的证据；未完成时自动设 `blocking_next_session: true`。开局、读档和恢复时先查看 `assessment.follow_up`，先提示并优先处理这些项；普通手动待办也要提醒。提醒不授权执行：可能断网、接触 Claude 等仍按对应档位确认；用户本轮不做就保留待办并说明相关验收未完成，不挡无关任务。完成后用同 ID 更新为 completed，不能靠确认提醒或重开会话清除。
+
+仍须用户明确同意才通过 `--output` 保存，不自动写磁盘。没有获准保存，收尾把待办交给用户留存；新会话无旧记录时先索取待办摘要，不能声称已自动找回。旧状态没有这些字段仍可读取。

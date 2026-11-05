@@ -23,6 +23,12 @@ OpenSSH、Tailscale、内网穿透和远程管理是协助别人部署时的扩�
 - **传脚本：**S10 [第五节](../sources/S10-windows-deployment-sanitized.md#powershell-tools)保留了先写脚本再 scp、PowerShell 5.1 编码及 SYSTEM 用户目录差异。纯本机执行只需采用编码和路径经验，不需要为了传文件启用 SSH。
 - **管理通道例外：**只有实际使用该通道时才考虑对应放行规则，列清程序、方向和作用域；无远程管理需求不添加 Tailscale/SSH 例外，不把管理流量另行放行说成所有流量同一出口。
 
+### 异机检测：在目标机运行随包工具
+
+接入后先按 [能力核实](agent-remediation.md#capability-checkpoint)检查目标机的 Python 和脚本，管理机能跑不算目标机能跑。Windows 无 Python **必须先补齐**，再使用我们的 `network_check.py` 和 `egress_verifier.py`，不以手写检查替代。历史处理见 [S10 第十节](../sources/S10-windows-deployment-sanitized.md#network-evidence)；安装前按实际架构、官方来源和安装范围取得相应授权，不能直接照搬旧镜像或 SYSTEM 安装。
+
+经批准把随包脚本传到目标机私有目录，在目标机运行 `network_check.py run --evidence-output <私有证据JSON>`（目标别名和端口按其 `--help`），按 [整机取证](whole-machine-ipv4.md)补齐配置读回与实际浏览器结果，再运行 `egress_verifier.py check --input <证据JSON>`。网页 WebRTC 不能用 UDP/STUN 代填；目标机依赖、权限或证据不足就记未完成，修好后重跑。远程故障演练另按下一节的独立恢复和 C 档确认执行。
+
 <a id="mac-access"></a>
 ### Mac：远程登录与桌面会话
 

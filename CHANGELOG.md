@@ -1,5 +1,14 @@
 # 版本记录
 
+## 检测与会话闭环：Issue #19–#24（2026-11-05，ADR-058 / ISSUES-19-24-20261105）
+
+- #19、#22：主流程新增目标机能力核实，状态可记录 capabilities；Windows 缺 Python 必须按档授权补齐，统一使用 network_check.py / egress_verifier.py，不以手写检查替代。异机检测步骤和脚本索引直接链接 S10 第十节，旧镜像、版本和 SYSTEM 安装仅留作历史记录
+- #20、#21：无需完整访谈即可按对话主题查询资料（references_for_topics、interview_cli --references-only --topics），也可与已有访谈合并；支付 S02 第一、路径去重与页码合并保持。S07 manifest 与 trace-cleanup 指引标记 checklist，输出要求逐项给已执行项 / 未执行项 / 未执行原因，来源正文和哈希保持原样
+- #23、#24：泛化手动交接的范围、影响、前置依赖、回传结果要求，状态新增目标绑定的 work_items；前置项没过不能记完成。未完成验收自动标 blocking_next_session，读档和恢复时提醒并优先处理；CLI 输出 next_step: review_follow_up，完成后才清除待办。原有用户同意保存、授权和恢复要求保留
+- 范围与限制：#17 暂不处理，#14 保留交流；无新后台服务、写入引擎或依赖，无真实设备网络改动。主题归一化和逐项执行由宿主 Agent 负责，CLI 不代造执行结果；无旧状态的新会话须提供待办摘要。主指引与修复指引保留原长度门限，字段细节按需从 intake 读取；章节索引重新生成
+- 验证：macOS 15.7.4 / Python 3.13.3 / PyYAML 6.0.3（仅临时测试虚拟环境）运行 `python -m unittest discover -s tests -v` 共 1542 项，1533 通过、9 项环境跳过；16 项新增回归，初始 13 项在旧实现上失败。`node tests/webrtc-lifecycle.cjs` 28 场景通过；`python -m compileall -q skills/claude-guardian/scripts` 通过；两次 `python tools/package_skill.py --output <临时ZIP>` 字节一致，SHA256 `88946000a319826196d618c3afbcfcf69b9a3bed0e991ca3d351f52146f26eb9`；`python tools/export_wiki.py --output <临时目录>` 导出 28 页。推送后另核实远端提交和三平台 CI
+- 回滚：普通 revert 本提交，并重新导出 Wiki；无真实目标机配置需要回滚
+
 ## Mac 远程协助按共同原则直接给步骤（2026-11-04，ADR-057 / ROUTE-MAC-REMOTE-20261104）
 
 - 所有者确认：Mac 直接按共同原则提供远程协助指引，由 Agent 按目标机环境适配；不把 Mac 单列为预案状态

@@ -19,6 +19,12 @@
 - 随包来源与 SKILL.md、references 的现行规则冲突时，以现行规则为准，向用户说明出入并给出现行规则的链接；已知出入见下面的[对照](#source-vs-current)
 - 下列链接相对于本文件，随安装包离线保留。不要在未核实发布分支和文件存在前编造 GitHub 文件链接
 
+## 清单型资料的执行反馈（#20）
+
+[S07](../sources/S07-vps-script-catalog.md)（manifest 标记 `type: checklist`）和 [trace-cleanup.md](trace-cleanup.md)（`type: checklist`）按清单逐项对照。Agent 附上这些资料时，必须同时给出**已执行项 / 未执行项 / 未执行原因**，每项写结果或下一步，不能只附链接，也不能只选记忆里的几个网站。按随包原文的实际条目逐项列出，不沿用 Issue 里的历史数量或添加原文没有的网站；同一工具的替代安装命令不重复计成已测项目。
+
+仅解释或规划时也逐项标“未执行：本轮仅规划”，不为填清单自动跑第三方脚本、删除日志或申请额外权限。清单是执行覆盖要求，实际动作仍遵守原授权；证据不足保留 unknown/not_run。主题路由和访谈输出均带 `execution_report_required: true`，由宿主 Agent 执行并报告，CLI 不代造结果。
+
 <a id="source-vs-current"></a>
 ## 来源与现行规则的对照
 

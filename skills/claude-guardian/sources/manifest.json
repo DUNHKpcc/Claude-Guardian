@@ -99,6 +99,7 @@
     },
     {
       "id": "S07",
+      "type": "checklist",
       "category": "reading",
       "title": "VPS IP 质量与网络测试清单（精简版）",
       "original_filename": "NodeSeek_常用VPS脚本_可直接执行版(1).md",

@@ -58,9 +58,11 @@ Agent 和被改的网络在同一台机器上（4 节）
 
 ## agent-remediation.md
 
-Agent 编排检测与修复（8 节）
+Agent 编排检测与修复（10 节）
 
 - [一次任务的闭环](agent-remediation.md#一次任务的闭环)
+- [选定路线后的能力核实](agent-remediation.md#选定路线后的能力核实)
+- [手动交接与遗留验收](agent-remediation.md#手动交接与遗留验收)
 - [修复后的复验](agent-remediation.md#修复后的复验)
 - [整机只走 IPv4（所有者 2026-10-19 确认，2026-10-25 补充）](agent-remediation.md#整机只走-ipv4所有者-2026-10-19-确认2026-10-25-补充)
 - [Windows 网卡 IPv6：默认关闭（B 档）](agent-remediation.md#windows-网卡-ipv6默认关闭b-档)
@@ -206,7 +208,7 @@ M07/M10–M13: clients, incidents, integrations, and preservation（21 节）
 
 ## intake.md
 
-M00: adaptive intake and stable question registry（14 节）
+M00: adaptive intake and stable question registry（18 节）
 
 - [Scheduling](intake.md#scheduling)
   - [已到期用户的相关旧账单（T76）](intake.md#已到期用户的相关旧账单t76)
@@ -222,6 +224,10 @@ M00: adaptive intake and stable question registry（14 节）
 - [Route, egress source and mobile (ADR-018)](intake.md#route-egress-source-and-mobile-adr-018)
 - [Selected-device history and explicit cleanup task](intake.md#selected-device-history-and-explicit-cleanup-task)
   - [Device-only triage resolution](intake.md#device-only-triage-resolution)
+- [Conversation topics without the questionnaire (#21)](intake.md#conversation-topics-without-the-questionnaire-21)
+- [Workflow record formats and dependency preparation](intake.md#workflow-record-formats-and-dependency-preparation)
+  - [Target capability observations](intake.md#target-capability-observations)
+  - [Handoff and acceptance records](intake.md#handoff-and-acceptance-records)
 
 ## line-optimization.md
 
@@ -253,11 +259,12 @@ Linux：Claude 本机数据清理（Agent 提示词，无内置宿主）（8 节
 
 ## local-advanced-route.md
 
-本机路线高级扩展：异机远程协助（8 节）
+本机路线高级扩展：异机远程协助（9 节）
 
 - [1. 先确定是否需要远程](local-advanced-route.md#1-先确定是否需要远程)
 - [2. 远程接入与传文件](local-advanced-route.md#2-远程接入与传文件)
   - [Windows：沿用 S10 的接入经验](local-advanced-route.md#windows沿用-s10-的接入经验)
+  - [异机检测：在目标机运行随包工具](local-advanced-route.md#异机检测在目标机运行随包工具)
   - [Mac：远程登录与桌面会话](local-advanced-route.md#mac远程登录与桌面会话)
 - [3. 远程故障演练](local-advanced-route.md#3-远程故障演练)
   - [Windows：独立计划任务](local-advanced-route.md#windows独立计划任务)
@@ -375,10 +382,11 @@ Skill 更新：每次使用前先查最新（3 节）
 
 ## source-library.md
 
-原始资料阅读库（16 节）
+原始资料阅读库（17 节）
 
 - [Agent 补充资料来源](source-library.md#agent-补充资料来源)
 - [对话中的使用方式](source-library.md#对话中的使用方式)
+- [清单型资料的执行反馈（#20）](source-library.md#清单型资料的执行反馈20)
 - [来源与现行规则的对照](source-library.md#来源与现行规则的对照)
 - [九份阅读来源](source-library.md#九份阅读来源)
   - [S01：VPS 和服务器术语](source-library.md#s01vps-和服务器术语)
