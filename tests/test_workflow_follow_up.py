@@ -109,7 +109,7 @@ class WorkflowFollowUpTests(unittest.TestCase):
     def test_reference_cli_skips_questionnaire_and_never_saves(self):
         result = subprocess.run([sys.executable, str(SKILL/'scripts/interview_cli.py'),
                                  '--references-only', '--topics', 'ip_quality', 'trace_cleanup',
-                                 '--reference-os', 'windows'], capture_output=True, text=True, timeout=10)
+                                 '--reference-os', 'windows'], capture_output=True, encoding='utf-8', timeout=10)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         output = json.loads(result.stdout)
         self.assertNotIn('question', output)
@@ -126,13 +126,13 @@ class WorkflowFollowUpTests(unittest.TestCase):
                 incoming.write_text(json.dumps(value), encoding='utf-8')
                 result = subprocess.run([sys.executable, str(SKILL/'scripts/interview_cli.py'),
                                          '--target-ref', 'device-a', *args, str(incoming),
-                                         '--output', str(output)], capture_output=True, text=True, timeout=10)
+                                         '--output', str(output)], capture_output=True, encoding='utf-8', timeout=10)
                 self.assertEqual(result.returncode, 2, result.stdout)
                 self.assertFalse(output.exists())
                 self.assertNotIn('private-sentinel', result.stdout + result.stderr)
             result = subprocess.run([sys.executable, str(SKILL/'scripts/interview_cli.py'),
                                      '--references-only', '--topics', 'payment', '--output', str(output)],
-                                    capture_output=True, text=True, timeout=10)
+                                    capture_output=True, encoding='utf-8', timeout=10)
             self.assertEqual(result.returncode, 2)
             self.assertFalse(output.exists())
 
@@ -143,11 +143,11 @@ class WorkflowFollowUpTests(unittest.TestCase):
             item_file.write_text(json.dumps(self.item(kind='acceptance')), encoding='utf-8')
             result = subprocess.run([sys.executable, str(SKILL/'scripts/interview_cli.py'),
                                      '--target-ref', 'device-a', '--work-item-file', str(item_file),
-                                     '--output', str(state_file)], capture_output=True, text=True, timeout=10)
+                                     '--output', str(state_file)], capture_output=True, encoding='utf-8', timeout=10)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertNotIn('inspect old exit traces', result.stdout)
             result = subprocess.run([sys.executable, str(SKILL/'scripts/interview_cli.py'),
-                                     '--input', str(state_file)], capture_output=True, text=True, timeout=10)
+                                     '--input', str(state_file)], capture_output=True, encoding='utf-8', timeout=10)
             self.assertEqual(result.returncode, 0, result.stdout)
             self.assertTrue(json.loads(result.stdout)['assessment']['follow_up']['blocking_next_session'])
             self.assertEqual(json.loads(result.stdout)['next_step'], 'review_follow_up')
