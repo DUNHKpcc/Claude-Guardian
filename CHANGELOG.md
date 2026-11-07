@@ -1,5 +1,11 @@
 # 版本记录
 
+## 退出前清理后台残留（2026-11-07，ADR-059 / SHUTDOWN-20261107）
+
+- 根据所有者反馈补充：退出 Desktop／关闭 Claude 标签页不能证明后台退出；先保持代理和防直连规则，确认归属后按授权清理，复查进程、监听、连接及自动重启，通过后才停代理、恢复原防火墙配置。共享进程、查询失败或归属不明不放行
+- 范围：SKILL、路线与防火墙指导、生成的章节索引及 ADR；无执行器、依赖或本机网络／进程变更。用户反馈尚未独立复测，不宣称跨平台验收；紧急恢复和保险丝机制不变
+- 验证：基于当前 HEAD 加本次变更的临时隔离副本，`python -m unittest discover -s tests -v` 共 1542 项（1533 通过、9 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts`、两次 `python tools/package_skill.py --output <临时包>` 字节一致通过（SHA-256 `c9ef72e450f1943d3773bc67654804423ef0a753bd7dae8d8f4c6ba3c410d217`）。初始沙箱检查出现文件特殊权限失败及原有未提交文档的链接失败；保留该文档，在隔离副本正常权限重跑通过。GitHub 连接失败，远端核实、推送及 push CI 未完成；文档变更应仅运行 Linux CI。回滚：普通 revert 本次文档提交
+
 ## 检测与会话闭环：Issue #19–#24（2026-11-05，ADR-058 / ISSUES-19-24-20261105）
 
 - #19、#22：主流程新增目标机能力核实，状态可记录 capabilities；Windows 缺 Python 必须按档授权补齐，统一使用 network_check.py / egress_verifier.py，不以手写检查替代。异机检测步骤和脚本索引直接链接 S10 第十节，旧镜像、版本和 SYSTEM 安装仅留作历史记录
