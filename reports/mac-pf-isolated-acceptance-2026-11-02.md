@@ -2,6 +2,8 @@
 
 对应需求：ADR-054、Issue #17；测试依据：[Mac PF 真机测试单](../docs/mac-pf-killswitch-test.md)。被测代码：`333f711bb2c1e833bbc5930a5c65546be7a4b629`。后续 main 的 README 徽章提交不涉及被测实现。
 
+**后续记录（2026-11-07）：**[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 提供了另一环境、现场修正版的全流程通过报告，范围见[现行 PF 指引](../skills/claude-guardian/references/local-firewall-prompts.md)。本报告保留 2026-11-02 原始结果，不将后续样本算作本机未完成项目的复测。
+
 ## 最终结论
 
 **有本机实测通过的关键场景，但整张验收单未全部通过。**

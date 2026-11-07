@@ -50,7 +50,7 @@
 6. **只读盘点：**需要看现有 Clash 配置和控制器时，用只读盘点（`inventory_cli.py`），不读订阅正文、控制器密钥或个人配置哈希。
 7. **需要异机协助时：**按[本机高级扩展的 Mac 步骤](local-advanced-route.md#mac-access)接入和准备恢复；目标机已有 Agent 时直接在本机做，不把远程接入变成前置。
 
-### Mac 的防火墙：PF 脚本（未在真机验证）
+### Mac 的防火墙：PF 脚本（已有真机通过报告）
 
 **为什么不用 LuLu（Issue #17 实测）：**LuLu 按“哪个进程发起连接”过滤，判断发生在路由之前，分不出流量是进 TUN 还是直连。只给代理核心放行时，正常经 TUN 的连接（比如 curl 连 1.1.1.1）照样被按 curl 进程拦掉；反过来给每个应用都放行，TUN 一掉它们又能直连。所以 LuLu 做不了“走 TUN 放行、直连拦截”。已经装了 LuLu 的，用 PF 前把它的默认拒绝关掉（切回放行或退出），否则会和 PF 叠加，把 TUN 流量拦掉。
 
@@ -68,7 +68,9 @@
    - **拦了什么看 `blocked`：**`sudo bash guardian-pf-killswitch.sh blocked 60` 抓 60 秒被拦的包，按网卡、目的地类别（局域网、公网、组播等）和端口汇总，不输出 IP。正常使用时组播、链路本地、IPv6 被拦一般无害；出现公网 TCP/443、UDP/STUN 说明有流量没进 TUN，出现公网 UDP/53 多半是核心自己的上游 DNS 被拦。
 7. **回滚：**`sudo ... rollback` 撤销运行中的规则；`sudo ... uninstall` 连开机项和生成的文件一起删。脚本不在时用 `sudo pfctl -a com.apple/claude-guardian -F rules`。规则只拦网络，本机终端随时能回滚。
 
-**验证状态：**脚本只做过离线测试（规则生成和输入校验），**还没有在真机 Mac 上验证**，真机测试单见仓库 `docs/mac-pf-killswitch-test.md`。验证结果出来之前，Agent 要把这一点告诉用户。
+**验证状态（2026-11-07 更新）：**[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 报告了 2026-11-05 的真机通过样本：macOS 26.6.2、系统 bash 3.2（C locale）、Clash Verge Rev 2.5.10、VLESS+REALITY 域名节点。报告覆盖 render → apply（180 秒保险丝）→ 三条联网检查 → confirm → 停核心后无直连 → persist；`egress_verifier` 为 `established`，8 层全部 pass，advisory 仅 OS_IPV6 未全局禁用。
+
+**版本与覆盖边界：**上述结果来自报告者将 5 处变量与中文标点拼接改为 `${var}` 后的现场修正版；该修复尚未合入本次随包脚本。本次仅更新标注，未独立复验报告、未确认所述崩溃根因，不把报告视为当前未修正版通过。persist 落地不等于重启后加载已验证；换网、新网卡、睡眠恢复及逐项浏览器／WebRTC 场景未明确覆盖的仍记 unknown。Agent 应说明这些边界，再按目标机验收；真机测试单见仓库 `docs/mac-pf-killswitch-test.md`。
 
 ## Windows
 

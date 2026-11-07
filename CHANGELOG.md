@@ -1,5 +1,11 @@
 # 版本记录
 
+## PF 真机验证标注更新（2026-11-07，ADR-060 / PF-LABEL-25）
+
+- 根据 Issue #25 更新“未在真机验证”为“已有指定环境的真机通过报告”；注明 macOS 26.6.2 / bash 3.2 / Clash Verge Rev 2.5.10、现场修正版、故障阻断与 established 结果，以及未明确覆盖的生命周期项目
+- 仅更新说明、脚本注释和对应文档断言；无执行逻辑改动，现场修复未合入，本次未做真机复验。保留 2026-11-02 原始验收结果及工作区无关修改；来源 manifest 不变
+- 验证：隔离副本 `python -m unittest discover -s tests -v` 共 1542 项（1533 通过、9 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts` 通过；两次 `python tools/package_skill.py --output <临时包>` 字节一致，SHA-256 `a24008956c4fd08937d4932c9d034a067dd119f5d82481483417386c12e62c5a`。远端 main 已核实为 `9b607db`；推送与三平台 CI 将单独核实（脚本注释及测试文件变化按完整范围运行）。回滚：普通 revert 本提交
+
 ## 退出前清理后台残留（2026-11-07，ADR-059 / SHUTDOWN-20261107）
 
 - 根据所有者反馈补充：退出 Desktop／关闭 Claude 标签页不能证明后台退出；先保持代理和防直连规则，确认归属后按授权清理，复查进程、监听、连接及自动重启，通过后才停代理、恢复原防火墙配置。共享进程、查询失败或归属不明不放行

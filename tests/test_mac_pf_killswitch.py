@@ -140,7 +140,7 @@ class ScriptContract(unittest.TestCase):
         code = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
         self.assertNotRegex(code, r"\b(mapfile|readarray|declare -A)\b")  # macOS ships bash 3.2
         guide = (ROOT / "skills" / "claude-guardian" / "references" / "local-firewall-prompts.md").read_text(encoding="utf-8")
-        for term in ("Issue #17", "按网卡", "还没有在真机 Mac 上验证", "docs/mac-pf-killswitch-test.md", "C 档"):
+        for term in ("Issue #17", "按网卡", "Issue #25", "已有真机通过报告", "现场修正版", "尚未合入", "unknown", "docs/mac-pf-killswitch-test.md", "C 档"):
             self.assertIn(term, guide)
         self.assertNotIn("Block Mode", guide)
         self.assertNotIn("允许规则要加在**核心**身上", guide)

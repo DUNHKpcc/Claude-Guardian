@@ -1,5 +1,5 @@
 #!/bin/bash
-# Claude-Guardian：macOS 本机路线的 PF killswitch（ADR-054，2026-11-01 所有者确认走 PF；尚未在真机验证）。
+# Claude-Guardian：macOS 本机路线的 PF killswitch（ADR-054，2026-11-01 所有者确认走 PF；Issue #25 已报告现场修正版真机通过，随包版本与覆盖范围见 local-firewall-prompts.md）。
 # 起因：Issue #17 实测 LuLu 按进程过滤，早于路由，分不出“走 TUN”和“直连”，只放行核心会把正常 TUN 流量一起拦掉。
 # 思路：按网卡拦，不按进程拦。物理网卡只放行发往节点真实 IP:端口 的连接（加 DHCP，可选 DNS、局域网例外），
 #       其余出站一律丢弃；TUN（utun）和回环不受影响。核心或 TUN 停掉后，应用流量落到物理网卡，被拦，不会直连。
