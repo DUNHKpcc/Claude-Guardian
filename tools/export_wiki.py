@@ -31,6 +31,7 @@ PAGES = [
     ('固定出口 IP 的来源', 'references/egress-ip-options.md', '出口 IP'),
     ('整机统一出口 只走 IPv4', 'references/whole-machine-ipv4.md', '出口 IP'),
     ('出口与本机环境一致 延迟 TCP 指纹 UA', 'references/exit-consistency.md', '出口 IP'),
+    ('统一防直连开关 Guardian Switch', 'references/killswitch-switch.md', '三条路线'),
     ('本机路线 Clash 与防火墙', 'references/local-firewall-prompts.md', '三条路线'),
     ('本机高级扩展 异机远程协助', 'references/local-advanced-route.md', '三条路线'),
     ('VM 路线', 'references/vm-guidance.md', '三条路线'),

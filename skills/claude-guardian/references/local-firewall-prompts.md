@@ -24,14 +24,14 @@
 
 替客户、同事、家人做本机路线（Mac 和 Windows 都适用）时按下面做。起因（2026-10-30 反馈）：有人给客户做 Windows 时另写防火墙执行器和恢复程序，执行器反复出错，一天一夜没交付。
 
-1. **开工前说清 Skill 给什么：**本机路线是提示词引导（Windows 按本文第 1 到 7 步，Mac 按 PF 一节），检测和判定用 `network_check.py run` 和 `egress_verifier.py`；没有 Windows 写入引擎、常驻程序或自动恢复服务。客户要“一键全自动”时当场说。
+1. **开工前说清 Skill 给什么：**本机路线是提示词引导（Windows 按本文第 1 到 7 步，Mac 按 PF 一节），检测和判定用 `network_check.py run` 和 `egress_verifier.py`；首次部署没有 Windows 规则生成引擎；已部署防护可用[统一开关与桌面界面](killswitch-switch.md)。没有新增常驻程序或自动恢复服务。客户要“一键全自动”时当场说。
 2. **断线保护不用另写程序：**默认出站阻止和 `guardian-*` 规则是系统防火墙的持久配置，但配置保留不等于保护已验证：现有宽放行、未启用的配置文件、TUN 重建后的接口变化都要核对（[S10 第三节](../sources/S10-windows-deployment-sanitized.md#windows-firewall)、[第九节](../sources/S10-windows-deployment-sanitized.md#tun-firewall-lifecycle)）。TUN 恢复交给客户端的服务模式和开机自启；验收须证明恢复之前只断网、不直连。客户端没有受支持的自启入口就告诉客户，不自建服务（[修复后的复验](agent-remediation.md#post-repair-stability)）。
 3. **验收单，每项报通过／未通过／未做：**
    1. **一次取证：**TUN 开着、Claude Desktop 运行时跑一次 `network_check.py run --failure-drill`，交给 `egress_verifier.py` 判定（[整机统一出口](whole-machine-ipv4.md)）。出口、DNS、IPv6、UDP（STUN 映射和 TCP 出口一致，见 [WebRTC 堵法](agent-remediation.md#webrtc-block)）、停核心演练都在这一次里，同一阶段不分开重测；重启、睡眠、换网等不同场景仍须分别取证。
    2. **防火墙读回：**三个配置文件都启用且默认出站都是 Block，`guardian-*` 规则齐全，并核对其他 Allow 规则是否仍放过直连。上不了网时才用分层诊断。
    3. **重启演练：**重启后、客户端起来之前外网不通；自启、TUN 恢复后正常；默认出站仍是 Block。客户本人在场的本机按 B 档，远程按 C 档（重启后可能连不回来）。
    4. **浏览器验收：**客户本人在实际用的浏览器打开 https://ip.net.coffee/claude/，除语言外全绿（[做法](whole-machine-ipv4.md#browser-acceptance)）。
-   5. **若另行交付桌面开关：**按客户的实际入口验收“双击 → UAC → 三档状态读回 → 联网/阻断行为”，不能用 SSH、SYSTEM 任务或手输带 Bypass 的调试命令代替。完整事故复盘和快捷方式配方见 [S10 晚间复盘](../sources/S10-windows-deployment-sanitized.md#desktop-launcher)，不要求所有交付都开发开关。
+   5. **若交付[统一桌面开关](killswitch-switch.md)：**按客户的实际入口验收“双击 → UAC → 三档状态读回 → 联网/阻断行为”，不能用 SSH、SYSTEM 任务或手输带 Bypass 的调试命令代替。完整事故复盘和快捷方式配方见 [S10 晚间复盘](../sources/S10-windows-deployment-sanitized.md#desktop-launcher)，不要求所有交付都开发开关。
    6. **完成[突发场景验收](#incident-acceptance)的适用项目，前四项及实际交付的开关都过，客户本人登录 Claude。**
 4. **超出 Skill 的自动化先报工作量：**一键脚本、自写执行器、常驻守护这类，先说要额外开发什么、大概多久，客户同意再做；能按第 1 到 7 步手动做完的先手动交付。
 5. **每过一项就告诉客户：**某一步重试一次仍失败，先回到安全状态（保险丝还在，或默认出站已恢复为允许），再说清卡在哪一项、下一步谁做。没全过就报哪几项过了、哪几项没过。

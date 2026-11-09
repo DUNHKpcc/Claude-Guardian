@@ -230,6 +230,16 @@ M00: adaptive intake and stable question registry（18 节）
   - [Target capability observations](intake.md#target-capability-observations)
   - [Handoff and acceptance records](intake.md#handoff-and-acceptance-records)
 
+## killswitch-switch.md
+
+Guardian Switch：统一防直连开关（5 节）
+
+- [支持范围与操作含义](killswitch-switch.md#支持范围与操作含义)
+- [首次配置：交给目标机 Agent](killswitch-switch.md#首次配置交给目标机-agent)
+- [命令行与桌面入口](killswitch-switch.md#命令行与桌面入口)
+- [恢复与开关验收](killswitch-switch.md#恢复与开关验收)
+- [界面与随包文件](killswitch-switch.md#界面与随包文件)
+
 ## line-optimization.md
 
 线路优化：Agent 如何帮用户的机器优化线路（10 节）
@@ -368,10 +378,11 @@ M01/M06–M09: independent environment routes（34 节）
 
 ## scripts-index.md
 
-脚本索引（7 节）
+脚本索引（8 节）
 
 - [访谈与评估](scripts-index.md#访谈与评估)
 - [检查与报告（只读）](scripts-index.md#检查与报告只读)
+- [统一防直连开关](scripts-index.md#统一防直连开关)
 - [网络检测的其他部分](scripts-index.md#网络检测的其他部分)
 - [修复计划与规则（离线，不写入）](scripts-index.md#修复计划与规则离线不写入)
 - [写入与恢复（有事务和备份）](scripts-index.md#写入与恢复有事务和备份)

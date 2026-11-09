@@ -14,6 +14,10 @@ def main():
     args = parser.parse_args()
     skill = ROOT / 'skills' / 'claude-guardian'
     release_paths = [
+        "scripts/killswitch.py", "scripts/killswitch_ui.py", "references/killswitch-switch.md",
+        "assets/killswitch/windows-switch.ps1", "assets/killswitch/config.example.json",
+        "assets/killswitch/switch.html", "assets/killswitch/switch.css", "assets/killswitch/switch.js",
+        "assets/killswitch/icon.svg", "assets/killswitch/icon.png", "assets/killswitch/icon.ico", "assets/killswitch/icon.icns",
         "SKILL.md", "scripts/traffic_policy.py", "scripts/guardian.py", "scripts/agent_remediation.py", "scripts/agent_rules_task.py", "scripts/interview_flow.py", "scripts/interview_cli.py", 
         "scripts/environment_entry.py", "scripts/status_dashboard.py", "scripts/probe_evidence.py", "scripts/inventory_cli.py", "scripts/clash_inventory.py", 
         "scripts/remedy_plans.py", "scripts/config_edit_plan.py", "scripts/rules_extension_plan.py", 

@@ -120,6 +120,13 @@ class PackageMembersTests(unittest.TestCase):
         self.assertIn('run', result.stdout)
         self.assertEqual(list(self.unrelated.iterdir()), [])
 
+    def test_installed_switch_entries_run_without_repository_imports(self):
+        for entry in ('killswitch.py', 'killswitch_ui.py'):
+            result = subprocess.run([sys.executable, '-E', '-s', '-B', str(self.installed / 'scripts' / entry), '--help'],
+                                    cwd=self.unrelated, capture_output=True, text=True, encoding='utf-8', timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn('Guardian Switch', result.stdout)
+
 
 if __name__ == '__main__':
     unittest.main()
