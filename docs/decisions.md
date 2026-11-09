@@ -16,7 +16,7 @@
 
 ## ADR-004：主动检测端点与增强阻断（待后续决定）
 
-PD-03：用户已确认采用可替换的 ipify 与 Cloudflare STUN 作为首批候选服务；每次实际探测仍独立确认目标、路径和数据披露。PD-04：用户明确只考虑免费方案；基础版不强制安装，严格模式优先评估免费 LuLu，不引入付费依赖。此产品选择不授权实际安装、系统扩展审批或故障注入，亦不关闭严格隔离验收。首版不运行公网探测，不购买检测服务或新增常驻进程。未来选择端点时需列出运营方、传输数据、频率/流量预算、维护成本和失败含义。严格 kill-switch 目标未完成时不能标为已准备就绪。
+PD-03：采用可替换的 ipify 与 Cloudflare STUN 作为首批候选服务；每次实际探测仍独立确认目标、路径和数据披露。PD-04：仅考虑免费方案；基础版不强制安装，严格模式优先评估免费 LuLu，不引入付费依赖。此产品选择不授权实际安装、系统扩展审批或故障注入，亦不关闭严格隔离验收。首版不运行公网探测，不购买检测服务或新增常驻进程。未来选择端点时需列出运营方、传输数据、频率/流量预算、维护成本和失败含义。严格 kill-switch 目标未完成时不能标为已准备就绪。
 
 ## ADR-005：运行时与验证边界（可替换工程选择）
 
@@ -36,7 +36,7 @@ PD-03：用户已确认采用可替换的 ipify 与 Cloudflare STUN 作为首批
 
 ## ADR-007：Claude 目标流量仅允许 IPv4（2026-10-18 已确认）
 
-新增产品要求 **PRODUCT-IPV4-20261018**。用户对“Claude相关流量默认仅走IPv4设为Skill推荐方案吗？”明确答复“改为仅允许ipv4”。当前产品策略为 `IPv4_ONLY`，所选 Claude 目标连接不得回退 IPv6；IPv4 不可用时报告该策略下不可用，不静默恢复双栈。
+新增产品要求 **PRODUCT-IPV4-20261018**。所选目标流量仅允许 IPv4。当前产品策略为 `IPv4_ONLY`，所选 Claude 目标连接不得回退 IPv6；IPv4 不可用时报告该策略下不可用，不静默恢复双栈。
 
 这是对当前产品推荐的更新：在此限定范围内，取代历史 D05／ENV §20.5 的“双栈已覆盖则保留、必要时才限定 IPv4-only”选择顺序。原设计来源、218 条历史验收条件及层级保持原样；新要求单独追踪，不把产品选择算成历史案例通过，也不改写脱敏历史 macOS 案例。
 
@@ -53,7 +53,7 @@ PD-03：用户已确认采用可替换的 ipify 与 Cloudflare STUN 作为首批
 
 PRODUCT-DEVICE-CLEANUP-20261018
 
-The owner requested asking whether the selected local device previously used a banned account and a real complete Claude application-data cleanup option, rather than assessment alone. Add selected-target typed Q-D01 and independent explicit Q-D02 C5 intent. C5 permits separately selected verified Claude-owned local history/configuration/extensions and Desktop data; unrelated source/Codex/shared or unknown objects remain protected. Recoverable quarantine is the default; irreversible purge, credential/browser/native uninstall operations remain separate. Original D-SPEC §9/M13 and D-ENV §10 safeguards, PC0, action consent, backups and recovery remain in force. This is a supplemental product decision, not a rewrite of original source text, acceptance layers, or a claim that any original native case passed. No unban/fingerprint-reset promise.
+The workflow asks whether the selected local device previously used a banned account and offers a complete Claude application-data cleanup option alongside assessment. Add selected-target typed Q-D01 and independent explicit Q-D02 C5 intent. C5 permits separately selected verified Claude-owned local history/configuration/extensions and Desktop data; unrelated source/Codex/shared or unknown objects remain protected. Recoverable quarantine is the default; irreversible purge, credential/browser/native uninstall operations remain separate. Original D-SPEC §9/M13 and D-ENV §10 safeguards, PC0, action consent, backups and recovery remain in force. This is a supplemental product decision, not a rewrite of original source text, acceptance layers, or a claim that any original native case passed. No unban/fingerprint-reset promise.
 
 
 ## ADR-009：注册与养号节奏写入 skill（2026-10-21 已确认）
@@ -64,7 +64,7 @@ The owner requested asking whether the selected local device previously used a b
 
 ## ADR-010：移出验收台账与证据体系（2026-10-21 已确认）
 
-所有者认为项目臃肿，验收体系对日常改动成本过高：台账与历史夹具把普通指导文档、测试和打包脚本的字节也锁住，改一行文档就要重新登记审阅。决定移出：`docs/acceptance-rebuild-ledger.json`、`docs/evidence/`、30 个 `tests/test_acceptance_*.py`、验收回放脚本、`package_manifest_transition.py` 及其三条打包转换测试、历史夹具，以及 `acceptance-handoff`、`test-coverage-map`、`package-acceptance`、`entry-revalidation-status` 等文档。
+项目臃肿，验收体系对日常改动成本过高：台账与历史夹具把普通指导文档、测试和打包脚本的字节也锁住，改一行文档就要重新登记审阅。决定移出：`docs/acceptance-rebuild-ledger.json`、`docs/evidence/`、30 个 `tests/test_acceptance_*.py`、验收回放脚本、`package_manifest_transition.py` 及其三条打包转换测试、历史夹具，以及 `acceptance-handoff`、`test-coverage-map`、`package-acceptance`、`entry-revalidation-status` 等文档。
 
 保留：设计规格原文（含 218 条验收条件）、全部运行代码和功能测试、`docs/validation.md` 等验证记录。所有被删内容可从 git 历史恢复。
 
@@ -80,9 +80,9 @@ The owner requested asking whether the selected local device previously used a b
 
 ## ADR-012：本机路线增加“固定出口 IP 来源”指引与 VPS 推荐报告（2026-10-21 已确认）
 
-所有者指出本机路线已要求固定 IP 出口，却没有教用户怎么得到稳定纯净的出口。新增 references/egress-ip-options.md：纯净机场、自建梯（可搭配家宽出口）、家宽拼车三种来源的优缺点；推荐 Max 优先自建、Pro 推荐机场；家宽拼车只作了解风险。仅在用户选择本机路线之后触发（routes-and-platforms.md 的 L2a），VM 和 VPS 路线不触发。
+本机路线已要求固定 IP 出口，却没有教用户怎么得到稳定纯净的出口。新增 references/egress-ip-options.md：纯净机场、自建梯（可搭配家宽出口）、家宽拼车三种来源的优缺点；推荐 Max 优先自建、Pro 推荐机场；家宽拼车只作了解风险。仅在用户选择本机路线之后触发（routes-and-platforms.md 的 L2a），VM 和 VPS 路线不触发。
 
-资料：收集 V2EX 讨论作社区观点（IP 类型不是封号唯一因素，也有自建中转被封案例，所以“自建风险极低”标为所有者判断而非保证）；NodeSeek 帖子因站点 403 未能读取正文，linux.do 和 X 未检索到，未收录。所有者提供 17 份 VPS 推荐 PDF（业务、性价比、高端家宽），以 R01 收入 sources/vps-recommendations/，PDF 字节不变，文件名改 ASCII，哈希入 manifest。
+资料：收集 V2EX 讨论作社区观点（IP 类型不是封号唯一因素，也有自建中转被封案例，所以“自建风险极低”标为经验判断而非保证）；NodeSeek 帖子因站点 403 未能读取正文，linux.do 和 X 未检索到，未收录。收录 17 份 VPS 推荐 PDF（业务、性价比、高端家宽），以 R01 收入 sources/vps-recommendations/，PDF 字节不变，文件名改 ASCII，哈希入 manifest。
 
 代价与限制：增加约 32MB 包体积；报告为历史记录且两份含商家推广或邀请链接，不作排序理由；不承诺免封或 IP 稳定纯净；不新增访谈问题编号，仍以文档指引为主。
 
@@ -104,23 +104,23 @@ ADR-012 再补充（同日）：17 份 PDF 用 Ghostscript 压缩，32MB 降到�
 
 ## ADR-015：VM 路线补全：系统、网卡、出口、防火墙（2026-10-21 已确认）
 
-项目要求完善 VM 路线：客机系统默认首选 Omarchy，宿主是 Mac 时首选 macOS；创建前网卡选 LAN 独立网卡，不选与宿主机一致的 shared NAT；出口 IP 直接复用 egress-ip-options.md；防火墙参考所有者的 install-flclash-killswitch.sh；之后的注册、订阅、养号与本机路线一致。新增 references/vm-guidance.md 和 routes-and-platforms.md 的 V2a 卡，SKILL.md 资料表加一行。
+项目要求完善 VM 路线：客机系统默认首选 Omarchy，宿主是 Mac 时首选 macOS；创建前网卡选 LAN 独立网卡，不选与宿主机一致的 shared NAT；出口 IP 直接复用 egress-ip-options.md；防火墙参考原始脚本 install-flclash-killswitch.sh；之后的注册、订阅、养号与本机路线一致。新增 references/vm-guidance.md 和 routes-and-platforms.md 的 V2a 卡，SKILL.md 资料表加一行。
 
-脚本以脱敏版收入 assets/vm-killswitch/：原脚本含所有者的固定出口 IP、局域网网段和用户名，按仓库规则不入库；改为 LAN_NET 必填、EXPECTED_EXIT_IP 可选、服务用户取当前 sudo 用户，其余逻辑不变。只适用 Linux 客机 + FlClash TUN；macOS 客机无对应脚本，按本机路线 L2 评估 LuLu 或系统防火墙。脚本由用户在客机里自己运行，Agent 只解释和核对，运行前先打快照，应用后 180 秒保险丝内必须 confirm。
+脚本以脱敏版收入 assets/vm-killswitch/：原脚本含固定出口 IP、局域网网段和用户名，按仓库规则不入库；改为 LAN_NET 必填、EXPECTED_EXIT_IP 可选、服务用户取当前 sudo 用户，其余逻辑不变。只适用 Linux 客机 + FlClash TUN；macOS 客机无对应脚本，按本机路线 L2 评估 LuLu 或系统防火墙。脚本由用户在客机里自己运行，Agent 只解释和核对，运行前先打快照，应用后 180 秒保险丝内必须 confirm。
 
 已知限制：刷新定时服务由普通用户调用 sudo，需免密 sudo；只解析最新 profile 的 server 和 port 字段；不承诺免封。
 
 ## ADR-016：VPS 路线定位为开发机，补入 S08 与相关资料（2026-10-21 已确认）
 
-所有者明确：VPS 路线主要用作**开发机**；VPS 当中转机（自建梯）是选择本机路线的用户选 IP 出口时的选项，两者不能混为一谈。VPS 路线的核心是**环境一致**：注册、登录、养号、订阅、OAuth 都在 VPS 的远程桌面浏览器里完成，不和本机浏览器混用，参考 S08。服务器系统首选 Ubuntu。防火墙参考 VM 的脚本。
+VPS 路线主要用作**开发机**；VPS 当中转机（自建梯）是选择本机路线的用户选 IP 出口时的选项，两者不能混为一谈。VPS 路线的核心是**环境一致**：注册、登录、养号、订阅、OAuth 都在 VPS 的远程桌面浏览器里完成，不和本机浏览器混用，参考 S08。服务器系统首选 Ubuntu。防火墙参考 VM 的脚本。
 
-补入所有者放在 Omarchy/粉丝群资源 的资料：S08（VPS Claude 教程，11 页 PDF，原“S08 仍未提供”改为已收录）及其文字版、S03 的 Markdown 源文本、R02《VPS 线路优化与家宽中转教程》。新增 references/vps-guidance.md 和 routes-and-platforms.md 的 P1a 卡；Q-S01 的问法改为“开发机，还是只想当代理出口节点（属于本机路线的出口选择）”；SKILL.md 资料表加一行，必附 S08。
+补入已有资料：S08（VPS Claude 教程，11 页 PDF，原“S08 仍未提供”改为已收录）及其文字版、S03 的 Markdown 源文本、R02《VPS 线路优化与家宽中转教程》。新增 references/vps-guidance.md 和 routes-and-platforms.md 的 P1a 卡；Q-S01 的问法改为“开发机，还是只想当代理出口节点（属于本机路线的出口选择）”；SKILL.md 资料表加一行，必附 S08。
 
 防火墙：新增 assets/vps-firewall/vps-guard.sh，参考 VM 脚本的结构（nftables、原子替换、180 秒保险丝、开机自启），用于 VPS 自己的 IP 就是出口的情况，入站默认丢弃，只放行管理来源的 SSH 和 ping；套家宽出口并在 VPS 上跑 TUN 时直接用 VM 的 killswitch 脚本。规则语法经 nft -c 在隔离命名空间检查，应用与保险丝流程没有在真实服务器上实测。
 
 未收录：《完整教程焚诀.docx》（含作者邀请码、联系方式和注册交易所的步骤）、二群.jpg（QQ 群二维码），待方案决定。
 
-ADR-016 补充（同日）：所有者指出 S03 Markdown 源文本末尾“尽量不要在机房环境，模拟海外环境使用”一段是原资料错误，已从仓库副本删除，manifest 哈希和说明同步更新；S03 的 PDF 本就不含该段，未改动。此前提到的该段与 S08 VPS 路线的冲突因此消除。《完整教程焚诀.docx》与二群.jpg 仍未收录。
+ADR-016 补充（同日）： S03 Markdown 源文本末尾“尽量不要在机房环境，模拟海外环境使用”一段是原资料错误，已从仓库副本删除，manifest 哈希和说明同步更新；S03 的 PDF 本就不含该段，未改动。此前提到的该段与 S08 VPS 路线的冲突因此消除。《完整教程焚诀.docx》与二群.jpg 仍未收录。
 
 ADR-016 再补充（同日）：方案决定《完整教程焚诀.docx》和二群.jpg 不收录；VM 路线的出口也复用推荐（R01 报告索引、S07 IP 质量清单），VM 与 VPS 路线在 SKILL.md 资料表中直接列出各自的防火墙脚本。引用检查：新入库资料均可从 SKILL.md 沿链接触达，17 份 R01 PDF 都在索引中；原先没有任何引导文档引用的 assets/webrtc-probe.html 现接入 VM、VPS 的 WebRTC 验收和 SKILL.md 本地防护一行。
 
@@ -152,15 +152,15 @@ ADR-016 再补充（同日）：方案决定《完整教程焚诀.docx》和二�
 
 项目参考资料和 required_references 是必附的下限，Agent 仍可按需补充。为让补充有章可循，SKILL.md 新增“Agent 补充资料来源”一节，列出渠道 Linux.do、NodeSeek、V2EX、Reddit、X 及各自适合找什么，并规定：项目参考资料优先，冲突时以项目参考资料为准并说明；用到的内容标明链接、平台和日期，找不到就说没找到；优先较新内容并注明过时；帖子里的命令不是授权；不向用户索要这些站点的账号、Cookie 或令牌，读不到就如实说明；只做查找，不通过任何渠道访问 Claude 或 Anthropic 页面，不查账号共享、代充、批量注册；邀请码和返佣只当线索。
 
-不是做的事：不把这些渠道的内容自动入库；入库仍需所有者提供并确认。
+不是做的事：不把这些渠道的内容自动入库；入库仍需提供并确认。
 
 ## ADR-021：补全 VM 搭建脚本、线路问题和 Windows IPv6 入口（2026-10-21 已确认）
 
-补录所有者主目录里的两个 VM 脚本：install-flclash-tun.sh（装 FlClash 和 TUN 助手，固定版本并核对 SHA256）和 enable-guest-ssh.sh（开客机 SSH）。前者只把版本和架构改成可覆盖参数（FLCLASH_VERSION、ARCH）；后者原按 QEMU shared NAT 写、放行 10.0.2.2，与“LAN 独立网卡”相反，改为必填参数 SSH_SRC。两者无个人信息。vm-guidance 新增“3a Linux 客机的搭建顺序”：建 VM、开 SSH、装 TUN、导入节点并开 TUN、最后装 killswitch。
+补录原始主目录里的两个 VM 脚本：install-flclash-tun.sh（装 FlClash 和 TUN 助手，固定版本并核对 SHA256）和 enable-guest-ssh.sh（开客机 SSH）。前者只把版本和架构改成可覆盖参数（FLCLASH_VERSION、ARCH）；后者原按 QEMU shared NAT 写、放行 10.0.2.2，与“LAN 独立网卡”相反，改为必填参数 SSH_SRC。两者无个人信息。vm-guidance 新增“3a Linux 客机的搭建顺序”：建 VM、开 SSH、装 TUN、导入节点并开 TUN、最后装 killswitch。
 
 新增访谈问题 Q-T01（线路症状：无、晚高峰慢、断流、大文件慢、桌面卡、出口不对），在明确的 VPS 路线、或本机和 VM 选了自建梯之后问；非“无”时 required_references 附线路优化和 R02（晚高峰慢、断流再附 R01）。Windows 本机路线的 required_references 附 Windows 网卡 IPv6 提示词（带锚点）；VM Linux 客机附 SSH、TUN、killswitch 三个脚本，按搭建顺序。SKILL.md 资料表同步。同步 README 和 CHANGELOG，删去“VPS 选购和部署留待后续”的旧说法。
 
-未解决：本机 Mac 和 Windows 没有防火墙脚本，macOS 客机同样没有，待与所有者讨论方案；S08 第 3 到 5 页截图未读；R02 图片未入库。
+未解决：本机 Mac 和 Windows 没有防火墙脚本，macOS 客机同样没有，方案待定；S08 第 3 到 5 页截图未读；R02 图片未入库。
 
 ## ADR-022：本机路线防火墙用提示词，不写脚本（2026-10-21 已确认）
 
@@ -172,19 +172,19 @@ ADR-016 再补充（同日）：方案决定《完整教程焚诀.docx》和二�
 
 ## ADR-023：补全 S08 截图、macOS 客机与过时文档收紧（2026-10-21 已确认）
 
-S08 第 3 到 5 页的截图已读：第 3 页是 IP.Check.Place 检测报告示例，第 4、5 页是 LazyVim 和 VS Code Remote-SSH 的界面截图。转述写进 S08 文字版文末（manifest 哈希同步），并在 vps-guidance 新增“怎么读 IP 检测报告”，按六部分说明看什么，结论只描述当时该 IP，不推导免封概率。R02 缺少两张图（图源/VPS-线路优化-单端中转.png、图源/VPS-线路优化-双端隧道.png），由所有者补。
+S08 第 3 到 5 页的截图已读：第 3 页是 IP.Check.Place 检测报告示例，第 4、5 页是 LazyVim 和 VS Code Remote-SSH 的界面截图。转述写进 S08 文字版文末（manifest 哈希同步），并在 vps-guidance 新增“怎么读 IP 检测报告”，按六部分说明看什么，结论只描述当时该 IP，不推导免封概率。R02 缺少两张图（图源/VPS-线路优化-单端中转.png、图源/VPS-线路优化-双端隧道.png），由用户补。
 
 macOS 客机不加脚本，全部用提示词：开“远程登录”（图形界面，用户自己点）、Clash Verge 按本机路线 Mac 提示词、防火墙用 LuLu，不自己写 PF 规则。收紧过时文档：README、implementation-tracker、agent-remediation、docs/source-manifest.json、incidents-and-integrations 里指向已移出的台账和证据目录、或仍写“七份阅读来源、S01–S07”的地方；validation.md 是按日期记录的历史，不改写。真机验收统一放到最后解决。
 
 ## ADR-024：R02 图片入库，移出 docs/validation.md（2026-10-21 已确认）
 
-R02 缺的两张链路图在所有者的粉丝群资源目录里找到，入库为 sources/R02-images/single-relay.png 和 dual-tunnel.png（manifest 里作为 R02 的伴随文件登记，保留原文件名和哈希）。R02 文档里的 Obsidian 图片链接和 [[…]] 内部链接改为相对路径，链接指向 R01 报告 PDF；realm 配置里的 [[endpoints]] 是 TOML 表头，保持不变。line-optimization 引用这两张图。
+R02 缺的两张链路图在用户的粉丝群资源目录里找到，入库为 sources/R02-images/single-relay.png 和 dual-tunnel.png（manifest 里作为 R02 的伴随文件登记，保留原文件名和哈希）。R02 文档里的 Obsidian 图片链接和 [[…]] 内部链接改为相对路径，链接指向 R01 报告 PDF；realm 配置里的 [[endpoints]] 是 TOML 表头，保持不变。line-optimization 引用这两张图。
 
 移出 docs/validation.md：它是 1600 多行按日期记录的验证日志，大部分属于已移出的验收体系，ADR-010 曾保留它。方案决定清理掉；README 的“当前进展”改为以 CHANGELOG 和决策记录为准，其余文档里指向它的地方改为“git 历史中的 docs/validation.md（已移出）”。可从 git 历史找回。真机验收结果以后记在 CHANGELOG 和决策记录里。
 
 ## ADR-025：分级授权，用户不需要每一步在场（2026-10-21 已确认）
 
-所有者明确：不要每一步都在现场，只有非常重要的才在；Skill 的目标是让 Agent 在加持下按用户的需求和环境做得更好，而不是固定程序或一键修复。因此把“逐动作授权”改成按风险分档（references/authorization-tiers.md）。A：范围确认后自行做（只读诊断、查资料、出方案、预演）。B：整个计划批准一次，Agent 连续执行，计划范围内可按环境调整参数，任一步失败自动撤销并汇报。C：必须当场确认。判定看五个问题：能否自行撤销、会不会切断自己的访问、是否涉及账号钱或凭据、是否删除或不可逆、是否影响他人或组织设备；拿不准按更高一档。
+不要每一步都在现场，只有非常重要的才在；Skill 的目标是让 Agent 在加持下按用户的需求和环境做得更好，而不是固定程序或一键修复。因此把“逐动作授权”改成按风险分档（references/authorization-tiers.md）。A：范围确认后自行做（只读诊断、查资料、出方案、预演）。B：整个计划批准一次，Agent 连续执行，计划范围内可按环境调整参数，任一步失败自动撤销并汇报。C：必须当场确认。判定看五个问题：能否自行撤销、会不会切断自己的访问、是否涉及账号钱或凭据、是否删除或不可逆、是否影响他人或组织设备；拿不准按更高一档。
 
 C 档清单：可能锁死自己的改动（默认出站切成阻止、启用 killswitch 或 vps-guard、改 SSH、关网卡 IPv6、远程机器上会切断唯一入口的故障演练）；账号和钱；凭据；删除和不可逆（含持久化 BBR）；组织管理设备的策略；接触 Claude 或 Anthropic。到 C 档 Agent 暂停并写确认单，用户不需要全程在场，可稍后回复，超时不等于确认。
 
@@ -218,15 +218,15 @@ Mac 修复链补全为：预检计划（A）→ 批准计划（B）→ 退出应
 
 ## ADR-029：macOS 上 C5 清理的内置宿主（2026-10-22 已确认）
 
-项目要求补上 C5 清理。核心（计划、隔离、对账、恢复）早已实现，缺的是 `cleanup_cli` 要求的宿主。新增 `native_cleanup_mac.py`，只支持 macOS，其他平台返回 `UNSUPPORTED_PLATFORM`；Windows 的清理按所有者前面的决定走 Agent 提示词。同意方式与备份方式均经已确认：同意必须由用户在真实终端（stdin 和 stdout 都是 TTY）输入 `CONFIRM <操作> <审阅摘要前 8 位>`，没有标志、文件、回调或非交互模式，同一进程内同一操作和摘要只需输入一次；备份由模块自己复制到 `~/.claude-guardian/backups/<backup_ref>`（0700，文件 0600）并写每个文件的 sha256 清单，该目录必须在受保护路径里。
+项目要求补上 C5 清理。核心（计划、隔离、对账、恢复）早已实现，缺的是 `cleanup_cli` 要求的宿主。新增 `native_cleanup_mac.py`，只支持 macOS，其他平台返回 `UNSUPPORTED_PLATFORM`；Windows 的清理按用户前面的决定走 Agent 提示词。同意方式与备份方式均经已确认：同意必须由用户在真实终端（stdin 和 stdout 都是 TTY）输入 `CONFIRM <操作> <审阅摘要前 8 位>`，没有标志、文件、回调或非交互模式，同一进程内同一操作和摘要只需输入一次；备份由模块自己复制到 `~/.claude-guardian/backups/<backup_ref>`（0700，文件 0600）并写每个文件的 sha256 清单，该目录必须在受保护路径里。
 
-范围来自所有者的 S06 清理教程：`~/.claude`、桌面端的 Application Support（Claude、Claude-3p、claude-code-desktop）、HTTPStorages、Preferences（含 ByHost）、Caches 中 `com.anthropic.claudefordesktop*`、Logs/Claude。不在清单里的路径一律 `unknown_ownership`；`~/.claude.json` 和含 `.credentials.json` 的目录返回 `credential_scope`，独立 CLI 程序、`/Applications/Claude.app`、钥匙串、浏览器站点数据、永久删除不在范围内。`verify` 同时处理隔离前后的位置：根不在原处时去隔离批次里找，并和备份清单比对（文件大小、修改时间、权限、链接目标；内容哈希在每个宿主实例里校验一次备份）。`exclusive` 在进入和退出时检测 Claude 进程，进程按可执行文件名匹配（桌面端应用包路径、`claude`、`Claude Helper*`），Node 启动的 Claude Code 会话看不到，所以确认页要求用户先退出所有会话；macOS 没有强制锁，只能发现并失败。
+范围来自用户的 S06 清理教程：`~/.claude`、桌面端的 Application Support（Claude、Claude-3p、claude-code-desktop）、HTTPStorages、Preferences（含 ByHost）、Caches 中 `com.anthropic.claudefordesktop*`、Logs/Claude。不在清单里的路径一律 `unknown_ownership`；`~/.claude.json` 和含 `.credentials.json` 的目录返回 `credential_scope`，独立 CLI 程序、`/Applications/Claude.app`、钥匙串、浏览器站点数据、永久删除不在范围内。`verify` 同时处理隔离前后的位置：根不在原处时去隔离批次里找，并和备份清单比对（文件大小、修改时间、权限、链接目标；内容哈希在每个宿主实例里校验一次备份）。`exclusive` 在进入和退出时检测 Claude 进程，进程按可执行文件名匹配（桌面端应用包路径、`claude`、`Claude Helper*`），Node 启动的 Claude Code 会话看不到，所以确认页要求用户先退出所有会话；macOS 没有强制锁，只能发现并失败。
 
 `cleanup_cli.py` 本身不变：普通运行仍无宿主；包装命令收下 `--host-scope` 和 `--entry-file`（私有 0600 的路线声明，不授予任何权限）。拒绝原因（`host_refusal`）打印到 stderr，因为分发器会把所有非通过结果折叠成 `HOST_SCOPE_UNVERIFIED`。未做：Windows、凭据和浏览器数据清理、卸载、永久清除、真机验收（备份会含登录状态等敏感文件，文档提示用户自己保管和删除）。测试：`tests/test_native_cleanup_mac.py` 用一次性主目录、合成进程列表和脚本化终端，覆盖清单、拒绝路径、备份校验、同意短语、排除区间，以及真实核心的备份、计划、隔离、对账、恢复往返。
 
 ## ADR-030：参考第三方 claude-cleanup 收紧 C5，补 Windows 官方路径（2026-10-22 已确认）
 
-所有者让参考 suyuan2022/suyuan-skill 的 claude-cleanup（MIT，仅 macOS），并要求冲突部分也参考，Windows 参考官方文档。采用：其一，`~/.claude` 不再能整个当根，对话记录、历史、设置、skills、插件、命令、agents、hooks、凭据等一律保护（第三方的绝对保护清单并上官方“需要保留的状态文件”），根只能是可再生缓存/日志（官方“删除没有用户可见损失”的行加第三方缓存清单）或桌面端持久数据；其二，桌面端路径补 `com.anthropic.claudefordesktop` 的 Application Support、Saved Application State、WebKit 和 DiagnosticReports、CrashReporter；其三，由 Claude Code 或 Claude 应用启动时拒绝运行（沿父进程链，只看可执行文件名，不读参数，无法确定时按拒绝）；其四，钥匙串退出登录、`CLAUDE_CODE_SIMPLE`（官方环境变量，等同 `--bare`，不读取 OAuth 和钥匙串凭据，故订阅登录不可用，确认页明说）、用户指定的系统时区做成独立命令，各自终端确认，均为 C 档。时区由用户指定，不写死任何地区，原时区打印出来便于还原。
+用户让参考 suyuan2022/suyuan-skill 的 claude-cleanup（MIT，仅 macOS），并要求冲突部分也参考，Windows 参考官方文档。采用：其一，`~/.claude` 不再能整个当根，对话记录、历史、设置、skills、插件、命令、agents、hooks、凭据等一律保护（第三方的绝对保护清单并上官方“需要保留的状态文件”），根只能是可再生缓存/日志（官方“删除没有用户可见损失”的行加第三方缓存清单）或桌面端持久数据；其二，桌面端路径补 `com.anthropic.claudefordesktop` 的 Application Support、Saved Application State、WebKit 和 DiagnosticReports、CrashReporter；其三，由 Claude Code 或 Claude 应用启动时拒绝运行（沿父进程链，只看可执行文件名，不读参数，无法确定时按拒绝）；其四，钥匙串退出登录、`CLAUDE_CODE_SIMPLE`（官方环境变量，等同 `--bare`，不读取 OAuth 和钥匙串凭据，故订阅登录不可用，确认页明说）、用户指定的系统时区做成独立命令，各自终端确认，均为 C 档。时区由用户指定，不写死任何地区，原时区打印出来便于还原。
 
 **不采用：**轮换 `userID`/`machineID` 并清账号缓存字段。它的作用是更换平台用来关联设备的标识，属于规避设备关联，与本项目“不轮换设备身份、不伪造地区或身份”的规则冲突，项目要求参考时我如实说明不做。S06 里关于这两个字段的说明（不能据此宣称防封，普通退出登录不必伪造）保持不变。第三方的“继承遥测状态”采用为约束：修改 `settings.json` 后核对遥测键与修改前一致。移入废纸篓也不采用，保持私有隔离目录加对账回执。
 
@@ -244,13 +244,13 @@ Mac 真机验收（macOS 15.7.4，记录在 `acceptance-mac-2026-10-22.md`）发
 
 ## ADR-032：Issue #12——新增 IDC Flare 渠道、直接当帖子与论坛搜索工具、短期封号时间线（2026-10-22）
 
-所有者在 Issue #12（文档来源）提了三件事。其一，VPS 新增渠道 IDC Flare：加入“Agent 补充资料来源”，并按 S03 第 5 页写明所有者指的路：找 VPS 搜 IDC Flare、NodeSeek、Linux.do 的 VPS 分区、VPSHub；家宽去 Linux.do（L 站）的 VPS 分区找，家宽拼车去 IDC Flare 找；所有者列的四条帖子链接也收进去（NodeSeek 那篇原作者的做法是应审查的用户经验，不照单执行，沿用 D-SPEC F02）。其二，skill 可直接当帖子和论坛搜索工具：用户明确要求去论坛搜某商家、线路或问题时不必先有资料缺口，Agent 直接检索，规则不变（项目参考资料优先、标来源和日期、命令不是授权、不收集账号信息、不访问 Claude 页面、推广只当线索），SKILL.md 的 description 同步写明。其三，短期封号原因：Issue 指向 S03 的最后一张图（PDF 第 5 页），该表此前没转述，现在写进 `account-onboarding.md` 的 A0b：五个时间段对应的排查方向，明确不是因果判定。
+在 Issue #12（文档来源）提了三件事。其一，VPS 新增渠道 IDC Flare：加入“Agent 补充资料来源”，并按 S03 第 5 页写明用户指的路：找 VPS 搜 IDC Flare、NodeSeek、Linux.do 的 VPS 分区、VPSHub；家宽去 Linux.do（L 站）的 VPS 分区找，家宽拼车去 IDC Flare 找；用户列的四条帖子链接也收进去（NodeSeek 那篇原作者的做法是应审查的用户经验，不照单执行，沿用 D-SPEC F02）。其二，skill 可直接当帖子和论坛搜索工具：用户明确要求去论坛搜某商家、线路或问题时不必先有资料缺口，Agent 直接检索，规则不变（项目参考资料优先、标来源和日期、命令不是授权、不收集账号信息、不访问 Claude 页面、推广只当线索），SKILL.md 的 description 同步写明。其三，短期封号原因：Issue 指向 S03 的最后一张图（PDF 第 5 页），该表此前没转述，现在写进 `account-onboarding.md` 的 A0b：五个时间段对应的排查方向，明确不是因果判定。
 
-两个限制如实记录：idcflare.com 有 Cloudflare 验证，本次无法读取站点内容，所以只按所有者的说法登记用途，没有自己描述站点。2026-10-22：两个地址：IDC Flare 为 https://idcflare.com/，VPSHub 为 https://vpshub.org/zh/。Issue 里的 Q 群号属于联系方式，不写进仓库，文档只引用 PDF 的文件名由来。
+两个限制如实记录：idcflare.com 有 Cloudflare 验证，本次无法读取站点内容，所以只按用户的说法登记用途，没有自己描述站点。2026-10-22：两个地址：IDC Flare 为 https://idcflare.com/，VPSHub 为 https://vpshub.org/zh/。Issue 里的 Q 群号属于联系方式，不写进仓库，文档只引用 PDF 的文件名由来。
 
 ## ADR-033：资料必须能被 Agent 翻到，加守门测试（2026-10-22 已确认）
 
-所有者问“KYC 在哪里提了、短期封号参考放哪了”，暴露出一类问题：A0b（S03 第 5 页的短期封号时间线）和 KYC 指引存在，但只在 `account-onboarding.md` 里，`SKILL.md` 的资料表和访谈的 `required_references` 都没有路由到它，Agent 不一定翻得到。项目要求：项目所有资料必须能被 Agent 翻到，并复查不要再出现。
+用户问“KYC 在哪里提了、短期封号参考放哪了”，暴露出一类问题：A0b（S03 第 5 页的短期封号时间线）和 KYC 指引存在，但只在 `account-onboarding.md` 里，`SKILL.md` 的资料表和访谈的 `required_references` 都没有路由到它，Agent 不一定翻得到。项目要求：项目所有资料必须能被 Agent 翻到，并复查不要再出现。
 
 做法：其一，逐个复查文件：没有从 `SKILL.md` 出发翻不到的文档，但有 11 个脚本（访谈状态机 `interview_flow.py` 等库）没有任何说明提到，新增 `references/scripts-index.md` 列出每个脚本和资产的类型、用途和说明；`SKILL.md` 补直接链接 `cleanup-cli-usage.md`、S03/S08 文字版、`manifest.json`、设计规格。其二，主题路由：资料表新增“账号被封或被限、问多久被封的、KYC 触发或身份核验”必附行；访谈 `required_references` 新增三类：事故为 suspension 或 identity_review、或 Q-D01 有当前或过去限制时附 A0b、S03 第 5 页、S04、M12，身份核验再附 A3；本机路线附整机 IPv4 出口；清理任务按系统附 S06 与 cleanup-cli-usage（macOS）和 windows-cleanup（Windows），系统未知时两类都附。同一文件需要多个页码时合并（`p.4, p.5`）而不是丢掉。其三，守门测试 `tests/test_skill_discoverability.py`：每个随包文件沿着提及链从 `SKILL.md` 能到达（只有说明文字算路由，代码互相导入不算）；每个 references 和 sources 顶层文件在 `SKILL.md` 里直接点名；脚本索引与 `scripts/`、`assets/` 一一对应；`SKILL.md` 和 references 里的相对链接及锚点都能解析；资料表里的承诺主题（封号与 KYC、清理、整机出口、线路、VPS、VM、手机、出口来源、IDC Flare、VPSHub）都有行。
 
@@ -266,7 +266,7 @@ ADR-033 之后实测：文件层可达 100%，但章节层很低（232 个 H2/H3
 
 ## ADR-035：Mac 真机验收结果（F2 修复后，2026-10-22）
 
-验收记录在所有者的 `Omarchy/Claude-Guardian-验收-20261022/验收结果记录.md`，设备 MacBookPro18,1（M1 Pro），macOS 15.7.4，Clash Verge Rev 2.5.8（默认路径，未开 TUN）。验收期间由 Agent 宿主（WorkBuddy）做只读和自动化部分，所有需要真人输入确认短语的步骤留给所有者在 Terminal.app 做。
+验收记录在用户的 `Omarchy/Claude-Guardian-验收-20261022/验收结果记录.md`，设备 MacBookPro18,1（M1 Pro），macOS 15.7.4，Clash Verge Rev 2.5.8（默认路径，未开 TUN）。验收期间由 Agent 宿主（WorkBuddy）做只读和自动化部分，所有需要真人输入确认短语的步骤留给在 Terminal.app 做。
 
 **真机通过：**4.2b：版本 2.5.8、默认路径、uid 归属；进程名与代码一致（`clash-verge`、`verge-mihomo` 在 `/Library/Application Support/clash-verge-service/cores/`、`clash-verge-service`，`verge-mihomo-alpha` 本机没有）；`plan` 返回 `planned_but_blocked`，差异是在偏移 64 处插入一条规则，保留计划摘要在两次独立运行中一致，与 `MATCH,PROXY` 的优先级重叠如实记录，归属报告如实标出 script、merge 链不受支持；应用运行时 `execute` 返回 `CLASH_VERGE_RUNNING`，目标文件哈希不变，没有生成备份。4.4：`egress_verifier.py` 五条判定路径（established、两种 violated、incomplete、INVALID_EVIDENCE）符合预期，报告不含出口 IP。4.5：`context`、`allowed`；Agent 会话里 `RUNNING_UNDER_CLAUDE`；Claude 运行时 `ACTIVE_HOST`；没有输入短语或非终端一律 `AUTHORIZATION_REQUIRED`；scope 结构门禁（`QUARANTINE_OVERLAP`、`ENVIRONMENT_ENTRY_REQUIRED`、`UNSAFE_DOCUMENT`）正确拦截（期间修正的三处是验收脚本自己配错）。4.6：钥匙串服务名核对一致（Safe Storage 存在，Code-credentials 未找到）；Claude 运行时 `keychain` 返回 `ACTIVE_HOST`；非法时区含 `..` 返回 `INVALID_TIMEZONE`。F2 的修复（ADR-031）已覆盖修复链和 C5 链，两条链的文件元数据门禁都走同一函数。
 
@@ -278,7 +278,7 @@ ADR-033 之后实测：文件层可达 100%，但章节层很低（232 个 H2/H3
 
 ## ADR-036：真机验证是样本，环境差异由 Agent 按实际环境处理（2026-10-22 已确认）
 
-所有者认为把真机验收当作完成标准不合理：一个人测通一台机器，不代表别人的系统版本、应用版本、安装位置和宿主环境都一样；用户本来就有 Agent，环境不一致时让 Agent 按实际环境修更现实。采纳。
+把真机验收当作完成标准不合理：一个人测通一台机器，不代表别人的系统版本、应用版本、安装位置和宿主环境都一样；用户本来就有 Agent，环境不一致时让 Agent 按实际环境修更现实。采纳。
 
 变化：其一，`SKILL.md` 新增“每台机器环境不同”一节，把 Agent 的做法写成规则：先只读核对实际环境（A 档）；差异在已批准的计划范围内就调整参数并沿用备份与回滚，超出范围重新出变更卡按档位批准；失败就停下并回滚，如实报告哪一步、实际看到什么、和文档哪里不同；不为让命令通过而放松进程检查、元数据和属性检查、保护路径、终端确认，也不改写返回值；不把一台机器上的结果说成通用；差异值得记时由用户决定是否合入仓库。其二，README 的“不是什么”把“没有在真实机器上验收”改为“没有对每台机器的保证”，AGENTS.md 的验证条增加同样的定位。其三，真机验收清单继续保留，但性质是样本验证，不再阻塞任何交付；稳定版本发布仍须已确认。
 
@@ -296,65 +296,65 @@ ADR-033 之后实测：文件层可达 100%，但章节层很低（232 个 H2/H3
 
 项目要求把教程都搬进 wiki。wiki 是 `<仓库>.wiki.git` 这个独立的 git 仓库，不随 skill 打包，Agent 读不到，也不在可达性和守门测试里。如果真的把 `references/` 搬走，Agent 就读不到规则和指引，所以采用“渲染一份副本”：仓库的 `skills/claude-guardian/` 仍是唯一来源，wiki 是面向用户的展示页。
 
-范围：面向用户的步骤类教程 12 篇——账号注册与养号节奏（含 A0b）、手机端防封、固定出口 IP 的来源、整机统一出口、本机 Clash 与防火墙、VM、VPS、线路优化、macOS 清理（S06）、Windows 清理、VPS Claude 教程文字版（S08）、线路优化与家宽中转教程（R02，含两张图）。不导出的：规则与依据类文档（授权档位、修复流程、接触与安全、证据政策、来源库、各索引）、设计规格、脚本、PDF 与 17 份 VPS 报告（页面里链接到仓库文件，图片用仓库的 raw 地址）。`tools/export_wiki.py` 生成每页加“自动生成，请到仓库修改，不要直接改 wiki”的横幅、首页（分组目录、频道、不承诺免封和环境差异提醒）和侧边栏；相对链接改写为 wiki 页面或仓库 blob 链接，代码块里的链接不改；每次导出前扫描，出现所有者出口 IP、局域网段、用户名、本机路径、手机号、QQ 群号（频道 QQ 除外）、凭据样式内容、订阅链接协议头就拒绝导出；重新导出时只删除自己生成过的旧页，不碰手写页。
+范围：面向用户的步骤类教程 12 篇——账号注册与养号节奏（含 A0b）、手机端防封、固定出口 IP 的来源、整机统一出口、本机 Clash 与防火墙、VM、VPS、线路优化、macOS 清理（S06）、Windows 清理、VPS Claude 教程文字版（S08）、线路优化与家宽中转教程（R02，含两张图）。不导出的：规则与依据类文档（授权档位、修复流程、接触与安全、证据政策、来源库、各索引）、设计规格、脚本、PDF 与 17 份 VPS 报告（页面里链接到仓库文件，图片用仓库的 raw 地址）。`tools/export_wiki.py` 生成每页加“自动生成，请到仓库修改，不要直接改 wiki”的横幅、首页（分组目录、频道、不承诺免封和环境差异提醒）和侧边栏；相对链接改写为 wiki 页面或仓库 blob 链接，代码块里的链接不改；每次导出前扫描，出现用户出口 IP、局域网段、用户名、本机路径、手机号、QQ 群号（频道 QQ 除外）、凭据样式内容、订阅链接协议头就拒绝导出；重新导出时只删除自己生成过的旧页，不碰手写页。
 
-发布方式：GitHub 在网页上创建第一页之前，wiki 仓库不存在（`git ls-remote` 返回 not found），所以第一次需要所有者在 Wiki 标签点一次“Create the first page”并保存；之后把导出结果推到 wiki 仓库。未做：用 GitHub Action 在每次 main 更新后自动同步（要给 workflow 写 wiki 的权限，先不加，由方案决定）；17 份 VPS 报告和 S04、S05、S07 等阅读材料不放 wiki，页面里指向仓库。
+发布方式：GitHub 在网页上创建第一页之前，wiki 仓库不存在（`git ls-remote` 返回 not found），所以第一次需要在 Wiki 标签点一次“Create the first page”并保存；之后把导出结果推到 wiki 仓库。未做：用 GitHub Action 在每次 main 更新后自动同步（要给 workflow 写 wiki 的权限，先不加，由方案决定）；17 份 VPS 报告和 S04、S05、S07 等阅读材料不放 wiki，页面里指向仓库。
 
 ## ADR-039：Mac 真机验收收官，按真机发现修正（2026-10-22）
 
 证据与日志按项目要求留在 Omarchy（`Claude-Guardian-验收-20261022/`，含最终版验收记录、截图、日志、一键脚本、判定报告），不进仓库，因为含用户名、本机路径、真实 profile 文件名和摘要；仓库只记结论。设备 MacBookPro18,1，macOS 15.7.4，Clash Verge Rev 2.5.8，一台机器。
 
-**真机通过：**4.2b 全项：版本、归属、进程名；`plan` 三次独立运行摘要一致；应用运行时 `execute` 返回 `CLASH_VERGE_RUNNING` 且哈希不变；真实写入返回 `written_but_not_verified` 和 `byte_readback: pass`，重启后规则在场，`recovery_cli rollback` 返回 `restored`，哈希回到基线。4.4：判定器五条路径，TUN 开启下的 GUI 取证（出口一致、DNS 与 WebRTC 无泄漏），自动取证判定 `established`（8 层全 pass，`persistence: checked`）。4.6：系统时区真实切换并恢复，钥匙串服务名一致，`simple` 确认页完整。4.5：全部拒绝路径；放行全流程所有者暂缓。第 6 项：界面设置覆盖合并文件同名字段，与文档一致。**未验：**4.5 放行全流程、LuLu 与停核心的 fail-closed 演练、重启与睡眠唤醒与换网的复验、`simple` 真实开关、真实钥匙串删除、VM、VPS、Windows、手机。
+**真机通过：**4.2b 全项：版本、归属、进程名；`plan` 三次独立运行摘要一致；应用运行时 `execute` 返回 `CLASH_VERGE_RUNNING` 且哈希不变；真实写入返回 `written_but_not_verified` 和 `byte_readback: pass`，重启后规则在场，`recovery_cli rollback` 返回 `restored`，哈希回到基线。4.4：判定器五条路径，TUN 开启下的 GUI 取证（出口一致、DNS 与 WebRTC 无泄漏），自动取证判定 `established`（8 层全 pass，`persistence: checked`）。4.6：系统时区真实切换并恢复，钥匙串服务名一致，`simple` 确认页完整。4.5：全部拒绝路径；放行全流程用户暂缓。第 6 项：界面设置覆盖合并文件同名字段，与文档一致。**未验：**4.5 放行全流程、LuLu 与停核心的 fail-closed 演练、重启与睡眠唤醒与换网的复验、`simple` 真实开关、真实钥匙串删除、VM、VPS、Windows、手机。
 
 **由真机发现而改的：**其一，写入者排除过严：旧实现把核心 `verge-mihomo` 和 root 服务 `clash-verge-service` 也当写入者，而退出应用（⌘Q）后服务因 KeepAlive 仍在运行，写入恒被拒，只能 `sudo launchctl bootout`（还会断 TUN 与代理）。实际只有应用写 `profiles.yaml` 和 profile 文件，核心和服务不写，所以只认应用（`clash-verge` 和应用包路径下的进程）。这是一次放宽，依据是真机行为和谁真正写这些文件；如果以后发现核心或服务也会写，回滚此改动即可。其二，F4：`systemsetup -settimezone` 返回后 `/etc/localtime` 异步更新，立即读会误报 `TIMEZONE_VERIFY_FAILED`；改为每 0.5 秒读一次、最多 10 次，仍不符才报失败，没有固定长等待。其三，`ACTIVE_HOST` 提示补残留后台进程（例如 Claude 的 `chrome-native-host`）的排查办法。其四，文档：整机出口一节补“IPv6 探测返回 IPv4 字符串（被代理接管）记 unreachable，不要当 IPv6 样本”（F5 的误判来自这里）、界面设置只有对应开关启用时才覆盖合并文件、严格路由默认可能关着（关着时 fail-closed 靠 LuLu 或系统防火墙，建议开启）。
 
-**判断：**F5（TUN 下 IPv6 泄漏）已被所有者的验收撤回为误判，没有改判定器：判定器拒绝把 IPv4 字符串标成 IPv6 样本是正确行为。F3 与 F1 是宿主沙箱的环境限制，不改仓库。此验收只代表这一台 Mac，其他环境由 Agent 按实际核对（ADR-036）。
+**判断：**F5（TUN 下 IPv6 泄漏）已被用户的验收撤回为误判，没有改判定器：判定器拒绝把 IPv4 字符串标成 IPv6 样本是正确行为。F3 与 F1 是宿主沙箱的环境限制，不改仓库。此验收只代表这一台 Mac，其他环境由 Agent 按实际核对（ADR-036）。
 
 ## ADR-040：真机验收交给使用者（2026-10-22 已确认）
 
-所有者认为逐项做真机验收太累，且一个人测通一台机器不代表别人的环境（ADR-036 已采纳“真机验证是样本”）。决定：不再逐项做真机验收，交给使用者在自己的环境里验证。
+逐项做真机验收太累，且一个人测通一台机器不代表别人的环境（ADR-036 已采纳“真机验证是样本”）。决定：不再逐项做真机验收，交给使用者在自己的环境里验证。
 
-落实：其一，README“开发与验证”里把“下一步仍包括真实环境验证和完整清理验收”改为“真机验证由使用者来做”，写明作者只验证过一台 Mac（结果见 ADR-039），VM、VPS、Windows、手机和其他系统与应用版本没有验证，也不再逐项验收，并给出反馈入口。其二，新增 Issue 表单 `.github/ISSUE_TEMPLATE/device-report.yml`（“真机使用反馈”）：选用的是哪一项、系统与应用版本与 Agent 宿主、结果（走通、需要调整、被门禁拦住、出错、文档不一致）、具体情况，并要求确认没有贴账号、凭据、订阅链接、真实 IP 或个人路径；使用者的反馈再由作者按需要改脚本或文档。其三，所有者本地的真机验收清单继续存在，但不再是任何交付的条件，也不再追踪。
+落实：其一，README“开发与验证”里把“下一步仍包括真实环境验证和完整清理验收”改为“真机验证由使用者来做”，写明作者只验证过一台 Mac（结果见 ADR-039），VM、VPS、Windows、手机和其他系统与应用版本没有验证，也不再逐项验收，并给出反馈入口。其二，新增 Issue 表单 `.github/ISSUE_TEMPLATE/device-report.yml`（“真机使用反馈”）：选用的是哪一项、系统与应用版本与 Agent 宿主、结果（走通、需要调整、被门禁拦住、出错、文档不一致）、具体情况，并要求确认没有贴账号、凭据、订阅链接、真实 IP 或个人路径；使用者的反馈再由作者按需要改脚本或文档。其三，本地的真机验收清单继续存在，但不再是任何交付的条件，也不再追踪。
 
 不变：诚实标注——没验证的环境写未知，不写通过，`native_acceptance` 仍如实报 `not_run`；所有门禁 fail-closed；Agent 按实际环境核对、调整、失败回滚并如实报告（SKILL.md“每台机器环境不同”）；稳定版本发布仍须已确认。
 
 ## ADR-041：验证口径——作者都验证过，但每个人的环境不同需要调整（2026-10-22 已确认，更正 ADR-040 的措辞）
 
-ADR-040 的 README 写成“作者只在一台 Mac 上验证过，VM、VPS、Windows 作者没有验证”，所有者指出不能这么写：作者在 Mac、Windows、VM、VPS 上都验证过，正确的表述是“都验证过，但每个人的环境不一样，所以需要按实际调整”。采纳。README“它不是什么”和“开发与验证”、SKILL.md“每台机器环境不同”、Issue 表单“真机使用反馈”、wiki 首页同步改为这个口径。
+ADR-040 的 README 写成“作者只在一台 Mac 上验证过，VM、VPS、Windows 作者没有验证”，不能这么写：作者在 Mac、Windows、VM、VPS 上都验证过，正确的表述是“都验证过，但每个人的环境不一样，所以需要按实际调整”。采纳。README“它不是什么”和“开发与验证”、SKILL.md“每台机器环境不同”、Issue 表单“真机使用反馈”、wiki 首页同步改为这个口径。
 
-边界要说清楚：这是所有者的第一手说法，Windows、VM、VPS 的验证记录在所有者那里，没有进仓库，仓库里只有 Mac 这一轮的逐项结论（ADR-039）。所以 README 只写所有者自己的整体说法和 Mac 的具体结果，不替 Windows、VM、VPS 逐项写“通过”；本项目新写的内容（例如 `vps-guard.sh`、Windows 清理提示词、整机出口指南）的具体通过项，以所有者提供的记录为准，没有记录的不在仓库里写成已通过。不变：Agent 按实际环境核对和调整、失败回滚并如实报告、门禁 fail-closed、`native_acceptance` 仍如实报 `not_run`、稳定版本发布须已确认。
+边界要说清楚：这是第一手经验记录，Windows、VM、VPS 的验证记录在原始记录中，没有进仓库，仓库里只有 Mac 这一轮的逐项结论（ADR-039）。所以 README 只写整体经验记录和 Mac 的具体结果，不替 Windows、VM、VPS 逐项写“通过”；本项目新写的内容（例如 `vps-guard.sh`、Windows 清理提示词、整机出口指南）的具体通过项，以提供的实测记录为准，没有记录的不在仓库里写成已通过。不变：Agent 按实际环境核对和调整、失败回滚并如实报告、门禁 fail-closed、`native_acceptance` 仍如实报 `not_run`、稳定版本发布须已确认。
 
 ## ADR-042：进阶路线做成叠加在 VM／VPS 之上的指引层，不新增路线值（2026-10-24 已确认）
 
-所有者提供新一轮真实经验：本机管理端、本地 VM、他人网络里不可直连的远端 Omarchy、兼任出口节点和隧道中转的 VPS，要求把它做成进阶路线，并把其中可共用的修复和完善也补进现有指引。
+新增部署经验：本机管理端、本地 VM、他人网络里不可直连的远端 Omarchy、兼任出口节点和隧道中转的 VPS，要求把它做成进阶路线，并把其中可共用的修复和完善也补进现有指引。
 
-取舍：路线值 local／vm／vps 写死在访谈状态机、环境入口门禁、迁移、清理和测试里，加第四个值要动门禁和迁移，风险大。所有者选择指引层：新增 `advanced-route.md` 与 R-ADV 卡，不改 route 枚举和 `environment_entry`；目标机按 vm_guest／vps 绑定，中转 VPS 按 vps 绑定，管理端按 local 绑定，证据仍分开记录。访谈只加一个路线内问题 Q-V09，按 ADR-018 的先例（Q-V07、Q-V08 同样是路线内必答），因此 VM 路线的“已答完”夹具要补 Q-V09。脚本选择合并：killswitch 加可选隧道白名单，不另放 remote 版，避免两份脚本漂移。
+取舍：路线值 local／vm／vps 写死在访谈状态机、环境入口门禁、迁移、清理和测试里，加第四个值要动门禁和迁移，风险大。采用指引层：新增 `advanced-route.md` 与 R-ADV 卡，不改 route 枚举和 `environment_entry`；目标机按 vm_guest／vps 绑定，中转 VPS 按 vps 绑定，管理端按 local 绑定，证据仍分开记录。访谈只加一个路线内问题 Q-V09，按 ADR-018 的先例（Q-V07、Q-V08 同样是路线内必答），因此 VM 路线的“已答完”夹具要补 Q-V09。脚本选择合并：killswitch 加可选隧道白名单，不另放 remote 版，避免两份脚本漂移。
 
-边界：隧道和 killswitch 在他人网络里属于 C 档，需要网络所有者同意和独立救援入口；密钥由用户生成传入，不内嵌；真实 VPS 地址、端口、用户名不进仓库。IPv6：所有者总结里的“盲区”在本仓库脚本里已被 `inet` 家族的 policy drop 覆盖，文档改为“换环境后实测”，不另写规则。
+边界：隧道和 killswitch 在他人网络里属于 C 档，需要网络使用授权和独立救援入口；密钥由用户生成传入，不内嵌；真实 VPS 地址、端口、用户名不进仓库。IPv6：经验总结里的“盲区”在本仓库脚本里已被 `inet` 家族的 policy drop 覆盖，文档改为“换环境后实测”，不另写规则。
 
 ## ADR-043：README 去掉重复的防御性说明；Issue #13 的 Windows 防火墙反馈并入本机指引（2026-10-25）
 
-所有者指出 README 防御性太强。README 原来在“它不是什么”“核心场景”“工作流与门禁机制”“开始前要知道”和路线说明里反复写同一组限制，读者先看到一堆“不能”“不代表”。改为：能力表之后只留一节“几条底线”（钱和账号本人来、不要凭据、准备阶段不碰 Claude、按环境调整、不保证免封），路线表写成“适合谁、主要内容”，删去示例、Star History 等处的免责句；门禁细节仍在 Skill、`contact-and-safety.md` 和 `authorization-tiers.md`，开发者折叠区保持原样。英文版同步。规则本身不变。
+ README 防御性太强。README 原来在“它不是什么”“核心场景”“工作流与门禁机制”“开始前要知道”和路线说明里反复写同一组限制，读者先看到一堆“不能”“不代表”。改为：能力表之后只留一节“几条底线”（钱和账号本人来、不要凭据、准备阶段不碰 Claude、按环境调整、不保证免封），路线表写成“适合谁、主要内容”，删去示例、Star History 等处的免责句；门禁细节仍在 Skill、`contact-and-safety.md` 和 `authorization-tiers.md`，开发者折叠区保持原样。英文版同步。规则本身不变。
 
 Issue #13（Windows 真机反馈，Agent 自行编排，已回滚）并入 `local-firewall-prompts.md` 的 Windows 一节：`::1` 规则在部分 Windows 上被拒，改用回环软件接口并说明单值 `InterfaceAlias` 读回是字符串；核心程序路径以运行中的进程为准（服务模式跑的是另一份核心）；新增“切换后不通：分层诊断”（显式本地代理 → IPv4 字面地址经 TUN → 系统 DNS → 域名 HTTPS，配 curl 退出码对照，四步通过后才做故障演练）、“查 WFP 丢包记录”（显式输出文件，查询失败不等于无事件，可撤销的失败审计）、“宿主拒绝执行时”（停下、确认安全状态、交接，不绕过）和“最小反馈清单”。Issue 的根因未知，文档不替它下结论。
 
-随后按项目要求检查全项目的过度防御，改了三类：一是与记录不符的“没跑过”：`whole-machine-ipv4.md` 写“没有在真实设备上跑过”，但 ADR-039 已记录 Mac 真机判定 `established`，改为写明验过什么、还缺什么；`local-firewall-prompts.md` 的“没有在真实机器上实测”按 Issue #13 改为第 1 到 4 步在一台 Windows 上跑过、第 5 步还没跑通。二是同页重复的免责句（防火墙页两处“不承诺免封”留一处）。三是 SKILL.md 的 description 和版本说明：原文只写“有限只读检查和离线修复计划”，并堆了一串“不是默认执行权限”“仍有未验收项”，既低估了实际能力（Agent 按分级授权配置、部署、复测）又让 Agent 一开始就带着防御心态，改为直接说做什么。没改的：PC0、授权档位、凭据、付款本人这些硬规则；`vps-guidance.md` 与 `windows-cleanup.md` 的“没有在真实机器上跑过”（按 ADR-041，所有者没给出对应记录前不改）；SKILL.md 中后段的宿主库契约说明（约一半篇幅，是否移到单独的 reference 待方案决定）。
+随后按项目要求检查全项目的过度防御，改了三类：一是与记录不符的“没跑过”：`whole-machine-ipv4.md` 写“没有在真实设备上跑过”，但 ADR-039 已记录 Mac 真机判定 `established`，改为写明验过什么、还缺什么；`local-firewall-prompts.md` 的“没有在真实机器上实测”按 Issue #13 改为第 1 到 4 步在一台 Windows 上跑过、第 5 步还没跑通。二是同页重复的免责句（防火墙页两处“不承诺免封”留一处）。三是 SKILL.md 的 description 和版本说明：原文只写“有限只读检查和离线修复计划”，并堆了一串“不是默认执行权限”“仍有未验收项”，既低估了实际能力（Agent 按分级授权配置、部署、复测）又让 Agent 一开始就带着防御心态，改为直接说做什么。没改的：PC0、授权档位、凭据、付款本人这些硬规则；`vps-guidance.md` 与 `windows-cleanup.md` 的“没有在真实机器上跑过”（按 ADR-041，未提供对应记录前不改）；SKILL.md 中后段的宿主库契约说明（约一半篇幅，是否移到单独的 reference 待方案决定）。
 
 ## ADR-044：宿主库契约说明移出 SKILL.md（2026-10-25）
 
-SKILL.md 每次运行都整篇载入，原 42KB 里约一半是宿主库和内置入口的契约说明（repair/recovery/inventory、诊断会话、面板、DNS、STUN、配置候选、环境入口校验、旧目标范围契约），几乎全是“不代表、不证明、仍阻塞”，普通任务用不到，却让 Agent 一开工就背着这些限制。所有者同意优化：原文一字不删移到 `references/host-libraries.md`，SKILL.md 换成“内置脚本与宿主库”短节（常用入口各一行 + 链接）并在按需加载列表里登记；顺带更正 SKILL.md 中“当前尚无开放的内置生产配置写入适配器”（与 ADR-039 已开放的 rules-prepend 矛盾）。SKILL.md 降到约 29KB。规则不变：门禁、授权档位、证据口径都在，只是换了位置，用到对应脚本时再读。发行包 115 个成员。
+SKILL.md 每次运行都整篇载入，原 42KB 里约一半是宿主库和内置入口的契约说明（repair/recovery/inventory、诊断会话、面板、DNS、STUN、配置候选、环境入口校验、旧目标范围契约），几乎全是“不代表、不证明、仍阻塞”，普通任务用不到，却让 Agent 一开工就背着这些限制。优化：原文一字不删移到 `references/host-libraries.md`，SKILL.md 换成“内置脚本与宿主库”短节（常用入口各一行 + 链接）并在按需加载列表里登记；顺带更正 SKILL.md 中“当前尚无开放的内置生产配置写入适配器”（与 ADR-039 已开放的 rules-prepend 矛盾）。SKILL.md 降到约 29KB。规则不变：门禁、授权档位、证据口径都在，只是换了位置，用到对应脚本时再读。发行包 115 个成员。
 
 ## ADR-045：Agent 对用户说话的方式——规则给 Agent 执行，不念给用户（2026-10-25）
 
-所有者反馈：Agent 读完 Skill 后满口“不保证、不成立、不改变、不背书”，用起来很烧心。原因是 Agent 会照抄它读到的语气：SKILL.md 和 references 里约 208 处这类说法，脚本输出到面板和动作清单的文字里还有约 24 处。
+问题：Agent 读完 Skill 后满口“不保证、不成立、不改变、不背书”，用起来很烧心。原因是 Agent 会照抄它读到的语气：SKILL.md 和 references 里约 208 处这类说法，脚本输出到面板和动作清单的文字里还有约 24 处。
 
-处理分三层。第一层，SKILL.md 开头新增“和用户说话的方式”：门禁和证据口径是给 Agent 执行的规则，对用户只说做了什么、看到了什么、下一步谁做；限制只在用户要越过时说一次并给出路；列出不要说的句式；免封只在用户问到时说一次；所有者经验按事实直接说；汇报用“已确认 / 还没查 / 下一步”。第二层，SKILL.md 其余部分去掉这类句式，同样的约束改成正面说法（例如“配置导入后要实测确认生效”代替“配置已导入不等于已经生效”）。第三层，面板、动作清单和探测样本的用户可见文字改为“另测”“还要另查”“以实测为准”，判定逻辑和状态值不变：unknown、not_run、verified 的条件一条没改。A0b 短期封号时间线的开头和用法同步改写。
+处理分三层。第一层，SKILL.md 开头新增“和用户说话的方式”：门禁和证据口径是给 Agent 执行的规则，对用户只说做了什么、看到了什么、下一步谁做；限制只在用户要越过时说一次并给出路；列出不要说的句式；免封只在用户问到时说一次；来源经验按事实直接说；汇报用“已确认 / 还没查 / 下一步”。第二层，SKILL.md 其余部分去掉这类句式，同样的约束改成正面说法（例如“配置导入后要实测确认生效”代替“配置已导入不等于已经生效”）。第三层，面板、动作清单和探测样本的用户可见文字改为“另测”“还要另查”“以实测为准”，判定逻辑和状态值不变：unknown、not_run、verified 的条件一条没改。A0b 短期封号时间线的开头和用法同步改写。
 
 测试：三条原本锁定旧措辞的断言改成新措辞（意思相同：DNS 路径要另查、时间线给方向再查证据）；新增守门测试，SKILL.md 除说话方式一节外不再出现这些句式，三个脚本的用户可见文字也不出现。下一步：references 按需读取的文件（agent-remediation.md 57 处最多，其次 accounts-and-payments、routes-and-platforms、incidents-and-integrations、intake）分批改写。
 
 ## ADR-046：封号后的环境痕迹清理、对话记录可选移走、Linux 清理（2026-10-25）
 
-项目要求在封号环境清理里加入代理软件日志、VPN 客户端日志和 Shell 历史，并问现有清理是否覆盖 Claude 本机日志。讨论后所有者定了五点：手机端（Shadowrocket 等）这次不做；Shell 历史只删查 IP 的命令行；对话记录询问用户是否删，建议删；`~/.claude/debug` 改为可清；Linux 要覆盖。
+项目要求在封号环境清理里加入代理软件日志、VPN 客户端日志和 Shell 历史，并问现有清理是否覆盖 Claude 本机日志。范围限定为五点：手机端（Shadowrocket 等）这次不做；Shell 历史只删查 IP 的命令行；对话记录询问用户是否删，建议删；`~/.claude/debug` 改为可清；Linux 要覆盖。
 
 落地：新增 `references/trace-cleanup.md`（代理客户端 `logs` 目录整体隔离、配置不动、日志等级调到 warning；VPN 优先用客户端自带清除；zsh/bash/fish/PowerShell 只删匹配查 IP 站点的行，删前整份备份；命令输出只问用户在哪几处，不全盘搜索；系统日志不清）和 `references/linux-cleanup.md`（Claude Code 的 Linux 路径、同样的分档、bash 审计/备份/隔离/还原）。`native_cleanup_mac.py` 新增 `conversation` 档（`~/.claude/projects`、`history.jsonl`），只在用户选进范围时处理，终端确认页标明“本次包含对话记录、旧会话无法续接”，未选时写“对话记录不在本次范围”；`debug` 从受保护改为可再生。Windows 指引同步。理由：这些本地记录不会自动上传，风险在于以后 Claude Code 在这台机器上读到它们或用户贴进对话；对话记录里保存着以前跑过的命令输出，是旧 IP 最完整的一份。
 
@@ -366,7 +366,7 @@ SKILL.md 每次运行都整篇载入，原 42KB 里约一半是宿主库和内�
 
 新增 `scripts/network_check.py`（macOS、Windows、Linux，标准库）：默认路由是否走 TUN、IPv4 出口（国家与 ASN，不回显 IP；出口在本国判为直连）、经本地 HTTP/mixed 端口的出口是否和直连一致、IPv6 是否堵住（返回 IPv4 也算堵住）、DNS 泄露、fake-ip 接管、UDP（STUN 映射与 TCP 出口一致）、可选交互式故障演练（停核心后连不出去为通过；重开后也连不上判为网络本身有问题，不算通过）。联系的站点固定为 ipinfo.io、api6.ipify.org、bash.ws、stun.cloudflare.com，不碰 Claude 和 Anthropic。`--evidence-output` 写 0600 新文件交给 `egress_verifier.py`，判定器加入 Linux。
 
-DNS 泄露的两点实测发现：fake-ip 下只做解析不会触发真实查询，测试站收不到请求，所以脚本对每个测试域名再发起一次连接，让代理核心去解析；bash.ws 自带的“may be leaking”只是解析器 ASN 和出口 ASN 不同，走代理时这是常态，所以改按国家判断：解析服务器在用户本国（`--home-country`，默认 cn）即泄露。在所有者的 Omarchy（FlClash TUN、fake-ip）上实跑：路由、出口、代理端口出口、IPv6、DNS、UDP 全部通过，约 6 秒。
+DNS 泄露的两点实测发现：fake-ip 下只做解析不会触发真实查询，测试站收不到请求，所以脚本对每个测试域名再发起一次连接，让代理核心去解析；bash.ws 自带的“may be leaking”只是解析器 ASN 和出口 ASN 不同，走代理时这是常态，所以改按国家判断：解析服务器在用户本国（`--home-country`，默认 cn）即泄露。在 Omarchy（FlClash TUN、fake-ip）上实跑：路由、出口、代理端口出口、IPv6、DNS、UDP 全部通过，约 6 秒。
 
 授权：按 B 档，用户批准检测计划后由 Agent 运行；脚本启动不另要确认。还没覆盖：WebRTC 仍用 `serve_webrtc.py` 在浏览器里测；TUN 严格路由、核心 IPv6、规则兜底这些配置项由 Agent 读配置补；面板还没接入这份报告。
 
@@ -406,7 +406,7 @@ ADR-048 留下的第二批：
 
 ## ADR-051：只改文档的推送只跑 Linux CI（2026-10-26）
 
-所有者认为 Actions 运行太多，同意优化。每次推送原来都跑 Linux、macOS、Windows 加 Python 3.10 共 4 个 job，包括只改一条规则的文档提交。
+ Actions 运行太多，同意优化。每次推送原来都跑 Linux、macOS、Windows 加 Python 3.10 共 4 个 job，包括只改一条规则的文档提交。
 
 做法：`tests.yml` 前加一个 `scope` job，用 `tools/ci_scope.py` 看本次推送（或 PR 相对基线）改了哪些文件。全部是 `.md`、`.pdf`、`.png` 且不在 `.github/` 下，就只跑 Linux 套件（文档守门测试都在里面，和平台无关）；改了任何其他文件，或者读不到改动范围（新分支、历史被改写），照旧跑三平台加 Python 3.10。AGENTS.md、CLAUDE.md 的三平台 CI 要求同步改成这条规则。
 
@@ -466,7 +466,7 @@ Issue #15 指出：用户问“要不要改时区”，Agent 读到的文件不�
 
 需求 `SRC-WIN-20261103`：项目要求整份 Windows 部署记录脱敏后收进项目，保留全部经验，重点权衡放在哪里。
 
-决定：全文存入 `skills/claude-guardian/sources/S10-windows-deployment-sanitized.md`。这是所有者提供的完整来源，不拆散成若干摘录，也不把全文塞入每次加载的 SKILL.md 或覆盖 Windows 主流程。保留十一节、代码、待办、事故复盘与快捷方式配方；用稳定锚点和问题导航支持按需读取。S09 已用于外部仓库参考，沿用其原义，新增 S10。manifest 登记原始输入哈希、脱敏分发哈希、归属、编辑说明和证据限制，原始私人文件不提交。
+决定：全文存入 `skills/claude-guardian/sources/S10-windows-deployment-sanitized.md`。这是完整来源材料，不拆散成若干摘录，也不把全文塞入每次加载的 SKILL.md 或覆盖 Windows 主流程。保留十一节、代码、待办、事故复盘与快捷方式配方；用稳定锚点和问题导航支持按需读取。S09 已用于外部仓库参考，沿用其原义，新增 S10。manifest 登记原始输入哈希、脱敏分发哈希、归属、编辑说明和证据限制，原始私人文件不提交。
 
 入口：SKILL.md 的本机防火墙资料行直接列全文；Windows 防火墙指引指向 SSH、PowerShell、远程演练、TUN 重建和桌面开关章节；整机出口指引指向配置覆盖和 STUN/浏览器证据；自建出口指引指向 3x-ui、REALITY、Hysteria2 与证书章节。来源库、证据规则、中英文 README、自动章节索引和 Wiki 导出同步登记。完整正文只维护一份，避免多个平台流程复制后出现版本漂移。
 
@@ -476,11 +476,11 @@ Issue #15 指出：用户问“要不要改时区”，Agent 读到的文件不�
 
 验证：新增全文结构、脱敏示例地址/用户别名、章节路由和判断边界检查，现有来源哈希与打包测试核对 S10 原样入包，Wiki 测试核对来源被收录；逐行对照确认脱敏后原文全部按顺序保留，原 main 指引在新增路由回归上失败。macOS / Python 3.13.3 / PyYAML 6.0.3 完整套件 1523 项（1514 通过、9 项环境跳过），Node 28 场景、编译、两次打包字节一致和 Wiki 27 页导出通过，具体命令与包哈希见 CHANGELOG。初次缺依赖和沙箱 setuid 夹具失败均通过调整测试环境解决，未放松断言。均为离线验证，不代表 Windows 原生防火墙或浏览器验收。推送后独立核实远端提交和 CI。
 
-回滚：普通 revert 本提交并从仓库重新导出 Wiki；不修改所有者的原始私人笔记。
+回滚：普通 revert 本提交并从仓库重新导出 Wiki；不修改原始私人笔记。
 
 ## ADR-056：远程协助作为本机路线高级扩展，不作为本机前置（2026-11-04）
 
-需求 `ROUTE-LOCAL-ADV-20261104`：所有者指出 S10 的 OpenSSH、Tailscale、内网穿透等内容属于远程操作扩展；用户本机已有 Agent 时不需要远程，应像现有 VM／VPS 进阶层一样单独归类。
+需求 `ROUTE-LOCAL-ADV-20261104`：S10 的 OpenSSH、Tailscale、内网穿透等内容属于远程操作扩展；用户本机已有 Agent 时不需要远程，应像现有 VM／VPS 进阶层一样单独归类。
 
 决定：新增 `references/local-advanced-route.md`，仅按用户明确的异机协助需求进入。扩展覆盖远程接入、跨机传文件、管理通道例外和脱离 SSH 会话的故障演练；仍属于 R-LOCAL，不新增路线值，不默认安装远程软件、开放端口或新增中转服务。目标机已有 Agent 时直接按本机主流程处理，人工终端与离线回滚可作为本机恢复入口，不因此要求远程工具。
 
@@ -506,9 +506,9 @@ Issue #15 指出：用户问“要不要改时区”，Agent 读到的文件不�
 
 ## ADR-058：检测链路、主题资料与遗留义务闭环（2026-11-05）
 
-需求 `ISSUES-19-24-20261105`，处理 #19、#20、#21、#22、#23、#24；所有者明确 #17 暂不处理，#14 继续作为经验交流帖。
+需求 `ISSUES-19-24-20261105`，处理 #19、#20、#21、#22、#23、#24；#17 暂不处理，#14 继续作为经验交流帖。
 
-决定：选定路线后先在实际目标机核实系统、Python 和脚本能力。所有者本轮补充要求优先于 #19/#22 的原建议：缺 Python 必须补齐，并统一使用本项目 `network_check.py` → 证据 JSON → `egress_verifier.py`，不提供手写替代验收分支。安装依赖仍说明官方来源、实际架构、安装范围、权限、PATH 和卸载恢复，按现有档位取得授权；未获准或安装失败则检测未完成。`inventory_cli capabilities` 主要描述配置盘点，不用于推断 Windows 网络检测不支持；异机链路在 local-advanced-route 和脚本索引里直接接上 S10 第十节，保留历史来源全文与哈希。
+决定：选定路线后先在实际目标机核实系统、Python 和脚本能力。本轮要求优先于 #19/#22 的原建议：缺 Python 必须补齐，并统一使用本项目 `network_check.py` → 证据 JSON → `egress_verifier.py`，不提供手写替代验收分支。安装依赖仍说明官方来源、实际架构、安装范围、权限、PATH 和卸载恢复，按现有档位取得授权；未获准或安装失败则检测未完成。`inventory_cli capabilities` 主要描述配置盘点，不用于推断 Windows 网络检测不支持；异机链路在 local-advanced-route 和脚本索引里直接接上 S10 第十节，保留历史来源全文与哈希。
 
 资料按每轮对话主题调度：增加无需访谈状态的纯函数 `references_for_topics`，复用现有路径与去重合并逻辑；现有 interview CLI 加 `--references-only --topics` 和目标系统参数，单独查资料不问卷、不保存、不外联。访谈可选 `reference_topics` 合并同一主题输出，保留支付 S02 第一、重复路径与 PDF 页码合并。自然语言主题由宿主 Agent 按实际含义归一化，不新增关键词猜测引擎或后台监听。S07 manifest 增加 `type: checklist`；S07 与 trace-cleanup 的路由输出附清单标记和执行报告要求，规范要求附已执行项、未执行项、未执行原因；仅规划仍列未执行，不借清单自动执行第三方脚本。
 
@@ -525,7 +525,7 @@ ADR-058 交付补记：首次 push `d8cc931` 的 Linux/macOS、Python 3.10 和�
 
 ## ADR-059：解除网络防护前复查 Claude 后台残留（2026-11-07）
 
-需求 SHUTDOWN-20261107。所有者反馈退出 Desktop 和浏览器相关标签页后仍有监听进程，因此正常退出必须在代理与防直连保护仍有效时核实进程归属，按授权清理并复查进程、监听、连接和自动重启；未查清不能停代理或撤规则。具体流程集中在 routes-and-platforms 的 safe-shutdown，SKILL 和防火墙指引链接到该流程。
+需求 SHUTDOWN-20261107。退出 Desktop 和浏览器相关标签页后仍有监听进程，因此正常退出必须在代理与防直连保护仍有效时核实进程归属，按授权清理并复查进程、监听、连接和自动重启；未查清不能停代理或撤规则。具体流程集中在 routes-and-platforms 的 safe-shutdown，SKILL 和防火墙指引链接到该流程。
 
 只更新指导，不新增进程扫描器、终止器或后台服务，不修改用户设备；监听本身不证明外联，用户反馈不冒认为本次跨平台实测。保留共享运行时与 Codex 控制通道，沿用分级授权；故障演练、紧急恢复和保险丝回滚不受正常退出前置条件阻断。来源原文及 manifest 不变，章节索引重新生成。验证记录见 CHANGELOG。回滚使用普通 revert，仅撤本条文档变更。
 
@@ -589,3 +589,8 @@ Windows 防火墙采用系统持久策略，不把关机重启描述为规则消
 仅补充现有部署与场景验收提示词：首次配置系统持久防护、客户端受支持的自启／重连及已安装恢复组件，按场景验证自动恢复；日常恢复成功无需重新调用 Skill，持续异常或关键变化只复查受影响项。缺少的自动化能力如实列出，额外开发另报范围与成本。恢复不依赖 Agent 在线，不自动换出口或撤销保护；保留 Mac 当前加载、接口覆盖与出口漂移的实际限制。
 
 本次不新增执行器、服务或设备改动；来源 manifest 不变。风险为提示词被误读为能力已部署，通过实际配置与场景证据区分。验证见 CHANGELOG，回滚为普通 revert。
+
+
+## ADR-069：核对检索入口并清理归属叙述（2026-11-09）
+
+复用现有可发现性、主题路由与打包检查，核对近期新增指导从 SKILL.md 可定位、章节锚点可解析。清理现行指引、历史记录、脚本注释与 Wiki 导出模板中的归属叙述，保留日期、技术结论、证据来源与必要的操作授权；来源原文及 manifest 不变。导出导航使用“来源资料”，通过实际导出结果回归，避免生成时重新带入旧称谓。验证见 CHANGELOG；回滚为普通 revert。

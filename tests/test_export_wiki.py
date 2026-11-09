@@ -28,8 +28,8 @@ class ExportWiki(unittest.TestCase):
             self.assertIn(source.split('/', 1)[1], text)
             self.assertTrue((w.ROOT / source).is_file(), source)
 
-    def test_every_owner_source_is_on_the_wiki(self):
-        # Owner 2026-10-25: all owner-provided materials, the payment summary included, go to the wiki.
+    def test_every_source_is_on_the_wiki(self):
+        # 2026-10-25: include all supplied materials, including the payment summary.
         sources = {source for _, source, _ in w.PAGES}
         self.assertIn('references/local-advanced-route.md', sources)
         for source in ('sources/S01-server-glossary.md', 'sources/S02-ai-payments.md', 'sources/S03-source-text.md',
@@ -44,6 +44,11 @@ class ExportWiki(unittest.TestCase):
         self.assertIn('S03-claude-experience.pdf', self.files[w.page_name('S03 Claude 使用经验') + '.md'])
         reports = self.files[w.page_name('VPS 推荐报告') + '.md']
         self.assertEqual(len(set(re.findall(r'sources/vps-recommendations/[\w-]+\.pdf', reports))), 17)
+
+    def test_navigation_uses_source_materials_group(self):
+        for name in ('Home.md', '_Sidebar.md'):
+            self.assertIn('来源资料', self.files[name])
+            self.assertNotIn('所有' + '者', self.files[name])
 
     def test_page_names_are_unique_and_filesystem_safe(self):
         names = [w.page_name(title) for title, _, _ in w.PAGES]

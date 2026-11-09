@@ -1,5 +1,11 @@
 # 版本记录
 
+## 索引核对与归属叙述清理（2026-11-09，ADR-069）
+
+- 核对 Skill 入口、章节索引、脚本索引、主题路由、链接锚点及打包可达性；清理历史记录、现行指引、脚本注释与 Wiki 导出模板的归属叙述，保留技术事实、日期和实际操作授权
+- 增加实际 Wiki 导出导航的称谓回归；来源原文与 manifest 不变，运行逻辑不变。风险为文案语义变化，逐项保留证据范围；回滚为普通 revert
+- 验证：完整 unittest 1548 项（1539 通过、9 环境跳过）、Node 28 场景、compileall、diff 检查、Wiki 28 页本地导出及两次可复现打包通过；34 份参考文档、314 个章节、80 组主题／平台检索已核对（手机清理按既有范围不支持）；旧导出模板可复现导航旧称谓。三平台 push CI 另行核实
+
 ## 首次部署与日常恢复提示词（2026-11-09，ADR-068）
 
 - 在现有场景提示词中要求优先复用持久防护、客户端自启／重连与已安装恢复组件，区分自动和人工恢复；日常恢复成功不重复调用 Skill，异常与关键变化只复查受影响项
@@ -84,7 +90,7 @@
 
 ## 本机远程协助归入高级扩展（2026-11-04，ADR-056 / ROUTE-LOCAL-ADV-20261104）
 
-- 所有者明确：目标机已有 Agent 时直接在本机操作；OpenSSH、Tailscale、内网穿透、跨机传文件和远程故障演练是本机路线的高级扩展，不作为核心流程或前置要求
+- 目标机已有 Agent 时直接在本机操作；OpenSSH、Tailscale、内网穿透、跨机传文件和远程故障演练是本机路线的高级扩展，不作为核心流程或前置要求
 - 新增 `references/local-advanced-route.md`，仅按用户明确的异机协助需求进入；仍属于 R-LOCAL，不新增路线值。VM／VPS 的原进阶路线保留，补明目标机已有 Agent 时按主流程处理
 - SKILL.md 的普通本机入口改指 S10 第二节，远程内容从独立高级扩展入口进入；本机操作卡、防火墙主指引、来源库、中英文 README、章节索引、打包清单与 Wiki 同步。S10 只新增归类编者注和调整导航，完整案例正文、章节顺序、示例和复盘保持不变，来源分发哈希更新
 - 验证：新增分类回归在旧指引上失败，修改后通过；可发现性、锚点、现有指引和 Wiki 导出检查通过。macOS / Python 3.13.3 / PyYAML 6.0.3，`python -m unittest discover -s tests -v` 共 1524 项，1515 通过、9 项环境跳过；`node tests/webrtc-lifecycle.cjs` 28 场景通过，`python -m compileall -q skills/claude-guardian/scripts` 通过；两次 `python tools/package_skill.py --output <临时ZIP>` 字节一致（SHA256 `695a270bbba96cd35d6fbe40bc1efb5033118a7b0c675fd9fd0c5031a867f915`），新扩展原样入包；`python tools/export_wiki.py --output <临时目录>` 导出 28 页。推送后另核实精确提交和 CI
@@ -131,12 +137,12 @@
 - Issue #17 实测：LuLu 默认拒绝时，经透明 TUN 的连接被按发起进程拦掉；LuLu 判断早于路由、没有按网卡的条件，原文档“只给核心放行”的设计不成立。已确认改用 PF
 - 新增 `assets/mac-killswitch/guardian-pf-killswitch.sh`（render／apply／confirm／status／rollback／persist／unpersist／uninstall）：物理网卡只放行到节点真实 IPv4 和端口、DHCP，可选 `BOOTSTRAP_DNS`、`LAN_NET`，其余出站丢弃，utun 和回环不受影响；规则在 `com.apple/claude-guardian` 子 anchor，不改 `/etc/pf.conf`；`pfctl -E`/`-X` 引用计数；180 秒保险丝，确认后的规则才在开机加载；兼容系统 bash 3.2
 - `local-firewall-prompts.md` 的 Mac 防火墙一节重写（删掉“Block Mode”和“允许规则加在核心身上”），`vm-guidance.md`、`routes-and-platforms.md` L2、`agent-on-target.md`、`scripts-index.md`、SKILL.md、中英文 README 同步；`section-index.md` 重新生成；打包清单加入脚本
-- 新增真机测试单 `docs/mac-pf-killswitch-test.md`（T0–T9：基线、render、保险丝、正常使用、停核心演练、一次取证、浏览器验收、换网和睡眠、开机加载、回滚卸载），交给所有者在真机 Mac 上执行
+- 新增真机测试单 `docs/mac-pf-killswitch-test.md`（T0–T9：基线、render、保险丝、正常使用、停核心演练、一次取证、浏览器验收、换网和睡眠、开机加载、回滚卸载），供真机 Mac 执行
 - 测试：新增 `tests/test_mac_pf_killswitch.py`（用 bash 实际运行 render：只读 proxies 段、块写法和行内写法、规则只针对物理网卡、可选例外、fake-ip 和非法输入被拒、特权命令要 root；脚本不写 `/etc/pf.conf`、不清全局状态、不用 `pfctl -d`、不用 bash 4 语法）；`test_guides.py` 两处断言从旧设计改为新设计。**没有在真机 Mac 上验证**，加载规则、保险丝、开机项、停核心演练都未跑过。回滚：回退本提交
 
 ## Apple 礼品卡购买渠道只按 S02 答，删账单地址话题（2026-11-01）
 
-- 所有者纠正：有用户问支付方式，AI 回答“有美国发行的卡或美区 PayPal 才能在官网买，否则两条路”，并提到“不要伪造美国账单地址”。S02 的 Apple礼品卡表写的是官网首选、国内卡有时会被拒、成功率波动，没有美国卡或 PayPal 门槛；账单地址一句来自 A3 第 2 条的“不伪造地区、住址”联想。原因是 B1 没规定礼品卡购买渠道，AI 自行补全
+- 有用户问支付方式，AI 回答“有美国发行的卡或美区 PayPal 才能在官网买，否则两条路”，并提到“不要伪造美国账单地址”。S02 的 Apple礼品卡表写的是官网首选、国内卡有时会被拒、成功率波动，没有美国卡或 PayPal 门槛；账单地址一句来自 A3 第 2 条的“不伪造地区、住址”联想。原因是 B1 没规定礼品卡购买渠道，AI 自行补全
 - `accounts-and-payments.md` B1 新增第 7 条：礼品卡渠道只按 S02 表答（官网首选、国内卡有时被拒；官网不行再 Pockyt Shop 等第三方，Amazon US/JP 备用，闲鱼淘宝不推荐），不说美国卡或 PayPal 门槛，不把用户分成两种走法，回答购卡渠道时不提账单地址；A3 第 2 条删掉“住址”
 - 测试：`test_apple_gift_card_channel_follows_s02_without_us_card_gate`（旧文档上失败）。回滚：回退本提交
 
@@ -160,12 +166,12 @@
 
 ## Claude Desktop 最佳还是软路由（2026-11-01）
 
-- 所有者补充：延迟、TCP 指纹、UA 这几点主要涉及浏览器环境；Claude Desktop 最佳还是软路由。`exit-consistency.md` 开头标明主要针对浏览器环境并指向 Claude Desktop；`agent-remediation.md` 的 Claude Desktop WebRTC 一节写明最佳是软路由，没有软路由时按本机 TUN 严格路由做。软路由的搭建步骤待所有者提供后补
+- 延迟、TCP 指纹、UA 这几点主要涉及浏览器环境；Claude Desktop 最佳还是软路由。`exit-consistency.md` 开头标明主要针对浏览器环境并指向 Claude Desktop；`agent-remediation.md` 的 Claude Desktop WebRTC 一节写明最佳是软路由，没有软路由时按本机 TUN 严格路由做。软路由的搭建步骤待资料补齐
 - 测试：`test_exit_consistency_owner_facts_are_stated_directly_and_linked` 增加断言（旧文档上失败）。回滚：回退本提交
 
 ## 出口一致性：写明对比原理，修正延迟与 TTL 的表述（2026-11-01）
 
-- 所有者补充：UA 声称的系统和浏览器，会被拿来和 TCP 指纹、TLS 指纹、JS 环境等对比，看是否自相矛盾。写进 `exit-consistency.md` 开头作为原理：TCP 指纹来自出口服务器，UA、TLS、JS 环境来自本机浏览器
+- UA 声称的系统和浏览器，会被拿来和 TCP 指纹、TLS 指纹、JS 环境等对比，看是否自相矛盾。写进 `exit-consistency.md` 开头作为原理：TCP 指纹来自出口服务器，UA、TLS、JS 环境来自本机浏览器
 - 修正上一版两处表述：开头把延迟也算作“属于出口那台机器”，和第 1 节缩短本机到出口的办法对不上，改为“TCP 握手延迟只是出口到网站一段，浏览器请求延迟还要加本机到出口一段，差得越多越像代理”；Windows 一条改为“UA 说是 Windows，网站预期 TTL 128 左右，经 Linux 出口看到的是 64 左右”，本机 TTL 网站本身看不到
 - 测试：`test_exit_consistency_owner_facts_are_stated_directly_and_linked` 增加断言（旧文档上失败）。回滚：回退本提交
 
@@ -192,7 +198,7 @@
 
 ## 进阶路线第二轮实测：新 VPS + Omarchy#2（2026-10-31）
 
-来源：所有者 `真实经验/新VPS-Omarchy2-部署经验总结.md`（Ubuntu 24.04 中转 VPS + 全新 try-omarchy x86_64 目标机）。真实 VPS 地址、端口和端口表里的具体机器不进仓库。
+来源：用户 `真实经验/新VPS-Omarchy2-部署经验总结.md`（Ubuntu 24.04 中转 VPS + 全新 try-omarchy x86_64 目标机）。真实 VPS 地址、端口和端口表里的具体机器不进仓库。
 
 - **修正：**`authorized_keys` 的 `permitlisten` 结论改为“逐台实测”。OpenSSH 8.9 上引号转义导致静默失败、无引号可用；Ubuntu 24.04（sshd 9.6p1）上 `permitlisten` 本身让整行失效，`sshd -ddd` 报 `bad key options: unknown error`，升级无效。`advanced-route.md` §3 补对照实验定位法（指纹、同私钥直连、无 options 对照行、临时 `sshd -ddd`、单项二分，测前先删其他能过的行）和降级方案；`vps-guidance.md` 同步
 - **修复两个脚本缺陷（带回归测试）：**`install-flclash-killswitch.sh` 的 refresh.timer 只 enable 不 start，装完要到下次开机才生效，改为 `enable --now` 并打印 `list-timers`；`enable-guest-ssh.sh` 在全新 Omarchy 上因没有 sshd 而 `sshd -t` 直接失败，改为先 `pacman -S --needed openssh`
@@ -202,7 +208,7 @@
 
 ## 注册阶段接码直接弃号，使用中才保留实体卡（2026-10-31）
 
-- 所有者纠正：用户反映注册还在被引导准备实体卡接码。`account-onboarding.md` A0 第 9 条改为：注册阶段出现接码或 KYC 直接弃号、不备实体卡；账号已在使用中才遇到手机号验证时，有条件用实体卡、没条件弃号；第 6 条同步。`test_guides.py` 对应断言更新。回滚：回退本提交
+- 用户反映注册还在被引导准备实体卡接码。`account-onboarding.md` A0 第 9 条改为：注册阶段出现接码或 KYC 直接弃号、不备实体卡；账号已在使用中才遇到手机号验证时，有条件用实体卡、没条件弃号；第 6 条同步。`test_guides.py` 对应断言更新。回滚：回退本提交
 
 ## Windows 防火墙第 5 步用 --failure-drill 取证代替手动演练（2026-10-30）
 
@@ -232,25 +238,25 @@
 
 ## 手机时区也与出口一致（2026-10-28，Issue #15）
 
-- 所有者追加：手机的系统时区也要和出口 IP 所在地区一致，取代 S03 第 4 页“保持真实、正常使用即可”。`mobile-guidance.md` 检查表的时区一行改为对齐出口并写明 iOS、Android 的设置位置；手机验收同样是“除语言外必须全绿”。同步 `whole-machine-ipv4.md` 5a、`source-library.md` 对照表、`agent-remediation.md`、SKILL.md 和 ENV-08（手机由用户本人改，Agent 不代操作手机）
+- 手机的系统时区也要和出口 IP 所在地区一致，取代 S03 第 4 页“保持真实、正常使用即可”。`mobile-guidance.md` 检查表的时区一行改为对齐出口并写明 iOS、Android 的设置位置；手机验收同样是“除语言外必须全绿”。同步 `whole-machine-ipv4.md` 5a、`source-library.md` 对照表、`agent-remediation.md`、SKILL.md 和 ENV-08（手机由用户本人改，Agent 不代操作手机）
 - 测试：时区口径测试改为断言手机也对齐、旧的“保持真实”和“时区不要求绿”不再出现；ENV-08 断言同步。回滚：回退本提交
 
 ## 本机时区与出口一致；内购用户移动端每周活跃（2026-10-28，Issue #15）
 
-- Issue #15 指出时区口径冲突：S04、S05 要求时区和出口一致，`whole-machine-ipv4.md` 的验收规则却写“时区不要求绿色、不为变绿改时区”，VM 指引又要求对齐。所有者定口径：**本机也要求时区与出口一致**。浏览器验收改为“除语言外必须全绿”，`whole-machine-ipv4.md` 5a 第 4 条写明 macOS、Windows（`Set-TimeZone`）、Linux 的改法，先关“自动设置时区”、记原值，仍按 C 档当场确认。同步 SKILL.md、VM、VPS、本机防火墙、`agent-remediation.md` 的表格、`windows-cleanup.md` 的“不做的事”，以及 `agent_remediation.py` 的 ENV-08（原来写的是“不按出口地区改时区”）。手机按 S03 第 4 页保持真实时区，手机上验收时时区不要求绿；语言不变
+- Issue #15 指出时区口径冲突：S04、S05 要求时区和出口一致，`whole-machine-ipv4.md` 的验收规则却写“时区不要求绿色、不为变绿改时区”，VM 指引又要求对齐。**本机也要求时区与出口一致**。浏览器验收改为“除语言外必须全绿”，`whole-machine-ipv4.md` 5a 第 4 条写明 macOS、Windows（`Set-TimeZone`）、Linux 的改法，先关“自动设置时区”、记原值，仍按 C 档当场确认。同步 SKILL.md、VM、VPS、本机防火墙、`agent-remediation.md` 的表格、`windows-cleanup.md` 的“不做的事”，以及 `agent_remediation.py` 的 ENV-08（原来写的是“不按出口地区改时区”）。手机按 S03 第 4 页保持真实时区，手机上验收时时区不要求绿；语言不变
 - 来源优先级：SKILL.md 写明原文与现行规则冲突时以现行规则为准并说明出入；`source-library.md` 新增“来源与现行规则的对照”（电脑时区、手机时区、系统语言、被封过号的设备）。来源原文与哈希不变
 - 项目要求：用 Apple 或 Google Play 内购订阅的，手机上的 Claude App 至少每周打开使用一次。写入 `account-onboarding.md` A0 第 12 条，A0a 付款一行、`mobile-guidance.md`、B2、B3 指向它
 - 测试：`test_guides.py` 更新验收断言，新增时区口径全文件一致、来源优先级与对照表、内购每周活跃三项；`test_agent_remediation.py` 新增 ENV-08 断言。SKILL.md 为留在 32000 字节预算内压缩了两句措辞。回滚：回退本提交
 
 ## 被封过号的设备：超过 3 个账号就不再使用（2026-10-27）
 
-- 所有者纠正冲突：S03 原文“如果被封过号，不要再用该设备”和正文“旧设备不等于黑名单”冲突，改为：一台设备（手机和电脑）被封超过 3 个账号就不要使用，超过 3 个会标记 IP、设备 UUID、指纹等信息。写入 `account-onboarding.md` A0 第 11 条（超过 3 个换设备并换出口 IP；3 个以内清理后可继续用；S03 原文以本条为准，原文与哈希不变；不写“不确定 Claude 会不会读”）。同步：`incidents-and-integrations.md` 摘要去掉“旧设备不等于黑名单”，`intake.md` 的 Q-D01 让 Agent 追问被封账号数并按 A0 判断，`mobile-guidance.md` 加“设备”一行，SKILL.md 那句改为按 A0 判断。不改设备标识的规则保留。新增守门测试
+- S03 原文“如果被封过号，不要再用该设备”和正文“旧设备不等于黑名单”冲突，改为：一台设备（手机和电脑）被封超过 3 个账号就不要使用，超过 3 个会标记 IP、设备 UUID、指纹等信息。写入 `account-onboarding.md` A0 第 11 条（超过 3 个换设备并换出口 IP；3 个以内清理后可继续用；S03 原文以本条为准，原文与哈希不变；不写“不确定 Claude 会不会读”）。同步：`incidents-and-integrations.md` 摘要去掉“旧设备不等于黑名单”，`intake.md` 的 Q-D01 让 Agent 追问被封账号数并按 A0 判断，`mobile-guidance.md` 加“设备”一行，SKILL.md 那句改为按 A0 判断。不改设备标识的规则保留。新增守门测试
 - 已知限制：Q-D01 的取值没加“被封账号数”字段，数量由 Agent 在对话里追问。回滚：回退本提交
 - 2026-10-28 补充：A0 第 11 条“超过 3 个”下新增“换设备的同时换出口”子项：新设备用全新出口 IP、不沿用被封账号用过的出口，来源指向 `egress-ip-options.md`，装好后按 `whole-machine-ipv4.md#browser-acceptance` 验收（除“语言”外全绿）再注册，手机出口与电脑一致。`test_guides.py` 同步断言
 
 ## vps-guard：可选放行 mosh 的 UDP（2026-10-27）
 
-- 所有者同意：`vps-guard.sh` 新增 `MOSH=1` 开关（默认 0），只对 `ADMIN_NET` 放行 mosh 的 UDP 端口段（`MOSH_PORTS` 默认 60000-61000，只接受 1024–65535 且起点不大于终点，其他取值直接报错、不输出规则）。不开开关时生成的规则和原来逐字节一致。`vps-guidance.md` 防火墙一节写明 mosh 要加 `MOSH=1`、漫游范围限于 `ADMIN_NET`、改开关要重新 install 并 confirm
+- `vps-guard.sh` 新增 `MOSH=1` 开关（默认 0），只对 `ADMIN_NET` 放行 mosh 的 UDP 端口段（`MOSH_PORTS` 默认 60000-61000，只接受 1024–65535 且起点不大于终点，其他取值直接报错、不输出规则）。不开开关时生成的规则和原来逐字节一致。`vps-guidance.md` 防火墙一节写明 mosh 要加 `MOSH=1`、漫游范围限于 `ADMIN_NET`、改开关要重新 install 并 confirm
 - 测试：新增 `tests/test_vps_guard.py`（实际运行 `render`，检查默认无 UDP 规则、开启后只多一行、坏取值被拒；无 bash 的平台跳过）。本机用 `unshare -rn nft -c` 检查了开启后的规则语法；应用和保险丝流程仍没在真实服务器上实测。回滚：回退本提交
 
 ## VPS 服务器保活：防 OOM 失联（2026-10-27）
@@ -266,7 +272,7 @@
 ## 网页注册美区 Apple ID；新 Apple ID 养 3 到 7 天再充值（2026-10-27）
 
 - 项目要求补网页注册美区 Apple ID 的教程，并提供：新 Apple ID 注册后立马充值、没有养 3 到 7 天，容易遇到 Apple 支付风控（礼品卡扣款不成功、卡在支付页面、会员不到账），需要联系 Apple 客服解决。`accounts-and-payments.md` 新增 B2a（account.apple.com 注册步骤按 Apple 官方说明写；地区选美国；App Store 登录补全信息、付款方式选“无”）；B2 第 2 步、A0a 新手组合的付款一行、手机端支付一条指向 B2a。新增守门测试
-- 已知限制：账单信息只写“按页面要求填写”，地址的具体填法所有者没有提供，没写。回滚：回退本提交
+- 已知限制：账单信息只写“按页面要求填写”，地址的具体填法尚未提供，没写。回滚：回退本提交
 
 ## VM、VPS 养号步骤改为读 A0（2026-10-27）
 
@@ -313,7 +319,7 @@
 
 ## 浏览器环境验收网址；买来的教育邮箱是例外（2026-10-26）
 
-- 所有者指定 https://ip.net.coffee/claude/ 为环境修复后的浏览器环境验收网址，除时区和语言外必须全绿：`whole-machine-ipv4.md` 新增 5a 节，SKILL.md、VM、VPS、本机防火墙、手机端的验证步骤都指向它；页面会测 claude.ai 可用性，由用户本人打开；痕迹清理的查 IP 匹配规则加入该站
+- 用户指定 https://ip.net.coffee/claude/ 为环境修复后的浏览器环境验收网址，除时区和语言外必须全绿：`whole-machine-ipv4.md` 新增 5a 节，SKILL.md、VM、VPS、本机防火墙、手机端的验证步骤都指向它；页面会测 claude.ai 可用性，由用户本人打开；痕迹清理的查 IP 匹配规则加入该站
 - `account-onboarding.md`：买来的教育邮箱不算成品邮箱；教育邮箱可以免费注册
 - 新增守门测试。回滚：回退本提交
 
@@ -357,7 +363,7 @@
 
 - **ADR-047：**新增 `scripts/network_check.py run`（macOS、Windows、Linux）：默认路由是否走 TUN、IPv4 出口（只显示国家和 ASN）、经本地代理端口的出口、IPv6 是否堵住、DNS 泄露（fake-ip 下也测得到，解析服务器在本国判泄露）、UDP（STUN）、`--failure-drill` 交互式故障演练；`--evidence-output` 交给 `egress_verifier.py`，判定器支持 Linux
 - `whole-machine-ipv4.md` 第 4 节改为先跑这条命令；scripts-index、SKILL.md 登记；发行包 118 个成员
-- **测试：**新增 12 个单测（路由解析、DNS 判定、IPv6 返回 IPv4、出口在本国、报告不含 IP、证据被判定器接受、故障演练四种结果、STUN 比对、只写新文件、只接受本机代理端口）；所有者 Omarchy 上实跑全部通过
+- **测试：**新增 12 个单测（路由解析、DNS 判定、IPv6 返回 IPv4、出口在本国、报告不含 IP、证据被判定器接受、故障演练四种结果、STUN 比对、只写新文件、只接受本机代理端口）；Omarchy 上实跑全部通过
 - **已知限制：**WebRTC 仍在浏览器里测；面板尚未接入。回滚：回退本提交
 
 ## 自建梯客户端版本兼容提醒（2026-10-25）
@@ -375,7 +381,7 @@
 
 ## Agent 说话方式：少说“不保证、不成立”（2026-10-25）
 
-- **ADR-045：**SKILL.md 开头新增“和用户说话的方式”，说明门禁和证据口径是给 Agent 执行的规则、不念给用户；列出不要说的句式，免封只在被问到时说一次，所有者经验按事实直接说，汇报用“已确认 / 还没查 / 下一步”
+- **ADR-045：**SKILL.md 开头新增“和用户说话的方式”，说明门禁和证据口径是给 Agent 执行的规则、不念给用户；列出不要说的句式，免封只在被问到时说一次，来源经验按事实直接说，汇报用“已确认 / 还没查 / 下一步”
 - SKILL.md 其余部分去掉“不代表、不等于、不承诺、背书、不推定、不断言”等句式，改为正面说法；`account-onboarding.md` 的 A0b 开头与用法同步改写
 - 面板（`status_dashboard.py`）、动作清单（`agent_remediation.py`）、探测样本（`probe_evidence.py`）的用户可见文字改为“另测”“还要另查”；判定条件与状态值不变
 - **测试：**三条锁定旧措辞的断言改为新措辞（意思不变），新增两条守门测试
@@ -403,13 +409,13 @@
 
 ## 进阶路线：远端 Linux 机器的出口钉死与反向隧道（2026-10-24）
 
-来源：所有者在 Omarchy 里的“FlClash + nftables killswitch + VPS 反向隧道”部署经验（本机管理端 + 本地 VM + 远端他人网络里的 Omarchy + 兼任出口和中转的 VPS）。经验原文和含真实地址、私钥的脚本留在所有者的 Omarchy，不进仓库，仓库只收脱敏后的做法。
+来源：在 Omarchy 里的“FlClash + nftables killswitch + VPS 反向隧道”部署经验（本机管理端 + 本地 VM + 远端他人网络里的 Omarchy + 兼任出口和中转的 VPS）。经验原文和含真实地址、私钥的脚本留在 Omarchy，不进仓库，仓库只收脱敏后的做法。
 
 - **进阶路线（指引层，ADR-042）：**新增 `references/advanced-route.md`（架构、搭建顺序与档位、隧道专属的坑、崩溃自愈、验收与覆盖矩阵、盲区、运维手册、通用教训）和 `routes-and-platforms.md` 的 R-ADV 卡 A1 到 A4。它叠加在 VM／VPS 路线之上，不新增路线值，目标机仍按 vm_guest／vps 绑定，不动环境入口门禁。访谈新增 Q-V09（目标机能直连还是需要反向隧道），选 `remote_unreachable` 且为 Linux 客机时 `required_references` 附进阶路线文档和两个脚本，排在 killswitch 之前
-- **新增脱敏脚本（`assets/remote-hardening/`）：**`install-reverse-tunnel.sh`（systemd 常驻反向 SSH 隧道；所有者原脚本把私钥内嵌，这里改为用户传入 `KEY_PATH`，脚本不生成、不内嵌、不输出密钥，并 `chown`、`chmod 600`）、`flclash-crash-heal.sh`（FlClash 崩溃后清策略路由残留 + core 看门狗，`install` 生成 timer 和隧道 drop-in，`KillMode=process`、服务级桌面环境变量）
+- **新增脱敏脚本（`assets/remote-hardening/`）：**`install-reverse-tunnel.sh`（systemd 常驻反向 SSH 隧道；原脚本把私钥内嵌，这里改为用户传入 `KEY_PATH`，脚本不生成、不内嵌、不输出密钥，并 `chown`、`chmod 600`）、`flclash-crash-heal.sh`（FlClash 崩溃后清策略路由残留 + core 看门狗，`install` 生成 timer 和隧道 drop-in，`KillMode=process`、服务级桌面环境变量）
 - **共用的修复与完善（VM、VPS 路线同样受益）：**`install-flclash-killswitch.sh` 新增可选 `TUNNEL_UNIT`，从隧道 unit 解析 `user@IP`、`-p` 端口加入独立白名单，管理通道不再被自己的 killswitch 锁死（解析失败打印 WARN）；`install-flclash-tun.sh` 在非 0.9.1 版本自动加 helper 的 systemd drop-in（`FLCLASH_HELPER_OWNER_UID/GID`、`RuntimeDirectory=flclash`）；`vm-guidance.md` 补 GLOBAL 组含 DIRECT 的出口验证、priority 10 与 fake-ip 的坑、崩溃后路由黑洞、IPv6 实测（`inet` 家族 policy drop 已覆盖，换环境后用 `curl -6` 复测）、时区对齐出口地理位置与 NTP 被拦；`vps-guidance.md` 补作隧道中转时 sshd 保活和 `authorized_keys` 无引号写法（带字面引号会让 OpenSSH 8.9 静默拒绝转发）
 - **测试与打包：**新增守门测试（进阶路线卡、脚本无个人信息和私钥、共用修复落在 VM／VPS 指引）和 Q-V09 引用顺序测试；`acceptance-routes-rebuild.json` 的 VM 答案补 Q-V09；发行包 114 个成员（含 1 份文档和 2 个脚本）
-- **已知限制：**脚本的参数化与脱敏部分只做了 `bash -n` 和 killswitch 规则生成的离线检查（含与不含隧道 unit 两种），没有在真机整体重跑；`nft -c` 语法检查需要 root，本次未做。逻辑来自所有者在真机跑通的脚本。回滚：回退本提交即可，Q-V09 为新增问题，旧状态在该问题未答前评估为未完成
+- **已知限制：**脚本的参数化与脱敏部分只做了 `bash -n` 和 killswitch 规则生成的离线检查（含与不含隧道 unit 两种），没有在真机整体重跑；`nft -c` 语法检查需要 root，本次未做。逻辑来自真机跑通的原脚本。回滚：回退本提交即可，Q-V09 为新增问题，旧状态在该问题未答前评估为未完成
 
 ## 注册即要手机号或 KYC 的号（2026-10-24）
 
@@ -429,23 +435,23 @@
 
 ## 路线补全、访谈兜底与资料引用（2026-10-21）
 
-- **验证口径更正（2026-10-22，ADR-041）：**README、SKILL.md、Issue 表单和 wiki 首页的说法改为所有者的口径：作者在 Mac、Windows、VM、VPS 上都验证过，但每个人的环境不一样，需要按实际调整；不再写“作者没有验证”。仓库内的具体验收结论仍只有 Mac（ADR-039）
+- **验证口径更正（2026-10-22，ADR-041）：**README、SKILL.md、Issue 表单和 wiki 首页的说法改为既定表述：作者在 Mac、Windows、VM、VPS 上都验证过，但每个人的环境不一样，需要按实际调整；不再写“作者没有验证”。仓库内的具体验收结论仍只有 Mac（ADR-039）
 - **真机验收交给使用者（2026-10-22，ADR-040）：**作者不再逐项做真机验收，只保留一台 Mac 上的样本结果（ADR-039）；新增 Issue 表单“真机使用反馈”（`.github/ISSUE_TEMPLATE/device-report.yml`），收集使用者在自己环境里的结果；README 写明这一点。门禁、诚实标注和 Agent 按环境调整的规则不变
 - **Wiki 已发布（2026-10-22）：**12 篇教程加首页和侧边栏已推送到 GitHub Wiki（https://github.com/DUNHKpcc/Claude-Guardian/wiki），导出时把 `**加粗**` 转成 `<strong>`，避免 GitHub 在中文标点后不识别加粗而显示星号；README 文档导航加了入口
-- **Mac 真机验收收官与修正（2026-10-22，ADR-039）：**所有者完成 Mac 线验收：4.2b 真实写入、重启后规则在场、`recovery_cli` 回滚回基线哈希全闭环；4.4 判定 `established`（8 层全 pass）；时区真实切换与恢复通过。据此修正：写入者排除只认 Clash Verge 应用本身（后台的核心和 root 服务不算，原先逼用户 `sudo launchctl bootout` 还会断 TUN）；时区验证对 `/etc/localtime` 的异步更新做有限轮询（原先误报 `TIMEZONE_VERIFY_FAILED`）；`ACTIVE_HOST` 提示补上残留后台进程的排查办法；整机出口文档补三点真机发现（IPv6 探测返回 IPv4 字符串的记法、界面设置何时覆盖合并文件、严格路由默认可能关着）
-- **GitHub Wiki 教程导出（2026-10-22，ADR-038）：**新增 `tools/export_wiki.py`，把 12 篇面向用户的教程（账号注册与养号、手机端、出口 IP、整机出口、本机 Clash 与防火墙、VM、VPS、线路优化、macOS 与 Windows 清理、所有者提供的 S08 和 R02）从仓库渲染成 wiki 页面，附首页、侧边栏、频道信息和“自动生成，请到仓库修改”的横幅；链接改写为 wiki 页面或仓库链接，发现个人信息或凭据样式的内容就拒绝导出。仓库仍是唯一来源，Agent 读取的 `references/` 没有移动
+- **Mac 真机验收收官与修正（2026-10-22，ADR-039）：**完成 Mac 线验收：4.2b 真实写入、重启后规则在场、`recovery_cli` 回滚回基线哈希全闭环；4.4 判定 `established`（8 层全 pass）；时区真实切换与恢复通过。据此修正：写入者排除只认 Clash Verge 应用本身（后台的核心和 root 服务不算，原先逼用户 `sudo launchctl bootout` 还会断 TUN）；时区验证对 `/etc/localtime` 的异步更新做有限轮询（原先误报 `TIMEZONE_VERIFY_FAILED`）；`ACTIVE_HOST` 提示补上残留后台进程的排查办法；整机出口文档补三点真机发现（IPv6 探测返回 IPv4 字符串的记法、界面设置何时覆盖合并文件、严格路由默认可能关着）
+- **GitHub Wiki 教程导出（2026-10-22，ADR-038）：**新增 `tools/export_wiki.py`，把 12 篇面向用户的教程（账号注册与养号、手机端、出口 IP、整机出口、本机 Clash 与防火墙、VM、VPS、线路优化、macOS 与 Windows 清理、提供的 S08 和 R02）从仓库渲染成 wiki 页面，附首页、侧边栏、频道信息和“自动生成，请到仓库修改”的横幅；链接改写为 wiki 页面或仓库链接，发现个人信息或凭据样式的内容就拒绝导出。仓库仍是唯一来源，Agent 读取的 `references/` 没有移动
 - **少打扰用户（2026-10-22，ADR-037）：**`SKILL.md` 新增“少打扰用户”八条（能读到的不问、访谈只问当前任务要的并合并提问、同一范围只确认一次、不重复检查、不循环重试、被拦时说人话、小事不升级、汇报要短）；macOS C5 宿主一整轮的终端确认从 7 次减到 4 次（备份、计划、隔离、还原；读取与保存计划合并为一次，对账只读不再问）；被拒绝时输出一句话 `hint`（如请先退出 Claude、请在普通终端运行）。安全门禁不变
 - **验收定位调整（2026-10-22，ADR-036）：**真机验证只是样本，不再把“全机型真机验收”当完成标准。`SKILL.md` 新增“每台机器环境不同”：Agent 先核对实际环境，差异在已批准计划内就调整参数，超出就重新出变更卡，失败停下回滚并如实报告，不放松门禁，不把一台机器的结果说成通用；README 和 AGENTS.md 同步
 - **Mac 真机验收（2026-10-22，ADR-035）：**F2 修复后在一台 Mac（MacBookPro18,1，macOS 15.7.4，Clash Verge Rev 2.5.8）实测：4.2b 的版本、归属、进程名、`plan` 计划（两次独立运行摘要一致）、应用运行时 `execute` 拒绝且目标文件哈希不变；4.4 判定器五条路径；4.5 的 Claude 运行时、由 Claude 启动、无终端短语、非终端管道全部正确拒绝；4.6 钥匙串服务名与 `ACTIVE_HOST`、非法时区。**未验：**真实写入与回滚、C5 放行全流程、真实钥匙串删除、`simple`、真实时区变更、TUN/LuLu、整机出口的 GUI 联网取证。详见 ADR-035
 - **章节级可发现性（2026-10-22，ADR-034）：**新增 `references/section-index.md`，由 `tools/gen_section_index.py` 生成，列出每份 reference 的每个二、三级小节和锚点；守门测试检查它与生成结果一致、每个小节都有链接、访谈能发出的每个 `#锚点` 定位符都能解析（顺手发现并修复 `#a0b` 锚点不存在）。访谈 `required_references` 新增 `routes-and-platforms.md`（按路线定位到对应操作卡）和 `network-and-remedies.md`（任务为 network 或 environment 时）。发行包 111 个成员
 - **资料可发现性复查（2026-10-22，ADR-033）：**起因是 A0b 短期封号时间线和 KYC 指引只躺在 `account-onboarding.md` 里，Agent 不一定翻得到。修复：`SKILL.md` 资料表新增“账号被封或被限、KYC 触发或身份核验”必附行（A0b、S03 第 5 页、A3、S04 §2.3、M12）；访谈 `required_references` 新增封号与身份核验、整机出口、macOS 与 Windows 清理的必附资料，且同一文件的多个页码会合并；新增 `references/scripts-index.md`（每个脚本和资产的用途与入口）；`SKILL.md` 补直接指向 S03/S08 文字版、manifest、设计规格、cleanup-cli-usage。新增 `tests/test_skill_discoverability.py`：任何 references、sources、assets、scripts 文件从 `SKILL.md` 出发翻不到、脚本索引与 `scripts/` 不一致、相对链接或锚点失效，测试都失败。发行包 110 个成员
-- **Issue #12（2026-10-22，ADR-032）：**补充资料来源新增 IDC Flare 和 VPSHub，按 S03 第 5 页写明家宽、家宽拼车、VPS 的查找渠道和所有者列的帖子；skill 可直接当帖子与论坛搜索工具；短期封号时间线（S03 第 5 页图片表）写进 `account-onboarding.md` A0b
+- **Issue #12（2026-10-22，ADR-032）：**补充资料来源新增 IDC Flare 和 VPSHub，按 S03 第 5 页写明家宽、家宽拼车、VPS 的查找渠道和用户列的帖子；skill 可直接当帖子与论坛搜索工具；短期封号时间线（S03 第 5 页图片表）写进 `account-onboarding.md` A0b
 - **Mac 真机验收修复（2026-10-22，ADR-031）：**macOS 15 内核自动给文件加不可移除的 `com.apple.provenance`，使修复链和 C5 清理链在真机上必然被元数据门禁拒绝；`transactions._has_xattrs` 现在只容忍这一个属性（其他仍拒绝，不读取属性值，固定 21 字节缓冲），所有门禁共用该函数。清理 CLI 用法补上验收中发现的勘误
 - **参考 claude-cleanup 收紧 C5、补 Windows（2026-10-22，ADR-030）：**`~/.claude` 整个目录不能当根，对话记录、历史、设置、skills、插件、凭据始终受保护；根分“可再生缓存/日志”和“桌面端持久数据”两档；补桌面端路径；由 Claude Code 或 Claude 应用启动时拒绝；新增 `native_claude_state_mac.py`（钥匙串退出登录、`CLAUDE_CODE_SIMPLE`、用户指定时区，均终端确认）；新增 `references/windows-cleanup.md`（官方路径，PowerShell 分步，无内置宿主）。**不采用**第三方的 userID/machineID 轮换。发行包 109 个成员，未真机验收
 - **C5 清理宿主（2026-10-22，ADR-029）：**新增 macOS 内置宿主 `native_cleanup_mac.py`，实现 `verify`（固定清单、Claude 已退出、内容校验的备份）、`approve`（用户在真实终端输入 `CONFIRM <操作> <摘要前8位>`）、`exclusive`（进入和退出时检测 Claude 进程）、`cancelled`；命令 `context`、`allowed`、`backup`、`plan`、`quarantine`、`reconcile`、`restore`。拒绝 `~/.claude.json` 和含 `.credentials.json` 的目录，永久删除、钥匙串、浏览器数据不在范围内。只有合成与 CI 测试，未真机验收；发行包 107 个成员
 - **整机统一出口（2026-10-22，ADR-028）：**新增 `references/whole-machine-ipv4.md`（Clash Verge 的 TUN、DNS、`ipv6: false`、规则兜底配置，按分级授权的步骤，Mac 与 Windows 取证命令）和只读判定 `scripts/egress_verifier.py`：根据 Agent 提供的观察判定 8 个必要层，输出 `established / violated / incomplete`，不回显 IP；持续保护须重启、睡眠唤醒、换网都复验才算有证据。Windows 不做写入引擎，由 Agent 按提示词操作并备份读回。未真机验收
 - **Mac 配置写入适配器（2026-10-22，ADR-027）：**新增 `native_clash_verge_mac.py`，`repair_execution` 的原生门禁对 macOS 上 Clash Verge Rev 2.5.8 的 `rules-prepend` 放行；要求应用及其核心已退出，提交前后复查进程与元数据文件，检测到变化失败并保留恢复批次。其他系统、产品、版本和 `merge-policy` 仍不可用。只有合成与 CI 测试，未真机验收；发行包 104 个成员
-- **部署口径更正（2026-10-22）：**VM 和 VPS 文档原写“不代部署／不代装／不代配置”，与所有者意图不符。改为：用户买好服务器并给出访问方式后，Agent 可通过宿主 shell／SSH 按分级授权执行文档里的命令和脚本来部署；买服务器、付款、注册、登录仍由用户本人完成。Skill 没有内置自动部署程序，脚本未真机实测
+- **部署口径更正（2026-10-22）：**VM 和 VPS 文档原写“不代部署／不代装／不代配置”，与用户意图不符。改为：用户买好服务器并给出访问方式后，Agent 可通过宿主 shell／SSH 按分级授权执行文档里的命令和脚本来部署；买服务器、付款、注册、登录仍由用户本人完成。Skill 没有内置自动部署程序，脚本未真机实测
 - **VM 路线：**客机系统首选 Omarchy（Mac 宿主首选 macOS），创建前网卡选 LAN 独立网卡而不是 shared NAT；新增搭建顺序和三个脱敏脚本（开客机 SSH、安装 FlClash TUN、fail-closed 防火墙，Agent 可通过宿主 shell 或客机控制台按分级授权运行，启用 fail-closed 防火墙属 C 档），出口复用出口来源和 VPS 推荐报告
 - **VPS 路线：**定位为开发机，核心是环境一致，注册、登录、养号、订阅和 OAuth 都在 VPS 的远程桌面浏览器里完成；服务器首选 Ubuntu；新增 VPS 入站防火墙脚本（规则语法经 `nft -c` 检查，未在真实服务器上实测）；自建梯中转归本机路线的出口选择
 - **本机路线：**新增固定出口 IP 的来源（纯净机场、自建梯、家宽拼车）及推荐；新增手机端防封要点和账号注册与使用节奏
@@ -681,7 +687,7 @@
 
 ## 2026-10-18 重建第十六批（fe30684）
 
-- 新增用户确认的 Claude 应用/目标流量 IPv4-only 策略，不回落到 IPv6；代理外层传输、控制恢复通道和其他应用保持独立
+- 新增 Claude 应用/目标流量 IPv4-only 策略，不回落到 IPv6；代理外层传输、控制恢复通道和其他应用保持独立
 - 共享类型化策略接入访谈、Agent 修复候选、计划、报告和面板；策略声明不代表实际强制生效
 - 缺少原生范围、实施能力或验证证据时保持 unknown/unsupported/not_established，不把空 AAAA、curl -4 或单次 HTTPS 成功当作全部 IPv6 阻断证明
 - 保留旧报告兼容、严格隐私投影、取消和目标保护；修复固定策略字段与迁移消费者、静态面板的集成回归

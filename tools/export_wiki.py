@@ -41,18 +41,18 @@ PAGES = [
     ('Linux 清理', 'references/linux-cleanup.md', '清理'),
     ('环境痕迹清理 代理 VPN 终端历史', 'references/trace-cleanup.md', '清理'),
     ('非法工具清理 破限 反代分发', 'references/illegal-tools-cleanup.md', '清理'),
-    ('S01 服务器术语', 'sources/S01-server-glossary.md', '所有者提供的资料'),
-    ('S02 AI 所有支付方式汇总', 'sources/S02-ai-payments.md', '所有者提供的资料'),
-    ('S03 Claude 使用经验', 'sources/S03-source-text.md', '所有者提供的资料'),
-    ('S04 Claude 防封号指南', 'sources/S04-claude-guide.md', '所有者提供的资料'),
-    ('S05 Claude 本地防护实战', 'sources/S05-local-protection.md', '所有者提供的资料'),
-    ('S07 IP 质量与网络测试清单', 'sources/S07-vps-script-catalog.md', '所有者提供的资料'),
-    ('VPS Claude 教程 文字版', 'sources/S08-extracted-text.md', '所有者提供的资料'),
-    ('S10 Windows 部署经验与桌面开关复盘', 'sources/S10-windows-deployment-sanitized.md', '所有者提供的资料'),
-    ('VPS 推荐报告', 'sources/vps-recommendations/INDEX.md', '所有者提供的资料'),
-    ('VPS 线路优化与家宽中转教程', 'sources/R02-vps-line-optimization.md', '所有者提供的资料'),
+    ('S01 服务器术语', 'sources/S01-server-glossary.md', '来源资料'),
+    ('S02 AI 所有支付方式汇总', 'sources/S02-ai-payments.md', '来源资料'),
+    ('S03 Claude 使用经验', 'sources/S03-source-text.md', '来源资料'),
+    ('S04 Claude 防封号指南', 'sources/S04-claude-guide.md', '来源资料'),
+    ('S05 Claude 本地防护实战', 'sources/S05-local-protection.md', '来源资料'),
+    ('S07 IP 质量与网络测试清单', 'sources/S07-vps-script-catalog.md', '来源资料'),
+    ('VPS Claude 教程 文字版', 'sources/S08-extracted-text.md', '来源资料'),
+    ('S10 Windows 部署经验与桌面开关复盘', 'sources/S10-windows-deployment-sanitized.md', '来源资料'),
+    ('VPS 推荐报告', 'sources/vps-recommendations/INDEX.md', '来源资料'),
+    ('VPS 线路优化与家宽中转教程', 'sources/R02-vps-line-optimization.md', '来源资料'),
 ]
-GROUP_ORDER = ['入门', '出口 IP', '三条路线', '清理', '所有者提供的资料']
+GROUP_ORDER = ['入门', '出口 IP', '三条路线', '清理', '来源资料']
 CHANNEL = ('- Telegram 频道：[https://t.me/+q4D4_Qf_FIs5NDk1](https://t.me/+q4D4_Qf_FIs5NDk1)\n'
            '- QQ：1048450370\n')
 
