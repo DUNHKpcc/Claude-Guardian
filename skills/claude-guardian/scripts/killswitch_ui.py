@@ -81,7 +81,6 @@ def desktop(config, output):
         launcher.write_text('[Desktop Entry]\nType=Application\nName=Guardian Switch\nComment=本机防直连开关\nExec=' +
                             ' '.join(quote(a) for a in argv) + '\nIcon=' + str(icon) + '\nTerminal=false\nCategories=Network;\n', encoding='utf-8')
         launcher.chmod(0o755)
-    print('桌面入口已生成。请保持程序目录与配置文件位置不变。')
 
 
 class Session:

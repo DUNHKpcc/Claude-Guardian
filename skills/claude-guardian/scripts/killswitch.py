@@ -256,6 +256,7 @@ def main(argv=None):
                 if args.output is None:
                     raise SwitchError('请用 --output 指定新的桌面入口目录。')
                 desktop(args.config.resolve(), args.output.resolve())
+                print('桌面入口已生成。请保持程序目录与配置文件位置不变。')
             return 0
         result = execute(args.action, cfg, args.config)
     except (SwitchError, OSError, ValueError, EOFError, KeyboardInterrupt) as error:

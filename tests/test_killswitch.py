@@ -3,6 +3,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import platform
 import shutil
@@ -135,6 +136,18 @@ class Controller(unittest.TestCase):
             u.desktop(self.path,dest)
             self.assertIn('Terminal=false',(dest/'guardian-switch.desktop').read_text())
 
+    @unittest.skipUnless(os.name == 'nt', 'Windows shortcut and console encoding')
+    def test_windows_desktop_cli_with_legacy_output_encoding(self):
+        output=Path(self.tmp.name)/'native desktop'
+        env=dict(os.environ,PYTHONIOENCODING='cp1252')
+        proc=subprocess.run([sys.executable,str(SCRIPTS/'killswitch.py'),'desktop','--config',str(self.path),'--output',str(output)],env=env,capture_output=True,text=True,encoding='utf-8',timeout=30)
+        self.assertEqual(proc.returncode,0,proc.stderr)
+        self.assertIn('桌面入口已生成',proc.stdout)
+        self.assertTrue((output/'Guardian Switch.lnk').is_file())
+        command="$s=(New-Object -ComObject WScript.Shell).CreateShortcut("+u.ps_quote(output/'Guardian Switch.lnk')+");$s.TargetPath"
+        actual=subprocess.run(['powershell.exe','-NoProfile','-Command',command],capture_output=True,text=True,encoding='utf-8',check=True).stdout.strip()
+        self.assertTrue(Path(actual).is_file())
+
     def test_windows_backend_parses_without_executing_commands(self):
         executable=shutil.which('powershell.exe') or shutil.which('pwsh')
         if not executable:self.skipTest('PowerShell parser unavailable')
@@ -147,10 +160,12 @@ class Controller(unittest.TestCase):
         executable=shutil.which('powershell.exe') or shutil.which('pwsh')
         if not executable:self.skipTest('PowerShell unavailable')
         self.cfg['backend']='windows_firewall'
+        host=subprocess.run([executable,'-NoProfile','-Command','[Environment]::MachineName'],capture_output=True,text=True,encoding='utf-8',check=True).stdout.strip()
+        self.cfg['target']=host
         baseline=Path(self.tmp.name)/'baseline.json'
         self.cfg['windows']['state_path']=str(baseline)
         self.path.write_text(json.dumps(self.cfg),encoding='utf-8')
-        baseline.write_text(json.dumps({'target':platform.node(),'names':['guardian-core'],
+        baseline.write_text(json.dumps({'target':host,'names':['guardian-core'],
             'profiles':[{'Name':n,'Enabled':1,'DefaultOutboundAction':2} for n in ('Domain','Private','Public')],
             'rules':[{'Name':'guardian-core','Enabled':0}]}),encoding='utf-8')
         for mode,expected in [('Block','on'),('Allow','off')]:
