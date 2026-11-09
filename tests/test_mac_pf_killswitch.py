@@ -1,7 +1,7 @@
 """Offline checks for the macOS PF killswitch script (ADR-054).
 
 Rule rendering and DNS diagnostics run offline without touching PF. Loading rules,
-the fuse, persistence and the failure drill need a real Mac (docs/mac-pf-killswitch-test.md).
+the fuse, persistence and the failure drill require authorized real-device checks.
 """
 import os
 import re
@@ -190,21 +190,28 @@ class ScriptContract(unittest.TestCase):
         code = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
         self.assertNotRegex(code, r"\b(mapfile|readarray|declare -A)\b")  # macOS ships bash 3.2
         guide = (ROOT / "skills" / "claude-guardian" / "references" / "local-firewall-prompts.md").read_text(encoding="utf-8")
-        for term in ("Issue #17", "按网卡", "Issue #25", "已验收", "所有者确认", "现场修正版", "已合入随包脚本", "docs/mac-pf-killswitch-test.md", "C 档"):
+        for term in ("Issue #17", "按网卡", "Issue #25", "已验收", "所有者确认", "现场修正版", "已合入随包脚本", "C 档"):
             self.assertIn(term, guide)
         self.assertNotIn("Block Mode", guide)
         self.assertNotIn("允许规则要加在**核心**身上", guide)
-        self.assertTrue((ROOT / "docs" / "mac-pf-killswitch-test.md").is_file())
         self.assertIn("ADR-054", (ROOT / "docs" / "decisions.md").read_text(encoding="utf-8"))
         self.assertIn("assets/mac-killswitch/guardian-pf-killswitch.sh",
                       (ROOT / "tools" / "package_skill.py").read_text(encoding="utf-8"))
 
 
+    def test_completed_pf_acceptance_documents_are_removed(self):
+        names = ("docs/mac-pf-killswitch-test.md",
+                 "reports/mac-pf-isolated-acceptance-2026-11-02.md")
+        for name in names:
+            self.assertFalse((ROOT / name).exists(), name)
+        for path in (ROOT / "skills" / "claude-guardian").rglob("*.md"):
+            for name in names:
+                self.assertNotIn(Path(name).name, path.read_text(encoding="utf-8"), str(path))
+
     def test_pf_acceptance_status_is_synchronized(self):
         paths = (
-            "README.md", "README.en.md", "docs/mac-pf-killswitch-test.md",
+            "README.md", "README.en.md",
             "skills/claude-guardian/references/scripts-index.md",
-            "reports/mac-pf-isolated-acceptance-2026-11-02.md",
             "skills/claude-guardian/references/local-firewall-prompts.md",
             "skills/claude-guardian/references/routes-and-platforms.md",
             "skills/claude-guardian/references/whole-machine-ipv4.md",

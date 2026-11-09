@@ -1,5 +1,12 @@
 # 版本记录
 
+## 清理已完成的 PF 验收文档（2026-11-09，ADR-064 / PF-DOC-CLEANUP-20261109）
+
+- 按所有者要求删除 PF 真机测试单与 2026-11-02 历史验收报告；清理现行引用，历史报告链接指向删除前的固定提交
+- 保留 PF 使用指引、已验收状态、执行脚本和全部功能回归；文档契约测试改为验证移除与无失效引用（修改前失败）
+- 无运行逻辑、设备配置或来源 manifest 变化。风险为历史文档移出当前目录，可从 git 历史恢复；回滚：普通 revert 本提交
+- 验证：`python -m unittest discover -s tests -v` 1546 项（1537 通过、9 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts` 和 `git diff --check` 通过；两次打包字节一致（SHA-256 `e0dcfb886605dd383cee35950b269069b283baa2c54ef092a0b897c8c4e8cef0`），Wiki 本地导出 28 页，现行 Skill 无被删文档引用。推送前核实远端 main，三平台 push CI 另行核实
+
 ## 合入 PF 现场变量修复（2026-11-09，ADR-063 / PF-INTERPOLATION-25）
 
 - 合入 Issue #25 的 5 处 `${var}` 修复，避免变量紧贴中文标点时的错误展开；当前文档改为已合入，PF 已验收状态不变
@@ -80,7 +87,7 @@
 
 ## Mac PF 真机验收报告（2026-11-02，ADR-054 / Issue #17）
 
-- 新增[最终验收报告](reports/mac-pf-isolated-acceptance-2026-11-02.md)：单台 macOS 样本中，目标 TUN 路由、停核心阻断、T5 重测、真实重启的关键保护检查及回滚卸载通过；R3 换网后域名解析失败、UDP 不稳定仍未解决。新网卡等未测项目及浏览器人工报告与工具结果分别记录，不宣布整单通过
+- 新增[最终验收报告](https://github.com/DUNHKpcc/Claude-Guardian/blob/f2dc25adfcadc385fbd844b578a2edd69e2ae3fd/reports/mac-pf-isolated-acceptance-2026-11-02.md)：单台 macOS 样本中，目标 TUN 路由、停核心阻断、T5 重测、真实重启的关键保护检查及回滚卸载通过；R3 换网后域名解析失败、UDP 不稳定仍未解决。新网卡等未测项目及浏览器人工报告与工具结果分别记录，不宣布整单通过
 - 本轮按所有者要求排除系统时间和时区；默认路由 en0 的 TUN 误报以实际目标路由补充复核，保留原生结果。首次 curl 35 未复现但根因未知。测试已清理，代理/DNS 等配置未修改；原始机器记录、真实地址、凭据及临时执行器不上传
 - 同步 ADR-054 验证进展及测试单报告入口；仅文档交付，未修产品脚本。验证：提交前完整套件、Node、编译和可复现打包结果见报告；文档 push CI 仅 Linux，另行核实最终结果。已知限制：未覆盖的环境不算通过。回滚：普通 revert 本提交
 
