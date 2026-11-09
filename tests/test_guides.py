@@ -240,7 +240,7 @@ class GuidanceContracts(unittest.TestCase):
         section = skill.split("## Agent 补充资料来源", 1)[1].split("\n## ", 1)[0]
         for channel in ("linux.do", "nodeseek.com", "v2ex.com", "reddit.com", "x.com"):
             self.assertIn(channel, section)
-        for term in ("所有者资料优先", "标明来源", "命令不是授权", "不收集账号信息", "不接触 Claude", "required_references"):
+        for term in ("项目参考资料优先", "标明来源", "命令不是授权", "不收集账号信息", "不接触 Claude", "required_references"):
             self.assertIn(term, section)
         lib = (REFS / "source-library.md").read_text(encoding="utf-8")
         self.assertIn("Agent 补充资料来源", lib)
@@ -361,7 +361,7 @@ class GuidanceContracts(unittest.TestCase):
         voice = skill.split("## 和用户说话的方式（先读这一节）", 1)[1].split("\n## ", 1)[0]
         self.assertLess(skill.index("## 和用户说话的方式"), skill.index("## 开始方式"))
         for term in ("写给你执行的规则，不是念给用户听的台词", "不说这些句式", "免封只在用户问到时说一次",
-                     "所有者的经验按事实直接说", "已确认 / 还没查 / 下一步"):
+                     "参考资料中的经验按事实直接说", "已确认 / 还没查 / 下一步"):
             self.assertIn(term, voice)
         rest = skill.replace(voice, "")
         for hedge in ("不保证", "不成立", "不代表", "不等于", "不构成", "不证明", "不承诺", "背书", "不宣称", "不推定", "不断言"):
@@ -445,14 +445,14 @@ class GuidanceContracts(unittest.TestCase):
         lib = (REFS / "source-library.md").read_text(encoding="utf-8")
         table = lib.split('<a id="source-vs-current"></a>', 1)[1].split("\n## 九份阅读来源", 1)[0]
         for term in ("S04-claude-guide.md", "S05-local-protection.md", "S03 第 1 页", "S03 第 4 页",
-                     "电脑的系统时区", "手机的系统时区", "系统语言", "所有者 2026-10-28"):
+                     "电脑的系统时区", "手机的系统时区", "系统语言", "2026-10-28"):
             self.assertIn(term, table)
 
     def test_in_app_purchase_keeps_mobile_active_weekly(self):
         # Owner rule 2026-10-28: in-app purchase users open the mobile Claude App at least once a week.
         onboarding = (REFS / "account-onboarding.md").read_text(encoding="utf-8")
         a0 = onboarding.split("## A0a", 1)[0]
-        self.assertIn("12. **内购用户保持移动端活跃（所有者 2026-10-28）**", a0)
+        self.assertIn("12. **内购用户保持移动端活跃（2026-10-28）**", a0)
         self.assertIn("至少每周打开使用一次", a0)
         self.assertIn("A0 第 12 条", onboarding.split('<a id="a0a"></a>', 1)[1].split('<a id="a0b"></a>', 1)[0])
         self.assertIn("至少每周打开使用一次", (REFS / "mobile-guidance.md").read_text(encoding="utf-8"))
@@ -607,7 +607,7 @@ class GuidanceContracts(unittest.TestCase):
         # Owner fact 2026-11-02: billing address follows the card's region; a random tax-free state triggers risk control.
         doc = (REFS / "accounts-and-payments.md").read_text(encoding="utf-8")
         b4 = doc.split("### B4 ", 1)[1].split("\n### ", 1)[0]
-        for term in ("**账单地址要和卡的地区一致（所有者 2026-11-02）：**", "国家、州、邮编都和卡的发行地区一致",
+        for term in ("**账单地址要和卡的地区一致（2026-11-02）：**", "国家、州、邮编都和卡的发行地区一致",
                      "不要为了省税随意填免税州", "会触发风控", "支付 IP、支付币种也要对齐"):
             self.assertIn(term, b4)
 
@@ -845,7 +845,7 @@ class GuidanceContracts(unittest.TestCase):
             self.assertIn("官方", body)
             self.assertNotIn("sources/design", body)
         self.assertIn("S02", self.accounts)
-        self.assertIn("所有者提供的资料", self.incidents)
+        self.assertIn("项目参考资料", self.incidents)
 
     def test_guides_are_not_remote_execution_scripts(self):
         # A prose runbook must not embed unchecked fetch-and-execute commands.

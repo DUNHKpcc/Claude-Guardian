@@ -190,7 +190,7 @@ class ScriptContract(unittest.TestCase):
         code = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
         self.assertNotRegex(code, r"\b(mapfile|readarray|declare -A)\b")  # macOS ships bash 3.2
         guide = (ROOT / "skills" / "claude-guardian" / "references" / "local-firewall-prompts.md").read_text(encoding="utf-8")
-        for term in ("Issue #17", "按网卡", "Issue #25", "已验收", "所有者确认", "现场修正版", "已合入随包脚本", "C 档"):
+        for term in ("Issue #17", "按网卡", "Issue #25", "已验收", "现场修正版", "已合入随包脚本", "C 档"):
             self.assertIn(term, guide)
         self.assertNotIn("Block Mode", guide)
         self.assertNotIn("允许规则要加在**核心**身上", guide)
@@ -220,7 +220,7 @@ class ScriptContract(unittest.TestCase):
             with self.subTest(path=name):
                 body = (ROOT / name).read_text(encoding="utf-8")
                 self.assertIn("2026-11-09", body)
-                self.assertIn("owner-confirmed" if name == "README.en.md" else "所有者确认", body)
+                self.assertIn("accepted" if name == "README.en.md" else "已验收", body)
         whole_machine = (ROOT / paths[-1]).read_text(encoding="utf-8")
         self.assertNotIn("停核心演练还没在真机上做", whole_machine)
         self.assertNotIn("靠 LuLu 或系统防火墙", whole_machine)

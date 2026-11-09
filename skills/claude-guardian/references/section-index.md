@@ -65,7 +65,7 @@ Agent 编排检测与修复（10 节）
 - [选定路线后的能力核实](agent-remediation.md#选定路线后的能力核实)
 - [手动交接与遗留验收](agent-remediation.md#手动交接与遗留验收)
 - [修复后的复验](agent-remediation.md#修复后的复验)
-- [整机只走 IPv4（所有者 2026-10-19 确认，2026-10-25 补充）](agent-remediation.md#整机只走-ipv4所有者-2026-10-19-确认2026-10-25-补充)
+- [整机只走 IPv4（2026-10-19，2026-10-25 补充）](agent-remediation.md#整机只走-ipv42026-10-192026-10-25-补充)
 - [Windows 网卡 IPv6：默认关闭（B 档）](agent-remediation.md#windows-网卡-ipv6默认关闭b-档)
 - [WebRTC：浏览器和系统分开堵（B 档）](agent-remediation.md#webrtc浏览器和系统分开堵b-档)
 - [选择器能做什么](agent-remediation.md#选择器能做什么)
@@ -124,7 +124,7 @@ Contact phases and execution boundary（4 节）
 
 ## egress-ip-options.md
 
-本机路线：固定出口 IP 的三种来源（所有者指定，2026-10-21）（7 节）
+本机路线：固定出口 IP 的三种来源（2026-10-21）（7 节）
 
 - [三种来源](egress-ip-options.md#三种来源)
 - [推荐](egress-ip-options.md#推荐)

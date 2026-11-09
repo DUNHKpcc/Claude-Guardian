@@ -1,8 +1,14 @@
 # 版本记录
 
+## 文档降噪（2026-11-09，ADR-065）
+
+- 精简重复的决策归属及对话叙述，保留日期、技术要求、授权规则和验证状态；来源原文与 manifest 不变
+- PF 文档测试改为检查验收状态，不再绑定确认者称谓；重新生成章节索引。无运行行为变化，回滚为普通 revert
+- 验证：完整 unittest 1546 项通过（9 环境跳过）；Node 28 场景、compileall、diff 检查及两次可复现打包通过，SHA-256 `4aafb66f6acd170595b4ab1ca5f4071cf2f9533ad4b7c8b7d27a739f2540e838`。首轮 6 项文案断言随新措辞更新后完整复跑通过；三平台 push CI 另行核实
+
 ## 清理已完成的 PF 验收文档（2026-11-09，ADR-064 / PF-DOC-CLEANUP-20261109）
 
-- 按所有者要求删除 PF 真机测试单与 2026-11-02 历史验收报告；清理现行引用，历史报告链接指向删除前的固定提交
+- 按项目要求删除 PF 真机测试单与 2026-11-02 历史验收报告；清理现行引用，历史报告链接指向删除前的固定提交
 - 保留 PF 使用指引、已验收状态、执行脚本和全部功能回归；文档契约测试改为验证移除与无失效引用（修改前失败）
 - 无运行逻辑、设备配置或来源 manifest 变化。风险为历史文档移出当前目录，可从 git 历史恢复；回滚：普通 revert 本提交
 - 验证：`python -m unittest discover -s tests -v` 1546 项（1537 通过、9 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts` 和 `git diff --check` 通过；两次打包字节一致（SHA-256 `e0dcfb886605dd383cee35950b269069b283baa2c54ef092a0b897c8c4e8cef0`），Wiki 本地导出 28 页，现行 Skill 无被删文档引用。推送前核实远端 main，三平台 push CI 另行核实
@@ -16,7 +22,7 @@
 
 ## PF 相关项目已验收（2026-11-09，ADR-062 / PF-ACCEPTED-20261109）
 
-- 所有者确认 PF 相关项目均已验收，统一当前状态；同步中英文 README、PF 指引、路线卡、脚本索引、整机出口说明、测试单及历史报告说明，历史测试原值保留
+- 已确认 PF 相关项目均已验收，统一当前状态；同步中英文 README、PF 指引、路线卡、脚本索引、整机出口说明、测试单及历史报告说明，历史测试原值保留
 - 修正旧整机说明中的“停核心未测”和 LuLu 建议；新增状态同步回归测试（修改前失败），章节索引重新生成
 - 仅文档和测试变更，无 PF 执行逻辑、设备配置或来源 manifest 变更；Issue #25 现场修复尚未合入的事实保留。本次未新增真机测量。回滚：普通 revert 本提交
 - 验证：专用临时环境安装 `requirements-dev.txt` 后，`python -m unittest discover -s tests -v` 共 1543 项（1534 通过、9 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts`、`git diff --check` 通过；两次打包字节一致（SHA-256 `a2511cf418d79b395faffd9cf8650bdf146516149969c7cf41141cf6728aa7f3`），Wiki 本地导出 28 页。首轮旧环境缺 PyYAML 失败，补齐依赖后发现 ADR-039 引用遗漏，恢复引用后完整复跑通过；未放松断言。推送 CI 因测试文件变化运行三平台，结果另行核实
@@ -35,7 +41,7 @@
 
 ## 退出前清理后台残留（2026-11-07，ADR-059 / SHUTDOWN-20261107）
 
-- 根据所有者反馈补充：退出 Desktop／关闭 Claude 标签页不能证明后台退出；先保持代理和防直连规则，确认归属后按授权清理，复查进程、监听、连接及自动重启，通过后才停代理、恢复原防火墙配置。共享进程、查询失败或归属不明不放行
+- 根据实测反馈补充：退出 Desktop／关闭 Claude 标签页不能证明后台退出；先保持代理和防直连规则，确认归属后按授权清理，复查进程、监听、连接及自动重启，通过后才停代理、恢复原防火墙配置。共享进程、查询失败或归属不明不放行
 - 范围：SKILL、路线与防火墙指导、生成的章节索引及 ADR；无执行器、依赖或本机网络／进程变更。用户反馈尚未独立复测，不宣称跨平台验收；紧急恢复和保险丝机制不变
 - 验证：基于当前 HEAD 加本次变更的临时隔离副本，`python -m unittest discover -s tests -v` 共 1542 项（1533 通过、9 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts`、两次 `python tools/package_skill.py --output <临时包>` 字节一致通过（SHA-256 `c9ef72e450f1943d3773bc67654804423ef0a753bd7dae8d8f4c6ba3c410d217`）。初始沙箱检查出现文件特殊权限失败及原有未提交文档的链接失败；保留该文档，在隔离副本正常权限重跑通过。GitHub 连接失败，远端核实、推送及 push CI 未完成；文档变更应仅运行 Linux CI。回滚：普通 revert 本次文档提交
 
@@ -51,7 +57,7 @@
 
 ## Mac 远程协助按共同原则直接给步骤（2026-11-04，ADR-057 / ROUTE-MAC-REMOTE-20261104）
 
-- 所有者确认：Mac 直接按共同原则提供远程协助指引，由 Agent 按目标机环境适配；不把 Mac 单列为预案状态
+- 已确认：Mac 直接按共同原则提供远程协助指引，由 Agent 按目标机环境适配；不把 Mac 单列为预案状态
 - `local-advanced-route.md` 保留共同入口，接入与故障演练各分 Windows/Mac：Mac 用系统自带 SSH/SFTP、仅指定用户、按需 Tailscale、实际登录桌面与用户授权；PF 复用现有脚本和 180 秒保险丝，远程演练用独立单次恢复任务、私有结果与状态读回，补重启、FileVault、睡眠和换网的交接要求
 - Mac 主指引直接链接到本机高级扩展的 Mac 章节，自动章节索引重新生成；目标机已有 Agent 时仍默认本机操作，仅按明确的异机协助需求进入扩展。Windows 来源与完整 S10 不改，不新增执行器或常驻服务
 - 验证：新增 Mac 回归在旧指引上失败，修改后通过；Mac 原生步骤、与 Windows 命令区分、可选入口、锚点及 Wiki 导出检查通过。macOS / Python 3.13.3 / PyYAML 6.0.3，`python -m unittest discover -s tests -v` 共 1526 项，1517 通过、9 项环境跳过；`node tests/webrtc-lifecycle.cjs` 28 场景通过，`python -m compileall -q skills/claude-guardian/scripts` 通过；两次 `python tools/package_skill.py --output <临时ZIP>` 字节一致（SHA256 `60b95fa3193646d0e657da450779b74d6c33a20431fe36876c22eb65f2cfc493`），Mac 章节原样入包；`python tools/export_wiki.py --output <临时目录>` 导出 28 页。远端提交和 CI 在推送后另核实
@@ -67,7 +73,7 @@
 
 ## Windows/VPS 实战全文脱敏入库（2026-11-03，ADR-055 / SRC-WIN-20261103）
 
-- 所有者要求整份收录：新增 `sources/S10-windows-deployment-sanitized.md`，保留十一节、全部代码示例、两次部署的状态与待办，以及桌面开关事故、方法学复盘和快捷方式配方；真实主机、用户、路径、地址、密码与出口短哈希替换，原始文件不提交
+- 项目要求整份收录：新增 `sources/S10-windows-deployment-sanitized.md`，保留十一节、全部代码示例、两次部署的状态与待办，以及桌面开关事故、方法学复盘和快捷方式配方；真实主机、用户、路径、地址、密码与出口短哈希替换，原始文件不提交
 - 放置权衡：全文只存 `sources/` 一份，SKILL.md 给 Windows 场景入口，Windows 防火墙、整机出口和自建梯指引按主题链接具体章节；来源库、manifest 原始/分发哈希、证据规则、中英文 README 和 Wiki 导出登记同步。保留 S09 原义，新增 S10，不重复堆进常驻提示或改成执行器
 - 修正交付指引：配置持久化不等于保护经过验证；读回三档启用状态、默认出站和其他 Allow 规则，另行交付开关时覆盖真实双击入口。编者注区分单次版本判断、STUN 与浏览器 WebRTC、Restricted 与组织策略、用户目录与权限保护，以及未完成的生命周期验收
 - 风险与限制：本文是原作者历史实战报告，本次没有连接设备、修改系统或独立复验；REALITY/UDP 默认值/接口 GUID 判断不泛化，新增依赖和实际操作仍走原授权。不新增 Windows 写入引擎、桌面脚本资产或常驻服务，保留工作区原有 `.gitignore` 修改
@@ -75,7 +81,7 @@
 
 ## 网页卡付账单地址和卡地区一致（2026-11-02）
 
-- 所有者提供：网页卡付等要填账单地址的地方，地址要和卡的地区一致，不要随意填免税州，会触发风控。写入 `accounts-and-payments.md` B4 网页卡：填发卡方登记的地址，国家、州、邮编和发行地区一致，不为省税填俄勒冈、特拉华等免税州，账单地址、支付 IP、币种对齐（S03）。B1 第 7 条“礼品卡渠道回答不提账单地址”不变，礼品卡支付本来就不填地址
+- 资料记录：网页卡付等要填账单地址的地方，地址要和卡的地区一致，不要随意填免税州，会触发风控。写入 `accounts-and-payments.md` B4 网页卡：填发卡方登记的地址，国家、州、邮编和发行地区一致，不为省税填俄勒冈、特拉华等免税州，账单地址、支付 IP、币种对齐（S03）。B1 第 7 条“礼品卡渠道回答不提账单地址”不变，礼品卡支付本来就不填地址
 - 测试：`test_web_card_billing_address_matches_card_region`（旧文档上失败）。回滚：回退本提交
 
 ## 按 Mac PF 真机验收修复（2026-11-02，ADR-054）
@@ -88,7 +94,7 @@
 ## Mac PF 真机验收报告（2026-11-02，ADR-054 / Issue #17）
 
 - 新增[最终验收报告](https://github.com/DUNHKpcc/Claude-Guardian/blob/f2dc25adfcadc385fbd844b578a2edd69e2ae3fd/reports/mac-pf-isolated-acceptance-2026-11-02.md)：单台 macOS 样本中，目标 TUN 路由、停核心阻断、T5 重测、真实重启的关键保护检查及回滚卸载通过；R3 换网后域名解析失败、UDP 不稳定仍未解决。新网卡等未测项目及浏览器人工报告与工具结果分别记录，不宣布整单通过
-- 本轮按所有者要求排除系统时间和时区；默认路由 en0 的 TUN 误报以实际目标路由补充复核，保留原生结果。首次 curl 35 未复现但根因未知。测试已清理，代理/DNS 等配置未修改；原始机器记录、真实地址、凭据及临时执行器不上传
+- 本轮按项目要求排除系统时间和时区；默认路由 en0 的 TUN 误报以实际目标路由补充复核，保留原生结果。首次 curl 35 未复现但根因未知。测试已清理，代理/DNS 等配置未修改；原始机器记录、真实地址、凭据及临时执行器不上传
 - 同步 ADR-054 验证进展及测试单报告入口；仅文档交付，未修产品脚本。验证：提交前完整套件、Node、编译和可复现打包结果见报告；文档 push CI 仅 Linux，另行核实最终结果。已知限制：未覆盖的环境不算通过。回滚：普通 revert 本提交
 
 ## README 加 Trendshift 徽章（2026-11-02）
@@ -97,13 +103,13 @@
 
 ## Mac PF 测试单补泄漏复查（2026-11-01）
 
-- 所有者要求：WebRTC、DNS、IPv6 已做到的证据只有 ADR-039 那一台 Mac、TUN 正常运行时；重启、睡眠唤醒、换网之后没复测。`docs/mac-pf-killswitch-test.md` 新增“R 泄漏复查”：一次 `network_check.py run`（路由、IPv6、DNS、UDP 四项）加 WebRTC 探测页和浏览器验收，平时用 Claude Desktop 的要它开着测；在加 PF 后（R1）、睡眠唤醒后（R2）、换网后（R3）、重启后（R4）各做一次，反馈表同步加行
+- 项目要求：WebRTC、DNS、IPv6 已做到的证据只有 ADR-039 那一台 Mac、TUN 正常运行时；重启、睡眠唤醒、换网之后没复测。`docs/mac-pf-killswitch-test.md` 新增“R 泄漏复查”：一次 `network_check.py run`（路由、IPv6、DNS、UDP 四项）加 WebRTC 探测页和浏览器验收，平时用 Claude Desktop 的要它开着测；在加 PF 后（R1）、睡眠唤醒后（R2）、换网后（R3）、重启后（R4）各做一次，反馈表同步加行
 - 修正 T5 命令漏了 `network_check.py run` 必填的 `--target-ref`，补上 `--proxy` 和 `--evidence-output`
 - 只改文档，无代码改动。回滚：回退本提交
 
 ## Mac 本机 kill switch 改用 PF 脚本（2026-11-01，ADR-054，Issue #17）
 
-- Issue #17 实测：LuLu 默认拒绝时，经透明 TUN 的连接被按发起进程拦掉；LuLu 判断早于路由、没有按网卡的条件，原文档“只给核心放行”的设计不成立。所有者确认改用 PF
+- Issue #17 实测：LuLu 默认拒绝时，经透明 TUN 的连接被按发起进程拦掉；LuLu 判断早于路由、没有按网卡的条件，原文档“只给核心放行”的设计不成立。已确认改用 PF
 - 新增 `assets/mac-killswitch/guardian-pf-killswitch.sh`（render／apply／confirm／status／rollback／persist／unpersist／uninstall）：物理网卡只放行到节点真实 IPv4 和端口、DHCP，可选 `BOOTSTRAP_DNS`、`LAN_NET`，其余出站丢弃，utun 和回环不受影响；规则在 `com.apple/claude-guardian` 子 anchor，不改 `/etc/pf.conf`；`pfctl -E`/`-X` 引用计数；180 秒保险丝，确认后的规则才在开机加载；兼容系统 bash 3.2
 - `local-firewall-prompts.md` 的 Mac 防火墙一节重写（删掉“Block Mode”和“允许规则加在核心身上”），`vm-guidance.md`、`routes-and-platforms.md` L2、`agent-on-target.md`、`scripts-index.md`、SKILL.md、中英文 README 同步；`section-index.md` 重新生成；打包清单加入脚本
 - 新增真机测试单 `docs/mac-pf-killswitch-test.md`（T0–T9：基线、render、保险丝、正常使用、停核心演练、一次取证、浏览器验收、换网和睡眠、开机加载、回滚卸载），交给所有者在真机 Mac 上执行
@@ -117,20 +123,20 @@
 
 ## 今天新增文档去废话，修两处矛盾（2026-11-01）
 
-- 所有者要求检查今天的更新有没有废话。修了两处前后矛盾：`agent-on-target.md` 第 3 节原来先说“把 Agent 切到本机 TUN 并确认能用”、再说“开 TUN 放在最后”，TUN 还没开就要求 Agent 走 TUN，改为第 1 步开 TUN（B 档计划最后一步）、第 2 步装 killswitch 前把 Agent 切到 TUN；`skill-update.md` 说“整个过程不改 Skill 目录以外的东西”，可备份和临时克隆就在 Skill 目录之外，改为如实写明
+- 项目要求检查今天的更新有没有废话。修了两处前后矛盾：`agent-on-target.md` 第 3 节原来先说“把 Agent 切到本机 TUN 并确认能用”、再说“开 TUN 放在最后”，TUN 还没开就要求 Agent 走 TUN，改为第 1 步开 TUN（B 档计划最后一步）、第 2 步装 killswitch 前把 Agent 切到 TUN；`skill-update.md` 说“整个过程不改 Skill 目录以外的东西”，可备份和临时克隆就在 Skill 目录之外，改为如实写明
 - 删掉重复和写给维护者的话：`agent-on-target.md` 的“各路线只链接过来，不另写一套”、第 4 节重复第 3 节的一句、“TUN 开关本来就是”；`exit-consistency.md` 开头与第 4 节重复的适用场景、“物理距离近，延迟天然低”、UA 一节与开头重复的解释和“换本机系统不是改 UA”一条；`skill-update.md` 开头的括号举例
 - 测试：`test_guides.py` 断言第 3 节顺序，`test_update_check.py` 断言不再出现那句不实的话（都在旧文档上失败）。回滚：回退本提交
 
 ## 每次使用前检查 Skill 更新（2026-11-01，ADR-053）
 
-- 所有者要求：每次用户使用本 Skill 前检查最新更新。新增 `scripts/update_check.py check`：向 `api.github.com` 取 main 分支目录树和最近涉及 Skill 的提交，按 git blob 哈希逐个比较本地文件（接受 CRLF 转 LF 后的哈希），报告不同、远端新增、本地独有的文件和最近几条更新；只读、只用标准库、只连 GitHub；退出码 0 最新、1 有更新、2 没查成、130 取消；连不上、限流、目录树截断、回复过大或不是 JSON 都报 `check_failed`，不阻塞任务
+- 项目要求：每次用户使用本 Skill 前检查最新更新。新增 `scripts/update_check.py check`：向 `api.github.com` 取 main 分支目录树和最近涉及 Skill 的提交，按 git blob 哈希逐个比较本地文件（接受 CRLF 转 LF 后的哈希），报告不同、远端新增、本地独有的文件和最近几条更新；只读、只用标准库、只连 GitHub；退出码 0 最新、1 有更新、2 没查成、130 取消；连不上、限流、目录树截断、回复过大或不是 JSON 都报 `check_failed`，不阻塞任务
 - 新增 `references/skill-update.md`：每个会话开始查一次；最新时不汇报，有更新列最近更新并问用户，没查成一句话带过继续；更新属 B 档：取最新版、备份到 Skill 目录之外（放在 `skills/` 里会被当成第二个 Skill）、用户改过或加的文件逐个问、替换、复查、开新会话、回滚
 - SKILL.md“开始方式”开头加一句（为留在 32000 字节内压缩了 WebRTC 探测页和 section-index 两处说明）；`scripts-index.md`、`inventory_cli.py capabilities`、`package_skill.py`、中英文 README 的安装一节同步
 - 测试：新增 `tests/test_update_check.py`（哈希与 `git hash-object` 一致、最新、有更新、仅本地多文件不算更新、CRLF、忽略缓存与 LICENSE、网络失败与异常回复、提交历史失败、请求只发往 GitHub 的 Skill 路径、HTTP 错误映射、过大和非 JSON 回复、CLI 退出码与取消、SKILL.md 与指引）。已在开发机上对真实仓库跑过一次 `check`；Windows 和 macOS 上的真实网络检查没跑过。回滚：回退本提交
 
 ## 软路由路线占位（2026-11-01）
 
-- 所有者确认：软路由先占位，未来补齐这条路线。`routes-and-platforms.md` 新增“R-ROUTER 软路由（占位，未来补齐）”（锚点 `r-router`）：补齐前直接告诉用户 Claude Desktop 最佳是软路由、现在先按本机路线做；Agent 不自行编写搭建步骤、不改用户路由器；不新增路线值。`exit-consistency.md`、`agent-remediation.md` 的两处提法指向这个占位；`section-index.md` 重新生成
+- 已确认：软路由先占位，未来补齐这条路线。`routes-and-platforms.md` 新增“R-ROUTER 软路由（占位，未来补齐）”（锚点 `r-router`）：补齐前直接告诉用户 Claude Desktop 最佳是软路由、现在先按本机路线做；Agent 不自行编写搭建步骤、不改用户路由器；不新增路线值。`exit-consistency.md`、`agent-remediation.md` 的两处提法指向这个占位；`section-index.md` 重新生成
 - 测试：`test_exit_consistency_owner_facts_are_stated_directly_and_linked` 增加断言（旧文档上失败）。回滚：回退本提交
 
 ## Claude Desktop 最佳还是软路由（2026-11-01）
@@ -146,7 +152,7 @@
 
 ## 出口与本机环境一致：TCP 延迟、TCP 指纹、UA（2026-11-01）
 
-- 所有者提供：TCP 延迟选线路优秀的美国 VPS 做出口，或选物理距离近的出口（如日本）；代理端（自建出口、机场）用 Linux 时本机也要用同系统或接近的系统，Android 内核是 Linux 天生不用担心，Mac 和 iOS 的 TTL 差异也不大；不要随意修改 UA，UA 插件只改请求头，`navigator.platform`、Client Hints（`Sec-CH-UA-*`）、TLS 和 TCP 指纹都没变，反而制造矛盾，保持浏览器原生 UA 最安全
+- 资料记录：TCP 延迟选线路优秀的美国 VPS 做出口，或选物理距离近的出口（如日本）；代理端（自建出口、机场）用 Linux 时本机也要用同系统或接近的系统，Android 内核是 Linux 天生不用担心，Mac 和 iOS 的 TTL 差异也不大；不要随意修改 UA，UA 插件只改请求头，`navigator.platform`、Client Hints（`Sec-CH-UA-*`）、TLS 和 TCP 指纹都没变，反而制造矛盾，保持浏览器原生 UA 最安全
 - 新增 `references/exit-consistency.md` 写这三点，并补 Windows 默认 TTL 128 与 Linux 等系统的 64 不同，Windows 用户用 Linux 客机或 VPS 路线；`egress-ip-options.md` 选好之后、`whole-machine-ipv4.md` 5a 浏览器验收（新增第 5 条，后两条顺延）、`vm-guidance.md` 客机系统、`mobile-guidance.md` 各加一句链接；SKILL.md 出口一行加入口，为留在 32000 字节内压缩离线预检一句、删掉首问示例里与“和用户说话的方式”第 6 条重复的 KYC 一句（A0a 和第 6 条仍在）；wiki 在“出口 IP”组新增一页，`package_skill.py` 加入新文件，`section-index.md` 重新生成
 - 测试：`test_guides.py` 新增 `test_exit_consistency_owner_facts_are_stated_directly_and_linked`（旧文档上失败）。已知限制：只是指导文档。回滚：回退本提交
 
@@ -181,11 +187,11 @@
 
 ## Windows 防火墙第 5 步用 --failure-drill 取证代替手动演练（2026-10-30）
 
-- 所有者确认：`local-firewall-prompts.md` Windows 防火墙第 5 步故障演练改为用 `network_check.py run --failure-drill` 那一次取证代替，不另外手动停核心再演一遍；“故障演练”一项显示没有直连即通过，同一次取证交给 `egress_verifier.py`，和交付验收单的“一次取证”是同一次。保险丝删除条件不变。Mac LuLu 按进程过滤，那一节仍要确认浏览器和常用应用，未改。`test_guides.py` 新增断言。回滚：回退本提交
+- 已确认：`local-firewall-prompts.md` Windows 防火墙第 5 步故障演练改为用 `network_check.py run --failure-drill` 那一次取证代替，不另外手动停核心再演一遍；“故障演练”一项显示没有直连即通过，同一次取证交给 `egress_verifier.py`，和交付验收单的“一次取证”是同一次。保险丝删除条件不变。Mac LuLu 按进程过滤，那一节仍要确认浏览器和常用应用，未改。`test_guides.py` 新增断言。回滚：回退本提交
 
 ## 交付验收单去重（2026-10-30）
 
-- 所有者要求查过度防御、过度耗时：上一条的八项验收单把出口、停核心演练、整机判定、Claude Desktop UDP 拆成四项，其实一次 `network_check.py run --failure-drill`（Claude Desktop 运行时）全测到；并成“一次取证”，五项验收。分层诊断改为上不了网时才用，不再是验收项。起因压成一句，去掉与全局规则重复的“不代登录、测试数量不算验收”等话。测试同步。回滚：回退本提交
+- 项目要求查过度防御、过度耗时：上一条的八项验收单把出口、停核心演练、整机判定、Claude Desktop UDP 拆成四项，其实一次 `network_check.py run --failure-drill`（Claude Desktop 运行时）全测到；并成“一次取证”，五项验收。分层诊断改为上不了网时才用，不再是验收项。起因压成一句，去掉与全局规则重复的“不代登录、测试数量不算验收”等话。测试同步。回滚：回退本提交
 
 ## 替别人交付本机路线：先说范围，按验收单交（2026-10-30）
 
@@ -194,15 +200,15 @@
 
 ## README 合作伙伴两块并排（2026-10-28）
 
-- 所有者要求两块并排、太大可缩小：中英文 README 的 Partners 改成一行两列的表格，两张图都缩到宽 380（两块 480 并排会超出 GitHub 正文宽度），各自带说明。只改 README 和本记录。回滚：回退本提交
+- 项目要求两块并排、太大可缩小：中英文 README 的 Partners 改成一行两列的表格，两张图都缩到宽 380（两块 480 并排会超出 GitHub 正文宽度），各自带说明。只改 README 和本记录。回滚：回退本提交
 
 ## README 合作伙伴新增：代搭建与 Skill 官网（2026-10-28）
 
-- 所有者要求：中英文 README 的 Partners 一节在 DPCC API 下面新增一块，链接 https://api.dpccgaming.xyz/guardian（代搭建、Skill 官网），图片 `docs/partners/guardian-setup.svg` 为 480×140，和 `dpcc-api.svg` 同尺寸同底色。只改 README、一张 SVG 和本记录，无代码变更。回滚：回退本提交
+- 项目要求：中英文 README 的 Partners 一节在 DPCC API 下面新增一块，链接 https://api.dpccgaming.xyz/guardian（代搭建、Skill 官网），图片 `docs/partners/guardian-setup.svg` 为 480×140，和 `dpcc-api.svg` 同尺寸同底色。只改 README、一张 SVG 和本记录，无代码变更。回滚：回退本提交
 
 ## 明说：TUN 严格路由就是防 Claude Desktop WebRTC 泄漏（2026-10-28）
 
-- 所有者要求写明：本机防 Claude Desktop（Electron）WebRTC 泄漏靠 TUN 严格路由加关 IPv6。`agent-remediation.md#webrtc-block` 的“系统”段新增验收四条（Claude Desktop 运行且 TUN 开着时跑 `network_check.py run`；UDP 要能出去且规则不让 STUN 直连，ICE 701 只算无法判定；要有断线保护；不依赖 Chromium 启动参数），`network-and-remedies.md` 对应行点明这是 Claude Desktop 场景。`test_guides.py` 新增断言
+- 项目要求写明：本机防 Claude Desktop（Electron）WebRTC 泄漏靠 TUN 严格路由加关 IPv6。`agent-remediation.md#webrtc-block` 的“系统”段新增验收四条（Claude Desktop 运行且 TUN 开着时跑 `network_check.py run`；UDP 要能出去且规则不让 STUN 直连，ICE 701 只算无法判定；要有断线保护；不依赖 Chromium 启动参数），`network-and-remedies.md` 对应行点明这是 Claude Desktop 场景。`test_guides.py` 新增断言
 - 已知限制：只是指导文档，没有新增代码，也没有在真机上对 Claude Desktop 实测。回滚：回退本提交
 
 ## 手机时区也与出口一致（2026-10-28，Issue #15）
@@ -214,7 +220,7 @@
 
 - Issue #15 指出时区口径冲突：S04、S05 要求时区和出口一致，`whole-machine-ipv4.md` 的验收规则却写“时区不要求绿色、不为变绿改时区”，VM 指引又要求对齐。所有者定口径：**本机也要求时区与出口一致**。浏览器验收改为“除语言外必须全绿”，`whole-machine-ipv4.md` 5a 第 4 条写明 macOS、Windows（`Set-TimeZone`）、Linux 的改法，先关“自动设置时区”、记原值，仍按 C 档当场确认。同步 SKILL.md、VM、VPS、本机防火墙、`agent-remediation.md` 的表格、`windows-cleanup.md` 的“不做的事”，以及 `agent_remediation.py` 的 ENV-08（原来写的是“不按出口地区改时区”）。手机按 S03 第 4 页保持真实时区，手机上验收时时区不要求绿；语言不变
 - 来源优先级：SKILL.md 写明原文与现行规则冲突时以现行规则为准并说明出入；`source-library.md` 新增“来源与现行规则的对照”（电脑时区、手机时区、系统语言、被封过号的设备）。来源原文与哈希不变
-- 所有者要求：用 Apple 或 Google Play 内购订阅的，手机上的 Claude App 至少每周打开使用一次。写入 `account-onboarding.md` A0 第 12 条，A0a 付款一行、`mobile-guidance.md`、B2、B3 指向它
+- 项目要求：用 Apple 或 Google Play 内购订阅的，手机上的 Claude App 至少每周打开使用一次。写入 `account-onboarding.md` A0 第 12 条，A0a 付款一行、`mobile-guidance.md`、B2、B3 指向它
 - 测试：`test_guides.py` 更新验收断言，新增时区口径全文件一致、来源优先级与对照表、内购每周活跃三项；`test_agent_remediation.py` 新增 ENV-08 断言。SKILL.md 为留在 32000 字节预算内压缩了两句措辞。回滚：回退本提交
 
 ## 被封过号的设备：超过 3 个账号就不再使用（2026-10-27）
@@ -230,48 +236,48 @@
 
 ## VPS 服务器保活：防 OOM 失联（2026-10-27）
 
-- 所有者要求：Agent 操作 VPS 时优先按服务器配置保活，不能爆内存让 Agent 和用户连不上。`vps-guidance.md` 新增“服务器保活”一节：只读资源基线（PSI、OOM 日志）、按内存定预算并给系统和 sshd 留余量、swapfile 与 swappiness、earlyoom 避开 sshd/tmux 并优先结束临时远程浏览器、重任务用 `systemd-run` 的 `MemoryMax` 限制、按内存定编译并行度、tmux 与 `ServerAliveInterval`、带外控制台恢复预案和回滚；开头和“日常”一节指向这里。建 swap、改 swappiness、装 earlyoom 列入 B 档。新增守门测试
+- 项目要求：Agent 操作 VPS 时优先按服务器配置保活，不能爆内存让 Agent 和用户连不上。`vps-guidance.md` 新增“服务器保活”一节：只读资源基线（PSI、OOM 日志）、按内存定预算并给系统和 sshd 留余量、swapfile 与 swappiness、earlyoom 避开 sshd/tmux 并优先结束临时远程浏览器、重任务用 `systemd-run` 的 `MemoryMax` 限制、按内存定编译并行度、tmux 与 `ServerAliveInterval`、带外控制台恢复预案和回滚；开头和“日常”一节指向这里。建 swap、改 swappiness、装 earlyoom 列入 B 档。新增守门测试
 - 修正：earlyoom 参数原先带单引号和含空格的 `tmux: server`，systemd 读 `/etc/default/earlyoom` 时不处理引号、按空格拆参数，会传错；改为不加引号的正则，并加回归断言
 - 已知限制：命令按 Ubuntu 24.04 写，没有在真实 VPS 上跑过。回滚：回退本提交
 
 ## 礼品卡支付不填账单地址、不绑卡（2026-10-27）
 
-- 所有者提供：Apple 礼品卡支付不需要填账单地址，也不需要绑卡。写入 B2a 第 7 步（替换“账单信息按页面要求填写”）和 B2 第 6 步（替换“O13 的一般规则不能保证每笔订阅免绑卡”，付款方式保持“无”，余额不够先补礼品卡）。守门测试补断言。回滚：回退本提交
+- 资料记录：Apple 礼品卡支付不需要填账单地址，也不需要绑卡。写入 B2a 第 7 步（替换“账单信息按页面要求填写”）和 B2 第 6 步（替换“O13 的一般规则不能保证每笔订阅免绑卡”，付款方式保持“无”，余额不够先补礼品卡）。守门测试补断言。回滚：回退本提交
 
 ## 网页注册美区 Apple ID；新 Apple ID 养 3 到 7 天再充值（2026-10-27）
 
-- 所有者要求补网页注册美区 Apple ID 的教程，并提供：新 Apple ID 注册后立马充值、没有养 3 到 7 天，容易遇到 Apple 支付风控（礼品卡扣款不成功、卡在支付页面、会员不到账），需要联系 Apple 客服解决。`accounts-and-payments.md` 新增 B2a（account.apple.com 注册步骤按 Apple 官方说明写；地区选美国；App Store 登录补全信息、付款方式选“无”）；B2 第 2 步、A0a 新手组合的付款一行、手机端支付一条指向 B2a。新增守门测试
+- 项目要求补网页注册美区 Apple ID 的教程，并提供：新 Apple ID 注册后立马充值、没有养 3 到 7 天，容易遇到 Apple 支付风控（礼品卡扣款不成功、卡在支付页面、会员不到账），需要联系 Apple 客服解决。`accounts-and-payments.md` 新增 B2a（account.apple.com 注册步骤按 Apple 官方说明写；地区选美国；App Store 登录补全信息、付款方式选“无”）；B2 第 2 步、A0a 新手组合的付款一行、手机端支付一条指向 B2a。新增守门测试
 - 已知限制：账单信息只写“按页面要求填写”，地址的具体填法所有者没有提供，没写。回滚：回退本提交
 
 ## VM、VPS 养号步骤改为读 A0（2026-10-27）
 
-- 所有者要求删掉重复的养号规则，同时保证能调用到养号模块：`vm-guidance.md`、`vps-guidance.md` 的注册与养号一步不再抄升级间隔、额度、并发等规则，改为“Agent 先读 A0，按 A0 给用户讲”；VPS 独有的“OAuth 之前必须先从 Free 号养号”保留。README 能力表只列主题。访谈状态机在首次订阅、重新订阅、未注册时本来就会附上 `account-onboarding.md`，未改。新增守门测试。回滚：回退本提交
+- 项目要求删掉重复的养号规则，同时保证能调用到养号模块：`vm-guidance.md`、`vps-guidance.md` 的注册与养号一步不再抄升级间隔、额度、并发等规则，改为“Agent 先读 A0，按 A0 给用户讲”；VPS 独有的“OAuth 之前必须先从 Free 号养号”保留。README 能力表只列主题。访谈状态机在首次订阅、重新订阅、未注册时本来就会附上 `account-onboarding.md`，未改。新增守门测试。回滚：回退本提交
 
 ## 养号规则只写在 A0（2026-10-27）
 
-- 所有者确认：SKILL.md 不再逐条罗列养号规则，那一句只留入口，指向 `account-onboarding.md`；规则只在 A0 写一份，以后加规则不改 SKILL.md。上一条为压字节改短的新手组合一句恢复原措辞（“直接放弃重来”等）。原先检查 SKILL.md 含接码、老 Gmail、并发字样的断言改为由 A0 的守门测试覆盖，新增测试确认 SKILL.md 不再重复这些规则。回滚：回退本提交
+- 已确认：SKILL.md 不再逐条罗列养号规则，那一句只留入口，指向 `account-onboarding.md`；规则只在 A0 写一份，以后加规则不改 SKILL.md。上一条为压字节改短的新手组合一句恢复原措辞（“直接放弃重来”等）。原先检查 SKILL.md 含接码、老 Gmail、并发字样的断言改为由 A0 的守门测试覆盖，新增测试确认 SKILL.md 不再重复这些规则。回滚：回退本提交
 
 ## 新号并发 1 到 3、不用 workflow 模式（2026-10-27）
 
-- 所有者提供：A0 第 4 条“不要把额度顶满”限定为新号；新增第 10 条：新号并发尽量控制在 1 到 3 之间，不多用也不少用；并发不按 session 算，子代理也算并发；新号不要使用 workflow 模式；Agent 要把并发讲清楚。SKILL.md、VPS 养号步骤、README 同步；SKILL.md 有 32000 字节上限，同段和新手组合一句压短了措辞（意思不变）。新增守门测试。回滚：回退本提交
+- 资料记录：A0 第 4 条“不要把额度顶满”限定为新号；新增第 10 条：新号并发尽量控制在 1 到 3 之间，不多用也不少用；并发不按 session 算，子代理也算并发；新号不要使用 workflow 模式；Agent 要把并发讲清楚。SKILL.md、VPS 养号步骤、README 同步；SKILL.md 有 32000 字节上限，同段和新手组合一句压短了措辞（意思不变）。新增守门测试。回滚：回退本提交
 
 ## README 合作伙伴位（2026-10-26）
 
-- 所有者要求：README 中英文版在“它能干什么”/“What it does”上方新增英文 Partners 栏，首个是 DPCC API（`docs/partners/dpcc-api.svg`，文字已转路径，点击跳转 https://api.dpccgaming.xyz）。回滚：回退本提交
+- 项目要求：README 中英文版在“它能干什么”/“What it does”上方新增英文 Partners 栏，首个是 DPCC API（`docs/partners/dpcc-api.svg`，文字已转路径，点击跳转 https://api.dpccgaming.xyz）。回滚：回退本提交
 
 ## WebRTC：Chrome 插件与系统 TUN 严格路由（2026-10-26）
 
-- 所有者要求：浏览器这边可以在 Chrome 装 WebRTC 禁用插件；系统这边写明只开系统代理时，非浏览器应用的 WebRTC/UDP 不受保护，必须开 TUN 严格路由。`agent-remediation.md` 新增“WebRTC：浏览器和系统分开堵”一节：Google 出品的 WebRTC Network Limiter（要在选项里勾上默认不勾的“Disable non-proxied UDP”）或 `WebRtcIPHandling` 策略二选一；系统层开 TUN 严格路由，用 `network_check.py run` 的 UDP、路由两项复测。修复表、`network-and-remedies.md`、浏览器环境验收、本机防火墙验证步骤指向这一节；装插件、写浏览器策略列入 B 档。新增守门测试
+- 项目要求：浏览器这边可以在 Chrome 装 WebRTC 禁用插件；系统这边写明只开系统代理时，非浏览器应用的 WebRTC/UDP 不受保护，必须开 TUN 严格路由。`agent-remediation.md` 新增“WebRTC：浏览器和系统分开堵”一节：Google 出品的 WebRTC Network Limiter（要在选项里勾上默认不勾的“Disable non-proxied UDP”）或 `WebRtcIPHandling` 策略二选一；系统层开 TUN 严格路由，用 `network_check.py run` 的 UDP、路由两项复测。修复表、`network-and-remedies.md`、浏览器环境验收、本机防火墙验证步骤指向这一节；装插件、写浏览器策略列入 B 档。新增守门测试
 - 已知限制：插件选项名按商店页描述写，没有在真机 Chrome 上装过验证；插件只管装了它的那个配置文件。回滚：回退本提交
 
 ## 非法工具清理（2026-10-26）
 
-- 所有者要求：清理时查出用户给 Claude 装的破限、反代分发等非法 MCP、插件、skills、hooks、环境变量和后台服务，也清理掉。新增 `references/illegal-tools-cleanup.md`（审计只列名字和键名、不打印令牌；C 档逐项确认；备份后只删那一项，目录移到隔离区；涉及令牌的按凭据泄露处理），随包发布、上 Wiki“清理”分组
+- 项目要求：清理时查出用户给 Claude 装的破限、反代分发等非法 MCP、插件、skills、hooks、环境变量和后台服务，也清理掉。新增 `references/illegal-tools-cleanup.md`（审计只列名字和键名、不打印令牌；C 档逐项确认；备份后只删那一项，目录移到隔离区；涉及令牌的按凭据泄露处理），随包发布、上 Wiki“清理”分组
 - 冲突处理：Windows、Linux、macOS 清理和 SKILL.md 里 `~/.claude` 设置、skills、插件“始终保护”保留，各加一句指向非法工具这个例外；SKILL.md 清理库一段压短以留出篇幅。新增守门测试（含审计脚本不输出密钥值）；Windows CI 抓到审计脚本在默认控制台编码下输出中文报错，脚本开头改为 UTF-8 输出。回滚：回退本提交
 
 ## 封号申诉模块（2026-10-26）
 
-- 所有者提供：申诉回复在 2 到 7 天左右，超过基本凉了；解封号权重高，但盲目跳脸还是死；英文申诉模板。新增 `references/ban-appeal.md`（随包发布、上 Wiki“入门”分组），文末写“祝大家都能顺利解封”
+- 资料记录：申诉回复在 2 到 7 天左右，超过基本凉了；解封号权重高，但盲目跳脸还是死；英文申诉模板。新增 `references/ban-appeal.md`（随包发布、上 Wiki“入门”分组），文末写“祝大家都能顺利解封”
 - 冲突处理：M12 的 K4 原写“不编造回复时限”“不写异常请求不是我”，改为封号申诉以 `ban-appeal.md` 为准；SKILL.md 封号那一行、README 同步。新增守门测试。回滚：回退本提交
 
 ## CI：只改文档时只跑 Linux（2026-10-26）
@@ -280,11 +286,11 @@
 
 ## 接码只用实体卡（2026-10-26）
 
-- 所有者提供：接码不找共享号码、虚拟号码；遇到接码有条件用实体卡，没条件直接弃号。写入 `account-onboarding.md` A0 第 9 条；第 6 条原先“注册时要手机号验证的号可以直接放弃”与此冲突，改为按第 9 条处理（KYC 部分不变）；SKILL.md 同步；`mobile-guidance.md` 按所有者要求保持原样（曾加的一句已撤回）。新增守门测试。回滚：回退本提交
+- 资料记录：接码不找共享号码、虚拟号码；遇到接码有条件用实体卡，没条件直接弃号。写入 `account-onboarding.md` A0 第 9 条；第 6 条原先“注册时要手机号验证的号可以直接放弃”与此冲突，改为按第 9 条处理（KYC 部分不变）；SKILL.md 同步；`mobile-guidance.md` 按项目要求保持原样（曾加的一句已撤回）。新增守门测试。回滚：回退本提交
 
 ## 账号注册时间与老 Gmail（2026-10-26）
 
-- 所有者提供：Claude 账号注册越早权重越高，新号容易风控；老 Gmail 是否更稳目前没有定论。写入 `account-onboarding.md` A0 第 8 条；S03 原文“gmail老号最好”不当作结论（原文与哈希不变）；A0 第 6 条和 A3 的弃号重注册补上新号严格养号；SKILL.md 同步。新增守门测试。回滚：回退本提交
+- 资料记录：Claude 账号注册越早权重越高，新号容易风控；老 Gmail 是否更稳目前没有定论。写入 `account-onboarding.md` A0 第 8 条；S03 原文“gmail老号最好”不当作结论（原文与哈希不变）；A0 第 6 条和 A3 的弃号重注册补上新号严格养号；SKILL.md 同步。新增守门测试。回滚：回退本提交
 
 ## 浏览器环境验收网址；买来的教育邮箱是例外（2026-10-26）
 
@@ -294,11 +300,11 @@
 
 ## 不碰代充、低质量 KYC 代过、成品号与成品邮箱（2026-10-25）
 
-- 所有者要求：支付模块 `accounts-and-payments.md` B1 写明不碰代充；KYC 所在的 A3 写明不碰低质量的 KYC 代过；邮箱注册模块 `account-onboarding.md` A0 第 2 条写明不碰成品号、成品邮箱；新增守门测试。回滚：回退本提交
+- 项目要求：支付模块 `accounts-and-payments.md` B1 写明不碰代充；KYC 所在的 A3 写明不碰低质量的 KYC 代过；邮箱注册模块 `account-onboarding.md` A0 第 2 条写明不碰成品号、成品邮箱；新增守门测试。回滚：回退本提交
 
 ## KYC 与 IP 一致性（2026-10-25）
 
-- 所有者提供：KYC 会检查 IP，IP 与支付、使用环境不一致会增大风险；Pro 后期遇到 KYC 直接弃号。写入 `accounts-and-payments.md` A3 和 `account-onboarding.md` A0 第 6 条（做 KYC 前先用 `network_check.py` 确认出口和平时一致）；新增守门测试。回滚：回退本提交
+- 资料记录：KYC 会检查 IP，IP 与支付、使用环境不一致会增大风险；Pro 后期遇到 KYC 直接弃号。写入 `accounts-and-payments.md` A3 和 `account-onboarding.md` A0 第 6 条（做 KYC 前先用 `network_check.py` 确认出口和平时一致）；新增守门测试。回滚：回退本提交
 
 ## 第二批清理：旧策略、门禁空壳、探测入口版本（2026-10-25）
 
@@ -312,11 +318,11 @@
 - manifest、references、SKILL.md、README、AGENTS.md、CLAUDE.md 去掉对它们的引用；面板卡片不再显示规格章节号
 - 发行包少了两份大文件；测试 1620 项全部通过。回滚：回退本提交
 
-## IPv6 统一为只走 IPv4；所有者资料全部上 Wiki（2026-10-25）
+## IPv6 统一为只走 IPv4；项目参考资料全部上 Wiki（2026-10-25）
 
 - **IPv6：**全项目统一为“只走 IPv4，IPv6 关闭”：Windows 本机路线默认关闭物理网卡 IPv6（B 档，远程机器仍是 C 档），Mac 可选；`authorization-tiers.md`、`whole-machine-ipv4.md`、`local-firewall-prompts.md`、SKILL.md 同步；手机端改为在小火箭、FlClash 里关闭 IPv6
-- **Wiki：**新增“所有者提供的资料”分组，S01、S02（AI 所有支付方式汇总）、S03（原文，附 PDF 链接）、S04、S05、S07、VPS 推荐报告（17 份 PDF 链接）全部上 Wiki，和原有 S06、S08、R02 一起共 23 页；S02 里的 Q 群号在 Wiki 上改为指向首页交流渠道（ADR-032），S02 一处加粗笔误和 S04 指向上游仓库的徽章链接只在 Wiki 副本里修正，仓库原文和哈希不变
-- 新增测试：所有者资料全部在 Wiki 页面清单里、Q 群号不出现在 Wiki
+- **Wiki：**新增“项目参考资料”分组，S01、S02（AI 所有支付方式汇总）、S03（原文，附 PDF 链接）、S04、S05、S07、VPS 推荐报告（17 份 PDF 链接）全部上 Wiki，和原有 S06、S08、R02 一起共 23 页；S02 里的 Q 群号在 Wiki 上改为指向首页交流渠道（ADR-032），S02 一处加粗笔误和 S04 指向上游仓库的徽章链接只在 Wiki 副本里修正，仓库原文和哈希不变
+- 新增测试：项目参考资料全部在 Wiki 页面清单里、Q 群号不出现在 Wiki
 - 回滚：回退本提交
 
 ## 删除不干活的部分（2026-10-25）
@@ -337,7 +343,7 @@
 
 ## 自建梯客户端版本兼容提醒（2026-10-25）
 
-- 所有者提供：自建梯时重点注意版本兼容性，不要出现桌面端 Clash Verge 能连上、移动端小火箭和 FlClash 连不上的情况。`egress-ip-options.md` 自建梯提示第 4 条：3x-ui 的 Xray core、协议和传输选项选所有客户端都支持的组合，建好后用用户实际要用的每个客户端各连一次、各测一次出口，只测桌面端不算建好；新增守门测试。仅文档改动。回滚：回退本提交
+- 资料记录：自建梯时重点注意版本兼容性，不要出现桌面端 Clash Verge 能连上、移动端小火箭和 FlClash 连不上的情况。`egress-ip-options.md` 自建梯提示第 4 条：3x-ui 的 Xray core、协议和传输选项选所有客户端都支持的组合，建好后用用户实际要用的每个客户端各连一次、各测一次出口，只测桌面端不算建好；新增守门测试。仅文档改动。回滚：回退本提交
 
 ## 封号后的环境痕迹清理与 Linux 清理（2026-10-25）
 
@@ -358,7 +364,7 @@
 
 ## 新手试错推荐组合（2026-10-25）
 
-- 所有者提供：目前最适合小白试错的是苹果内购 + Gmail／Outlook 邮箱 + VPS 纯净个人 IP + 在 VM 或本机上使用 + Pro 订阅，退款成功率高、稳定率高。`account-onboarding.md` 新增 A0a 推荐组合表（每项链到对应指引），开头加新手入口；`accounts-and-payments.md` 支付推荐规则第 5 条：新手首选苹果内购；SKILL.md 首问处直接路由到 A0a
+- 资料记录：目前最适合小白试错的是苹果内购 + Gmail／Outlook 邮箱 + VPS 纯净个人 IP + 在 VM 或本机上使用 + Pro 订阅，退款成功率高、稳定率高。`account-onboarding.md` 新增 A0a 推荐组合表（每项链到对应指引），开头加新手入口；`accounts-and-payments.md` 支付推荐规则第 5 条：新手首选苹果内购；SKILL.md 首问处直接路由到 A0a
 - A0 第 6 条补充：注册时弹手机号验证、之后 24 小时内又要 KYC 的号基本宣判死刑，直接放弃重来
 - 新增守门测试；仅文档改动。回滚：回退本提交
 
@@ -392,7 +398,7 @@
 
 ## Apple 内购续费入口提醒（2026-10-23）
 
-- `accounts-and-payments.md` B2 第 10 条补充：Apple 渠道续费必须先打开 Claude App，在 App 内订阅页付费，不要从 App Store 订阅管理页续费（所有者提供的实例：扣款后会员未到账，Apple 与 Claude 互相推诿）；仅文档改动
+- `accounts-and-payments.md` B2 第 10 条补充：Apple 渠道续费必须先打开 Claude App，在 App 内订阅页付费，不要从 App Store 订阅管理页续费（实战案例：扣款后会员未到账，Apple 与 Claude 互相推诿）；仅文档改动
 
 ## 减少停顿与重复读取（2026-10-23）
 
