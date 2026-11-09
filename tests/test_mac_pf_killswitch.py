@@ -140,7 +140,7 @@ class ScriptContract(unittest.TestCase):
         code = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
         self.assertNotRegex(code, r"\b(mapfile|readarray|declare -A)\b")  # macOS ships bash 3.2
         guide = (ROOT / "skills" / "claude-guardian" / "references" / "local-firewall-prompts.md").read_text(encoding="utf-8")
-        for term in ("Issue #17", "按网卡", "Issue #25", "已有真机通过报告", "现场修正版", "尚未合入", "unknown", "docs/mac-pf-killswitch-test.md", "C 档"):
+        for term in ("Issue #17", "按网卡", "Issue #25", "已验收", "所有者确认", "现场修正版", "尚未合入", "docs/mac-pf-killswitch-test.md", "C 档"):
             self.assertIn(term, guide)
         self.assertNotIn("Block Mode", guide)
         self.assertNotIn("允许规则要加在**核心**身上", guide)
@@ -148,6 +148,27 @@ class ScriptContract(unittest.TestCase):
         self.assertIn("ADR-054", (ROOT / "docs" / "decisions.md").read_text(encoding="utf-8"))
         self.assertIn("assets/mac-killswitch/guardian-pf-killswitch.sh",
                       (ROOT / "tools" / "package_skill.py").read_text(encoding="utf-8"))
+
+
+    def test_pf_acceptance_status_is_synchronized(self):
+        paths = (
+            "README.md", "README.en.md", "docs/mac-pf-killswitch-test.md",
+            "skills/claude-guardian/references/scripts-index.md",
+            "reports/mac-pf-isolated-acceptance-2026-11-02.md",
+            "skills/claude-guardian/references/local-firewall-prompts.md",
+            "skills/claude-guardian/references/routes-and-platforms.md",
+            "skills/claude-guardian/references/whole-machine-ipv4.md",
+        )
+        for name in paths:
+            with self.subTest(path=name):
+                body = (ROOT / name).read_text(encoding="utf-8")
+                self.assertIn("2026-11-09", body)
+                self.assertIn("owner-confirmed" if name == "README.en.md" else "所有者确认", body)
+        whole_machine = (ROOT / paths[-1]).read_text(encoding="utf-8")
+        self.assertNotIn("停核心演练还没在真机上做", whole_machine)
+        self.assertNotIn("靠 LuLu 或系统防火墙", whole_machine)
+        english = (ROOT / "README.en.md").read_text(encoding="utf-8")
+        self.assertNotIn("not yet verified on a real Mac", english)
 
 
 if __name__ == "__main__":

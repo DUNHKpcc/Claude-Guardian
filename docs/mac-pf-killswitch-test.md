@@ -1,8 +1,10 @@
 # Mac PF killswitch 真机测试单
 
-对应 ADR-054 和脚本 [`guardian-pf-killswitch.sh`](../skills/claude-guardian/assets/mac-killswitch/guardian-pf-killswitch.sh)。目的：在真 Mac 上证明两件事——**TUN 正常时一切照常能用**，**核心或 TUN 停掉后什么都直连不出去**——以及保险丝、回滚、开机加载都按设计工作。2026-11-02 已有[单台 Mac 最终验收报告](../reports/mac-pf-isolated-acceptance-2026-11-02.md)：关键保护和回滚取得通过样本，换网与 UDP 仍未全通过，不能宣布整条路线验收通过。本轮按所有者要求排除时间/时区，不改变以下通用测试项。
+对应 ADR-054 和脚本 [`guardian-pf-killswitch.sh`](../skills/claude-guardian/assets/mac-killswitch/guardian-pf-killswitch.sh)。目的：在真 Mac 上证明两件事——**TUN 正常时一切照常能用**，**核心或 TUN 停掉后什么都直连不出去**——以及保险丝、回滚、开机加载都按设计工作。历史测试记录见[2026-11-02 报告](../reports/mac-pf-isolated-acceptance-2026-11-02.md)，原始分项结果保留。
 
-**后续样本（2026-11-07 收录）：**[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 报告 macOS 26.6.2 / bash 3.2 / Clash Verge Rev 2.5.10 上，现场修正变量拼接后 render、apply、confirm、停核心无直连及 persist 通过，`egress_verifier: established`（8 层 pass）。这是另一环境的报告，不改写 2026-11-02 的原始结果；现场修复未合入本次随包脚本，本次未独立复验。重启、换网、新网卡、睡眠恢复及逐项浏览器／WebRTC 验收仍以实际记录为准，不能从 persist 或汇总结论推导通过。
+**当前状态（2026-11-09）：Mac PF 相关项目已验收（所有者确认）。**所有者在本次对话确认“PF相关的都标记为已验收”，包括此前列出的故障阻断、保险丝、开机加载、重启、换网、新网卡、睡眠恢复、DNS／UDP、浏览器／WebRTC 及回滚项目；不再作为项目待验收项。本次为所有者确认的状态更新，没有新增 Agent 自动实测或逐项原始测量数据。
+
+**后续样本（2026-11-07 收录）：**[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 报告 macOS 26.6.2 / bash 3.2 / Clash Verge Rev 2.5.10 上，现场修正变量拼接后 render、apply、confirm、停核心无直连及 persist 通过，`egress_verifier: established`（8 层 pass）。这是另一环境的报告，不改写 2026-11-02 的原始结果；现场修复未合入本次随包脚本，本次未独立复验。当前 PF 项目已按 2026-11-09 所有者确认标记为已验收；历史报告不补造新的逐项测量值。
 
 ## 先读：安全和救援
 
@@ -240,4 +242,4 @@ ADR-039 只证明了一台 Mac 在 TUN 正常时这三项不泄漏；重启、�
 | T8 开机加载 | | |
 | T9 回滚、卸载、PF 恢复原状 | | |
 
-把这张表发回来，我按结果更新脚本和文档中的验证环境、被测版本及覆盖范围；未测项继续保留。
+以上为空白测试模板，供新目标机使用，不代表项目仍待验收。项目 PF 相关项已按 2026-11-09 所有者确认验收完成；后续测试按实际结果填写。

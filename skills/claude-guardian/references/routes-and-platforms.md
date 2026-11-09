@@ -94,7 +94,7 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 1. 写清现行整机默认或用户明确选择的窄范围／分流例外，按[Agent 路径要求](agent-remediation.md#ipv4-only-policy)核对。指定 Profile 的 HTTPS 走既有代理只是局部观察示例，不是整机验收；不能据此写“全机安全”
 2. 按 [网络与解决方法](network-and-remedies.md) 分别检查 HTTPS、DNS、IPv6、UDP、WebRTC；中性端点也要范围批准，不主动解析 Claude 域名
 3. 对确认的差异仅拟最小配置改动，展示语义 diff、配置持久化位置、更新覆盖风险、备份与回滚；批准后仅使用已验收的适配器，否则交给用户人工完成并复验
-4. macOS 严格出站保护用系统自带 PF（[guardian-pf-killswitch.sh](../assets/mac-killswitch/guardian-pf-killswitch.sh)，逐步提示见 [local-firewall-prompts.md](local-firewall-prompts.md)，ADR-054）；不用 LuLu，它按进程拦，分不出 TUN 和直连（Issue #17）。加载和开机项是 C 档；未完成故障测试不能称已实现 kill switch，[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 已有现场修正版的真机通过报告，环境与范围见本机指引
+4. macOS 严格出站保护用系统自带 PF（[guardian-pf-killswitch.sh](../assets/mac-killswitch/guardian-pf-killswitch.sh)，逐步提示见 [local-firewall-prompts.md](local-firewall-prompts.md)，ADR-054）；不用 LuLu，它按进程拦，分不出 TUN 和直连（Issue #17）。加载和开机项是 C 档；未完成故障测试不能称已实现 kill switch，Mac PF 已验收（2026-11-09 所有者确认）；[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 为历史现场修正版通过报告，环境与版本说明见本机指引
 5. Windows 优先评估系统内置防火墙的精确程序/作用域规则（逐步提示见 [local-firewall-prompts.md](local-firewall-prompts.md#windows)）；先导出现有相关规则并核查组织策略。不要用全局 block 再假定 allow 回环能覆盖冲突；共享解释器规则可能影响其他项目
 6. 故障演练前准备离线恢复和独立控制通道，单独请求授权。分别测节点失效、GUI 退出/内核仍在、内核停止、新进程、网络切换、IPv4/IPv6 和适用 UDP；未测项保留未测
 

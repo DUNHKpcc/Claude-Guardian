@@ -26,7 +26,7 @@ rules:
   - MATCH,<代理组名>
 ```
 
-**注意：**客户端设置界面只有在对应开关启用时才覆盖合并文件里的同名字段（真机核实：TUN 总开关来自 `enable_tun_mode`，DNS 覆写来自 `enable_dns_settings`，两者启用时界面里的 `tun:`、`dns:` 段与最终运行配置一致）；改完以运行时配置读回为准。**严格路由默认可能是关的**：关着时停掉代理核心，流量会回落直连，fail-closed 就要靠 LuLu 或系统防火墙拦直连，建议在界面里开启严格路由作为第二道防线。
+**注意：**客户端设置界面只有在对应开关启用时才覆盖合并文件里的同名字段（真机核实：TUN 总开关来自 `enable_tun_mode`，DNS 覆写来自 `enable_dns_settings`，两者启用时界面里的 `tun:`、`dns:` 段与最终运行配置一致）；改完以运行时配置读回为准。**严格路由默认可能是关的**：关着时停掉代理核心，流量会回落直连，fail-closed 就要靠 Mac PF 或 Windows 系统防火墙拦直连，建议在界面里开启严格路由作为第二道防线。
 
 客户端设置里对应：TUN 模式开启，严格路由（strict-route）开启；DNS 开启、IPv6 关闭、增强模式 fake-ip；`dns-hijack` 接管 53 端口。Fake-IP 的边界和回滚后清 DNS 缓存见 [macOS DNS 经验](macos-dns-case-lessons.md) 和 [agent-remediation 第 10 条](agent-remediation.md#post-repair-stability)。
 
@@ -143,7 +143,7 @@ python scripts/egress_verifier.py check --input <证据文件.json>
 
 ## 7. 限制
 
-- Mac 上做过真机验收：TUN 开启下出口一致、DNS 与 WebRTC 无泄漏，自动取证判定 `established`（ADR-039）；重启、睡眠唤醒、换网后的复验和停核心演练还没在真机上做。Windows 按本文命令做，环境不同由 Agent 核对调整。
+- Mac PF 已验收（2026-11-09 所有者确认），含故障阻断及重启、睡眠唤醒、换网等相关项目；此前 TUN 正常时的整机通过样本见 ADR-039；PF 历史样本和现场修正版与随包脚本的差异见[PF 指引](local-firewall-prompts.md#mac)。本次未新增 Agent 自动实测。Windows 按本文命令做，环境不同由 Agent 核对调整。
 - 判定只相信 Agent 提供的观察。
 - Windows 没有带事务的写入引擎，靠备份和读回哈希，不是原子替换。
 - IPv4 不可用时报告不可用，不回退到 IPv6，也不自动换节点。

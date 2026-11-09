@@ -1,5 +1,12 @@
 # 版本记录
 
+## PF 相关项目已验收（2026-11-09，ADR-062 / PF-ACCEPTED-20261109）
+
+- 所有者确认 PF 相关项目均已验收，统一当前状态；同步中英文 README、PF 指引、路线卡、脚本索引、整机出口说明、测试单及历史报告说明，历史测试原值保留
+- 修正旧整机说明中的“停核心未测”和 LuLu 建议；新增状态同步回归测试（修改前失败），章节索引重新生成
+- 仅文档和测试变更，无 PF 执行逻辑、设备配置或来源 manifest 变更；Issue #25 现场修复尚未合入的事实保留。本次未新增真机测量。回滚：普通 revert 本提交
+- 验证：专用临时环境安装 `requirements-dev.txt` 后，`python -m unittest discover -s tests -v` 共 1543 项（1534 通过、9 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts`、`git diff --check` 通过；两次打包字节一致（SHA-256 `a2511cf418d79b395faffd9cf8650bdf146516149969c7cf41141cf6728aa7f3`），Wiki 本地导出 28 页。首轮旧环境缺 PyYAML 失败，补齐依赖后发现 ADR-039 引用遗漏，恢复引用后完整复跑通过；未放松断言。推送 CI 因测试文件变化运行三平台，结果另行核实
+
 ## 新账号注册初期（2026-11-09，ADR-061 / ACCOUNT-ONBOARDING-20261109）
 
 - A0 新增注册初期阶段：优先原版 Claude Code CLI，暂不接入需要 Claude OAuth 授权的 CC Switch、oh-my-pi 等第三方工具；沿用主 Skill 的 A0 入口，章节索引重新生成
