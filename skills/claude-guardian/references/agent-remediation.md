@@ -34,7 +34,7 @@
 1. **自启和持久化：**代理客户端开机自启、服务模式、订阅和扩展合并顺序要和这次改动一致；只改生成配置可能被应用回写或订阅更新覆盖，改在持久化源上。没有受支持的自启入口就告诉用户，不自建服务。
 2. **整机覆盖：**按下一节，所有普通应用和子进程走同一 IPv4 出口；用户明确要求的例外分开记录。
 3. **四层分开报：**规则写进去了、应用载入了、程序实际用了、端到端测通了。一次 curl 成功只代表那一次。
-4. **按变化复测：**节点失效、GUI 退出但核心还在、核心停止、重启、睡眠唤醒、换网、订阅或客户端更新后，用 `network_check.py run` 再测；故障演练加 `--failure-drill`，要有独立恢复办法、不能切断唯一的控制通道。
+4. **按变化复测：**[场景验收](local-firewall-prompts.md#incident-acceptance)。节点失效、GUI 退出但核心还在、核心停止、重启、睡眠唤醒、换网、订阅或客户端更新后，用 `network_check.py run` 再测；故障演练加 `--failure-drill`，要有独立恢复办法、不能切断唯一的控制通道。
 5. **DNS、UDP、WebRTC 各测各的：**`network_check.py` 测 DNS 泄露和 UDP，WebRTC 用 `serve_webrtc.py` 在浏览器里测。
 6. **IP 漂移：**出口变了先告诉用户、暂停依赖旧出口的步骤，查当前选的节点、自动切换和配置更新，不反复重试或轮换节点。
 7. **Fake-IP 回滚后清 DNS 缓存：**代理或 TUN 关掉后，缓存里的 198.18.0.0/15 假地址会让网络不通。Windows 用 `ipconfig /flushdns`；macOS 用 `sudo dscacheutil -flushcache` 加 `sudo killall -HUP mDNSResponder`；用户同意后执行。

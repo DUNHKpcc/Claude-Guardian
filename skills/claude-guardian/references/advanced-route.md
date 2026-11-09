@@ -98,6 +98,8 @@ sudo -n bash -c "setsid env DISPLAY=:0 WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR
 
 ## 5. 验收与覆盖矩阵
 
+部署交付同时按[突发场景表及 Agent 提示词](local-firewall-prompts.md#incident-acceptance)逐项记录，选 Linux 分支并核对实际安装组件。
+
 钉死思路是**双层加时间轴**：第一层 TUN 在路由层截获一切流量，第二层 nftables fail-closed 在内核层兜底，启动、运行、崩溃、恢复各阶段都有组件接手。
 
 | 场景 | 拦截层 / 机制 | 验证方式 |

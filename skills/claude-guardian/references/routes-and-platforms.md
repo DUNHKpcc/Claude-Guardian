@@ -103,6 +103,8 @@ If the task depends on local GUI/software/hardware or data cannot leave the mach
 <a id="safe-shutdown"></a>
 ### 关闭代理与防火墙前：先确认后台退出
 
+本节用于主动停用保护或回滚；正常关机、重启保留长期防火墙策略，不要求先撤规则。
+
 2026-11-07：退出 Claude Desktop、关闭浏览器中 Claude 相关标签页后，仍可能留下监听进程。窗口消失不是退出证据；监听存在也不等于已经向外发送数据。本条是操作指导，本次未独立复测具体进程及各平台行为。
 
 1. **保留代理和防直连规则。**先保存工作，按现有授权正常退出 Desktop、相关 Code／IDE 会话和浏览器标签页；涉及接触 Claude 的动作仍按 C 档确认。不要先停代理或撤规则再检查。

@@ -296,6 +296,22 @@ class GuidanceContracts(unittest.TestCase):
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("references/local-firewall-prompts.md#delivery-scope", skill)
 
+    def test_incident_acceptance_has_platform_branches_and_agent_entry(self):
+        doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
+        section = doc.split('<a id="incident-acceptance"></a>', 1)[1].split("\n## Mac\n", 1)[0]
+        for term in ("PersistentStore", "ActiveStore", "Domain/Private/Public", "LaunchDaemon",
+                     "nftables", "核心崩溃", "节点不可达", "关机后开机", "睡眠唤醒", "换网",
+                     "新增网卡", "出口漂移", "独立恢复", "三阶段", "正常关机不要求撤销",
+                     "禁止为验收直接拔电", "可直接交给目标机 Agent", "network_check.py",
+                     "egress_verifier.py", "lifecycle_checked", "未做", "不适用"):
+            self.assertIn(term, section)
+        for name in ("agent-remediation.md", "whole-machine-ipv4.md", "advanced-route.md"):
+            self.assertIn("local-firewall-prompts.md#incident-acceptance",
+                          (REFS / name).read_text(encoding="utf-8"), name)
+        delivery = doc.split('<a id="delivery-scope"></a>', 1)[1].split('<a id="incident-acceptance"></a>', 1)[0]
+        self.assertIn("#incident-acceptance", delivery)
+        self.assertIn("不同场景仍须分别取证", delivery)
+
     def test_readme_is_not_defensive(self):
         # The README states what the project does; boundaries live in one short list.
         for name, heading, dropped in (

@@ -274,10 +274,14 @@ Linux：Claude 本机数据清理（Agent 提示词，无内置宿主）（8 节
 
 ## local-firewall-prompts.md
 
-本机路线：Clash 与防火墙（Agent 提示词）（13 节）
+本机路线：Clash 与防火墙（Agent 提示词）（17 节）
 
 - [通用工作方式（两个系统相同）](local-firewall-prompts.md#通用工作方式两个系统相同)
 - [替别人交付：先说范围，按验收单交](local-firewall-prompts.md#替别人交付先说范围按验收单交)
+- [突发场景：分平台处理与 Agent 验收提示词（2026-11-09）](local-firewall-prompts.md#突发场景分平台处理与-agent-验收提示词2026-11-09)
+  - [平台机制与检查重点](local-firewall-prompts.md#平台机制与检查重点)
+  - [场景与通过条件](local-firewall-prompts.md#场景与通过条件)
+  - [可直接交给目标机 Agent 的提示词](local-firewall-prompts.md#可直接交给目标机-agent-的提示词)
 - [Mac](local-firewall-prompts.md#mac)
   - [Mac 上的 Clash（Clash Verge）怎么配](local-firewall-prompts.md#mac-上的-clashclash-verge怎么配)
   - [Mac 的防火墙：PF 脚本（已验收）](local-firewall-prompts.md#mac-的防火墙pf-脚本已验收)
