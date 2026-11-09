@@ -30,6 +30,11 @@
     - S03 原文“如果被封过号，不要再用该设备”以本条为准（原文与哈希不变）。
 12. **内购用户保持移动端活跃（所有者 2026-10-28）**：**用 Apple 或 Google Play 内购订阅的，手机上的 Claude App 至少每周打开使用一次**，保持移动端活跃。手机的出口照[手机端防封要点](mobile-guidance.md)和电脑保持一致。Agent 在用户选定内购时就告诉用户这一条，续费时再提醒一次。
 
+<a id="new-account-stage"></a>
+## 新账号注册初期：优先原版 Claude Code CLI
+
+新注册账号不要一上来就使用 CC Switch（ccswitch）、oh-my-pi（ohmypi）等需要 OAuth 授权的第三方插件或工具，尽量使用原版 Claude Code CLI。Agent 在确认用户是新注册账号时，先告知这条使用建议。
+
 与 A1/A2 的关系：本文只给注册和使用节奏的建议，不改变 PC0 的接触前门禁、不触发任何实际账号操作；账号被停用时仍走 [M12](incidents-and-integrations.md) 事故分诊，充值、换号不是解除限制的办法。
 
 <a id="a0a"></a>

@@ -1,5 +1,11 @@
 # 版本记录
 
+## 新账号注册初期（2026-11-09，ADR-061 / ACCOUNT-ONBOARDING-20261109）
+
+- A0 新增注册初期阶段：优先原版 Claude Code CLI，暂不接入需要 Claude OAuth 授权的 CC Switch、oh-my-pi 等第三方工具；沿用主 Skill 的 A0 入口，章节索引重新生成
+- 仅指导更新，来源 manifest 不变，账号实测 not_run。回滚：普通 revert 本提交
+- 验证：首次完整测试 1542 项，2 失败、21 跳过（特殊文件权限测试及主 Skill 长度门限）；已恢复主入口原文。Node 28 场景、编译通过；修改前两次打包一致，最终包待复验。未提交推送
+
 ## PF 真机验证标注更新（2026-11-07，ADR-060 / PF-LABEL-25）
 
 - 根据 Issue #25 更新“未在真机验证”为“已有指定环境的真机通过报告”；注明 macOS 26.6.2 / bash 3.2 / Clash Verge Rev 2.5.10、现场修正版、故障阻断与 established 结果，以及未明确覆盖的生命周期项目
