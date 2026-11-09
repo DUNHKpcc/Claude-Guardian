@@ -1,5 +1,12 @@
 # 版本记录
 
+## 合入 PF 现场变量修复（2026-11-09，ADR-063 / PF-INTERPOLATION-25）
+
+- 合入 Issue #25 的 5 处 `${var}` 修复，避免变量紧贴中文标点时的错误展开；当前文档改为已合入，PF 已验收状态不变
+- 实际脚本回归覆盖配置缺失、IPv6 节点提示和 DNS 自动／手动／TUN 路径；旧代码在本机 Bash 3.2.57 的 UTF-8 locale 下 3 个子场景失败，C locale 未复现，与 Issue 的 locale 描述分别记录
+- 不改 PF 规则、加载顺序或权限，不操作本机 PF，来源 manifest 不变。风险仅为提示信息变量展开；回滚：普通 revert 本提交
+- 验证：`python -m unittest discover -s tests -v` 1545 项（1536 通过、9 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts`、`/bin/bash -n skills/claude-guardian/assets/mac-killswitch/guardian-pf-killswitch.sh` 和 `git diff --check` 通过；两次打包字节一致（SHA-256 `0e987484bd0048d20446260a5ffd9c1bbab7caadcd561167f1737076067b4ef2`）。推送前核实远端 main；三平台 push CI 结果另行核实
+
 ## PF 相关项目已验收（2026-11-09，ADR-062 / PF-ACCEPTED-20261109）
 
 - 所有者确认 PF 相关项目均已验收，统一当前状态；同步中英文 README、PF 指引、路线卡、脚本索引、整机出口说明、测试单及历史报告说明，历史测试原值保留

@@ -114,12 +114,12 @@ collect_nodes() {
     ips=$(csv_words "$NODE_IPS"); ports=$(csv_words "$NODE_PORTS")
   else
     local cfg="${CONFIG:-$(user_home)/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/clash-verge.yaml}"
-    [ -f "$cfg" ] || die "找不到 Clash Verge 运行配置：$cfg（可用 CONFIG= 指定，或直接给 NODE_IPS/NODE_PORTS）"
+    [ -f "$cfg" ] || die "找不到 Clash Verge 运行配置：${cfg}（可用 CONFIG= 指定，或直接给 NODE_IPS/NODE_PORTS）"
     local kind val
     while read -r kind val; do
       case "$kind" in
         S) if is_ipv4 "$val"; then ips="$ips $val"
-           elif [[ "$val" == *:* ]]; then warn "跳过 IPv6 节点 $val（本路线只走 IPv4）"
+           elif [[ "$val" == *:* ]]; then warn "跳过 IPv6 节点 ${val}（本路线只走 IPv4）"
            else ips="$ips $(resolve_domain "$val" | tr '\n' ' ')"; fi ;;
         P) ports="$ports $val" ;;
       esac
@@ -197,14 +197,14 @@ do_dns() {
     [ -n "$svc" ] || continue
     out=$(networksetup -getdnsservers "$svc" 2>/dev/null || true)
     if echo "$out" | grep -qi "aren't any"; then
-      echo "WARN: $svc：自动（DHCP 下发）。换网后会用新网络下发的 DNS，常见是路由器地址，会被拦"
+      echo "WARN: ${svc}：自动（DHCP 下发）。换网后会用新网络下发的 DNS，常见是路由器地址，会被拦"
       warned=1
     else
       cls=""
       for ns in $out; do
         { is_ipv4 "$ns" || [[ "$ns" == *:* ]]; } && cls="$cls $(ip_class "$ns")"
       done
-      echo "  $svc：手动（$(uniq_words $cls)）"
+      echo "  ${svc}：手动（$(uniq_words $cls)）"
     fi
   done < <(networksetup -listallnetworkservices 2>/dev/null | tail -n +2)
   echo "== 当前生效的 DNS 走哪张网卡 =="
@@ -215,7 +215,7 @@ do_dns() {
     fi
     ifc=$(route -n get "$ns" 2>/dev/null | awk '/interface:/{print $2}' || true)
     case "$ifc" in
-      utun*|lo*) echo "  一个$cls 走 $ifc：会进 TUN，正常" ;;
+      utun*|lo*) echo "  一个$cls 走 ${ifc}：会进 TUN，正常" ;;
       *) echo "WARN: 一个$cls 走 ${ifc:-未知网卡}：不进 TUN。加了 PF 会解析失败；放进 LAN_NET 能解析，但查询绕过代理（DNS 泄漏）"; warned=1 ;;
     esac
     case " $allowed " in *" $ns "*)

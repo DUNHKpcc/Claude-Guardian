@@ -143,7 +143,7 @@ python scripts/egress_verifier.py check --input <证据文件.json>
 
 ## 7. 限制
 
-- Mac PF 已验收（2026-11-09 所有者确认），含故障阻断及重启、睡眠唤醒、换网等相关项目；此前 TUN 正常时的整机通过样本见 ADR-039；PF 历史样本和现场修正版与随包脚本的差异见[PF 指引](local-firewall-prompts.md#mac)。本次未新增 Agent 自动实测。Windows 按本文命令做，环境不同由 Agent 核对调整。
+- Mac PF 已验收（2026-11-09 所有者确认），含故障阻断及重启、睡眠唤醒、换网等相关项目；此前 TUN 正常时的整机通过样本见 ADR-039；PF 历史样本和已合入的现场变量修复见[PF 指引](local-firewall-prompts.md#mac)。本次未新增 Agent 自动实测。Windows 按本文命令做，环境不同由 Agent 核对调整。
 - 判定只相信 Agent 提供的观察。
 - Windows 没有带事务的写入引擎，靠备份和读回哈希，不是原子替换。
 - IPv4 不可用时报告不可用，不回退到 IPv6，也不自动换节点。

@@ -72,7 +72,7 @@
 
 **验证状态（2026-11-07 更新）：**[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 报告了 2026-11-05 的真机通过样本：macOS 26.6.2、系统 bash 3.2（C locale）、Clash Verge Rev 2.5.10、VLESS+REALITY 域名节点。报告覆盖 render → apply（180 秒保险丝）→ 三条联网检查 → confirm → 停核心后无直连 → persist；`egress_verifier` 为 `established`，8 层全部 pass，advisory 仅 OS_IPV6 未全局禁用。
 
-**版本与覆盖边界：**上述结果来自报告者将 5 处变量与中文标点拼接改为 `${var}` 后的现场修正版；该修复尚未合入本次随包脚本。本次仅更新标注，未独立复验报告、未确认所述崩溃根因，不把报告视为当前未修正版通过。项目验收状态以 2026-11-09 所有者确认为准。上述版本差异仍需保留，验收标注不表示现场修复已合入；新目标机按实际环境核对，真机测试单见仓库 `docs/mac-pf-killswitch-test.md`。
+**版本说明（2026-11-09）：**Issue #25 现场修正版的 5 处 `${var}` 变量边界修复已合入随包脚本。回归测试运行实际脚本，覆盖配置缺失、跳过 IPv6 节点及 DNS 自动／手动／TUN 路径提示；本机 Bash 3.2 在 UTF-8 locale 下复现旧代码的 `unbound variable`，C locale 未复现，与报告的 locale 描述有差异。修复后两种 locale 均通过。本次没有重新加载本机 PF，项目已验收状态保持不变；新目标机按实际环境核对，真机测试单见仓库 `docs/mac-pf-killswitch-test.md`。
 
 ## Windows
 

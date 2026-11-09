@@ -1,6 +1,6 @@
 """Offline checks for the macOS PF killswitch script (ADR-054).
 
-Only the `render` path runs here: it builds the rules without touching PF. Loading rules,
+Rule rendering and DNS diagnostics run offline without touching PF. Loading rules,
 the fuse, persistence and the failure drill need a real Mac (docs/mac-pf-killswitch-test.md).
 """
 import os
@@ -39,7 +39,57 @@ class RenderRules(unittest.TestCase):
     def render(self, **env):
         full = {"PATH": os.environ.get("PATH", ""), "HOME": tempfile.gettempdir()}
         full.update(env)
-        return subprocess.run([BASH, str(SCRIPT), "render"], env=full, capture_output=True, text=True, timeout=30)
+        return subprocess.run([BASH, str(SCRIPT), "render"], env=full, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
+
+    def test_config_diagnostics_survive_multibyte_punctuation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = Path(tmp) / "clash-verge.yaml"
+            for locale in ("C", "en_US.UTF-8"):
+                with self.subTest(locale=locale, case="missing"):
+                    out = self.render(CONFIG=str(cfg), NICS="en0", LC_ALL=locale)
+                    self.assertNotEqual(out.returncode, 0)
+                    self.assertIn("找不到 Clash Verge 运行配置：", out.stderr)
+                    self.assertNotIn("unbound variable", out.stderr)
+                cfg.write_text("proxies:\n  - {server: '2001:db8::1', port: 443}\n"
+                               "  - {server: 203.0.113.10, port: 443}\n", encoding="utf-8")
+                with self.subTest(locale=locale, case="ipv6"):
+                    out = self.render(CONFIG=str(cfg), NICS="en0", LC_ALL=locale)
+                    self.assertEqual(out.returncode, 0, out.stderr)
+                    self.assertIn("跳过 IPv6 节点 2001:db8::1（", out.stderr)
+                cfg.unlink()
+
+    def test_dns_diagnostics_survive_multibyte_punctuation(self):
+        # Only OS observations are fixtures; source and run the actual DNS function.
+        command = r"""
+source "$1" render >/dev/null
+RULES_PENDING="$2/pending"
+RULES_CONFIRMED="$2/confirmed"
+need_mac() { :; }
+networksetup() {
+  case "$1" in
+    -listallnetworkservices) printf '%s\n' 'Services' 'Automatic' 'Manual' ;;
+    -getdnsservers)
+      if [ "$2" = Automatic ]; then printf "%s\n" "There aren't any DNS Servers set";
+      else printf '%s\n' '1.1.1.1'; fi ;;
+  esac
+}
+scutil() { printf '%s\n' 'nameserver[0] : 1.1.1.1'; }
+route() { printf '%s\n' 'interface: utun1'; }
+do_dns
+"""
+        with tempfile.TemporaryDirectory() as tmp:
+            for locale in ("C", "en_US.UTF-8"):
+                with self.subTest(locale=locale):
+                    env = {"PATH": os.environ.get("PATH", ""), "HOME": tmp,
+                           "NODE_IPS": "203.0.113.10", "NODE_PORTS": "443",
+                           "NICS": "en0", "LC_ALL": locale}
+                    out = subprocess.run([BASH, "-c", command, "pf-dns-test", str(SCRIPT), tmp],
+                                         env=env, capture_output=True, text=True,
+                                         encoding="utf-8", errors="replace", timeout=30)
+                    self.assertEqual(out.returncode, 0, out.stderr)
+                    for expected in ("Automatic：自动", "Manual：手动", "utun1：会进 TUN"):
+                        self.assertIn(expected, out.stdout)
+                    self.assertNotIn("unbound variable", out.stderr)
 
     def test_syntax(self):
         self.assertEqual(subprocess.run([BASH, "-n", str(SCRIPT)]).returncode, 0)
@@ -140,7 +190,7 @@ class ScriptContract(unittest.TestCase):
         code = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
         self.assertNotRegex(code, r"\b(mapfile|readarray|declare -A)\b")  # macOS ships bash 3.2
         guide = (ROOT / "skills" / "claude-guardian" / "references" / "local-firewall-prompts.md").read_text(encoding="utf-8")
-        for term in ("Issue #17", "按网卡", "Issue #25", "已验收", "所有者确认", "现场修正版", "尚未合入", "docs/mac-pf-killswitch-test.md", "C 档"):
+        for term in ("Issue #17", "按网卡", "Issue #25", "已验收", "所有者确认", "现场修正版", "已合入随包脚本", "docs/mac-pf-killswitch-test.md", "C 档"):
             self.assertIn(term, guide)
         self.assertNotIn("Block Mode", guide)
         self.assertNotIn("允许规则要加在**核心**身上", guide)

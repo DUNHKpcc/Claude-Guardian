@@ -4,7 +4,7 @@
 
 **当前状态（2026-11-09）：Mac PF 相关项目已验收（所有者确认）。**所有者在本次对话确认“PF相关的都标记为已验收”，包括此前列出的故障阻断、保险丝、开机加载、重启、换网、新网卡、睡眠恢复、DNS／UDP、浏览器／WebRTC 及回滚项目；不再作为项目待验收项。本次为所有者确认的状态更新，没有新增 Agent 自动实测或逐项原始测量数据。
 
-**后续样本（2026-11-07 收录）：**[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 报告 macOS 26.6.2 / bash 3.2 / Clash Verge Rev 2.5.10 上，现场修正变量拼接后 render、apply、confirm、停核心无直连及 persist 通过，`egress_verifier: established`（8 层 pass）。这是另一环境的报告，不改写 2026-11-02 的原始结果；现场修复未合入本次随包脚本，本次未独立复验。当前 PF 项目已按 2026-11-09 所有者确认标记为已验收；历史报告不补造新的逐项测量值。
+**后续样本（2026-11-07 收录）：**[Issue #25](https://github.com/DUNHKpcc/Claude-Guardian/issues/25) 报告 macOS 26.6.2 / bash 3.2 / Clash Verge Rev 2.5.10 上，现场修正变量拼接后 render、apply、confirm、停核心无直连及 persist 通过，`egress_verifier: established`（8 层 pass）。这是另一环境的报告，不改写 2026-11-02 的原始结果；该 5 处变量边界修复已于 2026-11-09 合入随包脚本并通过离线回归，本次未重新执行 PF 真机操作。当前 PF 项目已按 2026-11-09 所有者确认标记为已验收；历史报告不补造新的逐项测量值。
 
 ## 先读：安全和救援
 
