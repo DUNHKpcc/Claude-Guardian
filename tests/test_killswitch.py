@@ -121,6 +121,37 @@ class Controller(unittest.TestCase):
             k.on(cfg, self.path)
         self.assertEqual([c.args[1] for c in native.call_args_list], ['On', 'Off'])
 
+    def test_whole_machine_requires_verified_coverage_before_any_change(self):
+        cfg = dict(self.cfg, backend='windows_firewall', windows=dict(self.cfg['windows'], mode='whole_machine'))
+        for coverage in ({}, {'status':'unknown'}, {'status':'fail'}):
+            with self.subTest(coverage=coverage), patch.object(k, 'status', return_value={'protection':'off', 'startup':False, 'coverage':coverage}), patch.object(k, 'windows') as native, self.assertRaises(k.SwitchError):
+                k.on(cfg, self.path)
+            native.assert_not_called()
+        states = [{'protection':'off', 'startup':False, 'coverage':{'status':'pass'}},
+                  {'protection':'on', 'startup':True, 'coverage':{'status':'unknown'}}]
+        with patch.object(k, 'status', side_effect=states), patch.object(k, 'windows') as native, patch('builtins.input', return_value='KEEP'), contextlib.redirect_stdout(io.StringIO()), self.assertRaises(k.SwitchError):
+            k.on(cfg, self.path)
+        self.assertEqual([c.args[1] for c in native.call_args_list], ['On', 'Off'])
+
+    def test_whole_machine_confirmation_discloses_cost_before_prompt(self):
+        cfg = dict(self.cfg, backend='windows_firewall', windows=dict(self.cfg['windows'], mode='whole_machine'))
+        output = io.StringIO()
+        with patch.object(sys.stdin, 'isatty', return_value=True), patch('builtins.input', return_value='ON ' + cfg['target']), contextlib.redirect_stdout(output):
+            k.confirm('on', cfg)
+        text = output.getvalue()
+        for phrase in ('影响所有软件', '可能断网', '国内直连', '局域网', '虚拟机', '远程连接', '恢复原有出站策略'):
+            self.assertIn(phrase, text)
+        self.assertLess(text.index('影响所有软件'), text.index('输入 ON'))
+
+    def test_whole_machine_config_is_explicit_and_legacy_remains_valid(self):
+        for mode in ('whole_machine', 'application_paths', 'invalid'):
+            cfg = dict(self.cfg, windows=dict(self.cfg['windows'], mode=mode))
+            self.path.write_text(json.dumps(cfg), encoding='utf-8')
+            if mode == 'invalid':
+                with self.assertRaises(k.SwitchError): k.load_config(self.path)
+            else:
+                self.assertEqual(k.load_config(self.path)['windows']['mode'], mode)
+
     def test_already_on_is_idempotent_and_mixed_state_is_not_overwritten(self):
         with patch.object(k,'status',return_value={'protection':'on','startup':True}), patch.object(k,'pf') as native:
             self.assertEqual(k.on(dict(self.cfg,backend='mac_pf'),self.path)['protection'],'on')

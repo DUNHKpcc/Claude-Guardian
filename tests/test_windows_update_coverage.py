@@ -19,7 +19,7 @@ class SwitchCoveragePresentation(unittest.TestCase):
 const assert = require('node:assert/strict');
 const elements = new Map();
 const document = {
-  getElementById(id) { if (!elements.has(id)) elements.set(id, {classList:{toggle(){}},textContent:''}); return elements.get(id); },
+  getElementById(id) { if (!elements.has(id)) elements.set(id, {classList:{toggle(){}},textContent:'',showModal(){}}); return elements.get(id); },
   querySelector() { return {classList:{toggle(){}}}; }
 };
 const fetch = () => new Promise(() => {});
@@ -37,6 +37,12 @@ for (const status of ['unknown','fail']) {
 }
 render({protection:'on',startup:true,coverage:{status:'fail'},stale:true});
 assert.equal(elements.get('coverage').textContent,'需要刷新');
+render({protection:'on', startup:true, coverage:{scope:'whole_machine',status:'pass'}});
+assert.equal(elements.get('coverage-label').textContent,'整机出口配置');
+assert.equal(elements.get('coverage').textContent,'规则已核实');
+ask('on');
+assert.match(elements.get('dialog-copy').textContent,/影响所有软件/);
+assert.match(elements.get('dialog-copy').textContent,/虚拟机和远程连接/);
 """
         result = subprocess.run(['node', '-e', fixture + script + assertions], capture_output=True, text=True, encoding='utf-8', timeout=10)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -96,6 +102,117 @@ $results | ConvertTo-Json -Compress
             self.assertEqual(actual[scenario], 'fail', scenario)
         for scenario in ('normal', 'denied', 'legacy-baseline', 'new-component-unverified'):
             self.assertEqual(actual[scenario], 'unknown', scenario)
+
+    def test_whole_machine_reads_all_effective_allows_and_ignores_claude_updates(self):
+        source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
+        functions = source[source.index('function Get-RuleConditions'):source.index("if ($Action -ne 'Status')")]
+        fixture = r'''
+$settings = @{mode='whole_machine';enable_rules=@('proxy','tun');disable_rules=@('legacy-allow','old-claude-block')}
+$cfg = @{target='fixture'}
+$names = $settings.enable_rules + $settings.disable_rules
+$state = $PSCommandPath + '.baseline.json'
+$script:scenario = 'off'
+$script:changes = @()
+function Get-NetFirewallProfile { param($PolicyStore)
+    foreach ($name in @('Domain','Private','Public')) {
+        $policy = if ($script:scenario -eq 'off' -or (($script:scenario -eq 'profile-allow' -or ($script:scenario -eq 'persistent-profile-allow' -and $PolicyStore -eq 'PersistentStore')) -and $name -eq 'Public')) {2} else {4}
+        [pscustomobject]@{Name=$name;Enabled=$true;DefaultOutboundAction=[FixturePolicy]$policy}
+    }
+}
+Add-Type 'public enum FixturePolicy { Allow=2, Block=4 }'
+function Get-NetFirewallRule { param($PolicyStore,$Name,$Direction,$Action)
+    if ($script:scenario -eq 'denied') { throw 'AccessDenied' }
+    $fixtureNames = @('proxy','tun','legacy-allow','old-claude-block')
+    if ($script:scenario -in @('extra-allow','disabled-extra','extra-inbound') -or ($script:scenario -eq 'persistent-extra' -and $PolicyStore -eq 'PersistentStore')) { $fixtureNames += 'unexpected' }
+    foreach ($item in $fixtureNames) {
+        if ($Name -and $item -ne $Name) { continue }
+        $dir = if ($item -eq 'unexpected' -and $script:scenario -eq 'extra-inbound') {'Inbound'} else {'Outbound'}
+        $act = if ($item -eq 'old-claude-block') {'Block'} else {'Allow'}
+        if ($Direction -and $dir -ne $Direction) { continue }
+        if ($Action -and $act -ne $Action) { continue }
+        $enabled = if ($item -eq 'unexpected') {$script:scenario -ne 'disabled-extra'} elseif ($script:scenario -eq 'off') {$settings.disable_rules -contains $item} else {$settings.enable_rules -contains $item}
+        [pscustomobject]@{Name=$item;Store=$PolicyStore;Direction=$dir;Action=$act;Profile='Any';Enabled=$enabled}
+    }
+}
+function Get-NetFirewallApplicationFilter { process {
+    $program = if ($_.Name -eq 'proxy') {$PSCommandPath} elseif ($_.Name -eq 'old-claude-block') {'missing-old-claude.exe'} else {'Any'}
+    if ($_.Name -eq 'proxy' -and $script:scenario -eq 'missing-proxy') { $program='missing-proxy.exe' }
+    if ($script:scenario -eq 'unrestricted') { $program='Any' }
+    [pscustomobject]@{Program=$program;Package='Any'}
+} }
+function Get-NetFirewallServiceFilter { process { [pscustomobject]@{Service='Any'} } }
+function Get-NetFirewallInterfaceFilter { process {
+    $alias = if ($_.Name -eq 'tun') {'Guardian-TUN'} else {'Any'}
+    if ($script:scenario -eq 'interface-drift' -and $_.Store -eq 'ActiveStore') { $alias='changed' }
+    [pscustomobject]@{InterfaceAlias=@($alias)}
+} }
+function Get-NetFirewallInterfaceTypeFilter { process { [pscustomobject]@{InterfaceType='Any'} } }
+function Get-NetAdapter { param($Name,[switch]$IncludeHidden,$ErrorAction)
+    if ($script:scenario -eq 'missing-interface') { throw 'Interface missing' }
+    [pscustomobject]@{Name=$Name}
+}
+function Get-NetFirewallAddressFilter { process {
+    $remote = if ($_.Name -eq 'proxy') {'203.0.113.8'} else {'Any'}
+    if ($_.Name -eq 'proxy' -and ($script:scenario -eq 'baseline-drift' -or ($script:scenario -eq 'address-drift' -and $_.Store -eq 'ActiveStore'))) { $remote='203.0.113.9' }
+    if ($script:scenario -eq 'unrestricted') { $remote='Any' }
+    [pscustomobject]@{LocalAddress=@('Any');RemoteAddress=@($remote)}
+} }
+function Get-NetFirewallPortFilter { process {
+    $protocol = if ($_.Name -eq 'proxy') {'TCP'} else {'Any'}
+    $port = if ($_.Name -eq 'proxy') {'443'} else {'Any'}
+    if ($script:scenario -eq 'port-drift' -and $_.Store -eq 'ActiveStore') { $port='80' }
+    if ($script:scenario -eq 'unrestricted') { $protocol='Any' }
+    [pscustomobject]@{Protocol=$protocol;LocalPort=@('Any');RemotePort=@($port);IcmpType=@('Any');DynamicTarget='Any'}
+} }
+function Get-NetFirewallSecurityFilter { process {
+    $bypass = $script:scenario -eq 'security-drift' -and $_.Store -eq 'ActiveStore'
+    [pscustomobject]@{Authentication='NotRequired';Encryption='NotRequired';OverrideBlockRules=$bypass;LocalUser='Any';RemoteUser='Any';RemoteMachine='Any'}
+} }
+function Get-AppxPackage { throw 'Whole-machine mode must not depend on Claude inventory' }
+function Set-NetFirewallProfile { param($PolicyStore,$Profile,$Enabled,$DefaultOutboundAction)
+    $script:changes += "profile:$Profile/$DefaultOutboundAction"
+}
+function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled) $script:changes += "rule:$Name/$Enabled" }
+function Get-ScheduledTask { param($TaskName,$ErrorAction) return $null }
+$baseline = Get-Snapshot
+$baseline | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $state -Encoding UTF8
+$results = @{planned=(Get-Coverage $baseline -Planned).status;off=(Get-State).protection}
+foreach ($scenario in @('normal','claude-update','extra-allow','disabled-extra','extra-inbound','address-drift','port-drift','security-drift','interface-drift','baseline-drift','profile-allow','persistent-profile-allow','persistent-extra','denied','missing-interface')) {
+    $script:scenario = $scenario
+    $results[$scenario] = (Get-Coverage $baseline).status
+}
+$script:scenario='normal'
+$results['on']=(Get-State).protection
+$results['scope']=(Get-State).coverage.scope
+$results['stage']=(Get-State).coverage.stage
+$baseline.mode=$null
+$results['old-baseline']=(Get-Coverage $baseline).status
+$baseline.mode='whole_machine'
+$baseline.rules[0].conditions.Remove('RemoteAddress')
+$results['incomplete-baseline']=(Get-Coverage $baseline).status
+foreach ($scenario in @('unrestricted','missing-proxy')) {
+    $script:scenario=$scenario
+    $testBaseline=Get-Snapshot
+    $results[$scenario]=(Get-Coverage $testBaseline).status
+}
+$script:scenario='extra-allow'
+Restore-Baseline
+$results['restored']=@($script:changes)
+$results | ConvertTo-Json -Depth 6 -Compress
+'''
+        actual = self.run_ps(functions + fixture)
+        for scenario in ('planned', 'normal', 'claude-update', 'disabled-extra', 'extra-inbound'):
+            self.assertEqual(actual[scenario], 'pass', scenario)
+        for scenario in ('extra-allow', 'address-drift', 'port-drift', 'security-drift', 'interface-drift', 'baseline-drift', 'profile-allow', 'persistent-profile-allow', 'persistent-extra', 'unrestricted', 'missing-proxy'):
+            self.assertEqual(actual[scenario], 'fail', scenario)
+        for scenario in ('denied', 'missing-interface', 'old-baseline', 'incomplete-baseline'):
+            self.assertEqual(actual[scenario], 'unknown', scenario)
+        self.assertEqual(actual['on'], 'on')
+        self.assertEqual(actual['off'], 'off')
+        self.assertEqual(actual['scope'], 'whole_machine')
+        self.assertEqual(actual['stage'], 'effective')
+        self.assertEqual(actual['restored'], ['profile:Domain/2', 'profile:Private/2', 'profile:Public/2',
+                                           'rule:proxy/False', 'rule:tun/False', 'rule:legacy-allow/True', 'rule:old-claude-block/True'])
 
     def test_source_deployment_failure_preserves_old_rules_and_never_prints_success(self):
         source = (SKILL / 'sources/S05-local-protection.md').read_text(encoding='utf-8')

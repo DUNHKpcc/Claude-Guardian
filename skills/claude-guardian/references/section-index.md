@@ -232,10 +232,11 @@ M00: adaptive intake and stable question registry（18 节）
 
 ## killswitch-switch.md
 
-Guardian Switch：统一防直连开关（5 节）
+Guardian Switch：统一防直连开关（6 节）
 
 - [支持范围与操作含义](killswitch-switch.md#支持范围与操作含义)
 - [首次配置：交给目标机 Agent](killswitch-switch.md#首次配置交给目标机-agent)
+- [Windows 整机出口模式：代价与首次交付](killswitch-switch.md#windows-整机出口模式代价与首次交付)
 - [命令行与桌面入口](killswitch-switch.md#命令行与桌面入口)
 - [恢复与开关验收](killswitch-switch.md#恢复与开关验收)
 - [界面与随包文件](killswitch-switch.md#界面与随包文件)
