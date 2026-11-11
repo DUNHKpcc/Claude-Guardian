@@ -70,6 +70,8 @@ function Invoke-Step($directory, $step, $operation, $seconds = 30) {
     $child = Start-Process -FilePath $PowerShell -ArgumentList $argsText -PassThru -WindowStyle Hidden `
         -RedirectStandardOutput (Join-Path $directory ($step.id + '.stdout.log')) `
         -RedirectStandardError (Join-Path $directory ($step.id + '.stderr.log'))
+    # Windows PowerShell 5.1 needs the handle retained before exit to read ExitCode.
+    $null = $child.Handle
     # The child waits for permission until its exact process identity is retained for recovery.
     @{pid=$child.Id; started=$child.StartTime.ToUniversalTime().Ticks} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'child.json') -Encoding UTF8
     New-Item -ItemType File -Path (Join-Path $directory $permit) | Out-Null
@@ -80,7 +82,7 @@ function Invoke-Step($directory, $step, $operation, $seconds = 30) {
     $child.Refresh()
     Remove-Item -LiteralPath (Join-Path $directory 'child.json')
     Remove-Item -LiteralPath (Join-Path $directory $permit) -ErrorAction SilentlyContinue
-    if ($child.ExitCode -ne 0) { throw 'Step failed; inspect private step log' }
+    if ($child.ExitCode -ne 0) { throw "Step failed (exit code '$($child.ExitCode)'); inspect private step log" }
 }
 function Run-Step($directory, $id, $operation, $permit) {
     if ($permit -notmatch '^[a-f0-9]{32}$') { throw 'Invalid step permission' }
