@@ -169,6 +169,8 @@ def off(cfg, path):
 
 def on(cfg, path):
     before = status(cfg, path)
+    if before.get('coverage', {}).get('status') == 'fail':
+        raise SwitchError('应用覆盖失败，请先核对更新后的程序、服务和接口；现有规则保持不变。')
     if before['protection'] == 'on' and before['startup']:
         return before
     if before['protection'] != 'off' or before['startup'] is not False:
@@ -186,10 +188,11 @@ def on(cfg, path):
             run(['systemctl', 'start', UNITS[0]])
         else:
             windows(path, 'On')
-        print('保护已临时开启。请验证网络正常、出口符合预期；180 秒内输入 KEEP 保留，否则恢复。', flush=True)
+        print('开关配置已临时开启。请核对当前应用覆盖、网络正常及出口符合预期；180 秒内输入 KEEP 保留，否则恢复。', flush=True)
         if input('> ').strip() != 'KEEP' or time.monotonic() - started >= 160:
             raise SwitchError('未在确认时间内保留，正在恢复未保护状态。')
-        if status(cfg, path)['protection'] != 'on':
+        current = status(cfg, path)
+        if current['protection'] != 'on' or current.get('coverage', {}).get('status') == 'fail':
             raise SwitchError('未读回有效保护，可能已触发保险丝。')
         if cfg['backend'] == 'mac_pf':
             pf(cfg, 'confirm')

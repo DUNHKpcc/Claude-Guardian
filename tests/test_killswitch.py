@@ -109,6 +109,18 @@ class Controller(unittest.TestCase):
                 k.on(cfg,self.path)
             self.assertEqual([c.args[1] for c in native.call_args_list],['apply','unpersist','rollback'])
 
+    def test_windows_failed_coverage_never_enables_or_confirms(self):
+        cfg = dict(self.cfg, backend='windows_firewall')
+        for protection in ('on', 'off'):
+            state = {'protection':protection, 'startup':protection == 'on', 'coverage':{'status':'fail'}}
+            with self.subTest(protection=protection), patch.object(k, 'status', return_value=state), patch.object(k, 'windows') as native, self.assertRaises(k.SwitchError):
+                k.on(cfg, self.path)
+            native.assert_not_called()
+        states = [{'protection':'off', 'startup':False}, {'protection':'on', 'startup':True, 'coverage':{'status':'fail'}}]
+        with patch.object(k, 'status', side_effect=states), patch.object(k, 'windows') as native, patch('builtins.input', return_value='KEEP'), contextlib.redirect_stdout(io.StringIO()), self.assertRaises(k.SwitchError):
+            k.on(cfg, self.path)
+        self.assertEqual([c.args[1] for c in native.call_args_list], ['On', 'Off'])
+
     def test_already_on_is_idempotent_and_mixed_state_is_not_overwritten(self):
         with patch.object(k,'status',return_value={'protection':'on','startup':True}), patch.object(k,'pf') as native:
             self.assertEqual(k.on(dict(self.cfg,backend='mac_pf'),self.path)['protection'],'on')
@@ -171,13 +183,19 @@ class Controller(unittest.TestCase):
         for mode,expected in [('Block','on'),('Allow','off')]:
             body="""Add-Type 'public enum TestPolicy { Allow=2, Block=4 }'
 function Get-NetFirewallProfile { param($PolicyStore) @('Domain','Private','Public') | ForEach-Object { [pscustomobject]@{Name=$_;Enabled=$true;DefaultOutboundAction=[TestPolicy]::MODE} } }
-function Get-NetFirewallRule { param($PolicyStore,$Name) [pscustomobject]@{Name=$Name;Enabled=ENABLED} }
+function Get-NetFirewallRule { param($PolicyStore,$Name) [pscustomobject]@{Name=$Name;Enabled=ENABLED;Direction='Outbound';Action='Block';Profile='Any'} }
+function Get-NetFirewallApplicationFilter { process { [pscustomobject]@{Program='missing-old-version.exe';Package='Any'} } }
+function Get-NetFirewallServiceFilter { process { [pscustomobject]@{Service='Any'} } }
+function Get-NetFirewallInterfaceFilter { process { [pscustomobject]@{InterfaceAlias=@('Any')} } }
+function Get-NetFirewallInterfaceTypeFilter { process { [pscustomobject]@{InterfaceType='Any'} } }
 & SCRIPT -Action Status -Config CONFIG
 """.replace('MODE',mode).replace('ENABLED','$true' if expected=='on' else '$false').replace('SCRIPT',u.ps_quote(k.WINDOWS)).replace('CONFIG',u.ps_quote(self.path))
             fixture=Path(self.tmp.name)/'fixture.ps1';fixture.write_text(body,encoding='utf-8-sig')
             completed=subprocess.run([executable,'-NoProfile','-File',str(fixture)],capture_output=True,text=True,encoding='utf-8',errors='replace')
             self.assertEqual(completed.returncode,0,completed.stderr)
-            self.assertEqual(json.loads(completed.stdout.lstrip('\ufeff'))['protection'],expected)
+            state = json.loads(completed.stdout.lstrip('\ufeff'))
+            self.assertEqual(state['protection'],expected)
+            self.assertEqual(state['coverage']['status'], 'fail')
 
 
 class LocalUI(unittest.TestCase):
@@ -212,9 +230,10 @@ class LocalUI(unittest.TestCase):
             launcher.return_value.poll.return_value = None
             session.action('on')
         self.assertTrue(session.state()['pending'])
-        session.pending.write_text(json.dumps({'protection':'on','startup':True,'message':'checked','checked_at':time.time()-100,'exit_code':0}),encoding='utf-8')
+        session.pending.write_text(json.dumps({'protection':'on','startup':True,'message':'checked','checked_at':time.time()-100,'exit_code':0,'coverage':{'status':'fail','message':'Old path missing'}}),encoding='utf-8')
         state=session.state()
         self.assertFalse(state['pending']);self.assertTrue(state['stale']);self.assertEqual(state['protection'],'on')
+        self.assertEqual(state['coverage']['status'], 'fail')
 
 
 if __name__=='__main__':unittest.main()

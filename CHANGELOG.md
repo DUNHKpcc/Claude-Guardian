@@ -1,5 +1,13 @@
 # 版本记录
 
+## Windows 更新覆盖与部署回执修复（2026-11-11，Issue #28 / ADR-071）
+
+- Windows Switch 增加独立应用覆盖状态，检查当前程序路径、服务、接口及接口类型条件，比较持久／有效策略与新快照的审查条件；覆盖失败阻止 ON／KEEP，OFF 恢复保留。CLI 回执和 GUI 保留 fail／unknown，未知覆盖不显示绿色通过；旧快照仍可恢复
+- S05 明示维护者修订，替换先删旧规则和虚假成功提示：独立批次创建、终止错误、双存储逐条读回，失败只清理本批精确变更，旧规则保留。更新来源分发哈希，原始哈希／署名保留；不再承诺固定组件数或更新后自动覆盖
+- 指引补齐当前包／包外 Code／Cowork 盘点、更新首次联网前的覆盖边界、Error 5 有限分诊及 UDP Send／5157 证据判据。未增加 WFP 后端、更新监控或真实设备操作；完整组件清单和真实业务未验证仍为 unknown，不用 CI 代填重启／换网／证书更新与业务验收
+- 验证：临时 venv 安装 requirements-dev.txt 后完整 unittest 1572 项（1558 通过、14 环境跳过，含本机缺 PowerShell 的 4 项与 Windows 快捷方式 1 项）；首次系统 Python 缺 PyYAML 的失败未计通过。新增测试运行真实控制器／渲染器／分发 PowerShell 代码，旧控制器和渲染器复现失败；PowerShell 夹具待 push CI 核实。Node 28 场景、JS 语法、compileall、Wiki 29 页本地导出、索引／链接、可复现打包及浏览器覆盖失败演示通过。最终 push SHA 与三平台 CI 另行记录
+- 风险与回滚：完整覆盖不由开关自动认证，规则更新后须重新审查基线；源示例仅覆盖当前包路径，保留的旧规则可能继续阻断。仓库回滚使用普通 revert；目标机保留原恢复快照和精确变更回执
+
 ## Guardian Switch 统一开关与轻量界面（2026-11-09，ADR-070）
 
 - 新增目标机绑定配置模板、统一 on/off/status/uninstall 和 Windows snapshot；Mac 复用 PF 脚本，Linux 复用已部署 nftables/systemd，Windows 按精确规则 Name 切换并恢复基线。OFF 同时取消开机加载，保留配置
