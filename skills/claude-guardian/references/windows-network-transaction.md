@@ -1,87 +1,69 @@
-# Windows 网络修改事务与独立恢复
+# Windows 网络修改与恢复
 
-Issue #29，2026-11-11。Windows 现场反馈涉及 DNS、系统代理、TUN、路由、网卡和防火墙，最后通过 Kill Switch 恢复访问。具体修改顺序和原生网络复现尚未提供，不能把原因直接定为某个组件，也不能宣称关闭防火墙等于其他配置已恢复。
+把已审核的网络修改交给本机任务执行，Agent 断网或终端退出后仍可到期恢复。DNS、代理、TUN、路由、网卡等步骤脚本须按目标机准备；仅覆盖计划内的修改。
 
-## 能力与代价
+## 使用前
 
-`assets/killswitch/windows-network-transaction.ps1` 提供整批操作的本机执行与恢复框架。整个计划由临时 SYSTEM 计划任务执行；Agent 失去网络、原终端退出，不影响该任务继续检查或到期恢复。脚本、每步快照、事务状态与日志保存在 `%ProgramData%\ClaudeGuardian\NetworkTransaction`，权限限 SYSTEM 与管理员。旧批次保留在同级归档目录，不自动删除。
+- 明确目标、精确修改范围、原值、影响、执行顺序和恢复办法，按 [C 档授权](authorization-tiers.md) 当场确认，Agent 不代输确认。没有已启动的独立恢复就不写入网络配置。
+- 按[安全退出](routes-and-platforms.md#safe-shutdown)核实受保护应用及后台进程已退出。恢复原配置可能恢复直连，须确认恢复目标及局域网、VPN、远程管理的影响。
+- SYSTEM 的 `HKCU` 不是登录用户的注册表，用户代理设置须绑定具体 SID。Kill Switch 只恢复自己的防火墙范围；与本事务组合使用须先验证。
 
-这是**已审核步骤的执行框架，不是自动生成 DNS／TUN／路由恢复方案的通用适配器**。Agent 必须先按目标机实际软件版本准备并审核每一步脚本。没有可靠恢复方法、依赖交互式桌面／用户会话、要临时联网下载、修改后会启动不可控后台写入的步骤，不纳入自动执行。不能只给一段任意命令加个“可恢复”标签就宣称受保护。
+执行期间创建临时 SYSTEM 计划任务，每分钟及开机时检查。提交、完整恢复或准备失败后移除任务，恢复失败则保留。备份与日志位于 `%ProgramData%\ClaudeGuardian\NetworkTransaction`，仅管理员和 SYSTEM 可访问；旧批次归档，不自动删除。关机或休眠期间无法恢复。
 
-执行期间会增加一个临时计划任务，每分钟重试未完成事务并在开机时检查；正常提交、完整恢复或准备失败后移除任务。恢复未完成时任务和材料保留。系统关机／休眠时不能执行恢复，恢复时机受系统调度影响；不承诺断网后立即恢复。不存在跨系统设置的一次性原子切换，而是按依赖顺序执行、反向补偿、分别核实。
+## 运行
 
-## 修改前的必读与门禁
-
-涉及可能切断控制连接的 Windows 网络修改，制定计划前必须读取本节和[安全退出](routes-and-platforms.md#safe-shutdown)。未接入本框架的路径，必须有另行审核、已经启动的独立恢复机制；否则只做只读诊断与计划，不继续执行网络写入。不能把已有 Kill Switch 的保险丝当成 DNS、代理配置或路由的保险丝。
-
-1. 明确目标设备、控制连接、原值与拟改值、影响、备份和离线恢复入口。管理权限不等于用户授权；首次执行按 C 档当场确认，Agent 不代输或管道传入确认。
-2. 核实受保护应用及后台进程已经退出。选择恢复目标：恢复原有受保护配置，或在受保护业务已退出的前提下恢复原网络。关闭保护可能恢复直连；不得为恢复 Agent 联网未经批准放开全部流量。
-3. 列出本批涉及的**所有**对象：精确网卡、DNS 模式与值、系统代理的用户 SID、精确路由、代理文件与服务、精确防火墙规则。只修改计划内对象，不全机扫描、重置网络或导入整机防火墙备份。
-4. 先审核步骤及快照／恢复方法，明确依赖顺序和重试条件。新建或删除的对象也必须有恢复方法。局域网、其他 VPN、远程管理和共享进程的影响须单列。
-5. SYSTEM 的 `HKCU` 不是登录用户的注册表。用户代理设置必须绑定经核实的用户 SID；不能用 SYSTEM 的个人目录或桌面会话代替目标用户。不能在事务内提示 UAC、打开 GUI 或等待输入。
-6. 不绕过内层保险丝。计划如需切换既有 Kill Switch，须协调其确认／恢复与外层批次状态；未经验证的嵌套组合不自动执行。
-
-## 当前 Windows 写入入口
-
-| 入口 | 现有恢复范围 | 本次处理 |
-| --- | --- | --- |
-| Switch ON／KEEP／OFF | 快照列出的防火墙配置和规则启用状态 | 保留原保险丝，分别保存两种策略存储的原值，恢复后逐一读回再移除任务 |
-| `agent_remediation.py` | 仅生成修复建议，`builtin_apply_supported=false` | 不开放原生网络写入 |
-| Agent 按文档执行 DNS／系统代理／TUN／路由／网卡修改 | 原先依靠目标机脚本、备份与各自恢复机制 | 先提供整批步骤并接入本机事务；无法独立恢复的路径停止写入 |
-| 新事务 Start／Commit／Recover | 仅计划内、已审核步骤的快照范围 | 持久状态、期限、反向恢复及读回；不拦截包外任意命令 |
-
-## 计划与步骤接口
-
-管理员终端调用，路径由目标机 Agent 按实际环境填写：
+在 Skill 目录下打开管理员 PowerShell：
 
 ```powershell
-powershell.exe -NoProfile -File .\assets\killswitch\windows-network-transaction.ps1 -Action Start -Plan C:\private\network-plan.json
-powershell.exe -NoProfile -File .\assets\killswitch\windows-network-transaction.ps1 -Action Status
-powershell.exe -NoProfile -File .\assets\killswitch\windows-network-transaction.ps1 -Action Commit
-powershell.exe -NoProfile -File .\assets\killswitch\windows-network-transaction.ps1 -Action Recover
+$tx = '.\assets\killswitch\windows-network-transaction.ps1'
+powershell.exe -NoProfile -File $tx -Action Start -Plan C:\private\network-plan.json
+powershell.exe -NoProfile -File $tx -Action Status
+powershell.exe -NoProfile -File $tx -Action Commit
+powershell.exe -NoProfile -File $tx -Action Recover
 ```
 
-计划示意（步骤文件须先实现并审核，示意名称不是随包可执行配置）：
+计划示例：步骤脚本与 JSON 放在同一目录，下面的脚本须先实现并审核。
 
 ```json
 {
   "version": 1,
   "target": "EXACT-MACHINE-NAME",
   "timeout_seconds": 600,
-  "restore_goal": "恢复本次修改前的指定配置；受保护业务在整个验收期间保持退出",
+  "restore_goal": "恢复修改前的指定配置，受保护业务保持退出",
   "steps": [
-    {"id": "proxy", "script": "reviewed-proxy.ps1", "scope": "指定代理配置及已确认服务"},
-    {"id": "dns", "script": "reviewed-dns.ps1", "scope": "已确认网卡的 DNS 设置及原自动/静态模式"}
+    {"id": "proxy", "script": "reviewed-proxy.ps1", "scope": "指定代理配置和服务"},
+    {"id": "dns", "script": "reviewed-dns.ps1", "scope": "指定网卡的 DNS 模式和值"}
   ]
 }
 ```
 
-每步脚本接收 `-Operation` 和 `-Snapshot`，必须独立、离线、无交互、可重复恢复，外部程序的退出码也须检查。脚本不能启动脱离执行树的后台网络写入；超时将终止该步进程树。每次操作最多 30 秒，整批修改与等待确认共用计划期限（60–1800 秒）。快照只写到传入的私有路径，不上传。
+`Start` 输入 `START <设备名>`。进入 `awaiting_commit` 后，先验证实际网络、Agent 连接和出口，再用 `Commit` 输入 `KEEP <事务编号>`；需立即恢复则用 `Recover`。两者均为请求，**再次查询 Status，确认最终状态**。
 
-| Operation | 契约 |
+## 步骤脚本
+
+每步接收 `-Operation` 和 `-Snapshot`，实现以下操作：
+
+| Operation | 要求 |
 | --- | --- |
-| `Prepare` | 只读目标原状态并保存 JSON 快照，不改网络；所有步骤准备完才允许 Apply |
-| `CheckRestore` | 读回目标，与快照的原状态比较；不一致或读取失败以非零退出 |
-| `Apply` | 只修改该步审核范围；失败必须非零退出，不能吞异常 |
-| `Check` | 读回拟改状态；不能只以命令无异常代替读回 |
-| `Restore` | 从快照恢复该步精确范围，包括可能只应用了一半的情况；发现无关并发修改时明确失败，不覆盖 |
+| `Prepare` | 只读原状态，保存 JSON 快照，不改网络 |
+| `CheckRestore` | 读回并核对快照原值 |
+| `Apply` | 修改该步审核范围 |
+| `Check` | 读回并核对拟改值 |
+| `Restore` | 恢复该步范围，包括部分生效的修改；遇到无关变更报错，不覆盖 |
 
-框架在执行前复制步骤并固定 SHA256，后续各阶段核对脚本。哈希绑定文件版本，不证明脚本逻辑正确，也不替代用户授权。步骤源文件中若含私人路径或配置，不上传仓库。
+脚本须离线、无交互、可重复恢复；检查外部程序退出码，失败或读回不符以非零退出。不得启动脱离执行树的后台写入。每次操作最多 30 秒，整批修改与等待确认共用 60–1800 秒期限；超时先终止步骤进程树，再恢复。
 
-## 生命周期与失败处理
+全部快照及原状态检查通过后才开始修改。步骤复制到私有目录并核对 SHA256；快照只写入指定路径，脚本、配置和日志不上传。
 
-全部步骤准备和原状态检查通过后，设置期限；每步 Apply 前持久记录已开始。中途失败、显式 Recover 或期限到达时，恢复当前可能部分生效的一步，然后逆序恢复前面的步骤。每步恢复后读回，失败项保留；其他可恢复步骤仍执行。新的定时运行只重试未恢复步骤，不重复应用修改。
+## 恢复与结果
 
-子进程执行前，父任务保存其进程 ID 与启动时间，再发放执行许可；父任务意外退出后，下次任务先终止仍在运行的对应步骤，再恢复。不能确认步骤已终止时不并发执行恢复，不报告成功。工作任务使用单实例策略与互斥锁；一个未完成批次会阻止创建新批次。
+中途失败、到期或请求恢复时，从可能部分生效的当前步骤开始逆序恢复并读回。失败项保留重试；任务中断后先终止残留步骤再恢复，不继续修改。未完成批次会阻止新批次。
 
-全部修改读回后进入 `awaiting_commit`。用户需在实际目标机验证网络、Agent 控制连接及批准的出口，再在终端输入 `KEEP <事务编号>`。Commit 仅提交请求；任务重新检查所有步骤并检查期限，写入 `committed` 后才结束。**必须再读 Status，不能把命令返回当成已提交。** `Recover` 同样是请求，完成状态须为 `restored`。`recovery_failed` 表示恢复不完整，按私有日志检查；不要删除快照或通过重复 Start 掩盖失败。
+| 状态 | 含义 |
+| --- | --- |
+| `committed` | 提交前再次读回通过，修改已保留 |
+| `restored` | 已恢复并读回通过 |
+| `prepare_failed` | 准备失败，未开始修改 |
+| `recovery_failed` | 恢复不完整，检查私有日志并保留快照与任务 |
 
-准备失败记 `prepare_failed`，不执行 Apply。重启或任务中断后，未完成的修改不从中间继续 Apply。已提交的记录不会因任务重试而撤销。新批次归档旧材料，不清理其他应用配置。
-
-旧 Switch 快照缺少有效策略原值时只能按已有值核实；无法匹配就保留保险丝并报失败，恢复写入仍可执行。新快照分别记录持久与有效策略，避免把正常的继承差异误判为恢复失败。
-
-## 验证范围与未覆盖项
-
-回归测试执行真实 PowerShell 状态机及步骤子进程，仅使用专用临时目录里的模拟设置文件。覆盖 Agent 启动进程退出后到期恢复、部分应用失败逆序恢复、准备失败不写、恢复失败保留、提交时漂移、事务中断恢复和已提交重试不回滚。测试不调用真实防火墙或安装本机计划任务。
-
-Windows 计划任务实际 SYSTEM 调度、睡眠／重启、真实代理软件及各类网络设置恢复需要在获准目标机验证；当前不以 PowerShell 夹具或 CI 代填。这些限制与 Issue #29 一并跟踪。框架不替代 TCP／UDP、DNS、IPv6、WebRTC、真实业务及换网验收，也不承诺任何 Agent 的任意 Shell 命令都会自动纳入事务。
+已验证真实 PowerShell 的临时文件回归。真实网络、SYSTEM 任务调度、睡眠和重启仍需在目标机验收。

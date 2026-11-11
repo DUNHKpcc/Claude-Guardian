@@ -497,11 +497,9 @@ Windows：Claude 本机数据清理（Agent 提示词，无内置宿主）（12 
 
 ## windows-network-transaction.md
 
-Windows 网络修改事务与独立恢复（6 节）
+Windows 网络修改与恢复（4 节）
 
-- [能力与代价](windows-network-transaction.md#能力与代价)
-- [修改前的必读与门禁](windows-network-transaction.md#修改前的必读与门禁)
-- [当前 Windows 写入入口](windows-network-transaction.md#当前-windows-写入入口)
-- [计划与步骤接口](windows-network-transaction.md#计划与步骤接口)
-- [生命周期与失败处理](windows-network-transaction.md#生命周期与失败处理)
-- [验证范围与未覆盖项](windows-network-transaction.md#验证范围与未覆盖项)
+- [使用前](windows-network-transaction.md#使用前)
+- [运行](windows-network-transaction.md#运行)
+- [步骤脚本](windows-network-transaction.md#步骤脚本)
+- [恢复与结果](windows-network-transaction.md#恢复与结果)
