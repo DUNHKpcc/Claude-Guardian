@@ -25,6 +25,9 @@ const document = {
 const fetch = () => new Promise(() => {});
 """
         assertions = """
+Object.defineProperty(document.getElementById('symbol'), 'textContent', {
+  set() { throw new Error('Status rendering must preserve the logo image'); }, get() { return ''; }
+});
 for (const status of ['unknown','fail']) {
   render({protection:'on',startup:true,coverage:{status},checked_at:1});
   assert.notEqual(elements.get('symbol').textContent, '✓');

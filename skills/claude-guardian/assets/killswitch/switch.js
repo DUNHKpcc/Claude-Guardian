@@ -18,7 +18,6 @@ function render(s) {
   const off = known && s.protection === 'off';
   $('title').textContent = s.pending ? '在本机完成确认' : active ? (verified ? '保护已开启' : coverage.status === 'fail' ? '应用覆盖失败，暂停使用' : '配置已开启，覆盖待核实') : off ? '保护已关闭' : '先看看当前状态';
   $('summary').textContent = s.pending ? '操作终端已打开，完成后会更新这里。' : active ? (verified ? '防直连规则已生效。' : '恢复应用前，请让 Agent 核对当前版本和组件覆盖。') : off ? '当前未启用这套防直连保护。' : '读取系统防火墙，确认保护是否生效。';
-  $('symbol').textContent = verified ? '✓' : off ? '○' : '◇';
   $('symbol').className = 'symbol' + (verified ? ' on' : off ? ' off' : '');
   $('protection').textContent = s.stale ? '需要刷新' : active ? '已开启' : off ? '已关闭' : '待核实';
   $('startup').textContent = s.stale ? '需要刷新' : s.startup === true ? '已开启' : s.startup === false ? '已关闭' : '待核实';

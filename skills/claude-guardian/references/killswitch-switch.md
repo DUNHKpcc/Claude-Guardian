@@ -68,6 +68,6 @@ GUI 显示实际操作后的读回结果，超过 90 秒标“需要刷新”；
 
 [入口脚本](../scripts/killswitch.py)、[GUI 与桌面生成](../scripts/killswitch_ui.py)、[Windows 后端](../assets/killswitch/windows-switch.ps1)、[配置模板](../assets/killswitch/config.example.json)。页面来自 [HTML](../assets/killswitch/switch.html)、[CSS](../assets/killswitch/switch.css)、[JavaScript](../assets/killswitch/switch.js)。
 
-图标由仓库 `tools/generate_switch_icon.py` 生成：[SVG](../assets/killswitch/icon.svg)、[PNG](../assets/killswitch/icon.png)、[ICO](../assets/killswitch/icon.ico)、[ICNS](../assets/killswitch/icon.icns)。修改生成器后重新生成，不手改产物。
+图标使用本次提供的 Claude Logo（源文件 `tools/assets/claude-color.png`），由仓库 `tools/generate_switch_icon.py` 生成；重新生成使用 macOS 自带 `sips`，运行开关不需要它：[SVG](../assets/killswitch/icon.svg)、[PNG](../assets/killswitch/icon.png)、[ICO](../assets/killswitch/icon.ico)、[ICNS](../assets/killswitch/icon.icns)。修改生成器后重新生成，不手改产物。
 
 无系统操作的预览：`python scripts/killswitch_ui.py --preview`。界面明确显示演示标记，所有按钮只改变演示状态。
