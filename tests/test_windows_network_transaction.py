@@ -115,6 +115,8 @@ switch ($Operation) {
             state = self.state()
             if state['phase'] in phases:
                 return state
+            if state['phase'] in {'prepare_failed', 'recovery_failed'} and state['phase'] not in phases:
+                break
             time.sleep(.1)
         logs = '\n'.join(p.read_text(encoding='utf-8-sig', errors='replace') for p in self.directory.glob('*.log'))
         self.fail(f'phase {self.state()}: {logs}')
@@ -146,13 +148,16 @@ switch ($Operation) {
         (self.directory / 'released').touch()
         self.assertEqual(self.launch().wait(timeout=20), 0)
         self.assertEqual(self.state()['phase'], 'prepare_failed')
+        self.assertTrue((self.directory / 'operations').exists(),
+                        (self.directory / 'worker-errors.log').read_text(encoding='utf-8-sig'))
         self.assertNotIn(':Apply', (self.directory / 'operations').read_text(encoding='utf-8-sig'))
 
     def test_failed_restore_retains_failure_and_continues_other_steps(self):
         self.make_state(fail_apply='proxy', fail_restore='proxy')
         self.assertEqual(self.launch().wait(timeout=30), 0)
         state = self.state()
-        self.assertEqual(state['phase'], 'recovery_failed')
+        self.assertEqual(state['phase'], 'recovery_failed',
+                         (self.directory / 'worker-errors.log').read_text(encoding='utf-8-sig'))
         self.assertEqual(state['failed'], ['proxy'])
         self.assertEqual(state['restored'], ['dns'])
         self.assertEqual((self.directory / 'dns.value').read_text(encoding='utf-8-sig').strip(), 'original')
@@ -204,7 +209,7 @@ switch ($Operation) {
                 'timeout_seconds': 60, 'steps': [{'id': 'dns', 'script': 'dns.ps1', 'scope': 'fixture'}]}
         probe = self.directory / 'validate.ps1'
         probe.write_text("param($Plan)\n$ErrorActionPreference='Stop'\n" + functions +
-                         "\ntry { Read-Plan $Plan | Out-Null; exit 0 } catch { exit 2 }", encoding='utf-8-sig')
+                         "\ntry { Read-Plan $Plan | Out-Null; exit 0 } catch { [Console]::Error.WriteLine($_.ToString()); exit 2 }", encoding='utf-8-sig')
         for field, value, expected in [('target', plan['target'], 0), ('target', 'different-target', 2),
                                        ('timeout_seconds', 0, 2), ('timeout_seconds', '60', 2)]:
             candidate = dict(plan, **{field: value})

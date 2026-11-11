@@ -21,7 +21,17 @@ function Save-State($directory, $state) {
 function Read-State($directory) {
     Get-Content -LiteralPath (Join-Path $directory 'state.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 }
+function Write-Failure($directory, $failure) {
+    $failure | Out-String | Add-Content -LiteralPath (Join-Path $directory 'worker-errors.log') -Encoding UTF8
+}
 function Test-Terminal($state) { $state.phase -in @('committed','restored','prepare_failed') }
+function Get-ScriptHash($path) {
+    # Python launched from pwsh can pass PS7 module paths to Windows PowerShell 5.1.
+    $stream = [IO.File]::OpenRead($path)
+    $hash = [Security.Cryptography.SHA256]::Create()
+    try { [BitConverter]::ToString($hash.ComputeHash($stream)).Replace('-', '') }
+    finally { $stream.Dispose(); $hash.Dispose() }
+}
 function Read-Plan($path) {
     $p = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($p.version -ne 1 -or $p.target -ne [Environment]::MachineName -or
@@ -37,7 +47,7 @@ function Read-Plan($path) {
         $ids += $step.id
         $script = Get-Item -LiteralPath (Join-Path (Split-Path -Parent $path) $step.script)
         if ($script.PSIsContainer -or ($script.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Use ordinary local scripts' }
-        $step | Add-Member -NotePropertyName sha256 -NotePropertyValue (Get-FileHash -LiteralPath $script.FullName -Algorithm SHA256).Hash
+        $step | Add-Member -NotePropertyName sha256 -NotePropertyValue (Get-ScriptHash $script.FullName)
     }
     return $p
 }
@@ -54,7 +64,7 @@ function Stop-Step($directory) {
 }
 function Invoke-Step($directory, $step, $operation, $seconds = 30) {
     $script = Join-Path $directory $step.script
-    if ((Get-FileHash -LiteralPath $script -Algorithm SHA256).Hash -ne $step.sha256) { throw 'Step script changed' }
+    if ((Get-ScriptHash $script) -ne $step.sha256) { throw 'Step script changed' }
     $permit = [guid]::NewGuid().ToString('N')
     $argsText = '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + (Join-Path $directory 'worker.ps1') + '" -Action Step -StepId ' + $step.id + ' -Operation ' + $operation + ' -Permit ' + $permit
     $child = Start-Process -FilePath $PowerShell -ArgumentList $argsText -PassThru -WindowStyle Hidden `
@@ -78,7 +88,7 @@ function Run-Step($directory, $id, $operation, $permit) {
     $step = @($state.steps | Where-Object { $_.id -eq $id })
     if ($state.target -ne [Environment]::MachineName -or $step.Count -ne 1) { throw 'Step target mismatch' }
     $script = Join-Path $directory $step[0].script
-    if ((Get-FileHash -LiteralPath $script -Algorithm SHA256).Hash -ne $step[0].sha256) { throw 'Step changed' }
+    if ((Get-ScriptHash $script) -ne $step[0].sha256) { throw 'Step changed' }
     for ($i=0; $i -lt 100; $i++) {
         if (Test-Path -LiteralPath (Join-Path $directory $permit)) {
             & $script -Operation $operation -Snapshot (Join-Path $directory ($id + '.snapshot.json'))
@@ -101,6 +111,7 @@ function Restore-Transaction($directory, $state) {
             Invoke-Step $directory $step 'CheckRestore'
             $state.restored = @($state.restored) + $id
         } catch {
+            Write-Failure $directory $_
             if ($_.Exception.Message -eq 'STEP_STILL_RUNNING') { throw }
             $failed += $id
         }
@@ -130,6 +141,7 @@ function Run-Transaction($directory) {
                 Invoke-Step $directory $step 'CheckRestore'
             }
         } catch {
+            Write-Failure $directory $_
             if ($_.Exception.Message -eq 'STEP_STILL_RUNNING') { throw }
             $state.phase = 'prepare_failed'; Save-State $directory $state
             return
@@ -148,6 +160,7 @@ function Run-Transaction($directory) {
             }
             $state.phase = 'awaiting_commit'; Save-State $directory $state
         } catch {
+            Write-Failure $directory $_
             if ($_.Exception.Message -eq 'STEP_STILL_RUNNING') { throw }
             Restore-Transaction $directory $state
             return
@@ -164,6 +177,7 @@ function Run-Transaction($directory) {
                 $state.phase = 'committed'; Save-State $directory $state
                 return
             } catch {
+                Write-Failure $directory $_
                 if ($_.Exception.Message -eq 'STEP_STILL_RUNNING') { throw }
                 break
             }
@@ -205,9 +219,8 @@ function Start-Transaction($path) {
     Set-Acl -LiteralPath $Root -AclObject $acl
     Copy-Item -LiteralPath $PSCommandPath -Destination (Join-Path $Root 'worker.ps1')
     foreach ($step in $p.steps) {
-        if ($step.script -eq 'worker.ps1') { throw 'Reserved script name' }
         Copy-Item -LiteralPath (Join-Path (Split-Path -Parent $path) $step.script) -Destination (Join-Path $Root $step.script)
-        if ((Get-FileHash -LiteralPath (Join-Path $Root $step.script) -Algorithm SHA256).Hash -ne $step.sha256) { throw 'Plan script changed since review' }
+        if ((Get-ScriptHash (Join-Path $Root $step.script)) -ne $step.sha256) { throw 'Plan script changed since review' }
     }
     $state = [pscustomobject]@{version=1; id=[guid]::NewGuid().ToString('N'); target=$p.target; phase='queued';
         timeout_seconds=$p.timeout_seconds; deadline=0; steps=@($p.steps); started=@(); restored=@(); failed=@()}
