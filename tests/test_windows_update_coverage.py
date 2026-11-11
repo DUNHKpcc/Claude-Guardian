@@ -14,7 +14,7 @@ PS = shutil.which('powershell.exe') or shutil.which('pwsh')
 class SwitchCoveragePresentation(unittest.TestCase):
     @unittest.skipUnless(shutil.which('node'), 'Node unavailable')
     def test_real_renderer_does_not_show_unknown_or_failed_coverage_as_verified(self):
-        script = (SKILL / 'assets/killswitch/switch.js').read_text()
+        script = (SKILL / 'assets/killswitch/switch.js').read_text(encoding='utf-8')
         fixture = """
 const assert = require('node:assert/strict');
 const elements = new Map();
@@ -51,7 +51,7 @@ class WindowsUpdateCoverage(unittest.TestCase):
         return json.loads(result.stdout.lstrip('\ufeff'))
 
     def test_real_coverage_functions_reject_missing_paths_and_condition_drift(self):
-        source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text()
+        source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
         functions = source[source.index('function Get-RuleConditions'):source.index('function Get-Snapshot')]
         fixture = r'''
 $settings = @{enable_rules=@('guardian-test')}
@@ -95,11 +95,11 @@ $results | ConvertTo-Json -Compress
             self.assertEqual(actual[scenario], 'unknown', scenario)
 
     def test_source_deployment_failure_preserves_old_rules_and_never_prints_success(self):
-        source = (SKILL / 'sources/S05-local-protection.md').read_text()
+        source = (SKILL / 'sources/S05-local-protection.md').read_text(encoding='utf-8')
         code = source.split('### 步骤 4', 1)[1].split('```powershell\n', 1)[1].split('```', 1)[0]
         # Fixtures replace only native commands; the actual distributed code is executed.
         fixture = r'''
-$script:rules = @{'old-protection'=@{Name='old-protection'}}
+$script:fixtureRules = @{'old-protection'=@{Name='old-protection'}}
 $script:removed=@(); $script:printed=@(); $script:calls=0
 function Get-AppxPackage { param($Name) [pscustomobject]@{InstallLocation='fixture'} }
 function Get-ChildItem { param($LiteralPath,[switch]$Recurse,$Filter,[switch]$File)
@@ -109,10 +109,10 @@ function Get-ChildItem { param($LiteralPath,[switch]$Recurse,$Filter,[switch]$Fi
 function New-NetFirewallRule { [CmdletBinding()]param($PolicyStore,$Name,$DisplayName,$Enabled,$Profile,$Direction,$Action,$Program,$InterfaceAlias,$Protocol,$RemoteAddress)
     $script:calls++
     if ($script:calls -eq FAIL_AT) { Write-Error 'Windows System Error 5'; return }
-    $script:rules[$Name]=[pscustomobject]@{Name=$Name;Enabled=$Enabled;Profile=$Profile;Direction=$Direction;Action=$Action;Program=$Program;RemoteAddress=$RemoteAddress}
+    $script:fixtureRules[$Name]=[pscustomobject]@{Name=$Name;Enabled=$Enabled;Profile=$Profile;Direction=$Direction;Action=$Action;Program=$Program;RemoteAddress=$RemoteAddress}
 }
 function Get-NetFirewallRule { [CmdletBinding()]param($PolicyStore,$Name)
-    $rule = $script:rules[$Name]
+    $rule = $script:fixtureRules[$Name]
     if ('MODE' -eq 'mismatch' -and $PolicyStore -eq 'ActiveStore') { $rule.Program='old-version.exe' }
     return $rule
 }
@@ -123,14 +123,15 @@ function Get-NetFirewallServiceFilter { [CmdletBinding()]param([Parameter(ValueF
 function Get-NetFirewallPortFilter { [CmdletBinding()]param([Parameter(ValueFromPipeline=$true)]$Rule) process { [pscustomobject]@{Protocol='Any';LocalPort='Any';RemotePort='Any'} } }
 function Remove-NetFirewallRule { [CmdletBinding()]param($PolicyStore,$Name)
     $script:removed += $Name
-    $script:rules.Remove($Name)
+    $script:fixtureRules.Remove($Name)
 }
 function Write-Host { param($Object) $script:printed += $Object }
 $failed=$false
 try {
+$ErrorActionPreference='Continue'
 CODE
 } catch { $failed=$true }
-@{failed=$failed;oldRetained=$script:rules.ContainsKey('old-protection');remaining=$script:rules.Count;removed=@($script:removed);printed=@($script:printed);calls=$script:calls} | ConvertTo-Json -Compress
+@{failed=$failed;oldRetained=$script:fixtureRules.ContainsKey('old-protection');remaining=$script:fixtureRules.Count;removed=@($script:removed);printed=@($script:printed);calls=$script:calls} | ConvertTo-Json -Compress
 '''
         for mode, fail_at in [('first', 1), ('nth', 3), ('mismatch', 0), ('success', 0)]:
             with self.subTest(mode=mode):
