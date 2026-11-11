@@ -35,6 +35,15 @@ class WorkflowFollowUpTests(unittest.TestCase):
         self.assertIn('references/windows-cleanup.md', paths)
         self.assertNotIn('references/cleanup-cli-usage.md', paths)
 
+    def test_windows_network_topics_attach_independent_recovery(self):
+        path = 'references/windows-network-transaction.md'
+        for topic in ('local_protection', 'whole_machine_egress', 'egress'):
+            self.assertIn(path, {r['path'] for r in flow.references_for_topics([topic], os_name='windows')})
+            self.assertNotIn(path, {r['path'] for r in flow.references_for_topics([topic], os_name='macos')})
+        state = flow.record_fact(self.state, 'Q-C02', 'windows', source='synthetic')
+        state = flow.set_context(state, task='network')
+        self.assertIn(path, {r['path'] for r in flow.required_references(state)})
+
     def test_payment_is_first_and_duplicate_topics_do_not_duplicate_paths(self):
         refs = flow.references_for_topics(['suspension', 'payment', 'payment', 'identity_review'])
         self.assertEqual(refs[0]['path'], 'sources/S02-ai-payments.md')

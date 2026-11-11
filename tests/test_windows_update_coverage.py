@@ -172,7 +172,7 @@ function Get-AppxPackage { throw 'Whole-machine mode must not depend on Claude i
 function Set-NetFirewallProfile { param($PolicyStore,$Profile,$Enabled,$DefaultOutboundAction)
     $script:changes += "profile:$Profile/$DefaultOutboundAction"
 }
-function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled) $script:changes += "rule:$Name/$Enabled" }
+function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled) $script:changes += "rule:$Name/$Enabled"; if ($Name -eq "old-claude-block") { $script:scenario="off" } }
 function Get-ScheduledTask { param($TaskName,$ErrorAction) return $null }
 $baseline = Get-Snapshot
 $baseline | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $state -Encoding UTF8
@@ -213,6 +213,42 @@ $results | ConvertTo-Json -Depth 6 -Compress
         self.assertEqual(actual['stage'], 'effective')
         self.assertEqual(actual['restored'], ['profile:Domain/2', 'profile:Private/2', 'profile:Public/2',
                                            'rule:proxy/False', 'rule:tun/False', 'rule:legacy-allow/True', 'rule:old-claude-block/True'])
+
+    def test_restore_retains_fuse_until_both_policy_stores_match(self):
+        source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
+        functions = source[source.index('function Assert-BaselineRestored'):source.index('function Get-State')]
+        fixture = r'''
+$task = 'fixture-task'
+$script:removed=0
+function Read-Baseline {
+    $p = @('Domain','Private','Public' | ForEach-Object { @{Name=$_;Enabled=1;DefaultOutboundAction=$(if ($script:mode -eq 'inherited') {0} else {2})} })
+    $a = @('Domain','Private','Public' | ForEach-Object { @{Name=$_;Enabled=1;DefaultOutboundAction=2} })
+    @{profiles=$p;active_profiles=$a;rules=@(@{Name='fixture';Enabled=0});active_rules=@(@{Name='fixture';Enabled=0})}
+}
+function Set-NetFirewallProfile { param($PolicyStore,$Profile,$Enabled,$DefaultOutboundAction) }
+function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled) }
+function Get-NetFirewallProfile { param($PolicyStore)
+    if ($script:mode -eq 'denied') { throw 'denied' }
+    if ($PolicyStore -eq 'ActiveStore') { (Read-Baseline).active_profiles } else { (Read-Baseline).profiles }
+}
+function Get-NetFirewallRule { param($PolicyStore,$Name)
+    @{Name=$Name;Enabled= $(if ($script:mode -eq 'stale' -and $PolicyStore -eq 'ActiveStore') {1} else {0})}
+}
+function Get-ScheduledTask { param($TaskName,$ErrorAction) @{State='Ready'} }
+function Unregister-ScheduledTask { param($TaskName,[switch]$Confirm) $script:removed++ }
+$results=@{}
+foreach ($mode in @('stale','denied','match','inherited')) {
+    $script:mode=$mode; $script:removed=0
+    try { Restore-Baseline; $ok=$true } catch { $ok=$false }
+    $results[$mode]=@{ok=$ok;removed=$script:removed}
+}
+$results | ConvertTo-Json -Depth 4 -Compress
+'''
+        actual = self.run_ps(functions + fixture)
+        for mode in ('stale', 'denied'):
+            self.assertEqual(actual[mode], {'ok': False, 'removed': 0})
+        self.assertEqual(actual['match'], {'ok': True, 'removed': 1})
+        self.assertEqual(actual['inherited'], {'ok': True, 'removed': 1})
 
     def test_source_deployment_failure_preserves_old_rules_and_never_prints_success(self):
         source = (SKILL / 'sources/S05-local-protection.md').read_text(encoding='utf-8')

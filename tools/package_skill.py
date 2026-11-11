@@ -15,7 +15,7 @@ def main():
     skill = ROOT / 'skills' / 'claude-guardian'
     release_paths = [
         "scripts/killswitch.py", "scripts/killswitch_ui.py", "references/killswitch-switch.md",
-        "assets/killswitch/windows-switch.ps1", "assets/killswitch/config.example.json",
+        "assets/killswitch/windows-switch.ps1", "assets/killswitch/windows-network-transaction.ps1", "references/windows-network-transaction.md", "assets/killswitch/config.example.json",
         "assets/killswitch/switch.html", "assets/killswitch/switch.css", "assets/killswitch/switch.js",
         "assets/killswitch/icon.svg", "assets/killswitch/icon.png", "assets/killswitch/icon.ico", "assets/killswitch/icon.icns",
         "SKILL.md", "scripts/traffic_policy.py", "scripts/guardian.py", "scripts/agent_remediation.py", "scripts/agent_rules_task.py", "scripts/interview_flow.py", "scripts/interview_cli.py", 

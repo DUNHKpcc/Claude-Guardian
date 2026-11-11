@@ -626,7 +626,7 @@ class GuidanceContracts(unittest.TestCase):
         for text in (b4, mobile):
             for term in ("发卡商提供或确认", "真实账单地址", "免税州", "账单地址不是收货地址"):
                 self.assertIn(term, text)
-        self.assertIn("两者可以相同", b4)
+        self.assertIn("账单地址不是收货地址。", b4)
         self.assertNotIn("国家、州、邮编都和卡的发行地区一致", b4)
         self.assertNotIn("支付 IP、支付币种也要对齐", b4)
 

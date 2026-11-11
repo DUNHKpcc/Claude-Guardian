@@ -314,6 +314,10 @@ class DiscoverabilityReferenceTests(unittest.TestCase):
         self.assertIn('references/whole-machine-ipv4.md', refs(base('local')))
         self.assertNotIn('references/whole-machine-ipv4.md', refs(base('vps')))
 
+    def test_windows_local_route_attaches_independent_recovery(self):
+        state = answer(base('local'), 'Q-C02', 'windows')
+        self.assertIn('references/windows-network-transaction.md', refs(state))
+
     def test_cleanup_attaches_platform_cleanup_guides(self):
         mac = answer(f.set_context(base('local'), task='cleanup'), 'Q-C02', 'macos')
         win = answer(f.set_context(base('local'), task='cleanup'), 'Q-C02', 'windows')

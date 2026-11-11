@@ -1,12 +1,12 @@
 # Agent 编排检测与修复
 
-授权按[分级授权](authorization-tiers.md)：A 档范围内自己做，B 档整个计划批准一次，C 档当场确认。脚本和库的输入格式、阻塞条件见 [host-libraries.md](host-libraries.md)。
+授权按[分级授权](authorization-tiers.md)：A 档范围内自己做，B 档整个计划批准一次，C 档当场确认。脚本契约见 [host-libraries.md](host-libraries.md)。
 
 ## 一次任务的闭环
 
 1. 复用访谈事实，确认本轮路线（本机、VM、VPS）和目标设备。
 2. 先完成下面的能力核实，再检测：`guardian.py check` 采系统和代理设置，`network_check.py run` 测网络（B 档批准检测计划后跑）。已有新鲜报告就直接用。
-3. 选动作：`python scripts/agent_remediation.py select --input <报告.json> --target-ref <别名>`，`catalog` 列出全部动作。清单是建议，Agent 审阅后替换成核实过的参数再调用固定脚本，不拼接任意 shell。
+3. 用 `agent_remediation.py select` 选动作，`catalog` 列清单；审核参数后调用固定脚本，不拼接任意 shell。Windows 网络写入先按[独立恢复](windows-network-transaction.md)交给本机任务，无独立恢复不写入。
 4. 要改东西时，给用户看：改哪里、原值→新值、影响、保留什么、备份和恢复办法，按档位取得批准。
 5. 改完先读回，再用 `network_check.py run` 对同一目标复测。
 6. 汇报：改了什么、复测结果、还没测的项、怎么恢复。已改未验的不自动重复写入；恢复只撤回本次改动，不覆盖用户后来的修改。

@@ -494,3 +494,14 @@ Windows：Claude 本机数据清理（Agent 提示词，无内置宿主）（12 
 - [8. 官方的项目级清理](windows-cleanup.md#8-官方的项目级清理)
 - [9. 不做的事](windows-cleanup.md#9-不做的事)
 - [10. 限制](windows-cleanup.md#10-限制)
+
+## windows-network-transaction.md
+
+Windows 网络修改事务与独立恢复（6 节）
+
+- [能力与代价](windows-network-transaction.md#能力与代价)
+- [修改前的必读与门禁](windows-network-transaction.md#修改前的必读与门禁)
+- [当前 Windows 写入入口](windows-network-transaction.md#当前-windows-写入入口)
+- [计划与步骤接口](windows-network-transaction.md#计划与步骤接口)
+- [生命周期与失败处理](windows-network-transaction.md#生命周期与失败处理)
+- [验证范围与未覆盖项](windows-network-transaction.md#验证范围与未覆盖项)
