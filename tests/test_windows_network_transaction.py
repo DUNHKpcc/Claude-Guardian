@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -44,12 +45,25 @@ function Start-Process {
         self.worker = self.directory / 'worker.ps1'
         self.worker.write_text(source, encoding='utf-8-sig')
         self.processes = []
+        self.detached_pids = []
         self.addCleanup(self.stop_workers)
 
     def stop_workers(self):
+        for pid in self.detached_pids:
+            if os.name == 'nt':
+                result = subprocess.run(['taskkill', '/PID', str(pid), '/T', '/F'], capture_output=True, timeout=15)
+                self.assertIn(result.returncode, (0, 128), result.stderr)
+            else:
+                try:
+                    os.killpg(pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
         for process in self.processes:
             if process.poll() is None:
-                process.kill()
+                if os.name == 'nt':
+                    subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'], capture_output=True, timeout=15)
+                else:
+                    os.killpg(process.pid, signal.SIGTERM)
             process.wait(timeout=10)
 
     def make_state(self, *, timeout=15, fail_apply=None, fail_restore=None, fail_prepare=None):
@@ -101,11 +115,14 @@ switch ($Operation) {
         (self.directory / 'state.json').write_text(json.dumps(state), encoding='utf-8')
 
     def state(self):
-        return json.loads((self.directory / 'state.json').read_text(encoding='utf-8-sig'))
+        result = subprocess.run([PS, '-NoProfile', '-File', str(self.worker), '-Action', 'Status'],
+                                capture_output=True, text=True, encoding='utf-8', timeout=15)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return json.loads(result.stdout.lstrip('\ufeff'))
 
     def launch(self):
         p = subprocess.Popen([PS, '-NoProfile', '-File', str(self.worker), '-Action', 'Worker'],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=(os.name != 'nt'))
         self.processes.append(p)
         return p
 
@@ -124,8 +141,9 @@ switch ($Operation) {
     def test_agent_process_exit_does_not_cancel_deadline_restore(self):
         self.make_state()
         # The short-lived launcher represents the Agent's shell. Worker outlives it.
-        code = 'import subprocess,sys; subprocess.Popen(sys.argv[1:], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)'
-        subprocess.run([sys.executable, '-c', code, PS, '-NoProfile', '-File', str(self.worker), '-Action', 'Worker'], check=True, timeout=10)
+        code = 'import subprocess,sys; p=subprocess.Popen(sys.argv[1:], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=(sys.platform!="win32")); print(p.pid)'
+        launched = subprocess.run([sys.executable, '-c', code, PS, '-NoProfile', '-File', str(self.worker), '-Action', 'Worker'], capture_output=True, text=True, check=True, timeout=10)
+        self.detached_pids.append(int(launched.stdout.strip()))
         state = self.wait_phase({'restored'})
         self.assertEqual(state['restored'], ['proxy', 'dns'])
         for name in ('dns', 'proxy'):

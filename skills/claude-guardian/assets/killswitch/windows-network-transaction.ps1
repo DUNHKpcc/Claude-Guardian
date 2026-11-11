@@ -19,7 +19,20 @@ function Save-State($directory, $state) {
     else { [IO.File]::Move($tmp, $path) }
 }
 function Read-State($directory) {
-    Get-Content -LiteralPath (Join-Path $directory 'state.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $path = Join-Path $directory 'state.json'
+    # Readers must allow atomic replacement; Windows may briefly hold the rename handle.
+    for ($attempt=0; ; $attempt++) {
+        try {
+            $stream = [IO.File]::Open($path, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete)
+            break
+        } catch [IO.IOException], [UnauthorizedAccessException] {
+            if ($attempt -ge 9) { throw }
+            Start-Sleep -Milliseconds 50
+        }
+    }
+    $reader = New-Object IO.StreamReader($stream)
+    try { $reader.ReadToEnd() | ConvertFrom-Json }
+    finally { $reader.Dispose() }
 }
 function Write-Failure($directory, $failure) {
     $failure | Out-String | Add-Content -LiteralPath (Join-Path $directory 'worker-errors.log') -Encoding UTF8
