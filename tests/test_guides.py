@@ -249,7 +249,7 @@ class GuidanceContracts(unittest.TestCase):
         doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
         for term in ("Windows 不提供脚本", "全部用提示词引导", "LuLu", "guardian-pf-killswitch.sh", "Windows 防火墙", "netsh advfirewall export",
                      "Set-NetFirewallProfile", "DefaultOutboundAction", "New-NetFirewallRule", "InterfaceAlias", "guardian-",
-                     "schtasks /Create", "故障演练", "Issue #13）上跑过", "第 5 步故障演练还没在真机上跑通", "Clash Verge", "服务模式", "Agent 不做的事"):
+                     "schtasks /Create", "故障演练", "Windows 10.0.26200、Clash Verge Rev 2.5.2 上通过", "第 5 步故障演练还没在真机上跑通", "Clash Verge", "服务模式", "Agent 不做的事"):
             self.assertIn(term, doc)
         self.assertIn("local-firewall-prompts.md", (REFS / "routes-and-platforms.md").read_text(encoding="utf-8"))
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
@@ -424,7 +424,7 @@ class GuidanceContracts(unittest.TestCase):
         doc = (REFS / "whole-machine-ipv4.md").read_text(encoding="utf-8")
         section = doc.split('<a id="browser-acceptance"></a>', 1)[1].split("\n## 6.", 1)[0]
         for term in ("https://ip.net.coffee/claude/", "除了“语言”一项，其他必须全绿", "验收不通过",
-                     "由用户本人打开", "IPv6 环境", "本机和手机也要求时区与出口一致", "Set-TimeZone",
+                     "由用户本人打开", "IPv6 环境", "本机、手机、VM、VPS 的时区都须与出口一致", "Set-TimeZone",
                      "native_claude_state_mac.py timezone", "timedatectl set-timezone", "自动设置时区"):
             self.assertIn(term, section)
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")
@@ -450,7 +450,7 @@ class GuidanceContracts(unittest.TestCase):
         # Phones too (owner 2026-10-28): the S03 page 4 "keep it real" row is superseded.
         self.assertIn("除语言外必须全绿（时区要和出口一致", texts["mobile-guidance.md"])
         self.assertIn("| 系统时区 | **和出口 IP 所在地区一致**", texts["mobile-guidance.md"])
-        self.assertIn("本机和手机也要求时区与出口一致", texts["whole-machine-ipv4.md"])
+        self.assertIn("本机、手机、VM、VPS 的时区都须与出口一致", texts["whole-machine-ipv4.md"])
         self.assertIn("whole-machine-ipv4.md#browser-acceptance", texts["agent-remediation.md"])
 
     def test_bundled_sources_yield_to_current_rules(self):
@@ -836,10 +836,10 @@ class GuidanceContracts(unittest.TestCase):
         a3 = self.accounts.split("### A3 ", 1)[1].split("## M03", 1)[0]
         self.assertIn("助手立即停止自己尚未发出的重试", a3)
         self.assertIn("停止用户正在运行的依赖任务前必须取得明确批准", a3)
-        overview = self.incidents.split("## Cleanup", 1)[0]
-        self.assertIn("assistant’s own unsent retries", overview)
-        self.assertIn("user’s running dependent automation requires explicit approval", overview)
-        self.assertNotIn("step and stop dependent automation", overview)
+        triage = self.incidents.split("### K1 ", 1)[1].split("### K2 ", 1)[0]
+        self.assertIn("助手立即停止自己尚未发出的重试和新请求", triage)
+        self.assertIn("停止用户正在运行的依赖任务前必须取得明确批准", triage)
+        self.assertIn("不能承诺可逆", triage)
 
     def test_evidence_export_requires_approval_for_local_and_remote_targets(self):
         evidence = self.incidents.split("### K3 ", 1)[1].split("### K4 ", 1)[0]
@@ -927,7 +927,7 @@ class RemediationGuideContracts(unittest.TestCase):
                      "strict-route: true", "network_check.py run"):
             self.assertIn(term, section)
         # Owner 2026-10-28: the system TUN step is explicitly the Claude Desktop (Electron) WebRTC defence.
-        for term in ("防止 Claude Desktop 的 WebRTC 泄漏", "Electron", "Claude Desktop 运行、TUN 开着",
+        for term in ("Claude Desktop 的 WebRTC", "Electron", "Claude Desktop 运行、TUN 开着",
                      "ICE 701", "断线保护"):
             self.assertIn(term, section)
         self.assertIn("Claude Desktop WebRTC leak", self.network)

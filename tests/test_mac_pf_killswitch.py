@@ -190,8 +190,9 @@ class ScriptContract(unittest.TestCase):
         code = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
         self.assertNotRegex(code, r"\b(mapfile|readarray|declare -A)\b")  # macOS ships bash 3.2
         guide = (ROOT / "skills" / "claude-guardian" / "references" / "local-firewall-prompts.md").read_text(encoding="utf-8")
-        for term in ("Issue #17", "按网卡", "Issue #25", "已验收", "现场修正版", "已合入随包脚本", "C 档"):
+        for term in ("按网卡", "已验收", "macOS 26.6.2", "现场修正版", "修复已合入", "未重新加载 PF", "C 档"):
             self.assertIn(term, guide)
+        self.assertNotRegex(guide, r"Issue #\d+")
         self.assertNotIn("Block Mode", guide)
         self.assertNotIn("允许规则要加在**核心**身上", guide)
         self.assertIn("ADR-054", (ROOT / "docs" / "decisions.md").read_text(encoding="utf-8"))
@@ -219,8 +220,11 @@ class ScriptContract(unittest.TestCase):
         for name in paths:
             with self.subTest(path=name):
                 body = (ROOT / name).read_text(encoding="utf-8")
-                self.assertIn("2026-11-09", body)
                 self.assertIn("accepted" if name == "README.en.md" else "已验收", body)
+                if name in paths[:2] or name.endswith("routes-and-platforms.md"):
+                    self.assertIn("local-firewall-prompts.md#mac", body)
+                else:
+                    self.assertIn("2026-11-09", body)
         whole_machine = (ROOT / paths[-1]).read_text(encoding="utf-8")
         self.assertNotIn("停核心演练还没在真机上做", whole_machine)
         self.assertNotIn("靠 LuLu 或系统防火墙", whole_machine)

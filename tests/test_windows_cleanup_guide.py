@@ -51,7 +51,9 @@ class WindowsCleanupGuide(unittest.TestCase):
                      'Windows 文件权限或占用', '原因不明就写不明', '只读核对现状', '脱敏', '单独确认',
                      '交接单', '准确范围', '会话记录和自动记忆', '还原', '不要求用户上传', '只读核对'):
             self.assertIn(term, section)
-        self.assertIn('issue #16', GUIDE)
+        self.assertIn('同盘隔离、不删除原件', GUIDE)
+        self.assertIn('没有在真实 Windows 机器上跑过', GUIDE)
+        self.assertNotIn('issue #16', GUIDE)
 
     def test_routed_from_skill_and_readme(self):
         skill = (ROOT / 'skills/claude-guardian/SKILL.md').read_text(encoding='utf-8')

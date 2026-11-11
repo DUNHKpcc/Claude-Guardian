@@ -1,6 +1,6 @@
 # Environment entry order: product decision, 2026-10-19
 
-Status: candidate integration under regression review. This page records the project owner's new product direction and the implemented entry surfaces below; it is not native device acceptance.
+This page defines environment selection and the implemented entry surfaces; implementation does not imply native device acceptance.
 
 ## Required order
 

@@ -52,7 +52,7 @@ Claude-Guardian is a Skill for Agents. It hands your Agent the author's and comm
 | 💳 | **Subscription and payment** | Picks candidates from the "all AI payment methods" summary by your region, device and budget and explains the risks; you always pay yourself |
 | 🖥️ | **VM route** | Guest OS (Omarchy / macOS), dedicated LAN NIC, build order, and a fail-closed `FlClash TUN` + `nftables` firewall script |
 | ☁️ | **VPS route** | Use a VPS as the dev machine: Ubuntu 24.04, consistent environment, `Xvfb + noVNC` remote desktop, VS Code Remote-SSH, `tmux`, inbound firewall script |
-| 💻 | **Local route** | Clash Verge / FlClash TUN and DNS setup, Windows firewall guided step by step with prompts, PF script on Mac (accepted, recorded on 2026-11-09; see the local guide for historical reports and script revision details) |
+| 💻 | **Local route** | Clash Verge / FlClash TUN and DNS setup, Windows firewall guided step by step with prompts, PF script on Mac ([accepted scope](skills/claude-guardian/references/local-firewall-prompts.md#mac)) |
 | 🔒 | **Whole-machine uniform egress** | IPv4 only, no IPv6: strict TUN routing, DNS, fallback rules, and evidence checklists for leak and failure drills (Mac, Windows). `egress_verifier.py` rules `established / violated / incomplete` from the evidence you actually observed, without echoing the IP |
 | 📈 | **Route optimization** | The Agent diagnoses and tunes the route item by item: SSH dynamic forwarding, Realm relay, BBR, each with a recorded original value and a rollback |
 | 🩺 | **Failure triage** | `403` / `429` / `529`, billing conflicts, suspected credential leaks: pause retries, gather evidence, then propose the next step |
