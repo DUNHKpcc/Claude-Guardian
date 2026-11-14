@@ -1,5 +1,11 @@
 # 版本记录
 
+## Partners 新增 Mac mini 广告（2026-11-14，README-PARTNER-MAC-MINI）
+
+- README Partners 第二行新增海外 Mac mini 托管广告，链接到 `https://api.dpccgaming.xyz/guardian/services?category=mac_mini`；提供的图片裁剪多余留白、居中后压缩为与现有广告相同的 480×140 PNG，显示宽度 380
+- 仅 README、广告素材与本记录变化，不影响运行能力或来源 manifest；小字随缩放变小。回滚使用普通 revert
+- 验证：已检查图片尺寸与链接；隔离副本运行 `python -m unittest discover -s tests -v` 1592 项（1565 通过、27 环境跳过）；`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts` 及两次 `python tools/package_skill.py --output <临时路径>` 字节一致检查通过；文档 push CI 仅 Linux，远端结果另行核实
+
 ## 现行指南去重与叙述精简（2026-11-11，DOC-CLEANUP / ADR-075）
 
 - 清理现行指南的内部 Issue 引用、事故起因、修复经过和编写过程；合并账号支付、环境路线、事故集成的中英文重复说明，保留操作、成本、授权、版本与验收边界
