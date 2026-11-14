@@ -65,7 +65,7 @@ Claude-Guardian 是一个给 Agent 用的 Skill。它把作者和社区的真实
     <td align="center" colspan="2">
       <a href="https://api.dpccgaming.xyz/guardian/services?category=mac_mini"><img src="docs/partners/mac-mini.png" alt="海外 Mac mini 托管 · 远程连接使用 Claude" width="380" /></a>
       <br />
-      海外 Mac mini 托管，远程连接使用 Claude，点击图片即可跳转
+      海外 Mac mini 托管，无需担心KYC和封号，远程连接使用 Claude，点击图片即可跳转
     </td>
   </tr>
 </table>
