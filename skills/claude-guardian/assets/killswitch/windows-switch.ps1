@@ -203,8 +203,11 @@ function Set-RuleStateChanges($policy, $targetNames, $enabled) {
         $actual = if ($enabled -is [string]) { [string]$rule.Enabled } else { [int]$rule.Enabled }
         if ($actual -ne $enabled) { $name }
     })
-    if ($changes.Count -gt 0) {
-        Set-NetFirewallRule -PolicyStore PersistentStore -Name $changes -Enabled $enabled
+    # NetSecurity expands -Name arrays into WMI queries, which have a complexity limit.
+    $batchSize = 32
+    for ($i = 0; $i -lt $changes.Count; $i += $batchSize) {
+        $end = [Math]::Min($i + $batchSize, $changes.Count) - 1
+        Set-NetFirewallRule -PolicyStore PersistentStore -Name $changes[$i..$end] -Enabled $enabled
     }
 }
 

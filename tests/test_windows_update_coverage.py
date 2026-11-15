@@ -295,6 +295,28 @@ $results | ConvertTo-Json -Depth 4 -Compress
         self.assertEqual(actual['inherited'], {'ok': True, 'removed': 1, 'writes': []})
         self.assertEqual(actual['recover'], {'ok': True, 'removed': 1, 'writes': [{'Names': ['fixture'], 'Enabled': 2}]})
 
+    def test_large_rule_set_is_written_in_bounded_exact_batches(self):
+        source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
+        function = source[source.index('function Set-RuleStateChanges'):source.index('function Restore-Baseline')]
+        actual = self.run_ps(function + r'''
+$script:batches=@()
+function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled)
+    if ($Name.Count -gt 32) { throw 'WMI query quota exceeded' }
+    $script:batches += [pscustomobject]@{Rules=@($Name);Enabled=$Enabled;Store=$PolicyStore}
+}
+$rules=@{}
+$names=@(1..331 | ForEach-Object { "rule-$_" })
+foreach ($name in $names) { $rules[$name]=@{Enabled='True'} }
+$rules['already-disabled']=@{Enabled='False'}
+$rules['unrelated']=@{Enabled='True'}
+Set-RuleStateChanges @{byName=$rules} ($names + 'already-disabled') False
+@{Batches=$script:batches} | ConvertTo-Json -Depth 4 -Compress
+''')
+        batches = actual['Batches']
+        self.assertEqual([len(batch['Rules']) for batch in batches], [32] * 10 + [11])
+        self.assertEqual([rule for batch in batches for rule in batch['Rules']], [f'rule-{i}' for i in range(1, 332)])
+        self.assertTrue(all(batch['Enabled'] == 'False' and batch['Store'] == 'PersistentStore' for batch in batches))
+
     def test_native_keep_cannot_disarm_a_running_or_expired_fuse(self):
         source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
         functions = source[source.index('function Assert-Fuse'):source.index('function Restore-ExpiredSwitch')]
