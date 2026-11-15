@@ -113,7 +113,7 @@ $results | ConvertTo-Json -Compress
 
     def test_whole_machine_reads_all_effective_allows_and_ignores_claude_updates(self):
         source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
-        functions = source[source.index('function Index-Unique'):source.index("if ($Action -ne 'Status')")]
+        functions = source[source.index('function Index-Unique'):source.index("if ($Action -notin")]
         fixture = r'''
 $settings = @{mode='whole_machine';enable_rules=@('proxy','tun');disable_rules=@('legacy-allow','old-claude-block')}
 $cfg = @{target='fixture'}
@@ -294,6 +294,47 @@ $results | ConvertTo-Json -Depth 4 -Compress
         self.assertEqual(actual['match'], {'ok': True, 'removed': 1, 'writes': []})
         self.assertEqual(actual['inherited'], {'ok': True, 'removed': 1, 'writes': []})
         self.assertEqual(actual['recover'], {'ok': True, 'removed': 1, 'writes': [{'Names': ['fixture'], 'Enabled': 2}]})
+
+    def test_native_keep_cannot_disarm_a_running_or_expired_fuse(self):
+        source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
+        functions = source[source.index('function Assert-Fuse'):source.index('function Restore-ExpiredSwitch')]
+        confirm = source.split("    'Confirm' {", 1)[1].split("    'Recover' {", 1)[0]
+        confirm = confirm[:confirm.rindex('    }')].replace('        exit 0', '        return')
+        fixture = r'''
+$task='fixture'
+$settings=@{mode='whole_machine'}
+function Get-ScheduledTask { param($TaskName) $script:entry }
+function New-ScheduledTaskTrigger { param([switch]$Once,$At) @{Id='';StartBoundary=([DateTimeOffset]$At).ToString('o')} }
+function Set-ScheduledTask { param($TaskName,$Trigger)
+    $script:entry.Triggers=@($Trigger)
+    $script:rearmed++
+}
+function Unregister-ScheduledTask { param($TaskName,[switch]$Confirm) $script:removed++ }
+function Get-State {
+    if ($script:mode -eq 'expired-during-read') { $script:entry.Triggers[0].StartBoundary=(Get-Date).AddSeconds(-1).ToString('o') }
+    @{protection='on';coverage=@{status=$(if ($script:mode -eq 'incomplete') {'unknown'} else {'pass'})}}
+}
+$results=@{}
+foreach ($mode in @('success','running','expired','expired-during-read','incomplete')) {
+    $script:mode=$mode
+    $script:removed=$script:rearmed=0
+    $script:entry=@{
+        State=$(if ($mode -eq 'running') {'Running'} else {'Ready'})
+        Triggers=@(@{Id='GuardianSwitch-waiting-0123456789abcdef0123456789abcdef';StartBoundary=(Get-Date).AddSeconds($(if ($mode -eq 'expired') {-1} else {180})).ToString('o')})
+    }
+    try { & { CONFIRM_CODE } | Out-Null } catch {}
+    $results[$mode]=@{removed=$script:removed;rearmed=$script:rearmed}
+}
+$results | ConvertTo-Json -Compress
+'''
+        actual = self.run_ps(functions + fixture.replace('CONFIRM_CODE', confirm))
+        self.assertEqual(actual, {
+            'success': {'removed': 1, 'rearmed': 1},
+            'running': {'removed': 0, 'rearmed': 0},
+            'expired': {'removed': 0, 'rearmed': 0},
+            'expired-during-read': {'removed': 0, 'rearmed': 1},
+            'incomplete': {'removed': 0, 'rearmed': 1},
+        })
 
     def test_source_deployment_failure_preserves_old_rules_and_never_prints_success(self):
         source = (SKILL / 'sources/S05-local-protection.md').read_text(encoding='utf-8')

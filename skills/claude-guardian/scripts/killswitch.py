@@ -76,9 +76,13 @@ def pf(cfg, action):
     return run(['/bin/bash', PF, action], env=env, timeout=90)
 
 
+# Policy reads can exceed 60 seconds. The native fuse owns the shorter phase deadlines.
+WINDOWS_TIMEOUTS = {'On': 800, 'Confirm': 300, 'Off': 600, 'Uninstall': 600}
+
+
 def windows(path, action):
     result = run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', WINDOWS,
-                  '-Action', action, '-Config', Path(path).resolve()], timeout=60)
+                  '-Action', action, '-Config', Path(path).resolve()], timeout=WINDOWS_TIMEOUTS.get(action, 300))
     data = json.loads(result.stdout.strip().lstrip('\ufeff'))
     data['message'] = ('请先保存 Windows 关闭保护时的恢复基线。' if 'Create a baseline' in data.get('message', '')
                        else '已读回三档生效策略及指定规则；出口与防泄漏结果请以场景验收为准。')
@@ -130,6 +134,8 @@ def confirm(action, cfg):
                'off': '停用当前保护及开机加载，可能恢复直连。请先退出相关应用及后台进程。',
                'uninstall': '恢复未保护状态并移除已部署的防护组件；配置模板与桌面入口保留。',
                'snapshot': '保存当前 Windows 策略及指定规则状态，作为关闭时的恢复基线。'}
+    if action == 'on' and cfg['backend'] == 'windows_firewall':
+        effects['on'] = '开启防直连。应用和确认后的读回各最多 240 秒，验证出错会恢复。临时开启后 180 秒内输入 KEEP。'
     if cfg['backend'] == 'windows_firewall' and cfg['windows'].get('mode') == 'whole_machine':
         print('整机出口模式：影响所有软件。代理停用时其他软件也可能断网；国内直连、局域网、虚拟机和远程连接须先审核例外。关闭保护会恢复原有出站策略。', flush=True)
     phrase = action.upper() + ' ' + cfg['target']
@@ -171,7 +177,33 @@ def off(cfg, path):
         windows(path, 'Off')
 
 
+def windows_on(cfg, path):
+    current = windows(path, 'On')
+    deadline = current.get('keep_until')
+    if deadline is None:
+        require_coverage(cfg, current)
+        if current['protection'] != 'on' or not current['startup']:
+            raise SwitchError('开启后的状态验证未通过。')
+        return current  # The native preflight verified protection was already active.
+    try:
+        require_coverage(cfg, current)
+        remaining = max(0, int(deadline - time.time()))
+        print(f'已读回临时防护，请核对网络及出口。剩余约 {remaining} 秒，输入 KEEP 后还会读回防火墙。', flush=True)
+        if input('> ').strip() != 'KEEP' or time.time() >= deadline:
+            raise SwitchError('未在确认时间内保留，正在恢复未保护状态。')
+        current = windows(path, 'Confirm')
+        require_coverage(cfg, current)
+        if current['protection'] != 'on' or not current['startup']:
+            raise SwitchError('开启后的状态验证未通过。')
+        return current
+    except (Exception, KeyboardInterrupt):
+        off(cfg, path)
+        raise
+
+
 def on(cfg, path):
+    if cfg['backend'] == 'windows_firewall':
+        return windows_on(cfg, path)
     before = status(cfg, path)
     require_coverage(cfg, before)
     if before['protection'] == 'on' and before['startup']:
@@ -189,8 +221,6 @@ def on(cfg, path):
             run(['systemd-run', '--collect', '--unit=' + FUSE, '--on-active=180s', '/usr/bin/systemctl',
                  'disable', '--now', *UNITS])
             run(['systemctl', 'start', UNITS[0]])
-        else:
-            windows(path, 'On')
         print('开关配置已临时开启。请核对当前应用覆盖、网络正常及出口符合预期；180 秒内输入 KEEP 保留，否则恢复。', flush=True)
         if input('> ').strip() != 'KEEP' or time.monotonic() - started >= 160:
             raise SwitchError('未在确认时间内保留，正在恢复未保护状态。')
@@ -204,8 +234,6 @@ def on(cfg, path):
         elif cfg['backend'] == 'linux_flclash':
             run(['systemctl', 'enable', '--now', *UNITS])
             run(['systemctl', 'stop', FUSE + '.timer'])
-        else:
-            windows(path, 'Confirm')
     except (Exception, KeyboardInterrupt):
         off(cfg, path)
         raise
@@ -227,6 +255,10 @@ def execute(action, cfg, path):
     require_admin()
     if action == 'status':
         return status(cfg, path)
+    if action == 'preview':
+        if cfg['backend'] != 'windows_firewall':
+            raise SwitchError('此预检仅用于 Windows 策略快照。')
+        return windows(path, 'Preview')
     confirm(action, cfg)
     if action == 'snapshot':
         if cfg['backend'] != 'windows_firewall':
@@ -255,7 +287,7 @@ def main(argv=None):
         if hasattr(stream, 'reconfigure'):
             stream.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description='Guardian Switch — 本机防直连开关')
-    parser.add_argument('action', choices=['status', 'on', 'off', 'uninstall', 'snapshot', 'gui', 'desktop'])
+    parser.add_argument('action', choices=['status', 'preview', 'on', 'off', 'uninstall', 'snapshot', 'gui', 'desktop'])
     parser.add_argument('--config', required=True, type=Path)
     parser.add_argument('--output', type=Path, help='桌面入口生成目录；必须不存在')
     parser.add_argument('--receipt', type=Path, help=argparse.SUPPRESS)

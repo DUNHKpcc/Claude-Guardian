@@ -109,29 +109,39 @@ class Controller(unittest.TestCase):
                 k.on(cfg,self.path)
             self.assertEqual([c.args[1] for c in native.call_args_list],['apply','unpersist','rollback'])
 
-    def test_windows_failed_coverage_never_enables_or_confirms(self):
-        cfg = dict(self.cfg, backend='windows_firewall')
-        for protection in ('on', 'off'):
-            state = {'protection':protection, 'startup':protection == 'on', 'coverage':{'status':'fail'}}
-            with self.subTest(protection=protection), patch.object(k, 'status', return_value=state), patch.object(k, 'windows') as native, self.assertRaises(k.SwitchError):
-                k.on(cfg, self.path)
-            native.assert_not_called()
-        states = [{'protection':'off', 'startup':False}, {'protection':'on', 'startup':True, 'coverage':{'status':'fail'}}]
-        with patch.object(k, 'status', side_effect=states), patch.object(k, 'windows') as native, patch('builtins.input', return_value='KEEP'), contextlib.redirect_stdout(io.StringIO()), self.assertRaises(k.SwitchError):
-            k.on(cfg, self.path)
-        self.assertEqual([c.args[1] for c in native.call_args_list], ['On', 'Off'])
-
-    def test_whole_machine_requires_verified_coverage_before_any_change(self):
+    def test_windows_uses_native_rollback_deadline_and_final_readback(self):
         cfg = dict(self.cfg, backend='windows_firewall', windows=dict(self.cfg['windows'], mode='whole_machine'))
-        for coverage in ({}, {'status':'unknown'}, {'status':'fail'}):
-            with self.subTest(coverage=coverage), patch.object(k, 'status', return_value={'protection':'off', 'startup':False, 'coverage':coverage}), patch.object(k, 'windows') as native, self.assertRaises(k.SwitchError):
+        enabled = {'protection': 'on', 'startup': True, 'coverage': {'status': 'pass'}}
+        cases = [
+            ('KEEP', 150, enabled, ['On', 'Confirm']),
+            ('KEEP', 181, enabled, ['On', 'Off']),
+            ('cancel', 150, enabled, ['On', 'Off']),
+            ('KEEP', 150, k.SwitchError('Final readback timed out'), ['On', 'Confirm', 'Off']),
+            ('KEEP', 150, dict(enabled, coverage={'status':'unknown'}), ['On', 'Confirm', 'Off']),
+        ]
+        for answer, now, result, expected in cases:
+            with self.subTest(expected=expected, result=result), patch.object(k, 'windows', side_effect=[
+                dict(enabled, keep_until=180), result if 'Confirm' in expected else None, None]), patch.object(k.time, 'time', return_value=now), patch(
+                'builtins.input', return_value=answer), contextlib.redirect_stdout(io.StringIO()):
+                if expected[-1] == 'Confirm':
+                    self.assertEqual(k.on(cfg, self.path), enabled)
+                else:
+                    with self.assertRaises(k.SwitchError):
+                        k.on(cfg, self.path)
+                self.assertEqual([c.args[1] for c in k.windows.call_args_list], expected)
+
+    def test_windows_preflight_error_does_not_restore_another_operation(self):
+        cfg = dict(self.cfg, backend='windows_firewall')
+        with patch.object(k, 'windows', side_effect=k.SwitchError('Previous fuse still exists')) as native:
+            with self.assertRaisesRegex(k.SwitchError, 'Previous fuse'):
                 k.on(cfg, self.path)
-            native.assert_not_called()
-        states = [{'protection':'off', 'startup':False, 'coverage':{'status':'pass'}},
-                  {'protection':'on', 'startup':True, 'coverage':{'status':'unknown'}}]
-        with patch.object(k, 'status', side_effect=states), patch.object(k, 'windows') as native, patch('builtins.input', return_value='KEEP'), contextlib.redirect_stdout(io.StringIO()), self.assertRaises(k.SwitchError):
-            k.on(cfg, self.path)
-        self.assertEqual([c.args[1] for c in native.call_args_list], ['On', 'Off'])
+        native.assert_called_once_with(self.path, 'On')
+
+    def test_windows_readonly_preview_has_time_for_slow_native_reads(self):
+        with patch.object(k, 'run', return_value=result(stdout='{}')) as runner:
+            k.windows(self.path, 'Preview')
+        self.assertEqual(runner.call_args.kwargs['timeout'], 300)
+        self.assertIn('Preview', runner.call_args.args[0])
 
     def test_whole_machine_confirmation_discloses_cost_before_prompt(self):
         cfg = dict(self.cfg, backend='windows_firewall', windows=dict(self.cfg['windows'], mode='whole_machine'))

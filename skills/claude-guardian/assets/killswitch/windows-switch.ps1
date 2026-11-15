@@ -1,6 +1,8 @@
 param(
-    [Parameter(Mandatory=$true)][ValidateSet('Status','Snapshot','On','Confirm','Off','Uninstall')][string]$Action,
-    [Parameter(Mandatory=$true)][string]$Config
+    [Parameter(Mandatory=$true)][ValidateSet('Status','Preview','Snapshot','On','Confirm','Off','Uninstall','Recover')][string]$Action,
+    [Parameter(Mandatory=$true)][string]$Config,
+    [int]$WriterPid,
+    [long]$WriterStarted
 )
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
@@ -252,19 +254,53 @@ function Get-State($active, $stored, $coverage, $baseline) {
     $coverage.scope = if ($settings.mode -eq 'whole_machine') {'whole_machine'} else {'application_paths'}
     @{protection=$label;startup=$startup;coverage=$coverage;message='Switch configuration read back only; application coverage and egress acceptance are separate.';checked_at=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()}
 }
-if ($Action -ne 'Status') {
+function Assert-Fuse($phase) {
+    $entry = Get-ScheduledTask -TaskName $task
+    $deadline = [DateTimeOffset]::Parse($entry.Triggers[0].StartBoundary)
+    if ($entry.Triggers[0].Id -ne $phase -or [string]$entry.State -ne 'Ready' -or
+        $deadline -le [DateTimeOffset]::Now.AddSeconds(5)) { throw 'Recovery deadline expired or recovery started' }
+}
+
+function Set-FusePhase($before, $after, $seconds) {
+    Assert-Fuse $before
+    $deadline = (Get-Date).AddSeconds($seconds)
+    $trigger = New-ScheduledTaskTrigger -Once -At $deadline
+    $trigger.Id = $after
+    Set-ScheduledTask -TaskName $task -Trigger $trigger | Out-Null
+    Assert-Fuse $after
+    return ([DateTimeOffset]$deadline).ToUnixTimeSeconds()
+}
+
+function Assert-Enabled($current) {
+    if ($current.protection -ne 'on' -or $current.coverage.status -eq 'fail' -or
+        ($settings.mode -eq 'whole_machine' -and $current.coverage.status -ne 'pass')) {
+        throw 'Switch configuration or application coverage failed'
+    }
+}
+
+function Restore-ExpiredSwitch {
+    # The independent task stops only the process recorded when the fuse was armed.
+    $writer = if ($WriterPid -gt 0) { Get-Process -Id $WriterPid -ErrorAction SilentlyContinue }
+    if ($null -ne $writer -and $writer.StartTime.ToUniversalTime().Ticks -eq $WriterStarted) {
+        Stop-Process -InputObject $writer -Force
+        if (-not $writer.WaitForExit(10000)) { throw 'Switch writer still running; recovery will retry' }
+    }
+    Restore-Baseline
+}
+
+if ($Action -notin @('Status','Preview')) {
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     if (-not (New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw 'Administrator required' }
 }
-switch ($Action) {
-    'Snapshot' {
-        if (Test-Path -LiteralPath $state) { throw 'Baseline already exists; do not overwrite' }
-        $stored = Read-Policy PersistentStore
-        $active = Read-Policy ActiveStore
-        $b = Get-Snapshot $stored $active
-        $coverage = Get-Coverage $b $active $stored -Planned
-        if ($settings.mode -eq 'whole_machine' -and $coverage.status -ne 'pass') { throw "Whole-machine plan not verified: $($coverage.message)" }
-        foreach ($p in $b.profiles) { if ([string]$p.DefaultOutboundAction -ne 'Allow' -or [string]$p.Enabled -ne 'True') { throw 'Baseline must have enabled profiles with explicit Allow; inspect the pre-deployment backup' } }
+if ($Action -in @('Preview','Snapshot')) {
+    if (Test-Path -LiteralPath $state) { throw 'Baseline already exists; do not overwrite' }
+    $stored = Read-Policy PersistentStore
+    $active = Read-Policy ActiveStore
+    $b = Get-Snapshot $stored $active
+    $coverage = Get-Coverage $b $active $stored -Planned
+    if ($settings.mode -eq 'whole_machine' -and $coverage.status -ne 'pass') { throw "Whole-machine plan not verified: $($coverage.message)" }
+    foreach ($p in $b.profiles) { if ([string]$p.DefaultOutboundAction -ne 'Allow' -or [string]$p.Enabled -ne 'True') { throw 'Baseline must have enabled profiles with explicit Allow; inspect the pre-deployment backup' } }
+    if ($Action -eq 'Snapshot') {
         $parent = Split-Path -Parent $state
         $expected = Join-Path $env:ProgramData 'ClaudeGuardian\Switch'
         if ([IO.Path]::GetFullPath($parent) -ne [IO.Path]::GetFullPath($expected)) { throw 'Baseline must be in ProgramData/ClaudeGuardian/Switch' }
@@ -277,41 +313,67 @@ switch ($Action) {
         }
         Set-Acl -LiteralPath $parent -AclObject $acl
         $b | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $state -Encoding UTF8
-        Get-State $active $stored $coverage $b | ConvertTo-Json -Depth 6 -Compress
-        exit 0
     }
+    Get-State $active $stored $coverage $b | ConvertTo-Json -Depth 6 -Compress
+    exit 0
+}
+
+switch ($Action) {
     'On' {
         $baseline = Read-Baseline
         $stored = Read-Policy PersistentStore
         $active = Read-Policy ActiveStore
-        $coverage = Get-Coverage $baseline $active $stored -Planned
-        if ($coverage.status -eq 'fail' -or ($settings.mode -eq 'whole_machine' -and $coverage.status -ne 'pass')) { throw 'Coverage not verified; existing rules retained' }
+        if (Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue) { throw 'Previous fuse still exists; recover first' }
+        $before = Get-State $active $stored $null $baseline
+        if ($before.coverage.status -eq 'fail' -or ($settings.mode -eq 'whole_machine' -and $before.coverage.status -ne 'pass')) { throw 'Coverage not verified; existing rules retained' }
+        if ($before.protection -eq 'on') {
+            $before | ConvertTo-Json -Depth 6 -Compress
+            exit 0
+        }
+        if ($before.protection -ne 'off') { throw 'Switch state is mixed; recover first' }
         if (Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue) { throw 'Previous fuse still exists; recover first' }
         Copy-Item -LiteralPath $PSCommandPath -Destination $fuseScript -Force
         $cfg | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $fuseConfig -Encoding UTF8
         $configPath = $fuseConfig
         if ($configPath.Contains('"') -or $PSCommandPath.Contains('"')) { throw 'Invalid path' }
-        $argsText = '-NoProfile -ExecutionPolicy Bypass -File "' + $fuseScript + '" -Action Off -Config "' + $configPath + '"'
+        $writerStarted = (Get-Process -Id $PID).StartTime.ToUniversalTime().Ticks
+        $argsText = '-NoProfile -ExecutionPolicy Bypass -File "' + $fuseScript + '" -Action Recover -Config "' + $configPath + '" -WriterPid ' + $PID + ' -WriterStarted ' + $writerStarted
+        $ticket = [guid]::NewGuid().ToString('N')
+        $applying = "GuardianSwitch-applying-$ticket"
+        $waiting = "GuardianSwitch-waiting-$ticket"
         $taskAction = New-ScheduledTaskAction -Execute "$PSHOME\powershell.exe" -Argument $argsText
-        $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(180)
+        $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(240)
+        $trigger.Id = $applying
         $taskSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
         Register-ScheduledTask -TaskName $task -Action $taskAction -Trigger $trigger -Settings $taskSettings -User SYSTEM -RunLevel Highest | Out-Null
         try {
+            Assert-Fuse $applying
             Set-RuleStateChanges $stored $settings.enable_rules True
             Set-RuleStateChanges $stored $settings.disable_rules False
             $changedProfiles = @($stored.profiles | Where-Object { [string]$_.Enabled -ne 'True' -or [string]$_.DefaultOutboundAction -ne 'Block' })
             if ($changedProfiles.Count -gt 0) {
                 Set-NetFirewallProfile -PolicyStore PersistentStore -Profile $changedProfiles.Name -Enabled True -DefaultOutboundAction Block
             }
+            $current = Get-State
+            Assert-Enabled $current
+            $current.keep_until = Set-FusePhase $applying $waiting 180
         } catch { Restore-Baseline; throw }
+        $current | ConvertTo-Json -Depth 6 -Compress
+        exit 0
     }
     'Confirm' {
+        $waiting = (Get-ScheduledTask -TaskName $task).Triggers[0].Id
+        if ($waiting -notmatch '^GuardianSwitch-waiting-[0-9a-f]{32}$') { throw 'Switch is not waiting for KEEP' }
+        $checking = $waiting.Replace('-waiting-','-checking-')
+        $null = Set-FusePhase $waiting $checking 240
         $current = Get-State
-        if ($current.protection -ne 'on' -or $current.coverage.status -eq 'fail' -or ($settings.mode -eq 'whole_machine' -and $current.coverage.status -ne 'pass')) { throw 'Switch configuration or application coverage failed' }
+        Assert-Enabled $current
+        Assert-Fuse $checking
         Unregister-ScheduledTask -TaskName $task -Confirm:$false
         $current | ConvertTo-Json -Depth 6 -Compress
         exit 0
     }
+    'Recover' { Restore-ExpiredSwitch; exit 0 }
     'Off' { Restore-Baseline }
     'Uninstall' {
         Restore-Baseline

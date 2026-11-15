@@ -6,10 +6,11 @@
 
 | 操作 | 行为 |
 | --- | --- |
-| `on` | 开启保护；180 秒保险丝内确认网络正常后保留，并启用开机保持 |
+| `on` | 开启保护，确认网络正常后保留，并启用开机保持。临时开启后有 180 秒确认窗口 |
 | `off` | 停用当前保护及开机加载，保留配置，重启后保持关闭 |
 | `status` | 读回当前系统规则与开机状态；失败、混合状态或权限不足报待核实 |
 | `uninstall` | 先 OFF，再移除 Mac/Linux 已部署防护组件；Windows 恢复基线并删除开关快照，原有防火墙规则保留 |
+| `preview` | Windows 首次配置：只读检查拟保存的快照及计划，不落盘 |
 | `snapshot` | Windows 首次配置：保存关闭保护时的恢复基线，不覆盖已有快照 |
 | `gui` / `desktop` | 打开本机界面／生成桌面入口，不执行防火墙改动 |
 
@@ -32,20 +33,22 @@ Windows 返回的 `protection` 表示开关配置，`coverage` 单独表示检�
 6. 告知目标、影响、保险丝与离线恢复方案，按现有 A/B/C 授权执行。首次 ON/网络中断仍须当场确认；不得让 Agent 代输终端确认或用管道确认。系统改动权限与仓库开发权限分开。
 7. 按[突发场景验收](local-firewall-prompts.md#incident-acceptance)和下面的开关验收交付。配置、基线快照、真实路径与私人证据仅保存在目标机。
 
+Windows 的只读预检、快照和状态查询最多等待 300 秒。应用及读回由本机保险丝保护，最多 240 秒。应用核实完成后进入 180 秒 KEEP 窗口。按时 KEEP 后，本机任务继续保护最终读回，最多 240 秒。未按时确认、验证失败或中断均走恢复，确认成功才撤销任务。
+
 开关保险丝只覆盖自身后端。Windows 同时修改 DNS、代理、TUN、路由或网卡时，先读 [网络事务与独立恢复](windows-network-transaction.md)，不能把 OFF 当成这些设置的完整回滚。
 
 ## Windows 整机出口模式：代价与首次交付
 
 **选择前必须讲清楚：这套模式影响整台电脑。**代理停止或不可用时，浏览器、下载、游戏等其他软件也可能断网；国内网站未配置直连例外时同样走代理，可能增加流量、延迟或费用。局域网共享／打印、虚拟机／Cowork、其他 VPN 和远程管理必须先核对，不能承诺全部保持原状。加入直连例外意味着这些流量不再受到“只能走代理”的约束；宽泛放行会破坏防护。OFF 恢复原出站策略，可能恢复直连，不是保留保护的网络修复按钮。
 
-**执行边界：**先说明目标机、规则差异、影响、备份、180 秒保险丝与独立恢复入口，再由用户当场确认首次 ON（C 档）。远程机器必须有不依赖当前连接的救援方式；不能用开关配置字段代替用户确认。仓库开发授权不授权修改真实设备。
+**执行边界：**先说明目标机、规则差异、影响、备份、分阶段保险丝与独立恢复入口，再由用户当场确认首次 ON（C 档）。远程机器必须有不依赖当前连接的救援方式；不能用开关配置字段代替用户确认。仓库开发授权不授权修改真实设备。
 
 首次配置由目标机 Agent 完成：
 
 1. 按[Windows 防火墙](local-firewall-prompts.md#windows-的防火墙系统自带)先验证 TUN、节点和代理核心，并保存当前策略备份。整理用户需要的国内直连、局域网、虚拟机、Cowork、VPN 和远程访问，列明保留／受影响／不支持；组织管理设备仍按既有规则停止。
 2. 将 `windows.mode` 设为 `whole_machine`。`enable_rules` 填**完整的、已审核的出站 Allow 规则精确 Name**：代理核心到指定节点及端口、实际 TUN 接口和必要网络例外。不要加入 Claude 主程序／Helper／包外 Code 的版本路径规则来承担整机保护。每项例外审核程序、包／服务、接口／类型、Profile、协议、地址、端口和安全条件，不能用允许所有程序直连公网的规则凑通过。
 3. 只读盘点 `PersistentStore` 与 `ActiveStore` 的出站 Allow 规则。计划 ON 后仍启用的规则必须恰好等于 `enable_rules`；其他会绕过默认阻止的已启用规则，经用户批准后逐项列入 `disable_rules`。旧 Claude 路径 Block 规则若妨碍 TUN，也须明确列入停用计划。开关不会自动发现后批量删规则，也不修改未列入的规则。
-4. 在三档防火墙已启用、默认出站明确 Allow 的恢复状态执行 `snapshot`。快照保存精确开关状态、模式和规则条件；预检按计划中的启停状态审计两种存储的全部出站 Allow 集合，不通过则不保存。状态输出只给摘要；规则条件、真实路径和地址仅保存在目标机私有快照，不上传。 快照和状态按策略存储批量读取规则与过滤条件，保留原有快照格式。ON／OFF 只按精确规则名更新启停状态有变化的条目，恢复后核对持久和生效状态。
+4. 先用 `preview` 检查计划。在三档防火墙已启用、默认出站明确 Allow 的恢复状态执行 `snapshot`。快照保存精确开关状态、模式和规则条件；预检按计划中的启停状态审计两种存储的全部出站 Allow 集合，不通过则不保存。状态输出只给摘要；规则条件、真实路径和地址仅保存在目标机私有快照，不上传。 快照和状态按策略存储批量读取规则与过滤条件，保留原有快照格式。ON／OFF 只按精确规则名更新启停状态有变化的条目，恢复后核对持久和生效状态。
 5. 首次 ON 会重新预检，再按现有保险丝流程切换。确认前验证代理可用、独立新程序也不能绕过代理、停止代理后无非批准直连，恢复后网络正常；沿用 `network_check.py run --failure-drill` 与 `egress_verifier.py`，TCP／UDP、DNS、IPv6、WebRTC 分别记录。未完成时不输入 KEEP，不拿规则 pass 代替真实测试。
 6. 交付时保存首次真实验收结论和例外清单，说明保险丝未确认会恢复原策略，恢复后不再保证防直连。开关与文档不会自动启动 Claude 或做真实业务测试。
 
@@ -67,7 +70,8 @@ python scripts/killswitch.py status --config /absolute/path/switch.json
 python scripts/killswitch.py on --config /absolute/path/switch.json
 python scripts/killswitch.py off --config /absolute/path/switch.json
 python scripts/killswitch.py uninstall --config /absolute/path/switch.json
-# Windows 首次保存恢复基线
+# Windows 首次预检并保存恢复基线
+python scripts/killswitch.py preview --config C:\private\switch.json
 python scripts/killswitch.py snapshot --config C:\private\switch.json
 ```
 
