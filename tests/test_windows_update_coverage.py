@@ -95,14 +95,14 @@ $baseline = @{rules=@(@{Name='guardian-test';conditions=(Get-RuleConditions $sto
 $results = @{}
 foreach ($mode in @('normal','missing','program-drift','service-drift','interface-drift','denied','missing-filter','duplicate-filter')) {
     $script:mode=$mode
-    $results[$mode]=(Get-Coverage $baseline).status
+    $results[$mode]=(Get-Coverage $baseline -Audit).status
 }
 $script:mode='normal'
 $baseline.rules[0].conditions.Service='old-service'
-$results['baseline-drift']=(Get-Coverage $baseline).status
-$results['legacy-baseline']=(Get-Coverage @{rules=@(@{Name='guardian-test'})}).status
+$results['baseline-drift']=(Get-Coverage $baseline -Audit).status
+$results['legacy-baseline']=(Get-Coverage @{rules=@(@{Name='guardian-test'})} -Audit).status
 # Existing paths cannot prove that a new package helper or external runtime is covered.
-$results['new-component-unverified']=(Get-Coverage @{rules=@()}).status
+$results['new-component-unverified']=(Get-Coverage @{rules=@()} -Audit).status
 $results | ConvertTo-Json -Compress
 '''
         actual = self.run_ps(functions + fixture)
@@ -204,35 +204,61 @@ $stored=Read-Policy PersistentStore
 $active=Read-Policy ActiveStore
 $baseline = Get-Snapshot $stored $active
 $baseline | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $state -Encoding UTF8
-$results = @{planned=(Get-Coverage $baseline $active $stored -Planned).status;off=(Get-State).protection}
+$results = @{planned=(Get-Coverage $baseline $active $stored -Planned -Audit).status;off=(Get-State).protection}
 $script:reads=@{}
 $null=Get-State
+$results['statusReads']=@($script:reads.Keys)
+$script:reads=@{}
+$null=Get-State -Audit
 $results['batchReads']=@($script:reads.Values)
 Set-RuleStateChanges $stored @('proxy','tun','legacy-allow') True
 Set-RuleStateChanges $stored @('old-claude-block') True
 $results['delta']=@($script:changes)
 foreach ($scenario in @('normal','claude-update','extra-allow','disabled-extra','extra-inbound','address-drift','port-drift','security-drift','interface-drift','baseline-drift','profile-allow','persistent-profile-allow','persistent-extra','denied','missing-interface')) {
     $script:scenario = $scenario
-    $results[$scenario] = (Get-Coverage $baseline).status
+    $results[$scenario] = (Get-Coverage $baseline -Audit).status
+    if ($scenario -in @('extra-allow','address-drift','normal')) {
+        $results["quick-$scenario"] = (Get-State).coverage.status
+        $results["switch-$scenario"] = (Get-State -CheckWhitelist).coverage.status
+    }
 }
 $script:scenario='loopback'
 $loopbackStored=Read-Policy PersistentStore
 $loopbackActive=Read-Policy ActiveStore
 $loopbackBaseline=Get-Snapshot $loopbackStored $loopbackActive
-$results['loopback']=(Get-Coverage $loopbackBaseline $loopbackActive $loopbackStored).status
+$results['loopback']=(Get-Coverage $loopbackBaseline $loopbackActive $loopbackStored -Audit).status
 $script:scenario='normal'
 $results['on']=(Get-State).protection
 $results['scope']=(Get-State).coverage.scope
 $results['stage']=(Get-State).coverage.stage
 $baseline.mode=$null
-$results['old-baseline']=(Get-Coverage $baseline).status
+$results['old-baseline']=(Get-Coverage $baseline -Audit).status
 $baseline.mode='whole_machine'
 $baseline.rules[0].conditions.Remove('RemoteAddress')
-$results['incomplete-baseline']=(Get-Coverage $baseline).status
+$results['incomplete-baseline']=(Get-Coverage $baseline -Audit).status
 foreach ($scenario in @('unrestricted','missing-proxy')) {
     $script:scenario=$scenario
     $testBaseline=Get-Snapshot (Read-Policy PersistentStore) (Read-Policy ActiveStore)
-    $results[$scenario]=(Get-Coverage $testBaseline).status
+    $results[$scenario]=(Get-Coverage $testBaseline -Audit).status
+}
+$script:scenario='off'
+$autoDisable=$true
+$settings.disable_rules=@()
+$names=$settings.enable_rules
+$discovered=Get-Snapshot $stored $active
+$discovered | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $state -Encoding UTF8
+$loaded=Read-Baseline
+$results['discovered']=@(Get-DisableRules $loaded)
+$results['before-switch-rule-count']=@($loaded.rules).Count
+$results['conditions-stored']=@($loaded.rules | Where-Object {$null -ne $_.conditions}).Count
+$results['auto-plan']=(Get-Coverage $loaded $active $stored -Planned -Audit).status
+$script:scenario='extra-allow';
+$results['auto-new-allow']=(Get-Coverage $loaded -Planned -CheckWhitelist).status
+try {
+    $null=Get-Snapshot $stored (Read-Policy ActiveStore)
+    $results['active-only-rule-rejected']=$false
+} catch {
+    $results['active-only-rule-rejected']=$true
 }
 $results | ConvertTo-Json -Depth 6 -Compress
 '''
@@ -247,7 +273,19 @@ $results | ConvertTo-Json -Depth 6 -Compress
         self.assertEqual(actual['off'], 'off')
         self.assertEqual(actual['scope'], 'whole_machine')
         self.assertEqual(actual['stage'], 'effective')
+        self.assertEqual(actual['statusReads'], ['ActiveStore'])
         self.assertEqual(sorted(actual['batchReads']), [1] * 16)
+        self.assertEqual(actual['quick-extra-allow'], 'fail')
+        self.assertEqual(actual['quick-address-drift'], 'unknown')
+        self.assertEqual(actual['switch-extra-allow'], 'fail')
+        self.assertEqual(actual['switch-address-drift'], 'fail')
+        self.assertEqual(actual['switch-normal'], 'pass')
+        self.assertEqual(actual['discovered'], ['legacy-allow'])
+        self.assertEqual(actual['before-switch-rule-count'], 3)
+        self.assertEqual(actual['conditions-stored'], 2)
+        self.assertEqual(actual['auto-plan'], 'pass')
+        self.assertEqual(actual['auto-new-allow'], 'fail')
+        self.assertIs(actual['active-only-rule-rejected'], True)
         self.assertEqual(actual['delta'], [{'Names': ['proxy', 'tun'], 'Enabled': 'True'}])
 
     def test_restore_retains_fuse_until_both_policy_stores_match(self):

@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory=$true)][ValidateSet('Status','Preview','Snapshot','On','Confirm','Off','Uninstall','Recover')][string]$Action,
+    [Parameter(Mandatory=$true)][ValidateSet('Status','Audit','Preview','Snapshot','On','Confirm','Off','Uninstall','Recover')][string]$Action,
     [Parameter(Mandatory=$true)][string]$Config,
     [int]$WriterPid,
     [long]$WriterStarted
@@ -11,6 +11,7 @@ if ($cfg.version -ne 1 -or $cfg.backend -ne 'windows_firewall' -or $cfg.target -
 $settings = $cfg.windows
 if ($null -ne $settings.mode -and $settings.mode -notin @('application_paths','whole_machine')) { throw 'Unsupported Windows mode' }
 $names = @($settings.enable_rules) + @($settings.disable_rules)
+$autoDisable = $settings.mode -eq 'whole_machine' -and @($settings.disable_rules).Count -eq 0
 if (@($settings.enable_rules).Count -eq 0 -or ($names | Select-Object -Unique).Count -ne $names.Count) { throw 'Invalid rule list' }
 foreach ($name in $names) { if ($name -notmatch '^[A-Za-z0-9_.-]+$') { throw 'Use exact rule Name' } }
 $state = [string]$settings.state_path
@@ -84,25 +85,61 @@ function Get-RuleConditions($rule, $policy) {
     }
     return $conditions
 }
-function Get-Coverage($baseline, $active, $stored, [switch]$Planned) {
+
+function Get-DisableRules($baseline) {
+    if ($null -ne $baseline.auto_disable_rules) { return $baseline.auto_disable_rules }
+    return $settings.disable_rules
+}
+
+function Get-Coverage($baseline, $active, $stored, [switch]$Planned, [switch]$Audit, [switch]$CheckWhitelist) {
     # Rule readback cannot discover newly added helpers or certify application traffic.
     $result = @{status='unknown';message='Current package, external runtimes and Cowork inventory require target-machine acceptance; do not resume applications from switch state alone.'}
     try {
-        if ($settings.mode -eq 'whole_machine' -and $baseline.mode -ne 'whole_machine') {
+        $wholeMachine = $settings.mode -eq 'whole_machine'
+        $auditDependencies = $Audit -or ($CheckWhitelist -and -not $wholeMachine)
+        if ($wholeMachine -and $baseline.mode -ne 'whole_machine') {
             return @{status='unknown';message='Whole-machine mode needs a reviewed whole-machine snapshot; old baseline remains usable for recovery.'}
         }
         if ($null -eq $active) { $active = Read-Policy ActiveStore }
-        if ($null -eq $stored) { $stored = Read-Policy PersistentStore }
+        if ($null -eq $stored -and ($Audit -or $CheckWhitelist)) { $stored = Read-Policy PersistentStore }
+        if ($wholeMachine) {
+            # A new effective Allow can bypass default Block.
+            $disabled = @(Get-DisableRules $baseline)
+            foreach ($policy in (@($active,$stored) -ne $null)) {
+                $allowed = @($policy.rules | Where-Object {
+                    if ([string]$_.Direction -ne 'Outbound' -or [string]$_.Action -ne 'Allow') { return $false }
+                    if ($Planned) { ($settings.enable_rules -contains $_.Name) -or ([string]$_.Enabled -eq 'True' -and $disabled -notcontains $_.Name) }
+                    else { [string]$_.Enabled -eq 'True' }
+                })
+                if ((@($allowed.Name | Sort-Object) -join ',') -ne (@($settings.enable_rules | Sort-Object) -join ',')) {
+                    return @{status='fail';message='Effective outbound allow list differs from the reviewed list; review unexpected, duplicate or missing rules.'}
+                }
+                if (-not $Planned) {
+                    $effectiveProfiles = $policy.profiles
+                    if ((@($effectiveProfiles.Name | Sort-Object) -join ',') -ne 'Domain,Private,Public' -or
+                        @($effectiveProfiles | Where-Object { [string]$_.Enabled -ne 'True' -or [string]$_.DefaultOutboundAction -ne 'Block' }).Count -gt 0) {
+                        return @{status='fail';message='All three effective profiles must be enabled with outbound default Block.'}
+                    }
+                }
+            }
+        }
+        if (-not ($Audit -or $CheckWhitelist)) {
+            $result.message = 'Quick status. Run audit to check rule conditions, paths, services and interfaces.'
+            return $result
+        }
+        $conditionPolicy = if ($Planned -and -not $Audit -and $wholeMachine) { $stored } else { $active }
         $adapterAliases = $null
         $ipAliases = $null
         foreach ($name in $settings.enable_rules) {
-            $liveRule = $active.byName[$name]
+            $rule = $conditionPolicy.byName[$name]
             $savedRule = $stored.byName[$name]
-            if ($null -eq $liveRule -or $null -eq $savedRule) { return @{status='fail';message='Configured rule missing or ambiguous.'} }
-            $conditions = Get-RuleConditions $liveRule $active
-            $expected = Get-RuleConditions $savedRule $stored
+            if ($null -eq $rule -or $null -eq $savedRule) { return @{status='fail';message='Configured rule missing or ambiguous.'} }
+            $conditions = Get-RuleConditions $rule $conditionPolicy
             $currentJson = $conditions | ConvertTo-Json -Depth 6 -Compress
-            if ($currentJson -ne ($expected | ConvertTo-Json -Depth 6 -Compress)) { return @{status='fail';message='Active and persistent rule conditions differ.'} }
+            if ($auditDependencies) {
+                $expected = Get-RuleConditions $savedRule $stored
+                if ($currentJson -ne ($expected | ConvertTo-Json -Depth 6 -Compress)) { return @{status='fail';message='Active and persistent rule conditions differ.'} }
+            }
             $old = @($baseline.rules | Where-Object { $_.Name -eq $name })
             if ($settings.mode -eq 'whole_machine' -and ($old.Count -ne 1 -or $null -eq $old[0].conditions.RemoteAddress)) { return @{status='unknown';message='Reviewed egress conditions missing from baseline.'} }
             if ($old.Count -eq 1 -and $null -ne $old[0].conditions -and $currentJson -ne ($old[0].conditions | ConvertTo-Json -Depth 6 -Compress)) { return @{status='fail';message='Rule conditions changed since the reviewed baseline.'} }
@@ -113,6 +150,7 @@ function Get-Coverage($baseline, $active, $stored, [switch]$Planned) {
                     return @{status='fail';message='Unrestricted outbound allow rule is incompatible with whole-machine protection.'}
                 }
             }
+            if (-not $auditDependencies) { continue }
             $program = $conditions.Program
             if ($program -and $program -notin @('Any','System')) {
                 if (-not (Test-Path -LiteralPath ([Environment]::ExpandEnvironmentVariables($program)) -PathType Leaf)) { return @{status='fail';message='Configured program path no longer exists; review the updated installation.'} }
@@ -129,25 +167,7 @@ function Get-Coverage($baseline, $active, $stored, [switch]$Planned) {
                 if ($ipAliases -notcontains $alias) { return @{status='unknown';message='Configured firewall interface not found.'} }
             }
         }
-        if ($settings.mode -eq 'whole_machine') {
-            # Audit the effective policy too: a newly installed Allow rule can bypass default Block.
-            foreach ($policy in @($stored,$active)) {
-                $allowed = @($policy.rules | Where-Object {
-                    if ([string]$_.Direction -ne 'Outbound' -or [string]$_.Action -ne 'Allow') { return $false }
-                    if ($Planned) { ($settings.enable_rules -contains $_.Name) -or ([string]$_.Enabled -eq 'True' -and $settings.disable_rules -notcontains $_.Name) }
-                    else { [string]$_.Enabled -eq 'True' }
-                })
-                if ((@($allowed.Name | Sort-Object) -join ',') -ne (@($settings.enable_rules | Sort-Object) -join ',')) {
-                    return @{status='fail';message='Effective outbound allow list differs from the reviewed list; review unexpected, duplicate or missing rules.'}
-                }
-                if (-not $Planned) {
-                    $effectiveProfiles = $policy.profiles
-                    if ((@($effectiveProfiles.Name | Sort-Object) -join ',') -ne 'Domain,Private,Public' -or
-                        @($effectiveProfiles | Where-Object { [string]$_.Enabled -ne 'True' -or [string]$_.DefaultOutboundAction -ne 'Block' }).Count -gt 0) {
-                        return @{status='fail';message='All three effective profiles must be enabled with outbound default Block.'}
-                    }
-                }
-            }
+        if ($wholeMachine) {
             return @{status='pass';message='Reviewed whole-machine outbound configuration matches. Claude installation inventory is not used. Actual egress acceptance is separate.'}
         }
     } catch {
@@ -159,20 +179,43 @@ function Get-Snapshot($stored, $active) {
     $p = @($stored.profiles | Select-Object Name,Enabled,DefaultOutboundAction)
     $activeProfiles = @($active.profiles | Select-Object Name,Enabled,DefaultOutboundAction)
     if ($p.Count -ne 3 -or $activeProfiles.Count -ne 3) { throw 'Incomplete baseline profiles' }
-    $r = @(foreach ($name in $names) {
+    $snapshotNames = $names
+    if ($autoDisable) {
+        $discovered = @(($stored.rules + $active.rules) | Where-Object {
+            [string]$_.Enabled -eq 'True' -and [string]$_.Direction -eq 'Outbound' -and
+            [string]$_.Action -eq 'Allow' -and $_.Name -notin $settings.enable_rules
+        } | Select-Object -ExpandProperty Name | Sort-Object -Unique)
+        foreach ($name in $discovered) {
+            if ($name -notmatch '^[A-Za-z0-9_.{}-]+$') { throw 'Cannot select an outbound rule by exact name' }
+            if ($null -eq $stored.byName[$name] -or [string]$stored.byName[$name].Enabled -ne 'True') {
+                throw 'An effective outbound allow rule cannot be managed in the local policy store'
+            }
+        }
+        $snapshotNames = @($settings.enable_rules) + $discovered
+    }
+    $r = @(foreach ($name in $snapshotNames) {
         $savedRule = $stored.byName[$name]
         $liveRule = $active.byName[$name]
         if ($null -eq $savedRule -or $null -eq $liveRule) { throw 'Missing or ambiguous baseline rule' }
-        [pscustomobject]@{Name=$savedRule.Name;Enabled=$savedRule.Enabled;conditions=(Get-RuleConditions $savedRule $stored)}
+        $entry = [ordered]@{Name=$savedRule.Name;Enabled=$savedRule.Enabled}
+        if ($settings.enable_rules -contains $name) { $entry.conditions = Get-RuleConditions $savedRule $stored }
+        [pscustomobject]$entry
     })
-    $activeRules = @(foreach ($name in $names) { $active.byName[$name] | Select-Object Name,Enabled })
-    @{ target=$cfg.target; mode=$settings.mode; profiles=$p; rules=$r; active_profiles=$activeProfiles; active_rules=$activeRules; names=@($names | Sort-Object) }
+    $activeRules = @(foreach ($name in $snapshotNames) { $active.byName[$name] | Select-Object Name,Enabled })
+    $snapshot = @{ target=$cfg.target; mode=$settings.mode; profiles=$p; rules=$r; active_profiles=$activeProfiles; active_rules=$activeRules; names=@($snapshotNames | Sort-Object) }
+    if ($autoDisable) { $snapshot.auto_disable_rules = $discovered }
+    return $snapshot
 }
 
 function Read-Baseline {
     $b = Get-Content -LiteralPath $state -Raw -Encoding UTF8 | ConvertFrom-Json
-    if ($b.target -ne $cfg.target -or @($b.profiles).Count -ne 3 -or @($b.rules).Count -ne $names.Count) { throw 'Baseline mismatch' }
-    if ((@($b.names) -join ',') -ne (@($names | Sort-Object) -join ',')) { throw 'Rules changed; review baseline' }
+    $expectedNames = $names
+    if ($null -ne $b.auto_disable_rules) {
+        if (-not $autoDisable) { throw 'Rule selection changed; review baseline' }
+        $expectedNames = @($settings.enable_rules) + @($b.auto_disable_rules)
+    }
+    if ($b.target -ne $cfg.target -or @($b.profiles).Count -ne 3 -or @($b.rules).Count -ne $expectedNames.Count) { throw 'Baseline mismatch' }
+    if ((@($b.names) -join ',') -ne (@($expectedNames | Sort-Object) -join ',')) { throw 'Rules changed; review baseline' }
     return $b
 }
 function Assert-BaselineRestored($baseline) {
@@ -229,7 +272,7 @@ function Restore-Baseline {
     if (Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue) { Unregister-ScheduledTask -TaskName $task -Confirm:$false }
 }
 
-function Get-State($active, $stored, $coverage, $baseline) {
+function Get-State($active, $stored, $coverage, $baseline, [switch]$Audit, [switch]$CheckWhitelist) {
     if ($null -eq $baseline -and -not (Test-Path -LiteralPath $state)) { return @{protection='unknown';startup=$null;coverage=@{scope=$settings.mode;status='unknown';message='Baseline missing.'};message='Create a baseline before enabling protection.';checked_at=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()} }
     $b = if ($null -eq $baseline) { Read-Baseline } else { $baseline }
     if ($null -eq $active) { $active = Read-Policy ActiveStore }
@@ -242,7 +285,7 @@ function Get-State($active, $stored, $coverage, $baseline) {
         $off = $off -and $old.Count -eq 1 -and ([int]$profile.Enabled -eq [int]$old[0].Enabled) -and ([int]$profile.DefaultOutboundAction -eq [int]$old[0].DefaultOutboundAction)
     }
     $baselineRules = Index-Unique $b.rules Name
-    foreach ($name in $names) {
+    foreach ($name in $b.names) {
         $r = $active.byName[$name]
         if ($null -eq $r) { $on=$false; $off=$false; continue }
         $wanted = if ($settings.enable_rules -contains $name) {'True'} else {'False'}
@@ -252,10 +295,10 @@ function Get-State($active, $stored, $coverage, $baseline) {
     }
     $label = if ($on) {'on'} elseif ($off) {'off'} else {'unknown'}
     $startup = if ($on) {$true} elseif ($off) {$false} else {$null}
-    if ($null -eq $coverage) { $coverage = Get-Coverage $b $active $stored -Planned:($label -eq 'off') }
+    if ($null -eq $coverage) { $coverage = Get-Coverage $b $active $stored -Planned:($label -eq 'off') -Audit:$Audit -CheckWhitelist:$CheckWhitelist }
     $coverage.stage = if ($label -eq 'off') {'planned'} else {'effective'}
     $coverage.scope = if ($settings.mode -eq 'whole_machine') {'whole_machine'} else {'application_paths'}
-    @{protection=$label;startup=$startup;coverage=$coverage;message='Switch configuration read back only; application coverage and egress acceptance are separate.';checked_at=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()}
+    @{protection=$label;startup=$startup;coverage=$coverage;planned_disable_count=@(Get-DisableRules $b).Count;message='Switch configuration read back only; application coverage and egress acceptance are separate.';checked_at=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()}
 }
 function Assert-Fuse($phase) {
     $entry = Get-ScheduledTask -TaskName $task
@@ -291,7 +334,7 @@ function Restore-ExpiredSwitch {
     Restore-Baseline
 }
 
-if ($Action -notin @('Status','Preview')) {
+if ($Action -notin @('Status','Audit','Preview')) {
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     if (-not (New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw 'Administrator required' }
 }
@@ -300,7 +343,7 @@ if ($Action -in @('Preview','Snapshot')) {
     $stored = Read-Policy PersistentStore
     $active = Read-Policy ActiveStore
     $b = Get-Snapshot $stored $active
-    $coverage = Get-Coverage $b $active $stored -Planned
+    $coverage = Get-Coverage $b $active $stored -Planned -Audit
     if ($settings.mode -eq 'whole_machine' -and $coverage.status -ne 'pass') { throw "Whole-machine plan not verified: $($coverage.message)" }
     foreach ($p in $b.profiles) { if ([string]$p.DefaultOutboundAction -ne 'Allow' -or [string]$p.Enabled -ne 'True') { throw 'Baseline must have enabled profiles with explicit Allow; inspect the pre-deployment backup' } }
     if ($Action -eq 'Snapshot') {
@@ -327,7 +370,7 @@ switch ($Action) {
         $stored = Read-Policy PersistentStore
         $active = Read-Policy ActiveStore
         if (Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue) { throw 'Previous fuse still exists; recover first' }
-        $before = Get-State $active $stored $null $baseline
+        $before = Get-State $active $stored $null $baseline -CheckWhitelist
         if ($before.coverage.status -eq 'fail' -or ($settings.mode -eq 'whole_machine' -and $before.coverage.status -ne 'pass')) { throw 'Coverage not verified; existing rules retained' }
         if ($before.protection -eq 'on') {
             $before | ConvertTo-Json -Depth 6 -Compress
@@ -352,12 +395,12 @@ switch ($Action) {
         try {
             Assert-Fuse $applying
             Set-RuleStateChanges $stored $settings.enable_rules True
-            Set-RuleStateChanges $stored $settings.disable_rules False
+            Set-RuleStateChanges $stored @(Get-DisableRules $baseline) False
             $changedProfiles = @($stored.profiles | Where-Object { [string]$_.Enabled -ne 'True' -or [string]$_.DefaultOutboundAction -ne 'Block' })
             if ($changedProfiles.Count -gt 0) {
                 Set-NetFirewallProfile -PolicyStore PersistentStore -Profile $changedProfiles.Name -Enabled True -DefaultOutboundAction Block
             }
-            $current = Get-State
+            $current = Get-State -CheckWhitelist
             Assert-Enabled $current
             $current.keep_until = Set-FusePhase $applying $waiting 180
         } catch { Restore-Baseline; throw }
@@ -369,7 +412,7 @@ switch ($Action) {
         if ($waiting -notmatch '^GuardianSwitch-waiting-[0-9a-f]{32}$') { throw 'Switch is not waiting for KEEP' }
         $checking = $waiting.Replace('-waiting-','-checking-')
         $null = Set-FusePhase $waiting $checking 240
-        $current = Get-State
+        $current = Get-State -CheckWhitelist
         Assert-Enabled $current
         Assert-Fuse $checking
         Unregister-ScheduledTask -TaskName $task -Confirm:$false
@@ -377,14 +420,14 @@ switch ($Action) {
         exit 0
     }
     'Recover' { Restore-ExpiredSwitch; exit 0 }
-    'Off' { Restore-Baseline }
-    'Uninstall' {
+    { $_ -in 'Off','Uninstall' } {
         Restore-Baseline
-        if ((Get-State).protection -ne 'off') { throw 'Baseline restore not verified' }
-        Remove-Item -LiteralPath $state
-        foreach ($file in @($fuseScript,$fuseConfig)) { if (Test-Path -LiteralPath $file) { Remove-Item -LiteralPath $file } }
-        @{protection='off';startup=$false;message='Baseline restored; original firewall rules retained.'} | ConvertTo-Json -Compress
+        if ($Action -eq 'Uninstall') {
+            Remove-Item -LiteralPath $state
+            foreach ($file in @($fuseScript,$fuseConfig)) { if (Test-Path -LiteralPath $file) { Remove-Item -LiteralPath $file } }
+        }
+        @{protection='off';startup=$false;message='Baseline restored; original firewall rules retained.';checked_at=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()} | ConvertTo-Json -Compress
         exit 0
     }
 }
-Get-State | ConvertTo-Json -Depth 6 -Compress
+Get-State -Audit:($Action -eq 'Audit') | ConvertTo-Json -Depth 6 -Compress

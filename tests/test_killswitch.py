@@ -172,6 +172,14 @@ class Controller(unittest.TestCase):
         with patch.object(k,'require_admin'), patch.object(k,'confirm'), patch.object(k,'require_apps_closed'), patch.object(k,'off'), patch.object(k,'status',return_value={'protection':'off','startup':None}), self.assertRaises(k.SwitchError):
             k.execute('off',self.cfg,self.path)
 
+    def test_windows_off_uses_verified_restore_receipt(self):
+        cfg = dict(self.cfg, backend='windows_firewall')
+        restored = {'protection': 'off', 'startup': False}
+        with patch.object(k, 'require_admin'), patch.object(k, 'confirm'), patch.object(k, 'require_apps_closed'), patch.object(k, 'windows', return_value=restored) as native, patch.object(k, 'status') as status:
+            self.assertEqual(k.execute('off', cfg, self.path), restored)
+        native.assert_called_once_with(self.path, 'Off')
+        status.assert_not_called()
+
     def test_native_timeout_and_failure_are_not_success(self):
         with patch.object(k.subprocess,'run',side_effect=subprocess.TimeoutExpired('pfctl',30)), self.assertRaises(k.SwitchError):k.run(['pfctl'])
         with patch.object(k.subprocess,'run',return_value=result(code=1)), self.assertRaises(k.SwitchError):k.run(['pfctl'])
@@ -230,13 +238,15 @@ function Get-NetFirewallServiceFilter { param($PolicyStore,[switch]$All) [pscust
 function Get-NetFirewallInterfaceFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';InterfaceAlias=@('Any')} }
 function Get-NetFirewallInterfaceTypeFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';InterfaceType='Any'} }
 & SCRIPT -Action Status -Config CONFIG
+& SCRIPT -Action Audit -Config CONFIG
 """.replace('MODE',mode).replace('ENABLED','$true' if expected=='on' else '$false').replace('SCRIPT',u.ps_quote(k.WINDOWS)).replace('CONFIG',u.ps_quote(self.path))
             fixture=Path(self.tmp.name)/'fixture.ps1';fixture.write_text(body,encoding='utf-8-sig')
             completed=subprocess.run([executable,'-NoProfile','-File',str(fixture)],capture_output=True,text=True,encoding='utf-8',errors='replace')
             self.assertEqual(completed.returncode,0,completed.stderr)
-            state = json.loads(completed.stdout.lstrip('\ufeff'))
+            state, audit = (json.loads(line.lstrip('\ufeff')) for line in completed.stdout.splitlines())
             self.assertEqual(state['protection'],expected)
-            self.assertEqual(state['coverage']['status'], 'fail')
+            self.assertEqual(state['coverage']['status'], 'unknown')
+            self.assertEqual(audit['coverage']['status'], 'fail')
 
 
 class LocalUI(unittest.TestCase):

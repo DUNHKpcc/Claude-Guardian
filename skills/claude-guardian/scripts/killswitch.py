@@ -174,7 +174,7 @@ def off(cfg, path):
     elif cfg['backend'] == 'linux_flclash':
         linux_off()
     else:
-        windows(path, 'Off')
+        return windows(path, 'Off')
 
 
 def windows_on(cfg, path):
@@ -255,21 +255,26 @@ def execute(action, cfg, path):
     require_admin()
     if action == 'status':
         return status(cfg, path)
-    if action == 'preview':
+    if action in {'preview', 'audit'}:
         if cfg['backend'] != 'windows_firewall':
-            raise SwitchError('此预检仅用于 Windows 策略快照。')
-        return windows(path, 'Preview')
+            raise SwitchError('此项只读检查仅用于 Windows 防火墙。')
+        return windows(path, action.capitalize())
     confirm(action, cfg)
     if action == 'snapshot':
         if cfg['backend'] != 'windows_firewall':
             raise SwitchError('只有 Windows 使用策略快照；Mac/Linux 使用独立规则。')
-        windows(path, 'Snapshot')
-        return {'protection': 'unknown', 'startup': None, 'checked_at': int(time.time()), 'message': '恢复基线已保存。'}
+        result = windows(path, 'Snapshot')
+        count = result.get('planned_disable_count', 0)
+        result['message'] = f'已保存恢复基线，开启时计划停用 {count} 条规则。'
+        return result
     if action == 'on':
         return on(cfg, path)
     require_apps_closed(cfg)
-    off(cfg, path)
-    result = status(cfg, path)
+    if cfg['backend'] == 'windows_firewall':
+        result = windows(path, 'Uninstall') if action == 'uninstall' else off(cfg, path)
+    else:
+        off(cfg, path)
+        result = status(cfg, path)
     if result['protection'] != 'off' or result['startup'] is not False:
         raise SwitchError('仍有保护或开机加载残留，请让 Agent 核对。')
     if action == 'uninstall':
@@ -277,8 +282,6 @@ def execute(action, cfg, path):
             pf(cfg, 'uninstall')
         elif cfg['backend'] == 'linux_flclash':
             run(['/bin/bash', LINUX, 'uninstall'])
-        else:
-            windows(path, 'Uninstall')
     return result
 
 
@@ -287,7 +290,7 @@ def main(argv=None):
         if hasattr(stream, 'reconfigure'):
             stream.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description='Guardian Switch — 本机防直连开关')
-    parser.add_argument('action', choices=['status', 'preview', 'on', 'off', 'uninstall', 'snapshot', 'gui', 'desktop'])
+    parser.add_argument('action', choices=['status', 'audit', 'preview', 'on', 'off', 'uninstall', 'snapshot', 'gui', 'desktop'])
     parser.add_argument('--config', required=True, type=Path)
     parser.add_argument('--output', type=Path, help='桌面入口生成目录；必须不存在')
     parser.add_argument('--receipt', type=Path, help=argparse.SUPPRESS)
