@@ -1,4 +1,4 @@
-"""Unprivileged, short-lived local UI and native desktop launchers for killswitch.py."""
+"""Mac/Linux local UI and desktop launchers for killswitch.py; Windows uses PowerShell."""
 import argparse
 import json
 import os

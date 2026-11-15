@@ -676,3 +676,11 @@ Windows 仅允许 whole_machine 开启和新建快照。application_paths／缺�
 保留按策略批量读取、精简快照、按需审计和差异写入；ON、OFF、保险丝恢复复用已读取的 CIM 实例，省去按名称再次查询。此实现没有固定秒级耗时保证，目标设备的真实切换时间须单独记录。
 
 验证使用临时文件和原生 PowerShell 夹具；Windows CI 检查真实快捷方式、子进程与 Unicode 路径，具体结果见 CHANGELOG 和 push CI。目标机 UAC 交互、真实防火墙与网络验收 not_run。风险为恢复期间直连及目标机策略读取／写入失败；沿用本机独立恢复。仓库回滚使用普通 revert，设备迁移先恢复旧保护、备份基线并正常退出旧页面服务，不删除活动保险丝副本。
+
+## ADR-080：Markdown 资料取消手工分发哈希（2026-11-15）
+
+需求 DOC-HASH-20261115。可编辑 Markdown 的正文、派生文字与集合索引由 Git 跟踪，manifest 移除其 distributed_sha256／sha256，打包不再要求同步固定摘要。首次收录的 original_sha256 仅作为历史来源记录，编辑时不更新；署名、许可、脱敏和编辑说明保留。PDF 等原件继续校验，文件清单、路径和可复现打包检查保持。网络恢复、备份和运行时完整性校验不属于此次调整。
+
+Windows 网页调用和 Python 控制链已退出；共享 HTML／CSS／JavaScript、killswitch.py 和 killswitch_ui.py 继续服务 Mac/Linux，并继续包含在跨平台包中。此次仅明确适用平台，不移除其他平台现有入口，不操作目标机已安装的服务或快捷方式。
+
+回归先在旧打包器上复现 Markdown 编辑后被拒，再验证修改后的正文原样入包、manifest 无需改写、两次包字节一致与 PDF 变化被拒。全套结果见 CHANGELOG 和 CI；风险是 Markdown 变更依赖 Git 审查，回滚使用普通 revert。

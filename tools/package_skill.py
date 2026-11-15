@@ -29,8 +29,8 @@ def main():
     ]
     manifest = json.loads((skill / 'sources/manifest.json').read_text(encoding='utf-8'))
     for source in manifest['sources'] + manifest.get('collections', []):
-        records = [(source['path'], source['distributed_sha256'])]
-        records.extend((item['path'], item['sha256']) for item in source.get('companions', []))
+        records = [(source['path'], source.get('distributed_sha256'))]
+        records.extend((item['path'], item.get('sha256')) for item in source.get('companions', []))
         for relative, digest in records:
             path = Path(relative)
             if path.is_absolute() or '..' in path.parts or not path.parts or path.parts[0] != 'sources':
@@ -38,7 +38,7 @@ def main():
             candidate = skill / path
             if candidate.is_symlink() or not candidate.is_file() or candidate.resolve().is_relative_to(skill.resolve()) is False:
                 parser.error('Invalid source manifest file')
-            if hashlib.sha256(candidate.read_bytes()).hexdigest() != digest:
+            if path.suffix.lower() != '.md' and hashlib.sha256(candidate.read_bytes()).hexdigest() != digest:
                 parser.error('Source manifest hash mismatch')
             release_paths.append(relative)
     if len(release_paths) != len(set(release_paths)):

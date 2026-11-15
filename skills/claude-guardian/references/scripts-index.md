@@ -30,9 +30,11 @@ Windows 直接使用 `assets/killswitch/windows-shortcuts.ps1` 生成两个桌�
 | 脚本 | 类型 | 用途 | 说明 |
 | --- | --- | --- | --- |
 | `killswitch.py` | 入口 | Mac/Linux 已部署防护的 on/off/status/uninstall、本机确认与状态读回 | [killswitch-switch.md](killswitch-switch.md) |
-| `killswitch_ui.py` | 入口／库 | 无系统改动演示、本机 GUI、桌面入口生成 | 同上 |
+| `killswitch_ui.py` | 入口／库 | 仅 Mac/Linux：无系统改动演示、本机 GUI、桌面入口生成 | 同上 |
 
 随包资源：`assets/killswitch/windows-switch.ps1`、`assets/killswitch/config.example.json`、`assets/killswitch/switch.html`、`assets/killswitch/switch.css`、`assets/killswitch/switch.js`、`assets/killswitch/icon.svg`、`assets/killswitch/icon.png`、`assets/killswitch/icon.ico`、`assets/killswitch/icon.icns`。全部通过同一使用指引按需读取。
+
+HTML／CSS／JavaScript 页面与 Python 服务保留给 Mac/Linux；跨平台分发包包含这些文件，Windows 开关不加载它们。
 
 ## 网络检测的其他部分
 

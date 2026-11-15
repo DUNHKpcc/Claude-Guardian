@@ -198,10 +198,13 @@ print('Detached imports and missing-parser boundary passed')
                                                'private-helper.txt', 'private-notes.md', 'raw-private.txt')) for name in names))
         manifest = json.loads((self.installed / 'sources/manifest.json').read_text(encoding='utf-8'))
         for source in manifest['sources']:
-            entries = [(source['path'], source['distributed_sha256'])]
-            entries += [(item['path'], item['sha256']) for item in source.get('companions', [])]
+            entries = [(source['path'], source.get('distributed_sha256'))]
+            entries += [(item['path'], item.get('sha256')) for item in source.get('companions', [])]
             for relative, digest in entries:
-                self.assertEqual(hashlib.sha256((self.installed / relative).read_bytes()).hexdigest(), digest)
+                content = (self.installed / relative).read_bytes()
+                self.assertEqual(content, (SKILL / relative).read_bytes())
+                if Path(relative).suffix.lower() != '.md':
+                    self.assertEqual(hashlib.sha256(content).hexdigest(), digest)
 
     def test_python_310_syntax_baseline_only(self):
         # Parsing is intentionally not advertised as Python 3.10 runtime evidence.

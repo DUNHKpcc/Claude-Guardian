@@ -1,4 +1,3 @@
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -32,21 +31,20 @@ class SourceInventoryConsistencyTests(unittest.TestCase):
         self.assertNotIn('sources/design', self.library)
 
 
-    def test_index_links_cover_current_sources_and_derived_companion_with_valid_hashes(self):
+    def test_index_links_cover_current_sources_and_derived_companions(self):
         links = set(re.findall(r'\]\((\.\./sources/[^)]+)\)', self.library))
         self.assertIn('../sources/manifest.json', links)
         expected_paths = set()
         companions = []
         collection_ids = {item['id'] for item in self.current.get('collections', [])}
         for source in self.current['sources'] + self.current.get('collections', []):
-            records = [(source['path'], source['distributed_sha256'])]
+            paths = [source['path']]
             companions.extend(source.get('companions', []))
-            records.extend((item['path'], item['sha256'])
-                           for item in source.get('companions', []))
-            for relative, digest in records:
+            paths.extend(item['path'] for item in source.get('companions', []))
+            for relative in paths:
                 path = (SKILL / relative).resolve()
                 self.assertTrue(path.is_relative_to(SKILL.resolve()))
-                self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
+                self.assertTrue(path.is_file())
                 # A collection is linked from the library only through its index
                 # file; its member files are covered by that index's own test.
                 if source['id'] in collection_ids and relative != source['path']:
@@ -57,8 +55,7 @@ class SourceInventoryConsistencyTests(unittest.TestCase):
         self.assertEqual([item['path'] for item in companions if item['path'].startswith('sources/S')],
                          ['sources/S03-extracted-text.md', 'sources/S03-source-text.md',
                           'sources/S08-extracted-text.md'])
-        self.assertNotEqual(self.sources['S06']['original_sha256'],
-                            self.sources['S06']['distributed_sha256'])
+        self.assertTrue(self.sources['S06']['changes'])
 
 
 if __name__ == '__main__':

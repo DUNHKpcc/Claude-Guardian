@@ -46,7 +46,8 @@ class WindowsDeploymentSourceTests(unittest.TestCase):
         manifest = json.loads((ROOT / 'sources/manifest.json').read_text(encoding='utf-8'))
         record = next(source for source in manifest['sources'] if source['id'] == 'S10')
         self.assertEqual(record['path'], CASE)
-        self.assertNotEqual(record['original_sha256'], record['distributed_sha256'])
+        self.assertRegex(record['original_sha256'], r'^[0-9a-f]{64}$')
+        self.assertNotIn('distributed_sha256', record)
         self.assertTrue(record['changes'])
         self.assertTrue(record['limitations'])
 

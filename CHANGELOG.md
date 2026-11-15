@@ -1,5 +1,12 @@
 # 版本记录
 
+## Markdown 资料取消手工分发哈希（2026-11-15，DOC-HASH-20261115 / ADR-080）
+
+- 移除 12 份 Markdown 正文、派生文字及集合索引的分发哈希；修改这些文档后无需手工更新摘要。PDF 等原件仍校验，显式打包清单、路径限制和来源署名保留；原始输入摘要仅作首次收录记录，编辑时不更新。
+- 同步协作规范、来源指南和包验证。Mac/Linux 现有页面、Python 服务和入口保留，文档与模块说明明确仅供这两个平台；Windows 仍直接调用 PowerShell，此次不修改各平台防护行为或目标机状态。
+- 回归在旧实现上复现 Markdown 编辑后打包失败；新实现验证正文、派生文字与集合索引修改后原样入包、manifest 不被改写、可复现打包及 PDF 变化被拒。完整检查与三平台 CI 分别记录。文档修改依赖 Git 审查；回滚使用普通 revert。
+- 本地 macOS / Python 3.13 / PowerShell 7.7：`python -m unittest discover -s tests -v` 1596 项（1582 通过、14 平台跳过），`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts`、Wiki 29 页导出及两次 `python tools/package_skill.py --output <临时文件>` 字节一致均通过；push CI 与远端精确提交另行核实。
+
 ## Windows 原生双快捷方式与单一整机白名单（2026-11-15，WIN-DESKTOP-20261115 / ADR-079）
 
 - Windows 桌面生成“开启保护（限制直连）”和“关闭保护（恢复联网）”两个快捷方式，直接调用 PowerShell，引用现有 icon.ico。保留 UAC、目标确认、KEEP、进程退出检查、状态读回及原独立保险丝。移除 Windows Python 调用、浏览器服务和旧快捷方式生成逻辑；Mac/Linux 原入口保留。
