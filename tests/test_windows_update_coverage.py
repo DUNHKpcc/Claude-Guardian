@@ -61,31 +61,39 @@ class WindowsUpdateCoverage(unittest.TestCase):
 
     def test_real_coverage_functions_reject_missing_paths_and_condition_drift(self):
         source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
-        functions = source[source.index('function Get-RuleConditions'):source.index('function Get-Snapshot')]
+        functions = source[source.index('function Index-Unique'):source.index('function Get-Snapshot')]
         fixture = r'''
 $settings = @{enable_rules=@('guardian-test')}
 $script:mode = 'normal'
-function Get-NetFirewallRule { param($PolicyStore,$Name)
-    [pscustomobject]@{Name=$Name;Store=$PolicyStore;Direction='Outbound';Action='Block';Profile='Any'}
+function Get-NetFirewallProfile { param($PolicyStore) }
+function Get-NetFirewallRule { param($PolicyStore)
+    [pscustomobject]@{Name='guardian-test';InstanceID='fixture-instance';Store=$PolicyStore;Direction='Outbound';Action='Block';Profile='Any'}
 }
-function Get-NetFirewallApplicationFilter { process {
+function Get-NetFirewallApplicationFilter { param($PolicyStore,[switch]$All)
     if ($script:mode -eq 'denied') { throw 'AccessDenied' }
     $program = if ($script:mode -eq 'missing') {'missing.exe'} else {$PSCommandPath}
-    if ($script:mode -eq 'program-drift' -and $_.Store -eq 'ActiveStore') { $program = 'changed.exe' }
-    [pscustomobject]@{Program=$program;Package='Any'}
-} }
-function Get-NetFirewallServiceFilter { process {
-    $service = if ($script:mode -eq 'service-drift' -and $_.Store -eq 'ActiveStore') {'changed'} else {'Any'}
-    [pscustomobject]@{Service=$service}
-} }
-function Get-NetFirewallInterfaceFilter { process {
-    $alias = if ($script:mode -eq 'interface-drift' -and $_.Store -eq 'ActiveStore') {'changed'} else {'Any'}
-    [pscustomobject]@{InterfaceAlias=@($alias)}
-} }
-function Get-NetFirewallInterfaceTypeFilter { process { [pscustomobject]@{InterfaceType='Any'} } }
-$baseline = @{rules=@(@{Name='guardian-test';conditions=(Get-RuleConditions (Get-NetFirewallRule -PolicyStore PersistentStore -Name 'guardian-test'))})}
+    if ($script:mode -eq 'program-drift' -and $PolicyStore -eq 'ActiveStore') { $program = 'changed.exe' }
+    if ($script:mode -ne 'missing-filter') {
+        $filter = [pscustomobject]@{InstanceID='fixture-instance';Program=$program;Package='Any'}
+        $filter
+        if ($script:mode -eq 'duplicate-filter') { $filter }
+    }
+}
+function Get-NetFirewallServiceFilter { param($PolicyStore,[switch]$All)
+    $service = if ($script:mode -eq 'service-drift' -and $PolicyStore -eq 'ActiveStore') {'changed'} else {'Any'}
+    [pscustomobject]@{InstanceID='fixture-instance';Service=$service}
+}
+function Get-NetFirewallInterfaceFilter { param($PolicyStore,[switch]$All)
+    $alias = if ($script:mode -eq 'interface-drift' -and $PolicyStore -eq 'ActiveStore') {'changed'} else {'Any'}
+    [pscustomobject]@{InstanceID='fixture-instance';InterfaceAlias=@($alias)}
+}
+function Get-NetFirewallInterfaceTypeFilter { param($PolicyStore,[switch]$All)
+    [pscustomobject]@{InstanceID='fixture-instance';InterfaceType='Any'}
+}
+$stored=Read-Policy PersistentStore
+$baseline = @{rules=@(@{Name='guardian-test';conditions=(Get-RuleConditions $stored.byName['guardian-test'] $stored)})}
 $results = @{}
-foreach ($mode in @('normal','missing','program-drift','service-drift','interface-drift','denied')) {
+foreach ($mode in @('normal','missing','program-drift','service-drift','interface-drift','denied','missing-filter','duplicate-filter')) {
     $script:mode=$mode
     $results[$mode]=(Get-Coverage $baseline).status
 }
@@ -100,12 +108,12 @@ $results | ConvertTo-Json -Compress
         actual = self.run_ps(functions + fixture)
         for scenario in ('missing', 'program-drift', 'service-drift', 'interface-drift', 'baseline-drift'):
             self.assertEqual(actual[scenario], 'fail', scenario)
-        for scenario in ('normal', 'denied', 'legacy-baseline', 'new-component-unverified'):
+        for scenario in ('normal', 'denied', 'missing-filter', 'duplicate-filter', 'legacy-baseline', 'new-component-unverified'):
             self.assertEqual(actual[scenario], 'unknown', scenario)
 
     def test_whole_machine_reads_all_effective_allows_and_ignores_claude_updates(self):
         source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
-        functions = source[source.index('function Get-RuleConditions'):source.index("if ($Action -ne 'Status')")]
+        functions = source[source.index('function Index-Unique'):source.index("if ($Action -ne 'Status')")]
         fixture = r'''
 $settings = @{mode='whole_machine';enable_rules=@('proxy','tun');disable_rules=@('legacy-allow','old-claude-block')}
 $cfg = @{target='fixture'}
@@ -120,63 +128,89 @@ function Get-NetFirewallProfile { param($PolicyStore)
     }
 }
 Add-Type 'public enum FixturePolicy { Allow=2, Block=4 }'
-function Get-NetFirewallRule { param($PolicyStore,$Name,$Direction,$Action)
+$script:reads=@{}
+function Get-NetFirewallRule { param($PolicyStore)
+    $script:reads[$PolicyStore]++
+    Get-FixtureRules $PolicyStore
+}
+function Get-FixtureRules($PolicyStore) {
     if ($script:scenario -eq 'denied') { throw 'AccessDenied' }
     $fixtureNames = @('proxy','tun','legacy-allow','old-claude-block')
     if ($script:scenario -in @('extra-allow','disabled-extra','extra-inbound') -or ($script:scenario -eq 'persistent-extra' -and $PolicyStore -eq 'PersistentStore')) { $fixtureNames += 'unexpected' }
     foreach ($item in $fixtureNames) {
-        if ($Name -and $item -ne $Name) { continue }
         $dir = if ($item -eq 'unexpected' -and $script:scenario -eq 'extra-inbound') {'Inbound'} else {'Outbound'}
         $act = if ($item -eq 'old-claude-block') {'Block'} else {'Allow'}
-        if ($Direction -and $dir -ne $Direction) { continue }
-        if ($Action -and $act -ne $Action) { continue }
         $enabled = if ($item -eq 'unexpected') {$script:scenario -ne 'disabled-extra'} elseif ($script:scenario -eq 'off') {$settings.disable_rules -contains $item} else {$settings.enable_rules -contains $item}
-        [pscustomobject]@{Name=$item;Store=$PolicyStore;Direction=$dir;Action=$act;Profile='Any';Enabled=$enabled}
+        [pscustomobject]@{Name=$item;InstanceID="id-$item";Store=$PolicyStore;Direction=$dir;Action=$act;Profile='Any';Enabled=$enabled}
     }
 }
-function Get-NetFirewallApplicationFilter { process {
+function Get-NetFirewallApplicationFilter { param($PolicyStore,[switch]$All)
+    $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
+    foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) {
     $program = if ($_.Name -eq 'proxy') {$PSCommandPath} elseif ($_.Name -eq 'old-claude-block') {'missing-old-claude.exe'} else {'Any'}
     if ($_.Name -eq 'proxy' -and $script:scenario -eq 'missing-proxy') { $program='missing-proxy.exe' }
     if ($script:scenario -eq 'unrestricted') { $program='Any' }
-    [pscustomobject]@{Program=$program;Package='Any'}
+    [pscustomobject]@{InstanceID=$_.InstanceID;Program=$program;Package='Any'}
 } }
-function Get-NetFirewallServiceFilter { process { [pscustomobject]@{Service='Any'} } }
-function Get-NetFirewallInterfaceFilter { process {
+function Get-NetFirewallServiceFilter { param($PolicyStore,[switch]$All)
+    $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
+    foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) { [pscustomobject]@{InstanceID=$_.InstanceID;Service='Any'} } }
+function Get-NetFirewallInterfaceFilter { param($PolicyStore,[switch]$All)
+    $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
+    foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) {
     $alias = if ($_.Name -eq 'tun') {'Guardian-TUN'} else {'Any'}
     if ($script:scenario -eq 'interface-drift' -and $_.Store -eq 'ActiveStore') { $alias='changed' }
-    [pscustomobject]@{InterfaceAlias=@($alias)}
+    [pscustomobject]@{InstanceID=$_.InstanceID;InterfaceAlias=@($alias)}
 } }
-function Get-NetFirewallInterfaceTypeFilter { process { [pscustomobject]@{InterfaceType='Any'} } }
+function Get-NetFirewallInterfaceTypeFilter { param($PolicyStore,[switch]$All)
+    $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
+    foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) { [pscustomobject]@{InstanceID=$_.InstanceID;InterfaceType='Any'} } }
 function Get-NetAdapter { param($Name,[switch]$IncludeHidden,$ErrorAction)
     if ($script:scenario -eq 'missing-interface') { throw 'Interface missing' }
     [pscustomobject]@{Name=$Name}
 }
-function Get-NetFirewallAddressFilter { process {
+function Get-NetFirewallAddressFilter { param($PolicyStore,[switch]$All)
+    $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
+    foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) {
     $remote = if ($_.Name -eq 'proxy') {'203.0.113.8'} else {'Any'}
     if ($_.Name -eq 'proxy' -and ($script:scenario -eq 'baseline-drift' -or ($script:scenario -eq 'address-drift' -and $_.Store -eq 'ActiveStore'))) { $remote='203.0.113.9' }
     if ($script:scenario -eq 'unrestricted') { $remote='Any' }
-    [pscustomobject]@{LocalAddress=@('Any');RemoteAddress=@($remote)}
+    [pscustomobject]@{InstanceID=$_.InstanceID;LocalAddress=@('Any');RemoteAddress=@($remote)}
 } }
-function Get-NetFirewallPortFilter { process {
+function Get-NetFirewallPortFilter { param($PolicyStore,[switch]$All)
+    $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
+    foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) {
     $protocol = if ($_.Name -eq 'proxy') {'TCP'} else {'Any'}
     $port = if ($_.Name -eq 'proxy') {'443'} else {'Any'}
     if ($script:scenario -eq 'port-drift' -and $_.Store -eq 'ActiveStore') { $port='80' }
     if ($script:scenario -eq 'unrestricted') { $protocol='Any' }
-    [pscustomobject]@{Protocol=$protocol;LocalPort=@('Any');RemotePort=@($port);IcmpType=@('Any');DynamicTarget='Any'}
+    [pscustomobject]@{InstanceID=$_.InstanceID;Protocol=$protocol;LocalPort=@('Any');RemotePort=@($port);IcmpType=@('Any');DynamicTarget='Any'}
 } }
-function Get-NetFirewallSecurityFilter { process {
+function Get-NetFirewallSecurityFilter { param($PolicyStore,[switch]$All)
+    $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
+    foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) {
     $bypass = $script:scenario -eq 'security-drift' -and $_.Store -eq 'ActiveStore'
-    [pscustomobject]@{Authentication='NotRequired';Encryption='NotRequired';OverrideBlockRules=$bypass;LocalUser='Any';RemoteUser='Any';RemoteMachine='Any'}
+    [pscustomobject]@{InstanceID=$_.InstanceID;Authentication='NotRequired';Encryption='NotRequired';OverrideBlockRules=$bypass;LocalUser='Any';RemoteUser='Any';RemoteMachine='Any'}
 } }
 function Get-AppxPackage { throw 'Whole-machine mode must not depend on Claude inventory' }
 function Set-NetFirewallProfile { param($PolicyStore,$Profile,$Enabled,$DefaultOutboundAction)
     $script:changes += "profile:$Profile/$DefaultOutboundAction"
 }
-function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled) $script:changes += "rule:$Name/$Enabled"; if ($Name -eq "old-claude-block") { $script:scenario="off" } }
+function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled)
+    $script:changes += [pscustomobject]@{Names=@($Name);Enabled=[string]$Enabled}
+}
 function Get-ScheduledTask { param($TaskName,$ErrorAction) return $null }
-$baseline = Get-Snapshot
+$stored=Read-Policy PersistentStore
+$active=Read-Policy ActiveStore
+$baseline = Get-Snapshot $stored $active
 $baseline | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $state -Encoding UTF8
-$results = @{planned=(Get-Coverage $baseline -Planned).status;off=(Get-State).protection}
+$results = @{planned=(Get-Coverage $baseline $active $stored -Planned).status;off=(Get-State).protection}
+$script:reads=@{}
+$null=Get-State
+$results['batchReads']=@($script:reads.Values)
+Set-RuleStateChanges $stored @('proxy','tun','legacy-allow') True
+Set-RuleStateChanges $stored @('old-claude-block') True
+$results['delta']=@($script:changes)
 foreach ($scenario in @('normal','claude-update','extra-allow','disabled-extra','extra-inbound','address-drift','port-drift','security-drift','interface-drift','baseline-drift','profile-allow','persistent-profile-allow','persistent-extra','denied','missing-interface')) {
     $script:scenario = $scenario
     $results[$scenario] = (Get-Coverage $baseline).status
@@ -192,12 +226,9 @@ $baseline.rules[0].conditions.Remove('RemoteAddress')
 $results['incomplete-baseline']=(Get-Coverage $baseline).status
 foreach ($scenario in @('unrestricted','missing-proxy')) {
     $script:scenario=$scenario
-    $testBaseline=Get-Snapshot
+    $testBaseline=Get-Snapshot (Read-Policy PersistentStore) (Read-Policy ActiveStore)
     $results[$scenario]=(Get-Coverage $testBaseline).status
 }
-$script:scenario='extra-allow'
-Restore-Baseline
-$results['restored']=@($script:changes)
 $results | ConvertTo-Json -Depth 6 -Compress
 '''
         actual = self.run_ps(functions + fixture)
@@ -211,44 +242,53 @@ $results | ConvertTo-Json -Depth 6 -Compress
         self.assertEqual(actual['off'], 'off')
         self.assertEqual(actual['scope'], 'whole_machine')
         self.assertEqual(actual['stage'], 'effective')
-        self.assertEqual(actual['restored'], ['profile:Domain/2', 'profile:Private/2', 'profile:Public/2',
-                                           'rule:proxy/False', 'rule:tun/False', 'rule:legacy-allow/True', 'rule:old-claude-block/True'])
+        self.assertEqual(sorted(actual['batchReads']), [1] * 16)
+        self.assertEqual(actual['delta'], [{'Names': ['proxy', 'tun'], 'Enabled': 'True'}])
 
     def test_restore_retains_fuse_until_both_policy_stores_match(self):
         source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
-        functions = source[source.index('function Assert-BaselineRestored'):source.index('function Get-State')]
+        functions = (source[source.index('function Index-Unique'):source.index('function Get-RuleFilter')]
+                     + source[source.index('function Assert-BaselineRestored'):source.index('function Get-State')])
         fixture = r'''
 $task = 'fixture-task'
 $script:removed=0
+$script:writes=@()
 function Read-Baseline {
     $p = @('Domain','Private','Public' | ForEach-Object { @{Name=$_;Enabled=1;DefaultOutboundAction=$(if ($script:mode -eq 'inherited') {0} else {2})} })
     $a = @('Domain','Private','Public' | ForEach-Object { @{Name=$_;Enabled=1;DefaultOutboundAction=2} })
-    @{profiles=$p;active_profiles=$a;rules=@(@{Name='fixture';Enabled=0});active_rules=@(@{Name='fixture';Enabled=0})}
+    @{profiles=$p;active_profiles=$a;rules=@(@{Name='fixture';Enabled=2},@{Name='stay';Enabled=1});active_rules=@(@{Name='fixture';Enabled=2},@{Name='stay';Enabled=1})}
 }
 function Set-NetFirewallProfile { param($PolicyStore,$Profile,$Enabled,$DefaultOutboundAction) }
-function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled) }
+function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled)
+    $script:writes+= [pscustomobject]@{Names=@($Name);Enabled=$Enabled}
+    $script:current=$Enabled
+}
 function Get-NetFirewallProfile { param($PolicyStore)
     if ($script:mode -eq 'denied') { throw 'denied' }
     if ($PolicyStore -eq 'ActiveStore') { (Read-Baseline).active_profiles } else { (Read-Baseline).profiles }
 }
-function Get-NetFirewallRule { param($PolicyStore,$Name)
-    @{Name=$Name;Enabled= $(if ($script:mode -eq 'stale' -and $PolicyStore -eq 'ActiveStore') {1} else {0})}
+function Get-NetFirewallRule { param($PolicyStore)
+    [pscustomobject]@{Name='fixture';Enabled= $(if ($script:mode -eq 'stale' -and $PolicyStore -eq 'ActiveStore') {1} else {$script:current})}
+    [pscustomobject]@{Name='stay';Enabled=1}
+    [pscustomobject]@{Name='unrelated';Enabled=1}
 }
 function Get-ScheduledTask { param($TaskName,$ErrorAction) @{State='Ready'} }
 function Unregister-ScheduledTask { param($TaskName,[switch]$Confirm) $script:removed++ }
 $results=@{}
-foreach ($mode in @('stale','denied','match','inherited')) {
-    $script:mode=$mode; $script:removed=0
+foreach ($mode in @('stale','denied','match','inherited','recover')) {
+    $script:mode=$mode; $script:removed=0; $script:writes=@()
+    $script:current=if ($mode -eq 'recover') {1} else {2}
     try { Restore-Baseline; $ok=$true } catch { $ok=$false }
-    $results[$mode]=@{ok=$ok;removed=$script:removed}
+    $results[$mode]=@{ok=$ok;removed=$script:removed;writes=@($script:writes)}
 }
 $results | ConvertTo-Json -Depth 4 -Compress
 '''
         actual = self.run_ps(functions + fixture)
         for mode in ('stale', 'denied'):
-            self.assertEqual(actual[mode], {'ok': False, 'removed': 0})
-        self.assertEqual(actual['match'], {'ok': True, 'removed': 1})
-        self.assertEqual(actual['inherited'], {'ok': True, 'removed': 1})
+            self.assertEqual(actual[mode], {'ok': False, 'removed': 0, 'writes': []})
+        self.assertEqual(actual['match'], {'ok': True, 'removed': 1, 'writes': []})
+        self.assertEqual(actual['inherited'], {'ok': True, 'removed': 1, 'writes': []})
+        self.assertEqual(actual['recover'], {'ok': True, 'removed': 1, 'writes': [{'Names': ['fixture'], 'Enabled': 2}]})
 
     def test_source_deployment_failure_preserves_old_rules_and_never_prints_success(self):
         source = (SKILL / 'sources/S05-local-protection.md').read_text(encoding='utf-8')

@@ -214,11 +214,11 @@ class Controller(unittest.TestCase):
         for mode,expected in [('Block','on'),('Allow','off')]:
             body="""Add-Type 'public enum TestPolicy { Allow=2, Block=4 }'
 function Get-NetFirewallProfile { param($PolicyStore) @('Domain','Private','Public') | ForEach-Object { [pscustomobject]@{Name=$_;Enabled=$true;DefaultOutboundAction=[TestPolicy]::MODE} } }
-function Get-NetFirewallRule { param($PolicyStore,$Name) [pscustomobject]@{Name=$Name;Enabled=ENABLED;Direction='Outbound';Action='Block';Profile='Any'} }
-function Get-NetFirewallApplicationFilter { process { [pscustomobject]@{Program='missing-old-version.exe';Package='Any'} } }
-function Get-NetFirewallServiceFilter { process { [pscustomobject]@{Service='Any'} } }
-function Get-NetFirewallInterfaceFilter { process { [pscustomobject]@{InterfaceAlias=@('Any')} } }
-function Get-NetFirewallInterfaceTypeFilter { process { [pscustomobject]@{InterfaceType='Any'} } }
+function Get-NetFirewallRule { param($PolicyStore) [pscustomobject]@{Name='guardian-core';InstanceID='rule-instance';Enabled=ENABLED;Direction='Outbound';Action='Block';Profile='Any'} }
+function Get-NetFirewallApplicationFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';Program='missing-old-version.exe';Package='Any'} }
+function Get-NetFirewallServiceFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';Service='Any'} }
+function Get-NetFirewallInterfaceFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';InterfaceAlias=@('Any')} }
+function Get-NetFirewallInterfaceTypeFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';InterfaceType='Any'} }
 & SCRIPT -Action Status -Config CONFIG
 """.replace('MODE',mode).replace('ENABLED','$true' if expected=='on' else '$false').replace('SCRIPT',u.ps_quote(k.WINDOWS)).replace('CONFIG',u.ps_quote(self.path))
             fixture=Path(self.tmp.name)/'fixture.ps1';fixture.write_text(body,encoding='utf-8-sig')

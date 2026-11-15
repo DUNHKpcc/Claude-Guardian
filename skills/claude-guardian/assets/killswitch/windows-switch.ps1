@@ -18,32 +18,62 @@ $fuseScript = Join-Path (Split-Path -Parent $state) 'fuse.ps1'
 $fuseConfig = Join-Path (Split-Path -Parent $state) 'fuse-config.json'
 $profiles = @('Domain','Private','Public')
 
-function Get-RuleConditions($rule) {
-    $app = @($rule | Get-NetFirewallApplicationFilter)
-    $service = @($rule | Get-NetFirewallServiceFilter)
-    $iface = @($rule | Get-NetFirewallInterfaceFilter)
-    $type = @($rule | Get-NetFirewallInterfaceTypeFilter)
-    if ($app.Count -ne 1 -or $service.Count -ne 1 -or $iface.Count -ne 1 -or $type.Count -ne 1) { throw 'Incomplete rule filters' }
+function Index-Unique($items, $property) {
+    $index = @{}
+    foreach ($item in $items) {
+        $key = [string]$item.$property
+        if ($index.ContainsKey($key)) { $index[$key] = $null }
+        else { $index[$key] = $item }
+    }
+    return $index
+}
+
+function Read-Policy($store) {
+    $rules = @(Get-NetFirewallRule -PolicyStore $store)
+    @{
+        store=$store
+        profiles=@(Get-NetFirewallProfile -PolicyStore $store)
+        rules=$rules
+        byName=(Index-Unique $rules Name)
+        filters=@{}
+    }
+}
+
+function Get-RuleFilter($rule, $policy, $kind) {
+    if (-not $policy.filters.ContainsKey($kind)) {
+        # Match CIM InstanceID within one store. Enumeration order is not an association.
+        $filters = @(& "Get-NetFirewall${kind}Filter" -PolicyStore $policy.store -All)
+        $policy.filters[$kind] = Index-Unique $filters InstanceID
+    }
+    $match = $policy.filters[$kind][[string]$rule.InstanceID]
+    if ($null -eq $match) { throw 'Missing or ambiguous firewall filter' }
+    return $match
+}
+
+function Get-RuleConditions($rule, $policy) {
+    $app = Get-RuleFilter $rule $policy Application
+    $service = Get-RuleFilter $rule $policy Service
+    $iface = Get-RuleFilter $rule $policy Interface
+    $type = Get-RuleFilter $rule $policy InterfaceType
     $conditions = [ordered]@{
-        Program=[string]$app[0].Program; Package=[string]$app[0].Package
-        Service=[string]$service[0].Service
-        InterfaceAlias=@($iface[0].InterfaceAlias | Sort-Object); InterfaceType=[string]$type[0].InterfaceType
+        Program=[string]$app.Program; Package=[string]$app.Package
+        Service=[string]$service.Service
+        InterfaceAlias=@($iface.InterfaceAlias | Sort-Object); InterfaceType=[string]$type.InterfaceType
         Direction=[string]$rule.Direction; Action=[string]$rule.Action; Profile=[string]$rule.Profile
     }
     if ($settings.mode -eq 'whole_machine') {
-        $address = @($rule | Get-NetFirewallAddressFilter)
-        $port = @($rule | Get-NetFirewallPortFilter)
-        $security = @($rule | Get-NetFirewallSecurityFilter)
-        if ($address.Count -ne 1 -or $port.Count -ne 1 -or $security.Count -ne 1) { throw 'Incomplete egress filters' }
-        $conditions.LocalAddress = @($address[0].LocalAddress | Sort-Object)
-        $conditions.RemoteAddress = @($address[0].RemoteAddress | Sort-Object)
-        $conditions.Protocol = [string]$port[0].Protocol
-        $conditions.LocalPort = @($port[0].LocalPort | Sort-Object)
-        $conditions.RemotePort = @($port[0].RemotePort | Sort-Object)
-        $conditions.IcmpType = @($port[0].IcmpType | Sort-Object)
-        $conditions.DynamicTarget = [string]$port[0].DynamicTarget
+        $address = Get-RuleFilter $rule $policy Address
+        $port = Get-RuleFilter $rule $policy Port
+        $security = Get-RuleFilter $rule $policy Security
+        $conditions.LocalAddress = @($address.LocalAddress | Sort-Object)
+        $conditions.RemoteAddress = @($address.RemoteAddress | Sort-Object)
+        $conditions.Protocol = [string]$port.Protocol
+        $conditions.LocalPort = @($port.LocalPort | Sort-Object)
+        $conditions.RemotePort = @($port.RemotePort | Sort-Object)
+        $conditions.IcmpType = @($port.IcmpType | Sort-Object)
+        $conditions.DynamicTarget = [string]$port.DynamicTarget
         foreach ($field in @('Authentication','Encryption','OverrideBlockRules','LocalUser','RemoteUser','RemoteMachine')) {
-            $conditions[$field] = [string]$security[0].$field
+            $conditions[$field] = [string]$security.$field
         }
         $conditions.EdgeTraversalPolicy = [string]$rule.EdgeTraversalPolicy
         $conditions.LooseSourceMapping = [string]$rule.LooseSourceMapping
@@ -52,19 +82,21 @@ function Get-RuleConditions($rule) {
     }
     return $conditions
 }
-function Get-Coverage($baseline, [switch]$Planned) {
+function Get-Coverage($baseline, $active, $stored, [switch]$Planned) {
     # Rule readback cannot discover newly added helpers or certify application traffic.
     $result = @{status='unknown';message='Current package, external runtimes and Cowork inventory require target-machine acceptance; do not resume applications from switch state alone.'}
     try {
         if ($settings.mode -eq 'whole_machine' -and $baseline.mode -ne 'whole_machine') {
             return @{status='unknown';message='Whole-machine mode needs a reviewed whole-machine snapshot; old baseline remains usable for recovery.'}
         }
+        if ($null -eq $active) { $active = Read-Policy ActiveStore }
+        if ($null -eq $stored) { $stored = Read-Policy PersistentStore }
         foreach ($name in $settings.enable_rules) {
-            $active = @(Get-NetFirewallRule -PolicyStore ActiveStore -Name $name)
-            $stored = @(Get-NetFirewallRule -PolicyStore PersistentStore -Name $name)
-            if ($active.Count -ne 1 -or $stored.Count -ne 1) { return @{status='fail';message='Configured rule missing or ambiguous.'} }
-            $conditions = Get-RuleConditions $active[0]
-            $expected = Get-RuleConditions $stored[0]
+            $liveRule = $active.byName[$name]
+            $savedRule = $stored.byName[$name]
+            if ($null -eq $liveRule -or $null -eq $savedRule) { return @{status='fail';message='Configured rule missing or ambiguous.'} }
+            $conditions = Get-RuleConditions $liveRule $active
+            $expected = Get-RuleConditions $savedRule $stored
             $currentJson = $conditions | ConvertTo-Json -Depth 6 -Compress
             if ($currentJson -ne ($expected | ConvertTo-Json -Depth 6 -Compress)) { return @{status='fail';message='Active and persistent rule conditions differ.'} }
             $old = @($baseline.rules | Where-Object { $_.Name -eq $name })
@@ -90,8 +122,9 @@ function Get-Coverage($baseline, [switch]$Planned) {
         }
         if ($settings.mode -eq 'whole_machine') {
             # Audit the effective policy too: a newly installed Allow rule can bypass default Block.
-            foreach ($store in @('PersistentStore','ActiveStore')) {
-                $allowed = @(Get-NetFirewallRule -PolicyStore $store -Direction Outbound -Action Allow | Where-Object {
+            foreach ($policy in @($stored,$active)) {
+                $allowed = @($policy.rules | Where-Object {
+                    if ([string]$_.Direction -ne 'Outbound' -or [string]$_.Action -ne 'Allow') { return $false }
                     if ($Planned) { ($settings.enable_rules -contains $_.Name) -or ([string]$_.Enabled -eq 'True' -and $settings.disable_rules -notcontains $_.Name) }
                     else { [string]$_.Enabled -eq 'True' }
                 })
@@ -99,7 +132,7 @@ function Get-Coverage($baseline, [switch]$Planned) {
                     return @{status='fail';message='Effective outbound allow list differs from the reviewed list; review unexpected, duplicate or missing rules.'}
                 }
                 if (-not $Planned) {
-                    $effectiveProfiles = @(Get-NetFirewallProfile -PolicyStore $store)
+                    $effectiveProfiles = $policy.profiles
                     if ((@($effectiveProfiles.Name | Sort-Object) -join ',') -ne 'Domain,Private,Public' -or
                         @($effectiveProfiles | Where-Object { [string]$_.Enabled -ne 'True' -or [string]$_.DefaultOutboundAction -ne 'Block' }).Count -gt 0) {
                         return @{status='fail';message='All three effective profiles must be enabled with outbound default Block.'}
@@ -113,14 +146,20 @@ function Get-Coverage($baseline, [switch]$Planned) {
     }
     return $result
 }
-function Get-Snapshot {
-    $p = @(Get-NetFirewallProfile -PolicyStore PersistentStore | Select-Object Name,Enabled,DefaultOutboundAction)
-    $r = @(foreach ($name in $names) { Get-NetFirewallRule -PolicyStore PersistentStore -Name $name | Select-Object Name,Enabled,@{Name='conditions';Expression={Get-RuleConditions $_}} })
-    $activeProfiles = @(Get-NetFirewallProfile -PolicyStore ActiveStore | Select-Object Name,Enabled,DefaultOutboundAction)
-    $activeRules = @(foreach ($name in $names) { Get-NetFirewallRule -PolicyStore ActiveStore -Name $name | Select-Object Name,Enabled })
-    if ($p.Count -ne 3 -or $r.Count -ne $names.Count -or $activeProfiles.Count -ne 3 -or $activeRules.Count -ne $names.Count) { throw 'Incomplete baseline' }
+function Get-Snapshot($stored, $active) {
+    $p = @($stored.profiles | Select-Object Name,Enabled,DefaultOutboundAction)
+    $activeProfiles = @($active.profiles | Select-Object Name,Enabled,DefaultOutboundAction)
+    if ($p.Count -ne 3 -or $activeProfiles.Count -ne 3) { throw 'Incomplete baseline profiles' }
+    $r = @(foreach ($name in $names) {
+        $savedRule = $stored.byName[$name]
+        $liveRule = $active.byName[$name]
+        if ($null -eq $savedRule -or $null -eq $liveRule) { throw 'Missing or ambiguous baseline rule' }
+        [pscustomobject]@{Name=$savedRule.Name;Enabled=$savedRule.Enabled;conditions=(Get-RuleConditions $savedRule $stored)}
+    })
+    $activeRules = @(foreach ($name in $names) { $active.byName[$name] | Select-Object Name,Enabled })
     @{ target=$cfg.target; mode=$settings.mode; profiles=$p; rules=$r; active_profiles=$activeProfiles; active_rules=$activeRules; names=@($names | Sort-Object) }
 }
+
 function Read-Baseline {
     $b = Get-Content -LiteralPath $state -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($b.target -ne $cfg.target -or @($b.profiles).Count -ne 3 -or @($b.rules).Count -ne $names.Count) { throw 'Baseline mismatch' }
@@ -129,7 +168,8 @@ function Read-Baseline {
 }
 function Assert-BaselineRestored($baseline) {
     foreach ($store in @('PersistentStore','ActiveStore')) {
-        $current = @(Get-NetFirewallProfile -PolicyStore $store)
+        $policy = Read-Policy $store
+        $current = $policy.profiles
         if ($current.Count -ne 3) { throw 'Restore profile readback incomplete; recovery task retained' }
         $expectedProfiles = $baseline.profiles
         $expectedRules = $baseline.rules
@@ -142,23 +182,46 @@ function Assert-BaselineRestored($baseline) {
                 [int]$actual[0].DefaultOutboundAction -ne [int]$p.DefaultOutboundAction) { throw 'Restore profile mismatch; recovery task retained' }
         }
         foreach ($r in $expectedRules) {
-            $actual = @(Get-NetFirewallRule -PolicyStore $store -Name $r.Name)
-            if ($actual.Count -ne 1 -or [int]$actual[0].Enabled -ne [int]$r.Enabled) { throw 'Restore rule mismatch; recovery task retained' }
+            $actual = $policy.byName[$r.Name]
+            if ($null -eq $actual -or [int]$actual.Enabled -ne [int]$r.Enabled) { throw 'Restore rule mismatch; recovery task retained' }
         }
     }
 }
+function Set-RuleStateChanges($policy, $targetNames, $enabled) {
+    $changes = @(foreach ($name in $targetNames) {
+        $rule = $policy.byName[$name]
+        if ($null -eq $rule) { throw 'Configured rule missing or ambiguous' }
+        $actual = if ($enabled -is [string]) { [string]$rule.Enabled } else { [int]$rule.Enabled }
+        if ($actual -ne $enabled) { $name }
+    })
+    if ($changes.Count -gt 0) {
+        Set-NetFirewallRule -PolicyStore PersistentStore -Name $changes -Enabled $enabled
+    }
+}
+
 function Restore-Baseline {
     $b = Read-Baseline
-    # Restore only the settings this switch owns, not a machine-wide firewall import.
-    foreach ($p in $b.profiles) { Set-NetFirewallProfile -PolicyStore PersistentStore -Profile $p.Name -Enabled $p.Enabled -DefaultOutboundAction $p.DefaultOutboundAction }
-    foreach ($r in $b.rules) { Set-NetFirewallRule -PolicyStore PersistentStore -Name $r.Name -Enabled $r.Enabled }
+    $stored = Read-Policy PersistentStore
+    # Restore only the exact profile values and rule states recorded in the baseline.
+    foreach ($p in $b.profiles) {
+        $actual = @($stored.profiles | Where-Object { $_.Name -eq $p.Name })
+        if ($actual.Count -ne 1) { throw 'Restore profile readback incomplete; recovery task retained' }
+        if ([int]$actual[0].Enabled -ne [int]$p.Enabled -or [int]$actual[0].DefaultOutboundAction -ne [int]$p.DefaultOutboundAction) {
+            Set-NetFirewallProfile -PolicyStore PersistentStore -Profile $p.Name -Enabled $p.Enabled -DefaultOutboundAction $p.DefaultOutboundAction
+        }
+    }
+    foreach ($group in ($b.rules | Group-Object -Property Enabled)) {
+        Set-RuleStateChanges $stored $group.Group.Name $group.Group[0].Enabled
+    }
     Assert-BaselineRestored $b
     if (Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue) { Unregister-ScheduledTask -TaskName $task -Confirm:$false }
 }
-function Get-State {
-    if (-not (Test-Path -LiteralPath $state)) { return @{protection='unknown';startup=$null;coverage=@{scope=$settings.mode;status='unknown';message='Baseline missing.'};message='Create a baseline before enabling protection.';checked_at=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()} }
-    $b = Read-Baseline
-    $p = @(Get-NetFirewallProfile -PolicyStore ActiveStore)
+
+function Get-State($active, $stored, $coverage, $baseline) {
+    if ($null -eq $baseline -and -not (Test-Path -LiteralPath $state)) { return @{protection='unknown';startup=$null;coverage=@{scope=$settings.mode;status='unknown';message='Baseline missing.'};message='Create a baseline before enabling protection.';checked_at=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()} }
+    $b = if ($null -eq $baseline) { Read-Baseline } else { $baseline }
+    if ($null -eq $active) { $active = Read-Policy ActiveStore }
+    $p = $active.profiles
     $on = $p.Count -eq 3
     $off = $p.Count -eq 3
     foreach ($profile in $p) {
@@ -166,17 +229,18 @@ function Get-State {
         $on = $on -and ([string]$profile.Enabled -eq 'True') -and ([string]$profile.DefaultOutboundAction -eq 'Block')
         $off = $off -and $old.Count -eq 1 -and ([int]$profile.Enabled -eq [int]$old[0].Enabled) -and ([int]$profile.DefaultOutboundAction -eq [int]$old[0].DefaultOutboundAction)
     }
+    $baselineRules = Index-Unique $b.rules Name
     foreach ($name in $names) {
-        $r = @(Get-NetFirewallRule -PolicyStore ActiveStore -Name $name)
-        if ($r.Count -ne 1) { $on=$false; $off=$false; continue }
+        $r = $active.byName[$name]
+        if ($null -eq $r) { $on=$false; $off=$false; continue }
         $wanted = if ($settings.enable_rules -contains $name) {'True'} else {'False'}
-        $old = @($b.rules | Where-Object { $_.Name -eq $name })
-        $on = $on -and ([string]$r[0].Enabled -eq $wanted)
-        $off = $off -and $old.Count -eq 1 -and ([int]$r[0].Enabled -eq [int]$old[0].Enabled)
+        $old = $baselineRules[$name]
+        $on = $on -and ([string]$r.Enabled -eq $wanted)
+        $off = $off -and $null -ne $old -and ([int]$r.Enabled -eq [int]$old.Enabled)
     }
     $label = if ($on) {'on'} elseif ($off) {'off'} else {'unknown'}
     $startup = if ($on) {$true} elseif ($off) {$false} else {$null}
-    $coverage = Get-Coverage $b -Planned:($label -eq 'off')
+    if ($null -eq $coverage) { $coverage = Get-Coverage $b $active $stored -Planned:($label -eq 'off') }
     $coverage.stage = if ($label -eq 'off') {'planned'} else {'effective'}
     $coverage.scope = if ($settings.mode -eq 'whole_machine') {'whole_machine'} else {'application_paths'}
     @{protection=$label;startup=$startup;coverage=$coverage;message='Switch configuration read back only; application coverage and egress acceptance are separate.';checked_at=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()}
@@ -188,8 +252,11 @@ if ($Action -ne 'Status') {
 switch ($Action) {
     'Snapshot' {
         if (Test-Path -LiteralPath $state) { throw 'Baseline already exists; do not overwrite' }
-        $b = Get-Snapshot
-        if ($settings.mode -eq 'whole_machine' -and (Get-Coverage $b -Planned).status -ne 'pass') { throw 'Whole-machine plan not verified; review all outbound allow rules before snapshot' }
+        $stored = Read-Policy PersistentStore
+        $active = Read-Policy ActiveStore
+        $b = Get-Snapshot $stored $active
+        $coverage = Get-Coverage $b $active $stored -Planned
+        if ($settings.mode -eq 'whole_machine' -and $coverage.status -ne 'pass') { throw "Whole-machine plan not verified: $($coverage.message)" }
         foreach ($p in $b.profiles) { if ([string]$p.DefaultOutboundAction -ne 'Allow' -or [string]$p.Enabled -ne 'True') { throw 'Baseline must have enabled profiles with explicit Allow; inspect the pre-deployment backup' } }
         $parent = Split-Path -Parent $state
         $expected = Join-Path $env:ProgramData 'ClaudeGuardian\Switch'
@@ -203,10 +270,14 @@ switch ($Action) {
         }
         Set-Acl -LiteralPath $parent -AclObject $acl
         $b | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $state -Encoding UTF8
+        Get-State $active $stored $coverage $b | ConvertTo-Json -Depth 6 -Compress
+        exit 0
     }
     'On' {
         $baseline = Read-Baseline
-        $coverage = Get-Coverage $baseline -Planned
+        $stored = Read-Policy PersistentStore
+        $active = Read-Policy ActiveStore
+        $coverage = Get-Coverage $baseline $active $stored -Planned
         if ($coverage.status -eq 'fail' -or ($settings.mode -eq 'whole_machine' -and $coverage.status -ne 'pass')) { throw 'Coverage not verified; existing rules retained' }
         if (Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue) { throw 'Previous fuse still exists; recover first' }
         Copy-Item -LiteralPath $PSCommandPath -Destination $fuseScript -Force
@@ -219,15 +290,20 @@ switch ($Action) {
         $taskSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
         Register-ScheduledTask -TaskName $task -Action $taskAction -Trigger $trigger -Settings $taskSettings -User SYSTEM -RunLevel Highest | Out-Null
         try {
-            foreach ($name in $settings.enable_rules) { Set-NetFirewallRule -PolicyStore PersistentStore -Name $name -Enabled True }
-            foreach ($name in $settings.disable_rules) { Set-NetFirewallRule -PolicyStore PersistentStore -Name $name -Enabled False }
-            Set-NetFirewallProfile -PolicyStore PersistentStore -Profile $profiles -Enabled True -DefaultOutboundAction Block
+            Set-RuleStateChanges $stored $settings.enable_rules True
+            Set-RuleStateChanges $stored $settings.disable_rules False
+            $changedProfiles = @($stored.profiles | Where-Object { [string]$_.Enabled -ne 'True' -or [string]$_.DefaultOutboundAction -ne 'Block' })
+            if ($changedProfiles.Count -gt 0) {
+                Set-NetFirewallProfile -PolicyStore PersistentStore -Profile $changedProfiles.Name -Enabled True -DefaultOutboundAction Block
+            }
         } catch { Restore-Baseline; throw }
     }
     'Confirm' {
         $current = Get-State
         if ($current.protection -ne 'on' -or $current.coverage.status -eq 'fail' -or ($settings.mode -eq 'whole_machine' -and $current.coverage.status -ne 'pass')) { throw 'Switch configuration or application coverage failed' }
         Unregister-ScheduledTask -TaskName $task -Confirm:$false
+        $current | ConvertTo-Json -Depth 6 -Compress
+        exit 0
     }
     'Off' { Restore-Baseline }
     'Uninstall' {

@@ -1,5 +1,11 @@
 # 版本记录
 
+## Windows 开关批量读取与差异切换（2026-11-15，WIN-SWITCH-BATCH / ADR-076）
+
+- 按策略存储批量读取防火墙规则及过滤器，按规则名和 CIM InstanceID 对照。快照 JSON 字段保持兼容。ON／OFF 仅写入启停状态或默认策略有变化的项目，恢复仍读回持久与生效策略，两边一致后才撤销保险丝。
+- 回归验证批量调用数、缺失与重复过滤器、差异写入及精确恢复。完整 unittest 1592 项（1580 通过、12 跳过）、Node 28 场景、编译及两次可复现打包通过。目标机只读构建 346 条规则的内存快照并执行预检，约 141 秒，预检结果为未知，尚不能在现有超时内交付该机开关。
+- 风险主要在 Windows 原生查询耗时和规则条件读取。真实切换须目标机验收；仓库可普通 revert，既有私有快照与独立恢复材料保留。
+
 ## Partners 新增 Mac mini 广告（2026-11-14，README-PARTNER-MAC-MINI）
 
 - README Partners 第二行新增海外 Mac mini 托管广告，链接到 `https://api.dpccgaming.xyz/guardian/services?category=mac_mini`；提供的图片裁剪多余留白、居中后压缩为与现有广告相同的 480×140 PNG，显示宽度 380
