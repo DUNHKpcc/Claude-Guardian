@@ -6,6 +6,7 @@
 - 只保留 whole_machine 开启、审计及新建快照；旧配置仅可 Off／Recover／Uninstall 恢复。保留批量读取、精简快照、按需审计与差异写入优化。同步 Skill 入口、Windows 首次部署及迁移说明，清理旧应用路径部署路线。
 - 验证覆盖原生入口取消、确认过期、失败恢复、旧快照恢复、路径与程序条件变化；Windows 特有快捷方式和子进程检查交由 CI。实际设备 UAC、切换耗时和真实网络验收 not_run。上一笔 dd739ba 文档精简漏更新的 S10 章节契约和打包记录已同步，正文保持原提交内容。
 - 本地 macOS / Python 3.13 / PowerShell 7.7：`python -m unittest discover -s tests -v` 1596 项（1582 通过、14 平台跳过），`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts`、PowerShell 语法检查、Wiki 29 页导出、两次 `python tools/package_skill.py --output <临时文件>` 字节一致均通过。Linux/macOS/Windows push CI 及远端精确提交另行核实。
+- 首轮 CI 的 Windows 原生测试发现 WScript.Shell 无法在英文系统保存中文快捷方式路径；改用系统 IShellLinkW／IPersistFile Unicode 接口，并由独立 Shell.Application 读回中文路径、参数和既有图标。提权及后端子进程测试已在首轮通过，失败轮次不计整体通过；修复后重新运行完整检查及三平台 CI。
 - 回滚使用普通 revert；设备端先完成或恢复活动操作，保留私有配置、原基线与独立恢复副本。旧页面及快捷方式由目标机 Agent 核对后清理，不批量结束 Python 进程。
 
 ## Windows 开关复用已读取的规则对象（2026-11-15，Issue #31）

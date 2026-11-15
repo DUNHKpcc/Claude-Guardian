@@ -17,14 +17,53 @@ foreach ($item in $items) {
 }
 if (-not (Test-Path -LiteralPath $OutputDirectory)) { $null = New-Item -ItemType Directory -Path $OutputDirectory }
 $directory = Get-Item -LiteralPath $OutputDirectory
-$shell = New-Object -ComObject WScript.Shell
+# WScript.Shell loses Chinese paths on non-Chinese Windows; use the Unicode Shell API.
+if (-not ('GuardianShortcut' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+[ComImport, Guid("000214F9-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface IGuardianShellLinkW {
+    void GetPath(IntPtr path, int count, IntPtr data, uint flags);
+    void GetIDList(out IntPtr id);
+    void SetIDList(IntPtr id);
+    void GetDescription(IntPtr text, int count);
+    void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string text);
+    void GetWorkingDirectory(IntPtr path, int count);
+    void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string path);
+    void GetArguments(IntPtr text, int count);
+    void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string text);
+    void GetHotkey(out short key);
+    void SetHotkey(short key);
+    void GetShowCmd(out int command);
+    void SetShowCmd(int command);
+    void GetIconLocation(IntPtr path, int count, out int index);
+    void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string path, int index);
+    void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string path, uint reserved);
+    void Resolve(IntPtr window, uint flags);
+    void SetPath([MarshalAs(UnmanagedType.LPWStr)] string path);
+}
+public static class GuardianShortcut {
+    public static void Save(string path, string target, string arguments, string workingDirectory, string icon, string description) {
+        object instance = Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("00021401-0000-0000-C000-000000000046")));
+        try {
+            var link = (IGuardianShellLinkW)instance;
+            link.SetPath(target);
+            link.SetArguments(arguments);
+            link.SetWorkingDirectory(workingDirectory);
+            link.SetIconLocation(icon, 0);
+            link.SetDescription(description);
+            link.SetShowCmd(1);
+            ((IPersistFile)instance).Save(path, true);
+        } finally { Marshal.ReleaseComObject(instance); }
+    }
+}
+'@
+}
 foreach ($item in $items) {
-    $link = $shell.CreateShortcut((Join-Path $directory.FullName ($item.Name + '.lnk')))
-    $link.TargetPath = "$PSHOME\powershell.exe"
-    $link.Arguments = '-NoProfile -ExecutionPolicy Bypass -File "' + $entry + '" -Action ' + $item.Action + ' -Config "' + $configPath + '"'
-    $link.WorkingDirectory = $PSScriptRoot
-    $link.IconLocation = $icon + ',0'
-    $link.Description = $item.Name + '；操作后显示真实状态，图标不代表当前状态'
-    $link.Save()
+    $arguments = '-NoProfile -ExecutionPolicy Bypass -File "' + $entry + '" -Action ' + $item.Action + ' -Config "' + $configPath + '"'
+    [GuardianShortcut]::Save((Join-Path $directory.FullName ($item.Name + '.lnk')), "$PSHOME\powershell.exe", $arguments, $PSScriptRoot, $icon,
+        ($item.Name + '；操作后显示真实状态，图标不代表当前状态'))
 }
 Write-Output '已生成两个 PowerShell 桌面快捷方式。请保持 Skill 及配置路径固定。'

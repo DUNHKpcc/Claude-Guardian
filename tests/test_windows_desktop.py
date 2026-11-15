@@ -175,28 +175,33 @@ $result | ConvertTo-Json -Compress
 '''
         self.assertEqual(self.run_ps(body), {'0': True, '9': False, 'cancel': False})
 
-    @unittest.skipUnless(os.name == 'nt', 'Windows WScript shortcut API')
+    @unittest.skipUnless(os.name == 'nt', 'Windows Shell shortcut API')
     def test_shortcuts_use_powershell_existing_icon_and_exact_paths(self):
         with tempfile.TemporaryDirectory(prefix="guardian ' 中文 ") as tmp:
             path = Path(tmp)
             config = path / '配置.json'
             config.write_text(json.dumps({'version': 1, 'target': os.environ['COMPUTERNAME'], 'backend':'windows_firewall', 'protected_processes':['Claude'], 'windows':{'mode':'whole_machine'}}), encoding='utf-8-sig')
+            installed = path / '技能目录'
+            installed.mkdir()
+            for name in ('windows-shortcuts.ps1', 'windows-desktop.ps1', 'windows-switch.ps1', 'icon.ico'):
+                shutil.copyfile(ASSETS / name, installed / name)
             output = path / '桌面入口'
             output.mkdir()
             unrelated = output / '保留.txt'
             unrelated.write_text('keep', encoding='utf-8')
-            body = '& ' + quote(ASSETS / 'windows-shortcuts.ps1') + ' -Config ' + quote(config) + ' -OutputDirectory ' + quote(output) + ' | Out-Null\n'
-            body += "$shell=New-Object -ComObject WScript.Shell\n$links=@(Get-ChildItem -LiteralPath " + quote(output) + " -Filter '*.lnk' | ForEach-Object {$l=$shell.CreateShortcut($_.FullName);@{target=$l.TargetPath;args=$l.Arguments;icon=$l.IconLocation}})\n"
-            body += "$rejected=$false;try { & " + quote(ASSETS/'windows-shortcuts.ps1') + ' -Config ' + quote(config) + ' -OutputDirectory ' + quote(output) + " | Out-Null } catch {$rejected=$true}\n@{links=$links;overwriteRejected=$rejected}|ConvertTo-Json -Depth 5 -Compress"
+            body = '& ' + quote(installed / 'windows-shortcuts.ps1') + ' -Config ' + quote(config) + ' -OutputDirectory ' + quote(output) + ' | Out-Null\n'
+            body += "$shell=New-Object -ComObject Shell.Application\n$folder=$shell.NameSpace(" + quote(output) + ")\n$links=@(Get-ChildItem -LiteralPath " + quote(output) + " -Filter '*.lnk' | ForEach-Object {$l=$folder.ParseName($_.Name).GetLink;$icon='';$index=$l.GetIconLocation([ref]$icon);@{target=$l.Path;args=$l.Arguments;icon=($icon+','+$index);directory=$l.WorkingDirectory}})\n"
+            body += "$rejected=$false;try { & " + quote(installed/'windows-shortcuts.ps1') + ' -Config ' + quote(config) + ' -OutputDirectory ' + quote(output) + " | Out-Null } catch {$rejected=$true}\n@{links=$links;overwriteRejected=$rejected}|ConvertTo-Json -Depth 5 -Compress"
             result = self.run_ps(body)
             self.assertEqual(unrelated.read_text(encoding='utf-8'), 'keep')
             self.assertTrue(result['overwriteRejected'])
             self.assertEqual(len(result['links']), 2)
             for link in result['links']:
                 self.assertEqual(Path(link['target']).name.lower(), 'powershell.exe')
-                self.assertIn('windows-desktop.ps1', link['args'])
+                self.assertIn(str(installed / 'windows-desktop.ps1'), link['args'])
                 self.assertIn(str(config), link['args'])
                 self.assertIn('-ExecutionPolicy Bypass', link['args'])
-                self.assertEqual(link['icon'], str(ASSETS / 'icon.ico') + ',0')
+                self.assertEqual(link['icon'], str(installed / 'icon.ico') + ',0')
+                self.assertEqual(link['directory'], str(installed))
             self.assertEqual(sum('-Action On ' in link['args'] for link in result['links']), 1)
             self.assertEqual(sum('-Action Off ' in link['args'] for link in result['links']), 1)
