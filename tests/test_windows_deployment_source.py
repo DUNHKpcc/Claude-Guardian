@@ -11,12 +11,14 @@ CASE = 'sources/S10-windows-deployment-sanitized.md'
 
 
 class WindowsDeploymentSourceTests(unittest.TestCase):
-    def test_full_case_retains_both_deployments_and_the_launcher_postmortem(self):
+    def test_edited_case_retains_both_deployments_and_the_launcher_postmortem(self):
         text = (ROOT / CASE).read_text(encoding='utf-8')
         sections = re.findall(r'^## ([一二三四五六七八九十]+)、', text, re.MULTILINE)
-        self.assertEqual(sections, ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一'])
+        # dd739ba removed the first device's obsolete status list, retaining the procedures.
+        self.assertEqual(sections, ['一', '二', '三', '四', '五', '七', '八', '九', '十', '十一'])
+        self.assertNotIn('## 六、当前状态与待办', text)
         for section in ('# 第二台机器', '# 桌面开关重大缺陷复盘', '## 方法学教训',
-                        '## 影响范围', '## 友好版标准配方', '## 六、当前状态与待办',
+                        '## 影响范围', '## 友好版标准配方',
                         '## 十一、node 机器状态与待办'):
             self.assertIn(section, text)
         self.assertIn('$ws.CreateShortcut', text)

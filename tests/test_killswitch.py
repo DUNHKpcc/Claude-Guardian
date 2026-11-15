@@ -32,7 +32,7 @@ u = load('killswitch_ui')
 
 
 def config():
-    return {'version':1, 'target':platform.node(), 'backend':k.BACKENDS.get(platform.system()),
+    return {'version':1, 'target':platform.node(), 'backend':'mac_pf',
             'protected_processes':['Claude'], 'mac':{'NODE_IPS':'203.0.113.5','NODE_PORTS':'443'},
             'windows':{'enable_rules':['guardian-core'],'disable_rules':[], 'state_path':str(Path(tempfile.gettempdir()).resolve() / 'baseline.json')}}
 
@@ -43,6 +43,9 @@ def result(stdout='', code=0):
 
 class Controller(unittest.TestCase):
     def setUp(self):
+        platform_patch = patch.object(k.platform, 'system', return_value='Darwin')
+        platform_patch.start()
+        self.addCleanup(platform_patch.stop)
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.path = Path(self.tmp.name)/'config.json'
@@ -61,7 +64,7 @@ class Controller(unittest.TestCase):
             k.confirm('on',self.cfg)
 
     def test_rejects_process_left_running_without_killing_it(self):
-        text='Claude\n' if platform.system()=='Windows' else '/Applications/Claude.app/Contents/MacOS/Claude\n'
+        text='/Applications/Claude.app/Contents/MacOS/Claude\n'
         with patch.object(k,'run',return_value=result(text)) as runner, self.assertRaises(k.SwitchError):
             k.require_apps_closed(self.cfg)
         self.assertEqual(runner.call_count,1)
@@ -109,59 +112,6 @@ class Controller(unittest.TestCase):
                 k.on(cfg,self.path)
             self.assertEqual([c.args[1] for c in native.call_args_list],['apply','unpersist','rollback'])
 
-    def test_windows_uses_native_rollback_deadline_and_final_readback(self):
-        cfg = dict(self.cfg, backend='windows_firewall', windows=dict(self.cfg['windows'], mode='whole_machine'))
-        enabled = {'protection': 'on', 'startup': True, 'coverage': {'status': 'pass'}}
-        cases = [
-            ('KEEP', 150, enabled, ['On', 'Confirm']),
-            ('KEEP', 181, enabled, ['On', 'Off']),
-            ('cancel', 150, enabled, ['On', 'Off']),
-            ('KEEP', 150, k.SwitchError('Final readback timed out'), ['On', 'Confirm', 'Off']),
-            ('KEEP', 150, dict(enabled, coverage={'status':'unknown'}), ['On', 'Confirm', 'Off']),
-        ]
-        for answer, now, result, expected in cases:
-            with self.subTest(expected=expected, result=result), patch.object(k, 'windows', side_effect=[
-                dict(enabled, keep_until=180), result if 'Confirm' in expected else None, None]), patch.object(k.time, 'time', return_value=now), patch(
-                'builtins.input', return_value=answer), contextlib.redirect_stdout(io.StringIO()):
-                if expected[-1] == 'Confirm':
-                    self.assertEqual(k.on(cfg, self.path), enabled)
-                else:
-                    with self.assertRaises(k.SwitchError):
-                        k.on(cfg, self.path)
-                self.assertEqual([c.args[1] for c in k.windows.call_args_list], expected)
-
-    def test_windows_preflight_error_does_not_restore_another_operation(self):
-        cfg = dict(self.cfg, backend='windows_firewall')
-        with patch.object(k, 'windows', side_effect=k.SwitchError('Previous fuse still exists')) as native:
-            with self.assertRaisesRegex(k.SwitchError, 'Previous fuse'):
-                k.on(cfg, self.path)
-        native.assert_called_once_with(self.path, 'On')
-
-    def test_windows_readonly_preview_has_time_for_slow_native_reads(self):
-        with patch.object(k, 'run', return_value=result(stdout='{}')) as runner:
-            k.windows(self.path, 'Preview')
-        self.assertEqual(runner.call_args.kwargs['timeout'], 300)
-        self.assertIn('Preview', runner.call_args.args[0])
-
-    def test_whole_machine_confirmation_discloses_cost_before_prompt(self):
-        cfg = dict(self.cfg, backend='windows_firewall', windows=dict(self.cfg['windows'], mode='whole_machine'))
-        output = io.StringIO()
-        with patch.object(sys.stdin, 'isatty', return_value=True), patch('builtins.input', return_value='ON ' + cfg['target']), contextlib.redirect_stdout(output):
-            k.confirm('on', cfg)
-        text = output.getvalue()
-        for phrase in ('影响所有软件', '可能断网', '国内直连', '局域网', '虚拟机', '远程连接', '恢复原有出站策略'):
-            self.assertIn(phrase, text)
-        self.assertLess(text.index('影响所有软件'), text.index('输入 ON'))
-
-    def test_whole_machine_config_is_explicit_and_legacy_remains_valid(self):
-        for mode in ('whole_machine', 'application_paths', 'invalid'):
-            cfg = dict(self.cfg, windows=dict(self.cfg['windows'], mode=mode))
-            self.path.write_text(json.dumps(cfg), encoding='utf-8')
-            if mode == 'invalid':
-                with self.assertRaises(k.SwitchError): k.load_config(self.path)
-            else:
-                self.assertEqual(k.load_config(self.path)['windows']['mode'], mode)
-
     def test_already_on_is_idempotent_and_mixed_state_is_not_overwritten(self):
         with patch.object(k,'status',return_value={'protection':'on','startup':True}), patch.object(k,'pf') as native:
             self.assertEqual(k.on(dict(self.cfg,backend='mac_pf'),self.path)['protection'],'on')
@@ -172,13 +122,6 @@ class Controller(unittest.TestCase):
         with patch.object(k,'require_admin'), patch.object(k,'confirm'), patch.object(k,'require_apps_closed'), patch.object(k,'off'), patch.object(k,'status',return_value={'protection':'off','startup':None}), self.assertRaises(k.SwitchError):
             k.execute('off',self.cfg,self.path)
 
-    def test_windows_off_uses_verified_restore_receipt(self):
-        cfg = dict(self.cfg, backend='windows_firewall')
-        restored = {'protection': 'off', 'startup': False}
-        with patch.object(k, 'require_admin'), patch.object(k, 'confirm'), patch.object(k, 'require_apps_closed'), patch.object(k, 'windows', return_value=restored) as native, patch.object(k, 'status') as status:
-            self.assertEqual(k.execute('off', cfg, self.path), restored)
-        native.assert_called_once_with(self.path, 'Off')
-        status.assert_not_called()
 
     def test_native_timeout_and_failure_are_not_success(self):
         with patch.object(k.subprocess,'run',side_effect=subprocess.TimeoutExpired('pfctl',30)), self.assertRaises(k.SwitchError):k.run(['pfctl'])
@@ -197,56 +140,15 @@ class Controller(unittest.TestCase):
             u.desktop(self.path,dest)
             self.assertIn('Terminal=false',(dest/'guardian-switch.desktop').read_text())
 
-    @unittest.skipUnless(os.name == 'nt', 'Windows shortcut and console encoding')
-    def test_windows_desktop_cli_with_legacy_output_encoding(self):
-        output=Path(self.tmp.name)/'native desktop'
-        env=dict(os.environ,PYTHONIOENCODING='cp1252')
-        proc=subprocess.run([sys.executable,str(SCRIPTS/'killswitch.py'),'desktop','--config',str(self.path),'--output',str(output)],env=env,capture_output=True,text=True,encoding='utf-8',timeout=30)
-        self.assertEqual(proc.returncode,0,proc.stderr)
-        self.assertIn('桌面入口已生成',proc.stdout)
-        self.assertTrue((output/'Guardian Switch.lnk').is_file())
-        command="$s=(New-Object -ComObject WScript.Shell).CreateShortcut("+u.ps_quote(output/'Guardian Switch.lnk')+");$s.TargetPath"
-        actual=subprocess.run(['powershell.exe','-NoProfile','-Command',command],capture_output=True,text=True,encoding='utf-8',check=True).stdout.strip()
-        self.assertTrue(Path(actual).is_file())
 
     def test_windows_backend_parses_without_executing_commands(self):
         executable=shutil.which('powershell.exe') or shutil.which('pwsh')
         if not executable:self.skipTest('PowerShell parser unavailable')
-        script=str(k.WINDOWS).replace("'","''")
+        script=str(ROOT / 'skills/claude-guardian/assets/killswitch/windows-switch.ps1').replace("'","''")
         command="$e=$null;$t=$null;[System.Management.Automation.Language.Parser]::ParseFile('"+script+"',[ref]$t,[ref]$e)|Out-Null;if($e.Count){$e|Out-String|Write-Output;exit 1}"
         completed=subprocess.run([executable,'-NoProfile','-Command',command],capture_output=True,text=True,encoding='utf-8')
         self.assertEqual(completed.returncode,0,completed.stdout+completed.stderr)
 
-    def test_windows_effective_status_with_native_powershell_and_fixture_cmdlets(self):
-        executable=shutil.which('powershell.exe') or shutil.which('pwsh')
-        if not executable:self.skipTest('PowerShell unavailable')
-        self.cfg['backend']='windows_firewall'
-        host=subprocess.run([executable,'-NoProfile','-Command','[Environment]::MachineName'],capture_output=True,text=True,encoding='utf-8',check=True).stdout.strip()
-        self.cfg['target']=host
-        baseline=Path(self.tmp.name)/'baseline.json'
-        self.cfg['windows']['state_path']=str(baseline)
-        self.path.write_text(json.dumps(self.cfg),encoding='utf-8')
-        baseline.write_text(json.dumps({'target':host,'names':['guardian-core'],
-            'profiles':[{'Name':n,'Enabled':1,'DefaultOutboundAction':2} for n in ('Domain','Private','Public')],
-            'rules':[{'Name':'guardian-core','Enabled':0}]}),encoding='utf-8')
-        for mode,expected in [('Block','on'),('Allow','off')]:
-            body="""Add-Type 'public enum TestPolicy { Allow=2, Block=4 }'
-function Get-NetFirewallProfile { param($PolicyStore) @('Domain','Private','Public') | ForEach-Object { [pscustomobject]@{Name=$_;Enabled=$true;DefaultOutboundAction=[TestPolicy]::MODE} } }
-function Get-NetFirewallRule { param($PolicyStore) [pscustomobject]@{Name='guardian-core';InstanceID='rule-instance';Enabled=ENABLED;Direction='Outbound';Action='Block';Profile='Any'} }
-function Get-NetFirewallApplicationFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';Program='missing-old-version.exe';Package='Any'} }
-function Get-NetFirewallServiceFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';Service='Any'} }
-function Get-NetFirewallInterfaceFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';InterfaceAlias=@('Any')} }
-function Get-NetFirewallInterfaceTypeFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='rule-instance';InterfaceType='Any'} }
-& SCRIPT -Action Status -Config CONFIG
-& SCRIPT -Action Audit -Config CONFIG
-""".replace('MODE',mode).replace('ENABLED','$true' if expected=='on' else '$false').replace('SCRIPT',u.ps_quote(k.WINDOWS)).replace('CONFIG',u.ps_quote(self.path))
-            fixture=Path(self.tmp.name)/'fixture.ps1';fixture.write_text(body,encoding='utf-8-sig')
-            completed=subprocess.run([executable,'-NoProfile','-File',str(fixture)],capture_output=True,text=True,encoding='utf-8',errors='replace')
-            self.assertEqual(completed.returncode,0,completed.stderr)
-            state, audit = (json.loads(line.lstrip('\ufeff')) for line in completed.stdout.splitlines())
-            self.assertEqual(state['protection'],expected)
-            self.assertEqual(state['coverage']['status'], 'unknown')
-            self.assertEqual(audit['coverage']['status'], 'fail')
 
 
 class LocalUI(unittest.TestCase):

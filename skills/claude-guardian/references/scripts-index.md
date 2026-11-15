@@ -25,9 +25,11 @@
 
 ## 统一防直连开关
 
+Windows 直接使用 `assets/killswitch/windows-shortcuts.ps1` 生成两个桌面入口，调用 `assets/killswitch/windows-desktop.ps1` 与 `assets/killswitch/windows-switch.ps1`；只提供整机白名单，旧配置仅可恢复。不启动 Python／浏览器开关服务。
+
 | 脚本 | 类型 | 用途 | 说明 |
 | --- | --- | --- | --- |
-| `killswitch.py` | 入口 | 已部署防护的 on/off/status/uninstall、Windows snapshot、本机确认与状态读回 | [killswitch-switch.md](killswitch-switch.md) |
+| `killswitch.py` | 入口 | Mac/Linux 已部署防护的 on/off/status/uninstall、本机确认与状态读回 | [killswitch-switch.md](killswitch-switch.md) |
 | `killswitch_ui.py` | 入口／库 | 无系统改动演示、本机 GUI、桌面入口生成 | 同上 |
 
 随包资源：`assets/killswitch/windows-switch.ps1`、`assets/killswitch/config.example.json`、`assets/killswitch/switch.html`、`assets/killswitch/switch.css`、`assets/killswitch/switch.js`、`assets/killswitch/icon.svg`、`assets/killswitch/icon.png`、`assets/killswitch/icon.ico`、`assets/killswitch/icon.icns`。全部通过同一使用指引按需读取。

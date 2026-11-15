@@ -1,5 +1,17 @@
 # 版本记录
 
+## Windows 原生双快捷方式与单一整机白名单（2026-11-15，WIN-DESKTOP-20261115 / ADR-079）
+
+- Windows 桌面生成“开启保护（限制直连）”和“关闭保护（恢复联网）”两个快捷方式，直接调用 PowerShell，引用现有 icon.ico。保留 UAC、目标确认、KEEP、进程退出检查、状态读回及原独立保险丝。移除 Windows Python 调用、浏览器服务和旧快捷方式生成逻辑；Mac/Linux 原入口保留。
+- 只保留 whole_machine 开启、审计及新建快照；旧配置仅可 Off／Recover／Uninstall 恢复。保留批量读取、精简快照、按需审计与差异写入优化。同步 Skill 入口、Windows 首次部署及迁移说明，清理旧应用路径部署路线。
+- 验证覆盖原生入口取消、确认过期、失败恢复、旧快照恢复、路径与程序条件变化；Windows 特有快捷方式和子进程检查交由 CI。实际设备 UAC、切换耗时和真实网络验收 not_run。上一笔 dd739ba 文档精简漏更新的 S10 章节契约和打包记录已同步，正文保持原提交内容。
+- 本地 macOS / Python 3.13 / PowerShell 7.7：`python -m unittest discover -s tests -v` 1596 项（1582 通过、14 平台跳过），`node tests/webrtc-lifecycle.cjs` 28 场景、`python -m compileall -q skills/claude-guardian/scripts`、PowerShell 语法检查、Wiki 29 页导出、两次 `python tools/package_skill.py --output <临时文件>` 字节一致均通过。Linux/macOS/Windows push CI 及远端精确提交另行核实。
+- 回滚使用普通 revert；设备端先完成或恢复活动操作，保留私有配置、原基线与独立恢复副本。旧页面及快捷方式由目标机 Agent 核对后清理，不批量结束 Python 进程。
+
+## Windows 开关复用已读取的规则对象（2026-11-15，Issue #31）
+
+- ON、OFF 和保险丝恢复共用写入路径。直接把本机枚举所得的精确规则对象交给 NetSecurity，更新有变化的启停值，省去批次名称查询。保留双策略库读回、已有基线和原阶段时限。仓库回退使用普通 revert。
+
 ## Windows 整机开关简化部署与审计（2026-11-15，Issue #31 / ADR-078）
 
 - 首次只需填写本机的出站白名单并保存基线。停用列表留空时，后端通过本机策略自动生成计划。新的基线只保存停用规则的原始启停值，并保留白名单条件。已有显式停用列表与基线可继续使用。

@@ -245,11 +245,11 @@ class GuidanceContracts(unittest.TestCase):
         lib = (REFS / "source-library.md").read_text(encoding="utf-8")
         self.assertIn("Agent 补充资料来源", lib)
 
-    def test_local_firewall_is_prompt_only_and_wired(self):
+    def test_local_firewall_native_switch_and_guidance_are_wired(self):
         doc = (REFS / "local-firewall-prompts.md").read_text(encoding="utf-8")
-        for term in ("Windows 不提供脚本", "全部用提示词引导", "LuLu", "guardian-pf-killswitch.sh", "Windows 防火墙", "netsh advfirewall export",
-                     "Set-NetFirewallProfile", "DefaultOutboundAction", "New-NetFirewallRule", "InterfaceAlias", "guardian-",
-                     "schtasks /Create", "故障演练", "Windows 10.0.26200、Clash Verge Rev 2.5.2 上通过", "第 5 步故障演练还没在真机上跑通", "Clash Verge", "服务模式", "Agent 不做的事"):
+        for term in ("随包 PowerShell 开关", "只部署整机白名单", "LuLu", "guardian-pf-killswitch.sh", "Windows 防火墙", "netsh advfirewall export",
+                     "windows-switch.ps1 -Action Off", "DefaultOutboundAction", "New-NetFirewallRule", "InterfaceAlias", "guardian-",
+                     "SYSTEM 保险丝", "Preview／Snapshot", "故障演练", "Windows 10.0.26200、Clash Verge Rev 2.5.2 上通过", "第 5 步故障演练还没在真机上跑通", "Clash Verge", "服务模式", "Agent 不做的事"):
             self.assertIn(term, doc)
         self.assertIn("local-firewall-prompts.md", (REFS / "routes-and-platforms.md").read_text(encoding="utf-8"))
         skill = (ROOT / "skills" / "claude-guardian" / "SKILL.md").read_text(encoding="utf-8")

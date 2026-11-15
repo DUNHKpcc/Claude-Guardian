@@ -37,9 +37,9 @@ for (const status of ['unknown','fail']) {
 }
 render({protection:'on',startup:true,coverage:{status:'fail'},stale:true});
 assert.equal(elements.get('coverage').textContent,'需要刷新');
-render({protection:'on', startup:true, coverage:{scope:'whole_machine',status:'pass'}});
-assert.equal(elements.get('coverage-label').textContent,'整机出口配置');
-assert.equal(elements.get('coverage').textContent,'规则已核实');
+render({protection:'on', startup:true, coverage:{status:'pass'}});
+assert.equal(elements.get('coverage-label').textContent,'应用覆盖');
+assert.equal(elements.get('coverage').textContent,'已核实');
 ask('on');
 assert.match(elements.get('dialog-copy').textContent,/影响所有软件/);
 assert.match(elements.get('dialog-copy').textContent,/虚拟机和远程连接/);
@@ -63,11 +63,11 @@ class WindowsUpdateCoverage(unittest.TestCase):
         source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
         functions = source[source.index('function Index-Unique'):source.index('function Get-Snapshot')]
         fixture = r'''
-$settings = @{enable_rules=@('guardian-test')}
+$settings = @{mode='whole_machine';enable_rules=@('guardian-test');disable_rules=@()}
 $script:mode = 'normal'
-function Get-NetFirewallProfile { param($PolicyStore) }
+function Get-NetFirewallProfile { param($PolicyStore) @('Domain','Private','Public') | ForEach-Object { [pscustomobject]@{Name=$_;Enabled='True';DefaultOutboundAction='Block'} } }
 function Get-NetFirewallRule { param($PolicyStore)
-    [pscustomobject]@{Name='guardian-test';InstanceID='fixture-instance';Store=$PolicyStore;Direction='Outbound';Action='Block';Profile='Any'}
+    [pscustomobject]@{Name='guardian-test';InstanceID='fixture-instance';Store=$PolicyStore;Enabled='True';Direction='Outbound';Action='Allow';Profile='Any'}
 }
 function Get-NetFirewallApplicationFilter { param($PolicyStore,[switch]$All)
     if ($script:mode -eq 'denied') { throw 'AccessDenied' }
@@ -91,7 +91,10 @@ function Get-NetFirewallInterfaceTypeFilter { param($PolicyStore,[switch]$All)
     [pscustomobject]@{InstanceID='fixture-instance';InterfaceType='Any'}
 }
 $stored=Read-Policy PersistentStore
-$baseline = @{rules=@(@{Name='guardian-test';conditions=(Get-RuleConditions $stored.byName['guardian-test'] $stored)})}
+function Get-NetFirewallAddressFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='fixture-instance';LocalAddress='Any';RemoteAddress='203.0.113.5'} }
+function Get-NetFirewallPortFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='fixture-instance';Protocol='TCP';RemotePort='443';LocalPort='Any'} }
+function Get-NetFirewallSecurityFilter { param($PolicyStore,[switch]$All) [pscustomobject]@{InstanceID='fixture-instance'} }
+$baseline = @{mode='whole_machine';rules=@(@{Name='guardian-test';conditions=(Get-RuleConditions $stored.byName['guardian-test'] $stored)})}
 $results = @{}
 foreach ($mode in @('normal','missing','program-drift','service-drift','interface-drift','denied','missing-filter','duplicate-filter')) {
     $script:mode=$mode
@@ -101,14 +104,14 @@ $script:mode='normal'
 $baseline.rules[0].conditions.Service='old-service'
 $results['baseline-drift']=(Get-Coverage $baseline -Audit).status
 $results['legacy-baseline']=(Get-Coverage @{rules=@(@{Name='guardian-test'})} -Audit).status
-# Existing paths cannot prove that a new package helper or external runtime is covered.
-$results['new-component-unverified']=(Get-Coverage @{rules=@()} -Audit).status
+$results['missing-reviewed-conditions']=(Get-Coverage @{mode='whole_machine';rules=@()} -Audit).status
 $results | ConvertTo-Json -Compress
 '''
         actual = self.run_ps(functions + fixture)
         for scenario in ('missing', 'program-drift', 'service-drift', 'interface-drift', 'baseline-drift'):
             self.assertEqual(actual[scenario], 'fail', scenario)
-        for scenario in ('normal', 'denied', 'missing-filter', 'duplicate-filter', 'legacy-baseline', 'new-component-unverified'):
+        self.assertEqual(actual['normal'], 'pass')
+        for scenario in ('denied', 'missing-filter', 'duplicate-filter', 'legacy-baseline', 'missing-reviewed-conditions'):
             self.assertEqual(actual[scenario], 'unknown', scenario)
 
     def test_whole_machine_reads_all_effective_allows_and_ignores_claude_updates(self):
@@ -196,8 +199,8 @@ function Get-AppxPackage { throw 'Whole-machine mode must not depend on Claude i
 function Set-NetFirewallProfile { param($PolicyStore,$Profile,$Enabled,$DefaultOutboundAction)
     $script:changes += "profile:$Profile/$DefaultOutboundAction"
 }
-function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled)
-    $script:changes += [pscustomobject]@{Names=@($Name);Enabled=[string]$Enabled}
+function Set-NetFirewallRule { param($InputObject,$Enabled,$ThrottleLimit,[switch]$Confirm)
+    $script:changes += [pscustomobject]@{Names=@($InputObject.Name);Enabled=[string]$Enabled}
 }
 function Get-ScheduledTask { param($TaskName,$ErrorAction) return $null }
 $stored=Read-Policy PersistentStore
@@ -302,8 +305,8 @@ function Read-Baseline {
     @{profiles=$p;active_profiles=$a;rules=@(@{Name='fixture';Enabled=2},@{Name='stay';Enabled=1});active_rules=@(@{Name='fixture';Enabled=2},@{Name='stay';Enabled=1})}
 }
 function Set-NetFirewallProfile { param($PolicyStore,$Profile,$Enabled,$DefaultOutboundAction) }
-function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled)
-    $script:writes+= [pscustomobject]@{Names=@($Name);Enabled=$Enabled}
+function Set-NetFirewallRule { param($InputObject,$Enabled,$ThrottleLimit,[switch]$Confirm)
+    $script:writes+= [pscustomobject]@{Names=@($InputObject.Name);Enabled=$Enabled}
     $script:current=$Enabled
 }
 function Get-NetFirewallProfile { param($PolicyStore)
@@ -333,27 +336,26 @@ $results | ConvertTo-Json -Depth 4 -Compress
         self.assertEqual(actual['inherited'], {'ok': True, 'removed': 1, 'writes': []})
         self.assertEqual(actual['recover'], {'ok': True, 'removed': 1, 'writes': [{'Names': ['fixture'], 'Enabled': 2}]})
 
-    def test_large_rule_set_is_written_in_bounded_exact_batches(self):
+    def test_bulk_write_reuses_current_rule_instances_without_name_queries(self):
         source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
         function = source[source.index('function Set-RuleStateChanges'):source.index('function Restore-Baseline')]
         actual = self.run_ps(function + r'''
-$script:batches=@()
-function Set-NetFirewallRule { param($PolicyStore,$Name,$Enabled)
-    if ($Name.Count -gt 32) { throw 'WMI query quota exceeded' }
-    $script:batches += [pscustomobject]@{Rules=@($Name);Enabled=$Enabled;Store=$PolicyStore}
+$script:writes=@()
+function Set-NetFirewallRule { param($InputObject,$Enabled,$ThrottleLimit,[switch]$Confirm)
+    $script:writes += [pscustomobject]@{Rules=@($InputObject.InstanceID);Enabled=$Enabled;ThrottleLimit=$ThrottleLimit;Confirm=[bool]$Confirm}
 }
 $rules=@{}
 $names=@(1..331 | ForEach-Object { "rule-$_" })
-foreach ($name in $names) { $rules[$name]=@{Enabled='True'} }
+foreach ($name in $names) { $rules[$name]=[pscustomobject]@{InstanceID="persistent/$name";Enabled='True'} }
 $rules['already-disabled']=@{Enabled='False'}
 $rules['unrelated']=@{Enabled='True'}
 Set-RuleStateChanges @{byName=$rules} ($names + 'already-disabled') False
-@{Batches=$script:batches} | ConvertTo-Json -Depth 4 -Compress
+@{Writes=$script:writes} | ConvertTo-Json -Depth 4 -Compress
 ''')
-        batches = actual['Batches']
-        self.assertEqual([len(batch['Rules']) for batch in batches], [32] * 10 + [11])
-        self.assertEqual([rule for batch in batches for rule in batch['Rules']], [f'rule-{i}' for i in range(1, 332)])
-        self.assertTrue(all(batch['Enabled'] == 'False' and batch['Store'] == 'PersistentStore' for batch in batches))
+        self.assertEqual(actual['Writes'], [{
+            'Rules': [f'persistent/rule-{i}' for i in range(1, 332)],
+            'Enabled': 'False', 'ThrottleLimit': 32, 'Confirm': False,
+        }])
 
     def test_native_keep_cannot_disarm_a_running_or_expired_fuse(self):
         source = (SKILL / 'assets/killswitch/windows-switch.ps1').read_text(encoding='utf-8')
