@@ -158,17 +158,17 @@ function Get-NetFirewallServiceFilter { param($PolicyStore,[switch]$All)
 function Get-NetFirewallInterfaceFilter { param($PolicyStore,[switch]$All)
     $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
     foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) {
-    $alias = if ($_.Name -eq 'tun') {'Guardian-TUN'} else {'Any'}
+    $alias = if ($_.Name -eq 'tun') {'Guardian-TUN'} elseif ($script:scenario -eq 'loopback') {'Loopback Pseudo-Interface 1'} else {'Any'}
     if ($script:scenario -eq 'interface-drift' -and $_.Store -eq 'ActiveStore') { $alias='changed' }
     [pscustomobject]@{InstanceID=$_.InstanceID;InterfaceAlias=@($alias)}
 } }
 function Get-NetFirewallInterfaceTypeFilter { param($PolicyStore,[switch]$All)
     $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
     foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) { [pscustomobject]@{InstanceID=$_.InstanceID;InterfaceType='Any'} } }
-function Get-NetAdapter { param($Name,[switch]$IncludeHidden,$ErrorAction)
-    if ($script:scenario -eq 'missing-interface') { throw 'Interface missing' }
-    [pscustomobject]@{Name=$Name}
+function Get-NetAdapter { param([switch]$IncludeHidden)
+    if ($script:scenario -ne 'missing-interface') { [pscustomobject]@{Name='Guardian-TUN'} }
 }
+function Get-NetIPInterface { [pscustomobject]@{InterfaceAlias='Loopback Pseudo-Interface 1'} }
 function Get-NetFirewallAddressFilter { param($PolicyStore,[switch]$All)
     $script:reads["$PolicyStore/'$($MyInvocation.MyCommand.Name)'"]++
     foreach ($_ in (Get-FixtureRules $PolicyStore | Sort-Object Name -Descending)) {
@@ -215,6 +215,11 @@ foreach ($scenario in @('normal','claude-update','extra-allow','disabled-extra',
     $script:scenario = $scenario
     $results[$scenario] = (Get-Coverage $baseline).status
 }
+$script:scenario='loopback'
+$loopbackStored=Read-Policy PersistentStore
+$loopbackActive=Read-Policy ActiveStore
+$loopbackBaseline=Get-Snapshot $loopbackStored $loopbackActive
+$results['loopback']=(Get-Coverage $loopbackBaseline $loopbackActive $loopbackStored).status
 $script:scenario='normal'
 $results['on']=(Get-State).protection
 $results['scope']=(Get-State).coverage.scope
@@ -232,7 +237,7 @@ foreach ($scenario in @('unrestricted','missing-proxy')) {
 $results | ConvertTo-Json -Depth 6 -Compress
 '''
         actual = self.run_ps(functions + fixture)
-        for scenario in ('planned', 'normal', 'claude-update', 'disabled-extra', 'extra-inbound'):
+        for scenario in ('planned', 'normal', 'claude-update', 'disabled-extra', 'extra-inbound', 'loopback'):
             self.assertEqual(actual[scenario], 'pass', scenario)
         for scenario in ('extra-allow', 'address-drift', 'port-drift', 'security-drift', 'interface-drift', 'baseline-drift', 'profile-allow', 'persistent-profile-allow', 'persistent-extra', 'unrestricted', 'missing-proxy'):
             self.assertEqual(actual[scenario], 'fail', scenario)

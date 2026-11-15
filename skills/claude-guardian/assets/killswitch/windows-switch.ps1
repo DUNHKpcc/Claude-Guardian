@@ -91,6 +91,8 @@ function Get-Coverage($baseline, $active, $stored, [switch]$Planned) {
         }
         if ($null -eq $active) { $active = Read-Policy ActiveStore }
         if ($null -eq $stored) { $stored = Read-Policy PersistentStore }
+        $adapterAliases = $null
+        $ipAliases = $null
         foreach ($name in $settings.enable_rules) {
             $liveRule = $active.byName[$name]
             $savedRule = $stored.byName[$name]
@@ -117,7 +119,12 @@ function Get-Coverage($baseline, $active, $stored, [switch]$Planned) {
                 if (-not (Get-Service -Name $conditions.Service -ErrorAction Stop)) { return @{status='fail';message='Configured service missing.'} }
             }
             foreach ($alias in $conditions.InterfaceAlias) {
-                if ($alias -ne 'Any' -and -not (Get-NetAdapter -Name $alias -IncludeHidden -ErrorAction Stop)) { return @{status='fail';message='Configured interface missing.'} }
+                if ($alias -eq 'Any') { continue }
+                if ($null -eq $adapterAliases) { $adapterAliases = @((Get-NetAdapter -IncludeHidden).Name) }
+                if ($adapterAliases -contains $alias) { continue }
+                # Windows software loopback appears in the IP interface table only.
+                if ($null -eq $ipAliases) { $ipAliases = @((Get-NetIPInterface).InterfaceAlias) }
+                if ($ipAliases -notcontains $alias) { return @{status='unknown';message='Configured firewall interface not found.'} }
             }
         }
         if ($settings.mode -eq 'whole_machine') {
@@ -210,7 +217,7 @@ function Restore-Baseline {
             Set-NetFirewallProfile -PolicyStore PersistentStore -Profile $p.Name -Enabled $p.Enabled -DefaultOutboundAction $p.DefaultOutboundAction
         }
     }
-    foreach ($group in ($b.rules | Group-Object -Property Enabled)) {
+    foreach ($group in ($b.rules | Group-Object -Property { $_.Enabled })) {
         Set-RuleStateChanges $stored $group.Group.Name $group.Group[0].Enabled
     }
     Assert-BaselineRestored $b
