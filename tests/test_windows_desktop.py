@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -190,18 +191,23 @@ $result | ConvertTo-Json -Compress
             unrelated = output / '保留.txt'
             unrelated.write_text('keep', encoding='utf-8')
             body = '& ' + quote(installed / 'windows-shortcuts.ps1') + ' -Config ' + quote(config) + ' -OutputDirectory ' + quote(output) + ' | Out-Null\n'
-            body += "$shell=New-Object -ComObject Shell.Application\n$folder=$shell.NameSpace(" + quote(output) + ")\n$links=@(Get-ChildItem -LiteralPath " + quote(output) + " -Filter '*.lnk' | ForEach-Object {$l=$folder.ParseName($_.Name).GetLink;$icon='';$index=$l.GetIconLocation([ref]$icon);@{target=$l.Path;args=$l.Arguments;icon=($icon+','+$index);directory=$l.WorkingDirectory}})\n"
+            body += "$shell=New-Object -ComObject Shell.Application\n$folder=$shell.NameSpace(" + quote(output) + ")\n$links=@(Get-ChildItem -LiteralPath " + quote(output) + " -Filter '*.lnk' | ForEach-Object {$l=$folder.ParseName($_.Name).GetLink;$icon='';$index=$l.GetIconLocation([ref]$icon);@{name=$_.Name;target=$l.Path;args=$l.Arguments;icon=($icon+','+$index);directory=$l.WorkingDirectory}})\n"
             body += "$rejected=$false;try { & " + quote(installed/'windows-shortcuts.ps1') + ' -Config ' + quote(config) + ' -OutputDirectory ' + quote(output) + " | Out-Null } catch {$rejected=$true}\n@{links=$links;overwriteRejected=$rejected}|ConvertTo-Json -Depth 5 -Compress"
             result = self.run_ps(body)
             self.assertEqual(unrelated.read_text(encoding='utf-8'), 'keep')
             self.assertTrue(result['overwriteRejected'])
             self.assertEqual(len(result['links']), 2)
+            self.assertEqual({link['name'] for link in result['links']}, {'开启保护（限制直连）.lnk', '关闭保护（恢复联网）.lnk'})
             for link in result['links']:
                 self.assertEqual(Path(link['target']).name.lower(), 'powershell.exe')
-                self.assertIn(str(installed / 'windows-desktop.ps1'), link['args'])
-                self.assertIn(str(config), link['args'])
+                for argument, expected in (('File', installed / 'windows-desktop.ps1'), ('Config', config)):
+                    match = re.search(r'-' + argument + r' "([^"]+)"', link['args'])
+                    self.assertIsNotNone(match, link['args'])
+                    self.assertTrue(Path(match.group(1)).samefile(expected))
                 self.assertIn('-ExecutionPolicy Bypass', link['args'])
-                self.assertEqual(link['icon'], str(installed / 'icon.ico') + ',0')
-                self.assertEqual(link['directory'], str(installed))
+                icon_path, icon_index = link['icon'].rsplit(',', 1)
+                self.assertEqual(icon_index, '0')
+                self.assertTrue(Path(icon_path).samefile(installed / 'icon.ico'))
+                self.assertTrue(Path(link['directory']).samefile(installed))
             self.assertEqual(sum('-Action On ' in link['args'] for link in result['links']), 1)
             self.assertEqual(sum('-Action Off ' in link['args'] for link in result['links']), 1)
