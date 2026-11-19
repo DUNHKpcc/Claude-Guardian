@@ -11,7 +11,7 @@ Pre-subscription prep · Account signup and pacing · Fixed egress IP · Local /
   <a href="https://trendshift.io/repositories/315286?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-315286" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/315286/daily" alt="DUNHKpcc%2FClaude-Guardian | Trendshift" width="250" height="55"/></a>
 </p>
 
-[中文](README.md) · **English**
+[中文](README.md) · **English** · [日本語](README.ja.md)
 
 [What it does](#what-it-does) · [Ground rules](#ground-rules) · [How it works](#how-it-works) · [Tiered authorization](#tiered-authorization-you-dont-need-to-be-there-for-every-step) · [Quick start](#quick-start) · [Choosing a route](#choosing-a-route) · [Docs](#documentation)
 
